@@ -1,0 +1,5 @@
+# This is the folder where you should unzip qdb_api
+/qdb/
+
+# This is the folder where you should run CMake
+/build/
