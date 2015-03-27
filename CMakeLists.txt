@@ -29,11 +29,12 @@ if(WIN32)
     )
 endif()
 
-# Compilation warnings
+# Compilation flags
 if(CMAKE_CXX_COMPILER_ID MATCHES "(GNU|Clang)")
     add_compile_options(
+        -std=c++11
         -Wno-strict-aliasing
-        -Wno-sign-compare
+        -Wno-sign-compare        
     )
 endif()
 
