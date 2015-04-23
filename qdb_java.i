@@ -1,15 +1,25 @@
 %module(package="qdb") qdb
 #pragma SWIG nowarn=453
 
-%typemap(jni)     qdb_time_t "jlong"
-%typemap(jtype)   qdb_time_t "long"
-%typemap(jstype)  qdb_time_t "long"
-%typemap(javain)  qdb_time_t "$javainput"
+%typemap(jni)       qdb_time_t "jlong"
+%typemap(jtype)     qdb_time_t "long"
+%typemap(jstype)    qdb_time_t "long"
+%typemap(javain)    qdb_time_t "$javainput"
 // we need to force the mapping of qdb_time_t to a long otherwise swig tries to create an intermediate object
 // and checks that the object isn't null while qdb_time_t can be zero
-%typemap(in)      qdb_time_t %{ $1 = $input; %}
-%typemap(out)     qdb_time_t  %{ $result = $1; %}
-%typemap(javaout) qdb_time_t { return $jnicall; }
+%typemap(in)        qdb_time_t %{ $1 = $input; %}
+%typemap(out)       qdb_time_t  %{ $result = $1; %}
+%typemap(javaout)   qdb_time_t { return $jnicall; }
+
+
+%typemap(jni)       qdb_int "jlong"
+%typemap(jtype)     qdb_int "long"
+%typemap(jstype)    qdb_int "long"
+%typemap(javain)    qdb_int "$javainput"
+
+%typemap(in)        qdb_int %{ $1 = $input; %}
+%typemap(out)       qdb_int  %{ $result = $1; %}
+%typemap(javaout)   qdb_int { return $jnicall; }
 
 %{
 
@@ -473,3 +483,75 @@ void release_batch_result(qdb_handle_t h, run_batch_result & br)
 }
 
 %}
+
+// integer functions
+qdb_error_t qdb_int_put(qdb_handle_t handle, const char * alias, qdb_int integer, qdb_time_t expiry_time);
+qdb_error_t qdb_int_update(qdb_handle_t handle, const char * alias, qdb_int integer, qdb_time_t expiry_time);
+
+%inline%{
+    
+qdb_int qdb_int_get(qdb_handle_t handle, const char * alias, error_carrier * err)
+{
+    qdb_int res;
+
+    err->error = qdb_int_get(handle, alias, &res);
+
+    return res;
+}
+
+qdb_int qdb_int_increment(qdb_handle_t handle, const char * alias, qdb_int increment, error_carrier * err)
+{
+    qdb_int res;
+
+    err->error = qdb_int_increment(handle, alias, increment, &res);
+
+    return res;
+}
+
+qdb_int qdb_int_decrement(qdb_handle_t handle, const char * alias, qdb_int decrement, error_carrier * err)
+{
+    qdb_int res;
+
+    err->error = qdb_int_decrement(handle, alias, decrement, &res);
+
+    return res;
+}
+
+%}
+// queue functions
+
+qdb_error_t qdb_list_push_front(qdb_handle_t handle,  const char * alias,  const char * content, size_t content_length);
+qdb_error_t qdb_list_push_back(qdb_handle_t handle,   const char * alias,  const char * content, size_t content_length);
+
+%inline%{
+
+retval qdb_list_pop_front(qdb_handle_t handle, const char * alias, error_carrier * err)
+{
+    retval res;
+    const char * buf = res.buffer;
+    err->error = qdb_list_pop_front(handle, alias, &buf, &res.buffer_size);
+    if (err->error == qdb_e_ok)
+    {
+        res.buffer = const_cast<char *>(buf);
+    }
+    return res;
+}
+
+retval qdb_list_pop_back(qdb_handle_t handle, const char * alias, error_carrier * err)
+{
+    retval res;
+    const char * buf = res.buffer;
+    err->error = qdb_list_pop_back(handle, alias, &buf, &res.buffer_size);
+    if (err->error == qdb_e_ok)
+    {
+        res.buffer = const_cast<char *>(buf);
+    }
+    return res;
+}
+
+%}
+
+// set functions
+qdb_error_t qdb_set_insert(qdb_handle_t handle, const char * alias, const char * content, size_t content_length);
+qdb_error_t qdb_set_erase(qdb_handle_t handle, const char * alias, const char * content, size_t content_length);
+qdb_error_t qdb_set_contains(qdb_handle_t handle, const char * alias, const char * content, size_t content_length);
