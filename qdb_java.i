@@ -201,11 +201,11 @@ qdb_put(
 %inline%{
 
 // specific to java getter
-retval qdb_get_buffer(qdb_handle_t handle,  const char * alias, error_carrier * err)
+retval qdb_get(qdb_handle_t handle,  const char * alias, error_carrier * err)
 {
     retval res;
     const char * buf = res.buffer;
-    err->error = qdb_get_buffer(handle, alias, &buf, &res.buffer_size);
+    err->error = qdb_get(handle, alias, &buf, &res.buffer_size);
     if (err->error == qdb_e_ok)
     {
         res.buffer = const_cast<char *>(buf);
@@ -267,11 +267,11 @@ RemoteNode qdb_get_location(qdb_handle_t handle, const char * alias, error_carri
     return location;
 }
 
-retval qdb_get_remove(qdb_handle_t handle, const char * alias, error_carrier * err)
+retval qdb_get_and_remove(qdb_handle_t handle, const char * alias, error_carrier * err)
 {
     retval res;
     const char * buf = res.buffer;
-    err->error = qdb_get_remove(handle, alias, &buf, &res.buffer_size);
+    err->error = qdb_get_and_remove(handle, alias, &buf, &res.buffer_size);
     if (err->error == qdb_e_ok)
     {
         res.buffer = const_cast<char *>(buf);
@@ -279,7 +279,7 @@ retval qdb_get_remove(qdb_handle_t handle, const char * alias, error_carrier * e
     return res;
 }
 
-retval qdb_get_buffer_update(qdb_handle_t handle,
+retval qdb_get_and_update(qdb_handle_t handle,
     const char * alias,          /* [in] unique identifier of existing entry */
     const char * content,        /* [in] new content for entry */
     size_t content_length,       /* [in] size of content, in bytes */
@@ -288,7 +288,7 @@ retval qdb_get_buffer_update(qdb_handle_t handle,
 {
     retval res;
     const char * buf = res.buffer;
-    err->error = qdb_get_buffer_update(handle, alias, content, content_length, expiry_time, &buf, &res.buffer_size);
+    err->error = qdb_get_and_update(handle, alias, content, content_length, expiry_time, &buf, &res.buffer_size);
     if (err->error == qdb_e_ok)
     {
         res.buffer = const_cast<char *>(buf);
