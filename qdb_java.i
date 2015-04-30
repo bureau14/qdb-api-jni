@@ -131,28 +131,12 @@ qdb_handle_t qdb_open_tcp();
 
 qdb_error_t qdb_close(qdb_handle_t handle);
 
-qdb_error_t qdb_connect(
-        qdb_handle_t handle,   /* [in] API handle */
-        const char * host,        /* [in] host name or IP address */
-        unsigned short port       /* [in] port number */
-    );
-
-%template(remoteNodeArray) std::vector<qdb_remote_node_t>;
-
-%inline%{
-
-std::vector<qdb_remote_node_t> multi_connect(qdb_handle_t h, std::vector<qdb_remote_node_t> nodes)
-{
-    qdb_multi_connect(h, &nodes[0], nodes.size());
-    return nodes;
-}
-
-%}
+qdb_error_t qdb_connect(qdb_handle_t handle, const char * uri);
 
 qdb_error_t qdb_stop_node(
-        qdb_handle_t handle,
-        const qdb_remote_node_t * node,
-        const char * reason);
+    qdb_handle_t handle,
+    const char * uri,
+    const char * reason);
 
 %typemap(in) const char * content {
     $1 = ($1_ltype)jenv->GetDirectBufferAddress($input);
@@ -296,11 +280,11 @@ retval qdb_get_and_update(qdb_handle_t handle,
     return res;
 }
 
-retval qdb_node_status(qdb_handle_t handle, const qdb_remote_node_t * node, error_carrier * err)
+retval qdb_node_status(qdb_handle_t handle, const char * uri, error_carrier * err)
 {
     retval res;
     const char * buf = res.buffer;
-    err->error = qdb_node_status(handle, node, &buf, &res.buffer_size);
+    err->error = qdb_node_status(handle, uri, &buf, &res.buffer_size);
     if (err->error == qdb_e_ok)
     {
         res.buffer = const_cast<char *>(buf);
@@ -308,11 +292,11 @@ retval qdb_node_status(qdb_handle_t handle, const qdb_remote_node_t * node, erro
     return res;
 }
 
-retval qdb_node_config(qdb_handle_t handle, const qdb_remote_node_t * node, error_carrier * err)
+retval qdb_node_config(qdb_handle_t handle, const char * uri, error_carrier * err)
 {
     retval res;
     const char * buf = res.buffer;
-    err->error = qdb_node_config(handle, node, &buf, &res.buffer_size);
+    err->error = qdb_node_config(handle, uri, &buf, &res.buffer_size);
     if (err->error == qdb_e_ok)
     {
         res.buffer = const_cast<char *>(buf);
@@ -320,11 +304,11 @@ retval qdb_node_config(qdb_handle_t handle, const qdb_remote_node_t * node, erro
     return res;
 }
 
-retval qdb_node_topology(qdb_handle_t handle, const qdb_remote_node_t * node, error_carrier * err)
+retval qdb_node_topology(qdb_handle_t handle, const char * uri, error_carrier * err)
 {
     retval res;
     const char * buf = res.buffer;
-    err->error = qdb_node_topology(handle, node, &buf, &res.buffer_size);
+    err->error = qdb_node_topology(handle, uri, &buf, &res.buffer_size);
     if (err->error == qdb_e_ok)
     {
         res.buffer = const_cast<char *>(buf);
@@ -499,20 +483,11 @@ qdb_int qdb_int_get(qdb_handle_t handle, const char * alias, error_carrier * err
     return res;
 }
 
-qdb_int qdb_int_increment(qdb_handle_t handle, const char * alias, qdb_int increment, error_carrier * err)
+qdb_int qdb_int_add(qdb_handle_t handle, const char * alias, qdb_int addend, error_carrier * err)
 {
     qdb_int res;
 
-    err->error = qdb_int_increment(handle, alias, increment, &res);
-
-    return res;
-}
-
-qdb_int qdb_int_decrement(qdb_handle_t handle, const char * alias, qdb_int decrement, error_carrier * err)
-{
-    qdb_int res;
-
-    err->error = qdb_int_decrement(handle, alias, decrement, &res);
+    err->error = qdb_int_add(handle, alias, addend, &res);
 
     return res;
 }
@@ -520,16 +495,16 @@ qdb_int qdb_int_decrement(qdb_handle_t handle, const char * alias, qdb_int decre
 %}
 // queue functions
 
-qdb_error_t qdb_list_push_front(qdb_handle_t handle,  const char * alias,  const char * content, size_t content_length);
-qdb_error_t qdb_list_push_back(qdb_handle_t handle,   const char * alias,  const char * content, size_t content_length);
+qdb_error_t qdb_queue_push_front(qdb_handle_t handle,  const char * alias,  const char * content, size_t content_length);
+qdb_error_t qdb_queue_push_back(qdb_handle_t handle,   const char * alias,  const char * content, size_t content_length);
 
 %inline%{
 
-retval qdb_list_pop_front(qdb_handle_t handle, const char * alias, error_carrier * err)
+retval qdb_queue_pop_front(qdb_handle_t handle, const char * alias, error_carrier * err)
 {
     retval res;
     const char * buf = res.buffer;
-    err->error = qdb_list_pop_front(handle, alias, &buf, &res.buffer_size);
+    err->error = qdb_queue_pop_front(handle, alias, &buf, &res.buffer_size);
     if (err->error == qdb_e_ok)
     {
         res.buffer = const_cast<char *>(buf);
@@ -537,11 +512,35 @@ retval qdb_list_pop_front(qdb_handle_t handle, const char * alias, error_carrier
     return res;
 }
 
-retval qdb_list_pop_back(qdb_handle_t handle, const char * alias, error_carrier * err)
+retval qdb_queue_pop_back(qdb_handle_t handle, const char * alias, error_carrier * err)
 {
     retval res;
     const char * buf = res.buffer;
-    err->error = qdb_list_pop_back(handle, alias, &buf, &res.buffer_size);
+    err->error = qdb_queue_pop_back(handle, alias, &buf, &res.buffer_size);
+    if (err->error == qdb_e_ok)
+    {
+        res.buffer = const_cast<char *>(buf);
+    }
+    return res;
+}
+
+retval qdb_queue_front(qdb_handle_t handle, const char * alias, error_carrier * err)
+{
+    retval res;
+    const char * buf = res.buffer;
+    err->error = qdb_queue_front(handle, alias, &buf, &res.buffer_size);
+    if (err->error == qdb_e_ok)
+    {
+        res.buffer = const_cast<char *>(buf);
+    }
+    return res;
+}
+
+retval qdb_queue_back(qdb_handle_t handle, const char * alias, error_carrier * err)
+{
+    retval res;
+    const char * buf = res.buffer;
+    err->error = qdb_queue_back(handle, alias, &buf, &res.buffer_size);
     if (err->error == qdb_e_ok)
     {
         res.buffer = const_cast<char *>(buf);
