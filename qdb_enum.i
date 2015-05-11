@@ -20,6 +20,7 @@ enum qdb_error_t
     qdb_e_timeout = 10,
     qdb_e_buffer_too_small = 11,
     qdb_e_invalid_command = 12,
+    qdb_e_invalid_input = 13,               // deprecated, qdb_e_invalid_argument is used instead
     qdb_e_connection_refused = 14,
     qdb_e_connection_reset = 15,
     qdb_e_unexpected_reply = 16,
@@ -39,7 +40,14 @@ enum qdb_error_t
     qdb_e_unmatched_content = 30,
     qdb_e_invalid_iterator = 31,
     qdb_e_prefix_too_short = 32,
-    qdb_e_skipped = 33
+    qdb_e_skipped = 33,
+    qdb_e_incompatible_type = 34,
+    qdb_e_empty_container = 35,
+    qdb_e_container_full = 36,
+    qdb_e_element_not_found = 37,
+    qdb_e_element_already_exists = 38,
+    qdb_e_overflow = 39,
+    qdb_e_underflow = 40
 };
 
 enum qdb_option_t
@@ -51,6 +59,18 @@ enum qdb_option_t
 enum qdb_protocol_t
 {
     qdb_p_tcp = 0
+};
+
+enum qdb_entry_type_t
+{
+    qdb_entry_uninitialized = -1,
+    qdb_entry_raw = 0,
+    qdb_entry_integer = 1,
+    qdb_entry_queue = 2,
+    qdb_entry_set = 3,
+    qdb_entry_unordered_set = 4,
+    qdb_entry_array = 5,
+    qdb_entry_tag = 6
 };
 
 enum qdb_operation_type_t
