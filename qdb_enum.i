@@ -64,19 +64,17 @@ enum qdb_protocol_t
 enum qdb_entry_type_t
 {
     qdb_entry_uninitialized = -1,
-    qdb_entry_raw = 0,
+    qdb_entry_blob = 0,
     qdb_entry_integer = 1,
-    qdb_entry_queue = 2,
-    qdb_entry_set = 3,
-    qdb_entry_unordered_set = 4,
-    qdb_entry_array = 5,
-    qdb_entry_tag = 6
+    qdb_entry_hset = 2,
+    qdb_entry_tag = 3,
+    qdb_entry_queue = 4
 };
 
 enum qdb_operation_type_t
 {
     qdb_op_uninitialized = -1,
-    qdb_op_get_alloc = 0,
+    qdb_op_get = 0,
     qdb_op_put = 1,
     qdb_op_update = 2,
     qdb_op_remove = 3,
