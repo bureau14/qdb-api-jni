@@ -39,7 +39,7 @@ typedef struct qdb_session * qdb_handle_t;
 %template(ApiBufferPtr) std::shared_ptr<qdb::api_buffer>;
 
 %rename("%(regex:/qdb_e(.*)/error\\1/)s", %$isenumitem) "";
-%rename("%(regex:/qdb_o(.*)/option\\1/)s", %$isenumitem) "";
+%rename("%(regex:/qdb_comp(.*)/compression\\1/)s", %$isenumitem) "";
 %rename("%(strip:[qdb_])s", %$isfunction) "";
 
 %typemap(jni)       void * BUFFER "jobject"
