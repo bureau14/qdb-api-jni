@@ -107,4 +107,12 @@ struct run_batch_result
     std::vector<qdb_operation_t> results;
 };
 
+struct results_list
+{
+    results_list(void) : error(qdb_e_uninitialized) {}
+
+    qdb_error_t error;
+    std::vector<std::string> results;
+};
+
 %}
