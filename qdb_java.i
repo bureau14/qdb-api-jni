@@ -471,11 +471,10 @@ qdb_error_t qdb_queue_push_back(qdb_handle_t handle,   const char * alias,  cons
 
 %inline%{
 
-retval qdb_queue_size(qdb_handle_t handle, const char * alias, error_carrier * err)
+size_t qdb_queue_size(qdb_handle_t handle, const char * alias, error_carrier * err)
 {
-    retval res;
-    res.buffer = NULL;    
-    err->error = qdb_queue_size(handle, alias, &res.buffer_size);
+    size_t res = 0;
+    err->error = qdb_queue_size(handle, alias, &res);
     return res;
 }
 
