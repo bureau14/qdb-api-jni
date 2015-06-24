@@ -444,7 +444,7 @@ qdb_error_t qdb_int_put(qdb_handle_t handle, const char * alias, qdb_int integer
 qdb_error_t qdb_int_update(qdb_handle_t handle, const char * alias, qdb_int integer, qdb_time_t expiry_time);
 
 %inline%{
-    
+
 qdb_int qdb_int_get(qdb_handle_t handle, const char * alias, error_carrier * err)
 {
     qdb_int res;

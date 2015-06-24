@@ -23,7 +23,7 @@ struct qdb_remote_node_t
 
 struct qdb_operation_t
 {
-    
+
     qdb_operation_type_t type;      /* [in] */
 
     // we get rid of the const otherwise SWIG might leak memory
@@ -62,7 +62,6 @@ struct batch_request
     qdb::api_buffer_ptr comparand;
 
     qdb_time_t expiry_time;
-    
 };
 
 struct batch_result

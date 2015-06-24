@@ -16,8 +16,8 @@ include_directories(qdb/include)
 link_directories(qdb/lib)
 
 # CPack
-set(CPACK_PACKAGE_VERSION_MAJOR "1")
-set(CPACK_PACKAGE_VERSION_MINOR "2")
+set(CPACK_PACKAGE_VERSION_MAJOR "2")
+set(CPACK_PACKAGE_VERSION_MINOR "0")
 set(CPACK_PACKAGE_VERSION_PATCH "0")
 set(CPACK_INCLUDE_TOPLEVEL_DIRECTORY 0)
 include(CPack)
@@ -36,7 +36,7 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "(GNU|Clang)")
     add_compile_options(
         -std=c++11
         -Wno-strict-aliasing
-        -Wno-sign-compare        
+        -Wno-sign-compare
     )
 endif()
 
