@@ -471,10 +471,30 @@ qdb_error_t qdb_queue_push_back(qdb_handle_t handle,   const char * alias,  cons
 
 %inline%{
 
+retval qdb_queue_size(qdb_handle_t handle, const char * alias, error_carrier * err)
+{
+    retval res;
+    res.buffer = NULL;    
+    err->error = qdb_queue_size(handle, alias, &res.buffer_size);
+    return res;
+}
+
+retval qdb_queue_at(qdb_handle_t handle, const char * alias, size_t index, error_carrier * err)
+{
+    retval res;
+    const char * buf = NULL;
+    err->error = qdb_queue_at(handle, alias, index, &buf, &res.buffer_size);
+    if (err->error == qdb_e_ok)
+    {
+        res.buffer = const_cast<char *>(buf);
+    }
+    return res;
+}
+
 retval qdb_queue_pop_front(qdb_handle_t handle, const char * alias, error_carrier * err)
 {
     retval res;
-    const char * buf = res.buffer;
+    const char * buf = NULL;
     err->error = qdb_queue_pop_front(handle, alias, &buf, &res.buffer_size);
     if (err->error == qdb_e_ok)
     {
@@ -486,7 +506,7 @@ retval qdb_queue_pop_front(qdb_handle_t handle, const char * alias, error_carrie
 retval qdb_queue_pop_back(qdb_handle_t handle, const char * alias, error_carrier * err)
 {
     retval res;
-    const char * buf = res.buffer;
+    const char * buf = NULL;
     err->error = qdb_queue_pop_back(handle, alias, &buf, &res.buffer_size);
     if (err->error == qdb_e_ok)
     {
@@ -498,7 +518,7 @@ retval qdb_queue_pop_back(qdb_handle_t handle, const char * alias, error_carrier
 retval qdb_queue_front(qdb_handle_t handle, const char * alias, error_carrier * err)
 {
     retval res;
-    const char * buf = res.buffer;
+    const char * buf = NULL;
     err->error = qdb_queue_front(handle, alias, &buf, &res.buffer_size);
     if (err->error == qdb_e_ok)
     {
@@ -510,7 +530,7 @@ retval qdb_queue_front(qdb_handle_t handle, const char * alias, error_carrier * 
 retval qdb_queue_back(qdb_handle_t handle, const char * alias, error_carrier * err)
 {
     retval res;
-    const char * buf = res.buffer;
+    const char * buf = NULL;
     err->error = qdb_queue_back(handle, alias, &buf, &res.buffer_size);
     if (err->error == qdb_e_ok)
     {
