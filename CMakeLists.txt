@@ -4,7 +4,7 @@ project (qdb-api-jni)
 # SWIG
 find_package(SWIG REQUIRED)
 include(${SWIG_USE_FILE})
-set(CMAKE_SWIG_FLAGS -package com.b14.qdb.jni)
+set(CMAKE_SWIG_FLAGS -package net.quasardb.qdb.jni)
 set(CMAKE_SWIG_OUTDIR jni)
 
 # JNI
