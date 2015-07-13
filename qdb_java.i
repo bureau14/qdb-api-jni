@@ -305,7 +305,7 @@ retval qdb_compare_and_swap(qdb_handle_t handle,   /* [in] API handle */
     retval res;
     const char * buf = res.buffer;
     err->error = qdb_compare_and_swap(handle, alias, content, content_length, comparand, comparand_length, expiry_time, &buf, &res.buffer_size);
-    if (err->error == qdb_e_ok)
+    if (err->error == qdb_e_unmatched_content)
     {
         res.buffer = const_cast<char *>(buf);
     }
