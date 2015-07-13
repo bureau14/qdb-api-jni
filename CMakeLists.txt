@@ -50,7 +50,7 @@ set(CPACK_INCLUDE_TOPLEVEL_DIRECTORY 0)
 include(CPack)
 
 # Extra resource files on Windows
-if(WIN32)
+if(WIN32 AND MSVC)
     set(JAVA_API_RESOURCE
         resource.h
         targetver.h
@@ -59,9 +59,7 @@ if(WIN32)
 endif()
 
 # Compilation flags
-
 IF (MSVC)
-
     add_compile_options(
         /Gy           # Allows the compiler to package individual functions in the form of packaged functions (COMDATs).
         /Zc:wchar_t   # Parse wchar_t as a built-in type according to the C++ standard

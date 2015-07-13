@@ -3,3 +3,6 @@
 
 # This is the folder where you should run CMake
 /build/
+
+# Auto-generated
+/.idea
