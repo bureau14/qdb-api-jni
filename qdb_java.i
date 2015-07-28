@@ -12,14 +12,14 @@
 %typemap(javaout)   qdb_time_t { return $jnicall; }
 
 
-%typemap(jni)       qdb_int "jlong"
-%typemap(jtype)     qdb_int "long"
-%typemap(jstype)    qdb_int "long"
-%typemap(javain)    qdb_int "$javainput"
+%typemap(jni)       qdb_int_t "jlong"
+%typemap(jtype)     qdb_int_t "long"
+%typemap(jstype)    qdb_int_t "long"
+%typemap(javain)    qdb_int_t "$javainput"
 
-%typemap(in)        qdb_int %{ $1 = $input; %}
-%typemap(out)       qdb_int  %{ $result = $1; %}
-%typemap(javaout)   qdb_int { return $jnicall; }
+%typemap(in)        qdb_int_t %{ $1 = $input; %}
+%typemap(out)       qdb_int_t  %{ $result = $1; %}
+%typemap(javaout)   qdb_int_t { return $jnicall; }
 
 %{
 
@@ -440,23 +440,23 @@ void release_batch_result(qdb_handle_t h, run_batch_result & br)
 %}
 
 // integer functions
-qdb_error_t qdb_int_put(qdb_handle_t handle, const char * alias, qdb_int integer, qdb_time_t expiry_time);
-qdb_error_t qdb_int_update(qdb_handle_t handle, const char * alias, qdb_int integer, qdb_time_t expiry_time);
+qdb_error_t qdb_int_put(qdb_handle_t handle, const char * alias, qdb_int_t integer, qdb_time_t expiry_time);
+qdb_error_t qdb_int_update(qdb_handle_t handle, const char * alias, qdb_int_t integer, qdb_time_t expiry_time);
 
 %inline%{
 
-qdb_int qdb_int_get(qdb_handle_t handle, const char * alias, error_carrier * err)
+qdb_int_t qdb_int_get(qdb_handle_t handle, const char * alias, error_carrier * err)
 {
-    qdb_int res;
+    qdb_int_t res;
 
     err->error = qdb_int_get(handle, alias, &res);
 
     return res;
 }
 
-qdb_int qdb_int_add(qdb_handle_t handle, const char * alias, qdb_int addend, error_carrier * err)
+qdb_int_t qdb_int_add(qdb_handle_t handle, const char * alias, qdb_int_t addend, error_carrier * err)
 {
-    qdb_int res;
+    qdb_int_t res;
 
     err->error = qdb_int_add(handle, alias, addend, &res);
 
