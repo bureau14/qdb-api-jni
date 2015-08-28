@@ -156,7 +156,7 @@ qdb_error_t qdb_stop_node(
 %typemap(javaout) const char * content { return $jnicall; }
 
 qdb_error_t
-qdb_put(
+qdb_blob_put(
         qdb_handle_t handle,   /* [in] API handle */
         const char * alias,       /* [in] unique identifier for new entry */
         const char * content,     /* [in] content for new entry */
@@ -185,11 +185,11 @@ qdb_put(
 %inline%{
 
 // specific to java getter
-retval qdb_get(qdb_handle_t handle,  const char * alias, error_carrier * err)
+retval qdb_blob_get(qdb_handle_t handle,  const char * alias, error_carrier * err)
 {
     retval res;
     const char * buf = res.buffer;
-    err->error = qdb_get(handle, alias, &buf, &res.buffer_size);
+    err->error = qdb_blob_get(handle, alias, &buf, &res.buffer_size);
     if (err->error == qdb_e_ok)
     {
         res.buffer = const_cast<char *>(buf);
@@ -222,11 +222,11 @@ RemoteNode qdb_get_location(qdb_handle_t handle, const char * alias, error_carri
     return location;
 }
 
-retval qdb_get_and_remove(qdb_handle_t handle, const char * alias, error_carrier * err)
+retval qdb_blob_get_and_remove(qdb_handle_t handle, const char * alias, error_carrier * err)
 {
     retval res;
     const char * buf = res.buffer;
-    err->error = qdb_get_and_remove(handle, alias, &buf, &res.buffer_size);
+    err->error = qdb_blob_get_and_remove(handle, alias, &buf, &res.buffer_size);
     if (err->error == qdb_e_ok)
     {
         res.buffer = const_cast<char *>(buf);
@@ -234,7 +234,7 @@ retval qdb_get_and_remove(qdb_handle_t handle, const char * alias, error_carrier
     return res;
 }
 
-retval qdb_get_and_update(qdb_handle_t handle,
+retval qdb_blob_get_and_update(qdb_handle_t handle,
     const char * alias,          /* [in] unique identifier of existing entry */
     const char * content,        /* [in] new content for entry */
     size_t content_length,       /* [in] size of content, in bytes */
@@ -243,7 +243,7 @@ retval qdb_get_and_update(qdb_handle_t handle,
 {
     retval res;
     const char * buf = res.buffer;
-    err->error = qdb_get_and_update(handle, alias, content, content_length, expiry_time, &buf, &res.buffer_size);
+    err->error = qdb_blob_get_and_update(handle, alias, content, content_length, expiry_time, &buf, &res.buffer_size);
     if (err->error == qdb_e_ok)
     {
         res.buffer = const_cast<char *>(buf);
@@ -293,7 +293,7 @@ retval qdb_node_topology(qdb_handle_t handle, const char * uri, error_carrier * 
 
 %inline%{
 
-retval qdb_compare_and_swap(qdb_handle_t handle,   /* [in] API handle */
+retval qdb_blob_compare_and_swap(qdb_handle_t handle,   /* [in] API handle */
     const char * alias,                            /* [in] unique identifier of existing entry */
     const char * content,                          /* [in] new content for entry */
     size_t content_length,                         /* [in] size of content, in bytes */
@@ -304,7 +304,7 @@ retval qdb_compare_and_swap(qdb_handle_t handle,   /* [in] API handle */
 {
     retval res;
     const char * buf = res.buffer;
-    err->error = qdb_compare_and_swap(handle, alias, content, content_length, comparand, comparand_length, expiry_time, &buf, &res.buffer_size);
+    err->error = qdb_blob_compare_and_swap(handle, alias, content, content_length, comparand, comparand_length, expiry_time, &buf, &res.buffer_size);
     if (err->error == qdb_e_unmatched_content)
     {
         res.buffer = const_cast<char *>(buf);
@@ -351,7 +351,7 @@ std::string make_error_string(qdb_error_t error);
 }
 
 qdb_error_t
-qdb_update(
+qdb_blob_update(
         qdb_handle_t handle,   /* [in] API handle */
         const char * alias,       /* [in] unique identifier of existing entry */
         const char * content,     /* [in] new content for entry */
@@ -362,7 +362,7 @@ qdb_update(
 qdb_error_t qdb_remove(qdb_handle_t handle,  const char * alias);
 
 qdb_error_t
-qdb_remove_if(
+qdb_blob_remove_if(
     qdb_handle_t handle,                /* [in] API handle */
     const char * alias,                 /* [in] unique identifier of existing entry */
     const char * comparand,             /* [in] comparand for entry */
@@ -464,25 +464,25 @@ qdb_int_t qdb_int_add(qdb_handle_t handle, const char * alias, qdb_int_t addend,
 }
 
 %}
-// queue functions
+// deque functions
 
-qdb_error_t qdb_queue_push_front(qdb_handle_t handle,  const char * alias,  const char * content, size_t content_length);
-qdb_error_t qdb_queue_push_back(qdb_handle_t handle,   const char * alias,  const char * content, size_t content_length);
+qdb_error_t qdb_deque_push_front(qdb_handle_t handle,  const char * alias,  const char * content, size_t content_length);
+qdb_error_t qdb_deque_push_back(qdb_handle_t handle,   const char * alias,  const char * content, size_t content_length);
 
 %inline%{
 
-size_t qdb_queue_size(qdb_handle_t handle, const char * alias, error_carrier * err)
+size_t qdb_deque_size(qdb_handle_t handle, const char * alias, error_carrier * err)
 {
     size_t res = 0;
-    err->error = qdb_queue_size(handle, alias, &res);
+    err->error = qdb_deque_size(handle, alias, &res);
     return res;
 }
 
-retval qdb_queue_get_at(qdb_handle_t handle, const char * alias, size_t index, error_carrier * err)
+retval qdb_deque_get_at(qdb_handle_t handle, const char * alias, size_t index, error_carrier * err)
 {
     retval res;
     const char * buf = NULL;
-    err->error = qdb_queue_get_at(handle, alias, index, &buf, &res.buffer_size);
+    err->error = qdb_deque_get_at(handle, alias, index, &buf, &res.buffer_size);
     if (err->error == qdb_e_ok)
     {
         res.buffer = const_cast<char *>(buf);
@@ -490,11 +490,11 @@ retval qdb_queue_get_at(qdb_handle_t handle, const char * alias, size_t index, e
     return res;
 }
 
-retval qdb_queue_pop_front(qdb_handle_t handle, const char * alias, error_carrier * err)
+retval qdb_deque_pop_front(qdb_handle_t handle, const char * alias, error_carrier * err)
 {
     retval res;
     const char * buf = NULL;
-    err->error = qdb_queue_pop_front(handle, alias, &buf, &res.buffer_size);
+    err->error = qdb_deque_pop_front(handle, alias, &buf, &res.buffer_size);
     if (err->error == qdb_e_ok)
     {
         res.buffer = const_cast<char *>(buf);
@@ -502,11 +502,11 @@ retval qdb_queue_pop_front(qdb_handle_t handle, const char * alias, error_carrie
     return res;
 }
 
-retval qdb_queue_pop_back(qdb_handle_t handle, const char * alias, error_carrier * err)
+retval qdb_deque_pop_back(qdb_handle_t handle, const char * alias, error_carrier * err)
 {
     retval res;
     const char * buf = NULL;
-    err->error = qdb_queue_pop_back(handle, alias, &buf, &res.buffer_size);
+    err->error = qdb_deque_pop_back(handle, alias, &buf, &res.buffer_size);
     if (err->error == qdb_e_ok)
     {
         res.buffer = const_cast<char *>(buf);
@@ -514,11 +514,11 @@ retval qdb_queue_pop_back(qdb_handle_t handle, const char * alias, error_carrier
     return res;
 }
 
-retval qdb_queue_front(qdb_handle_t handle, const char * alias, error_carrier * err)
+retval qdb_deque_front(qdb_handle_t handle, const char * alias, error_carrier * err)
 {
     retval res;
     const char * buf = NULL;
-    err->error = qdb_queue_front(handle, alias, &buf, &res.buffer_size);
+    err->error = qdb_deque_front(handle, alias, &buf, &res.buffer_size);
     if (err->error == qdb_e_ok)
     {
         res.buffer = const_cast<char *>(buf);
@@ -526,11 +526,11 @@ retval qdb_queue_front(qdb_handle_t handle, const char * alias, error_carrier * 
     return res;
 }
 
-retval qdb_queue_back(qdb_handle_t handle, const char * alias, error_carrier * err)
+retval qdb_deque_back(qdb_handle_t handle, const char * alias, error_carrier * err)
 {
     retval res;
     const char * buf = NULL;
-    err->error = qdb_queue_back(handle, alias, &buf, &res.buffer_size);
+    err->error = qdb_deque_back(handle, alias, &buf, &res.buffer_size);
     if (err->error == qdb_e_ok)
     {
         res.buffer = const_cast<char *>(buf);
