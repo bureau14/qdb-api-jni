@@ -77,11 +77,11 @@ BEGIN
         BLOCK "000004b0"
         BEGIN
             VALUE "CompanyName", "quasardb SAS"
-            VALUE "FileDescription", "quasardb Java api dll"
+            VALUE "FileDescription", "quasardb JNI API"
             VALUE "FileVersion", "1.0.0.0"
-            VALUE "InternalName", "qdb_java_api.dll"
+            VALUE "InternalName", "qdb_api_jni.dll"
             VALUE "LegalCopyright", "Copyright (c) 2009-2015, quasardb SAS. All rights reserved."
-            VALUE "OriginalFilename", "qdb_java_api.dll"
+            VALUE "OriginalFilename", "qdb_api_jni.dll"
             VALUE "ProductName", "quasardb"
             VALUE "ProductVersion", "1.0.0.0"
         END
