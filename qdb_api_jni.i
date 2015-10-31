@@ -188,11 +188,11 @@ qdb_blob_put(
 retval qdb_blob_get(qdb_handle_t handle,  const char * alias, error_carrier * err)
 {
     retval res;
-    const char * buf = res.buffer;
+    const void * buf = res.buffer;
     err->error = qdb_blob_get(handle, alias, &buf, &res.buffer_size);
     if (err->error == qdb_e_ok)
     {
-        res.buffer = const_cast<char *>(buf);
+        res.buffer = static_cast<char *>(const_cast<void *>(buf));
     }
     return res;
 }
@@ -225,11 +225,11 @@ RemoteNode qdb_get_location(qdb_handle_t handle, const char * alias, error_carri
 retval qdb_blob_get_and_remove(qdb_handle_t handle, const char * alias, error_carrier * err)
 {
     retval res;
-    const char * buf = res.buffer;
+    const void * buf = res.buffer;
     err->error = qdb_blob_get_and_remove(handle, alias, &buf, &res.buffer_size);
     if (err->error == qdb_e_ok)
     {
-        res.buffer = const_cast<char *>(buf);
+        res.buffer = static_cast<char *>(const_cast<void *>(buf));
     }
     return res;
 }
@@ -242,11 +242,11 @@ retval qdb_blob_get_and_update(qdb_handle_t handle,
     error_carrier * err)
 {
     retval res;
-    const char * buf = res.buffer;
+    const void * buf = res.buffer;
     err->error = qdb_blob_get_and_update(handle, alias, content, content_length, expiry_time, &buf, &res.buffer_size);
     if (err->error == qdb_e_ok)
     {
-        res.buffer = const_cast<char *>(buf);
+        res.buffer = static_cast<char *>(const_cast<void *>(buf));
     }
     return res;
 }
@@ -303,11 +303,11 @@ retval qdb_blob_compare_and_swap(qdb_handle_t handle,   /* [in] API handle */
     error_carrier * err)
 {
     retval res;
-    const char * buf = res.buffer;
+    const void * buf = res.buffer;
     err->error = qdb_blob_compare_and_swap(handle, alias, content, content_length, comparand, comparand_length, expiry_time, &buf, &res.buffer_size);
     if (err->error == qdb_e_unmatched_content)
     {
-        res.buffer = const_cast<char *>(buf);
+        res.buffer = static_cast<char *>(const_cast<void *>(buf));
     }
     return res;
 }
@@ -481,11 +481,11 @@ size_t qdb_deque_size(qdb_handle_t handle, const char * alias, error_carrier * e
 retval qdb_deque_get_at(qdb_handle_t handle, const char * alias, size_t index, error_carrier * err)
 {
     retval res;
-    const char * buf = NULL;
+    const void * buf = NULL;
     err->error = qdb_deque_get_at(handle, alias, index, &buf, &res.buffer_size);
     if (err->error == qdb_e_ok)
     {
-        res.buffer = const_cast<char *>(buf);
+        res.buffer = static_cast<char *>(const_cast<void *>(buf));
     }
     return res;
 }
@@ -493,11 +493,11 @@ retval qdb_deque_get_at(qdb_handle_t handle, const char * alias, size_t index, e
 retval qdb_deque_pop_front(qdb_handle_t handle, const char * alias, error_carrier * err)
 {
     retval res;
-    const char * buf = NULL;
+    const void * buf = NULL;
     err->error = qdb_deque_pop_front(handle, alias, &buf, &res.buffer_size);
     if (err->error == qdb_e_ok)
     {
-        res.buffer = const_cast<char *>(buf);
+        res.buffer = static_cast<char *>(const_cast<void *>(buf));
     }
     return res;
 }
@@ -505,11 +505,11 @@ retval qdb_deque_pop_front(qdb_handle_t handle, const char * alias, error_carrie
 retval qdb_deque_pop_back(qdb_handle_t handle, const char * alias, error_carrier * err)
 {
     retval res;
-    const char * buf = NULL;
+    const void * buf = NULL;
     err->error = qdb_deque_pop_back(handle, alias, &buf, &res.buffer_size);
     if (err->error == qdb_e_ok)
     {
-        res.buffer = const_cast<char *>(buf);
+        res.buffer = static_cast<char *>(const_cast<void *>(buf));
     }
     return res;
 }
@@ -517,11 +517,11 @@ retval qdb_deque_pop_back(qdb_handle_t handle, const char * alias, error_carrier
 retval qdb_deque_front(qdb_handle_t handle, const char * alias, error_carrier * err)
 {
     retval res;
-    const char * buf = NULL;
+    const void * buf = NULL;
     err->error = qdb_deque_front(handle, alias, &buf, &res.buffer_size);
     if (err->error == qdb_e_ok)
     {
-        res.buffer = const_cast<char *>(buf);
+        res.buffer = static_cast<char *>(const_cast<void *>(buf));
     }
     return res;
 }
@@ -529,11 +529,11 @@ retval qdb_deque_front(qdb_handle_t handle, const char * alias, error_carrier * 
 retval qdb_deque_back(qdb_handle_t handle, const char * alias, error_carrier * err)
 {
     retval res;
-    const char * buf = NULL;
+    const void * buf = NULL;
     err->error = qdb_deque_back(handle, alias, &buf, &res.buffer_size);
     if (err->error == qdb_e_ok)
     {
-        res.buffer = const_cast<char *>(buf);
+        res.buffer = static_cast<char *>(const_cast<void *>(buf));
     }
     return res;
 }
