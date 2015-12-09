@@ -574,7 +574,7 @@ qdb_error_t qdb_remove_tag(qdb_handle_t handle, const char * alias, const char *
         catch (const std::bad_alloc &)
         {
             final_result.clear();
-            return qdb_e_no_memory;
+            return qdb_e_no_memory_local;
         }
 
         return qdb_e_ok;
