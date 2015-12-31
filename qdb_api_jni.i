@@ -372,6 +372,8 @@ qdb_blob_remove_if(
 
 qdb_error_t qdb_purge_all(qdb_handle_t handle);
 
+qdb_error_t qdb_trim_all(qdb_handle_t handle);
+
 // iterating functions
 qdb_error_t qdb_iterator_begin(qdb_handle_t handle, qdb_const_iterator_t * iterator);
 qdb_error_t qdb_iterator_rbegin(qdb_handle_t handle, qdb_const_iterator_t * iterator);
