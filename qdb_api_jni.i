@@ -1,22 +1,19 @@
 %module(package="qdb") qdb
 #pragma SWIG nowarn=453
 
+// we need to force the mapping of qdb_time_t to a long otherwise swig tries to create an intermediate object
 %typemap(jni)       qdb_time_t "jlong"
 %typemap(jtype)     qdb_time_t "long"
 %typemap(jstype)    qdb_time_t "long"
 %typemap(javain)    qdb_time_t "$javainput"
-// we need to force the mapping of qdb_time_t to a long otherwise swig tries to create an intermediate object
-// and checks that the object isn't null while qdb_time_t can be zero
 %typemap(in)        qdb_time_t %{ $1 = $input; %}
 %typemap(out)       qdb_time_t  %{ $result = $1; %}
 %typemap(javaout)   qdb_time_t { return $jnicall; }
-
 
 %typemap(jni)       qdb_int_t "jlong"
 %typemap(jtype)     qdb_int_t "long"
 %typemap(jstype)    qdb_int_t "long"
 %typemap(javain)    qdb_int_t "$javainput"
-
 %typemap(in)        qdb_int_t %{ $1 = $input; %}
 %typemap(out)       qdb_int_t  %{ $result = $1; %}
 %typemap(javaout)   qdb_int_t { return $jnicall; }
@@ -42,14 +39,14 @@ typedef struct qdb_session * qdb_handle_t;
 %rename("%(regex:/qdb_comp(.*)/compression\\1/)s", %$isenumitem) "";
 %rename("%(strip:[qdb_])s", %$isfunction) "";
 
+// we need to do this otherwise SWIG will try to release the ByteBuffer as if it were a String
+%typemap(memberin)  void * BUFFER "$1 = $input;"
+%typemap(freearg, noblock=1)   void * BUFFER ""
+
 %typemap(jni)       void * BUFFER "jobject"
 %typemap(jtype)     void * BUFFER "java.nio.ByteBuffer"
 %typemap(jstype)    void * BUFFER "java.nio.ByteBuffer"
 %typemap(javain)    void * BUFFER "$javainput"
-
-// we need to do this otherwise SWIG will try to release the ByteBuffer as if it were a String
-%typemap(memberin)  void * BUFFER "$1 = $input;"
-%typemap(freearg, noblock=1)   void * BUFFER ""
 %typemap(javaout)   void * BUFFER { return $jnicall; }
 
 %apply void * BUFFER { char * content };
@@ -62,6 +59,7 @@ typedef struct qdb_session * qdb_handle_t;
 %apply unsigned long { qdb_time_t };
 
 %typemap(in) char * content %{
+    /* %typemap(in) char * content */
     if ($input)
     {
         arg1->content_size = jenv->GetDirectBufferCapacity($input);
@@ -88,6 +86,7 @@ typedef struct qdb_session * qdb_handle_t;
 %}
 
 %typemap(in) char * comparand %{
+    /* %typemap(in) char * comparand */
     if ($input)
     {
         arg1->comparand_size = jenv->GetDirectBufferCapacity($input);
@@ -139,6 +138,7 @@ qdb_error_t qdb_stop_node(
     const char * reason);
 
 %typemap(in) const char * content {
+    /* %typemap(in) const char * content */
     $1 = ($1_ltype)jenv->GetDirectBufferAddress($input);
     if ($1 == 0)
     {
@@ -156,13 +156,7 @@ qdb_error_t qdb_stop_node(
 %typemap(javaout) const char * content { return $jnicall; }
 
 qdb_error_t
-qdb_blob_put(
-        qdb_handle_t handle,   /* [in] API handle */
-        const char * alias,       /* [in] unique identifier for new entry */
-        const char * content,     /* [in] content for new entry */
-        size_t content_length,     /* [in] size of content, in bytes */
-        qdb_time_t expiry_time
-    );
+qdb_blob_put(qdb_handle_t handle, const char * alias, const char * content, size_t content_length, qdb_time_t expiry_time);
 
 %typemap(jni) retval  "jobject"
 %typemap(jtype) retval  "java.nio.ByteBuffer"
@@ -315,7 +309,7 @@ retval qdb_blob_compare_and_swap(qdb_handle_t handle,   /* [in] API handle */
 %}
 
 %typemap(in) (char *content, size_t content_length) {
-  /* %typemap(in) void * */
+    /* %typemap(in) (char * content, size_t content_length) */
     $1 = ($1_ltype)jenv->GetDirectBufferAddress($input);
     if ($1 == 0)
     {
@@ -329,7 +323,7 @@ retval qdb_blob_compare_and_swap(qdb_handle_t handle,   /* [in] API handle */
 }
 
 // we need to do this otherwise SWIG will try to release the ByteBuffer as if it were a String
-%typemap(freearg, noblock=1) char * content {  }
+%typemap(freearg, noblock=1) char * content {}
 
  /* These 3 typemaps tell SWIG what JNI and Java types to use */
 %typemap(jni) (char *content, size_t content_length) "jobject"
@@ -424,7 +418,7 @@ run_batch_result run_batch(qdb_handle_t h, const std::vector<qdb_operation_t> & 
     run_batch_result br;
 
     // transform the batch request in to a qdb_operation_t
-    // it's safe because the strings are kept alive by our vector passed by const reference
+    // it is safe because the strings are kept alive by our vector passed by const reference
     br.results.resize(requests.size());
     std::copy(requests.begin(), requests.end(), br.results.begin());
 
@@ -450,24 +444,20 @@ qdb_error_t qdb_int_update(qdb_handle_t handle, const char * alias, qdb_int_t in
 qdb_int_t qdb_int_get(qdb_handle_t handle, const char * alias, error_carrier * err)
 {
     qdb_int_t res;
-
     err->error = qdb_int_get(handle, alias, &res);
-
     return res;
 }
 
 qdb_int_t qdb_int_add(qdb_handle_t handle, const char * alias, qdb_int_t addend, error_carrier * err)
 {
     qdb_int_t res;
-
     err->error = qdb_int_add(handle, alias, addend, &res);
-
     return res;
 }
 
 %}
-// deque functions
 
+// deque functions
 qdb_error_t qdb_deque_push_front(qdb_handle_t handle,  const char * alias,  const char * content, size_t content_length);
 qdb_error_t qdb_deque_push_back(qdb_handle_t handle,   const char * alias,  const char * content, size_t content_length);
 
@@ -618,3 +608,5 @@ qdb_error_t qdb_remove_tag(qdb_handle_t handle, const char * alias, const char *
         return res;
     }
 %}
+
+%include "qdb_api_stream.i"
