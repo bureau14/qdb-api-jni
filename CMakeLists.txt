@@ -148,7 +148,18 @@ endif()
 
 set(SOURCES
     qdb_api_jni.i
+
+    qdb_api_batch.i
+    qdb_api_blob.i
+    qdb_api_deque.i
+    qdb_api_hset.i
+    qdb_api_integer.i
+    qdb_api_iterator.i
     qdb_api_stream.i
+    qdb_api_tag.i
+
+    qdb_enum.i
+    qdb_struct.i
 )
 
 set_source_files_properties(${SOURCES} PROPERTIES CPLUSPLUS ON)

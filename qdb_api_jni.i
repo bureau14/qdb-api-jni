@@ -155,9 +155,6 @@ qdb_error_t qdb_stop_node(
 %typemap(javain)  const char * content "$javainput"
 %typemap(javaout) const char * content { return $jnicall; }
 
-qdb_error_t
-qdb_blob_put(qdb_handle_t handle, const char * alias, const char * content, size_t content_length, qdb_time_t expiry_time);
-
 %typemap(jni) retval  "jobject"
 %typemap(jtype) retval  "java.nio.ByteBuffer"
 %typemap(jstype) retval "java.nio.ByteBuffer"
@@ -177,19 +174,6 @@ qdb_blob_put(qdb_handle_t handle, const char * alias, const char * content, size
 %template(StringVec) std::vector<std::string>;
 
 %inline%{
-
-// specific to java getter
-retval qdb_blob_get(qdb_handle_t handle,  const char * alias, error_carrier * err)
-{
-    retval res;
-    const void * buf = res.buffer;
-    err->error = qdb_blob_get(handle, alias, &buf, &res.buffer_size);
-    if (err->error == qdb_e_ok)
-    {
-        res.buffer = static_cast<char *>(const_cast<void *>(buf));
-    }
-    return res;
-}
 
 struct RemoteNode
 {
@@ -214,35 +198,6 @@ RemoteNode qdb_get_location(qdb_handle_t handle, const char * alias, error_carri
     qdb_free_buffer(handle, remote.address);
 
     return location;
-}
-
-retval qdb_blob_get_and_remove(qdb_handle_t handle, const char * alias, error_carrier * err)
-{
-    retval res;
-    const void * buf = res.buffer;
-    err->error = qdb_blob_get_and_remove(handle, alias, &buf, &res.buffer_size);
-    if (err->error == qdb_e_ok)
-    {
-        res.buffer = static_cast<char *>(const_cast<void *>(buf));
-    }
-    return res;
-}
-
-retval qdb_blob_get_and_update(qdb_handle_t handle,
-    const char * alias,          /* [in] unique identifier of existing entry */
-    const char * content,        /* [in] new content for entry */
-    size_t content_length,       /* [in] size of content, in bytes */
-    qdb_time_t expiry_time,
-    error_carrier * err)
-{
-    retval res;
-    const void * buf = res.buffer;
-    err->error = qdb_blob_get_and_update(handle, alias, content, content_length, expiry_time, &buf, &res.buffer_size);
-    if (err->error == qdb_e_ok)
-    {
-        res.buffer = static_cast<char *>(const_cast<void *>(buf));
-    }
-    return res;
 }
 
 retval qdb_node_status(qdb_handle_t handle, const char * uri, error_carrier * err)
@@ -285,29 +240,6 @@ retval qdb_node_topology(qdb_handle_t handle, const char * uri, error_carrier * 
 
 %apply const char * content { const char * comparand };
 
-%inline%{
-
-retval qdb_blob_compare_and_swap(qdb_handle_t handle,   /* [in] API handle */
-    const char * alias,                            /* [in] unique identifier of existing entry */
-    const char * content,                          /* [in] new content for entry */
-    size_t content_length,                         /* [in] size of content, in bytes */
-    const char * comparand,                        /* [in] comparand for entry */
-    size_t comparand_length,                       /* [in] size of comparand, in bytes */
-    qdb_time_t expiry_time,
-    error_carrier * err)
-{
-    retval res;
-    const void * buf = res.buffer;
-    err->error = qdb_blob_compare_and_swap(handle, alias, content, content_length, comparand, comparand_length, expiry_time, &buf, &res.buffer_size);
-    if (err->error == qdb_e_unmatched_content)
-    {
-        res.buffer = static_cast<char *>(const_cast<void *>(buf));
-    }
-    return res;
-}
-
-%}
-
 %typemap(in) (char *content, size_t content_length) {
     /* %typemap(in) (char * content, size_t content_length) */
     $1 = ($1_ltype)jenv->GetDirectBufferAddress($input);
@@ -344,25 +276,7 @@ namespace qdb
 std::string make_error_string(qdb_error_t error);
 }
 
-qdb_error_t
-qdb_blob_update(
-        qdb_handle_t handle,   /* [in] API handle */
-        const char * alias,       /* [in] unique identifier of existing entry */
-        const char * content,     /* [in] new content for entry */
-        size_t content_length,     /* [in] size of content, in bytes */
-        qdb_time_t expiry_time
-    );
-
 qdb_error_t qdb_remove(qdb_handle_t handle,  const char * alias);
-
-qdb_error_t
-qdb_blob_remove_if(
-    qdb_handle_t handle,                /* [in] API handle */
-    const char * alias,                 /* [in] unique identifier of existing entry */
-    const char * comparand,             /* [in] comparand for entry */
-    size_t comparand_length           /* [in] size of comparand, in bytes */
-);
-
 
 qdb_error_t qdb_purge_all(qdb_handle_t handle);
 
@@ -386,6 +300,7 @@ qdb_time_t qdb_get_expiry(qdb_handle_t handle, const char * alias, error_carrier
 %}
 
 %include "qdb_api_batch.i"
+%include "qdb_api_blob.i"
 %include "qdb_api_integer.i"
 %include "qdb_api_deque.i"
 %include "qdb_api_hset.i"
