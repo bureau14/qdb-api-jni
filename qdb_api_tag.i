@@ -70,5 +70,3 @@ qdb_error_t qdb_remove_tag(qdb_handle_t handle, const char * alias, const char *
         return res;
     }
 %}
-
-%include "qdb_api_stream.i"

@@ -95,5 +95,5 @@ qdb_error_t qdb_stream_getpos(qdb_stream_t stream, long long * OUTPUT)
 %}
 
 qdb_error_t qdb_stream_close(qdb_stream_t stream);
-qdb_error_t qdb_stream_setpos(qdb_stream_t stream, const qdb_stream_size_t * position);
-qdb_error_t qdb_stream_truncate(qdb_stream_t stream, const qdb_stream_size_t * position);
+qdb_error_t qdb_stream_setpos(qdb_stream_t stream, qdb_stream_size_t position);
+qdb_error_t qdb_stream_truncate(qdb_stream_t stream, qdb_stream_size_t position);
