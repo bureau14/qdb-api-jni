@@ -62,7 +62,7 @@ typedef struct qdb_session * qdb_handle_t;
     /* %typemap(in) char * content */
     if ($input)
     {
-        arg1->content_size = jenv->GetDirectBufferCapacity($input);
+        arg1->content_size = static_cast<qdb_size_t>(jenv->GetDirectBufferCapacity($input));
         if (arg1->content_size == -1)
         {
             SWIG_JavaThrowException(jenv, SWIG_JavaRuntimeException, "Unable to get the capacity of direct buffer. Buffer must be allocated direct.");
@@ -89,7 +89,7 @@ typedef struct qdb_session * qdb_handle_t;
     /* %typemap(in) char * comparand */
     if ($input)
     {
-        arg1->comparand_size = jenv->GetDirectBufferCapacity($input);
+        arg1->comparand_size = static_cast<qdb_size_t>(jenv->GetDirectBufferCapacity($input));
         if (arg1->content_size == -1)
         {
             SWIG_JavaThrowException(jenv, SWIG_JavaRuntimeException, "Unable to get the capacity of direct buffer. Buffer must be allocated direct.");
