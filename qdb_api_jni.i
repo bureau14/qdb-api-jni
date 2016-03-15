@@ -171,8 +171,6 @@ qdb_error_t qdb_stop_node(
 %}
 %typemap(javaout) retval { return $jnicall; }
 
-%template(StringVec) std::vector<std::string>;
-
 %inline%{
 
 struct RemoteNode
@@ -282,27 +280,12 @@ qdb_error_t qdb_purge_all(qdb_handle_t handle);
 
 qdb_error_t qdb_trim_all(qdb_handle_t handle);
 
-%include "qdb_api_iterator.i"
-
-// expiry functions
-qdb_error_t qdb_expires_at(qdb_handle_t handle, const char * alias, qdb_time_t expiry_time);
-
-qdb_error_t qdb_expires_from_now(qdb_handle_t handle, const char * alias, qdb_time_t expiry_delta);
-
-%inline%{
-// need a "direct buffer" version to access the content to avoid building needless strings
-qdb_time_t qdb_get_expiry(qdb_handle_t handle, const char * alias, error_carrier * err)
-{
-    qdb_time_t res = 0;
-    err->error = qdb_get_expiry_time(handle, alias, &res);
-    return res;
-}
-%}
-
 %include "qdb_api_batch.i"
 %include "qdb_api_blob.i"
-%include "qdb_api_integer.i"
 %include "qdb_api_deque.i"
+%include "qdb_api_expiry.i"
 %include "qdb_api_hset.i"
-%include "qdb_api_tag.i"
+%include "qdb_api_integer.i"
+%include "qdb_api_iterator.i"
 %include "qdb_api_stream.i"
+%include "qdb_api_tag.i"
