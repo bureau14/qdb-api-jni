@@ -132,11 +132,6 @@ qdb_error_t qdb_close(qdb_handle_t handle);
 
 qdb_error_t qdb_connect(qdb_handle_t handle, const char * uri);
 
-qdb_error_t qdb_stop_node(
-    qdb_handle_t handle,
-    const char * uri,
-    const char * reason);
-
 %typemap(in) const char * content {
     /* %typemap(in) const char * content */
     $1 = ($1_ltype)jenv->GetDirectBufferAddress($input);
@@ -170,71 +165,6 @@ qdb_error_t qdb_stop_node(
     }
 %}
 %typemap(javaout) retval { return $jnicall; }
-
-%inline%{
-
-struct RemoteNode
-{
-    std::string address;
-    unsigned short port;
-};
-
-RemoteNode qdb_get_location(qdb_handle_t handle, const char * alias, error_carrier * err)
-{
-    qdb_remote_node_t remote;
-    err->error = qdb_get_location(handle, alias, &remote);
-
-    RemoteNode location;
-    if (err->error != qdb_e_ok)
-    {
-        return location;
-    }
-
-    location.address = std::string(remote.address);
-    location.port = remote.port;
-
-    qdb_free_buffer(handle, remote.address);
-
-    return location;
-}
-
-retval qdb_node_status(qdb_handle_t handle, const char * uri, error_carrier * err)
-{
-    retval res;
-    const char * buf = res.buffer;
-    err->error = qdb_node_status(handle, uri, &buf, &res.buffer_size);
-    if (err->error == qdb_e_ok)
-    {
-        res.buffer = const_cast<char *>(buf);
-    }
-    return res;
-}
-
-retval qdb_node_config(qdb_handle_t handle, const char * uri, error_carrier * err)
-{
-    retval res;
-    const char * buf = res.buffer;
-    err->error = qdb_node_config(handle, uri, &buf, &res.buffer_size);
-    if (err->error == qdb_e_ok)
-    {
-        res.buffer = const_cast<char *>(buf);
-    }
-    return res;
-}
-
-retval qdb_node_topology(qdb_handle_t handle, const char * uri, error_carrier * err)
-{
-    retval res;
-    const char * buf = res.buffer;
-    err->error = qdb_node_topology(handle, uri, &buf, &res.buffer_size);
-    if (err->error == qdb_e_ok)
-    {
-        res.buffer = const_cast<char *>(buf);
-    }
-    return res;
-}
-
-%}
 
 %apply const char * content { const char * comparand };
 
@@ -287,5 +217,6 @@ qdb_error_t qdb_trim_all(qdb_handle_t handle);
 %include "qdb_api_hset.i"
 %include "qdb_api_integer.i"
 %include "qdb_api_iterator.i"
+%include "qdb_api_node.i"
 %include "qdb_api_stream.i"
 %include "qdb_api_tag.i"
