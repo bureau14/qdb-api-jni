@@ -1,3 +1,5 @@
+%template(StringVec) std::vector<std::string>;
+
 qdb_error_t qdb_add_tag(qdb_handle_t handle, const char * alias, const char * tag);
 
 qdb_error_t qdb_has_tag(qdb_handle_t handle, const char * alias, const char * tag);
