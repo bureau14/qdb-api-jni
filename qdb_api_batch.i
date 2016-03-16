@@ -1,6 +1,38 @@
+struct qdb_operation_t
+{
+
+    qdb_operation_type_t type;      /* [in] */
+
+    // we get rid of the const otherwise SWIG might leak memory
+    char * alias;                   /* [in] */
+
+    char * content;                  /* [in] */
+    size_t content_size;            /* [in] */
+
+    char * comparand;               /* [in] */
+    size_t comparand_size;          /* [in] */
+
+    qdb_time_t expiry_time;         /* [in] */
+
+    %immutable;
+    qdb_error_t error;              /* [out] */
+
+    char * result;                  /* [out] API allocated */
+    size_t result_size;             /* [out] */
+    %mutable;
+};
+
 %template(BatchOpsVec) std::vector<qdb_operation_t>;
 
 %inline%{
+
+struct run_batch_result
+{
+    run_batch_result(void) : successes(0) {}
+
+    size_t successes;
+    std::vector<qdb_operation_t> results;
+};
 
 run_batch_result run_batch(qdb_handle_t h, const std::vector<qdb_operation_t> & requests)
 {
