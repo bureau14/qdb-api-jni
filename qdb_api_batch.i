@@ -54,4 +54,15 @@ void release_batch_result(qdb_handle_t h, run_batch_result & br)
     qdb_free_operations(h, &br.results[0], br.results.size());
 }
 
+jlong run_batch2(qdb_handle_t h, std::vector<qdb_operation_t> & operations)
+{
+    return qdb_run_batch(h, &operations[0], operations.size());
+}
+
+void free_operations(qdb_handle_t h, std::vector<qdb_operation_t> & operations)
+{
+    qdb_free_operations(h, &operations[0], operations.size());
+    operations.clear();
+}
+
 %}
