@@ -1,6 +1,5 @@
 struct qdb_operation_t
 {
-
     qdb_operation_type_t type;      /* [in] */
 
     // we get rid of the const otherwise SWIG might leak memory
@@ -20,6 +19,14 @@ struct qdb_operation_t
     char * result;                  /* [out] API allocated */
     size_t result_size;             /* [out] */
     %mutable;
+};
+
+%extend qdb_operation_t {
+    qdb_operation_t() {
+        qdb_operation_t *that = new qdb_operation_t();
+        that->error = qdb_e_uninitialized;
+        return that;
+    }
 };
 
 %template(BatchOpsVec) std::vector<qdb_operation_t>;
