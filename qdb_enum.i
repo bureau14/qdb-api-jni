@@ -38,7 +38,7 @@ typedef enum
     qdb_e_alias_not_found               = qdb_e_origin_operation     | qdb_e_severity_warning       | 0x0008,
     qdb_e_alias_already_exists          = qdb_e_origin_operation     | qdb_e_severity_warning       | 0x0009,
     qdb_e_out_of_bounds                 = qdb_e_origin_input         | qdb_e_severity_warning       | 0x0019,
-    qdb_e_skipped                       = qdb_e_origin_operation     | qdb_e_severity_info          | 0x0021,
+    qdb_e_skipped                       = qdb_e_origin_operation     | qdb_e_severity_warning       | 0x0021,
     qdb_e_incompatible_type             = qdb_e_origin_operation     | qdb_e_severity_warning       | 0x0022,
     qdb_e_container_empty               = qdb_e_origin_operation     | qdb_e_severity_warning       | 0x0023,
     qdb_e_container_full                = qdb_e_origin_operation     | qdb_e_severity_warning       | 0x0024,
