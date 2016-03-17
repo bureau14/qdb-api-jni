@@ -63,13 +63,23 @@ void release_batch_result(qdb_handle_t h, run_batch_result & br)
 
 jlong run_batch2(qdb_handle_t h, std::vector<qdb_operation_t> & operations)
 {
-    return qdb_run_batch(h, &operations[0], operations.size());
+    if (operations.size() > 0)
+    {
+        return qdb_run_batch(h, &operations[0], operations.size());
+    }
+    else
+    {
+        return 0;
+    }
 }
 
 void free_operations(qdb_handle_t h, std::vector<qdb_operation_t> & operations)
 {
-    qdb_free_operations(h, &operations[0], operations.size());
-    operations.clear();
+    if (operations.size() > 0)
+    {
+        qdb_free_operations(h, &operations[0], operations.size());
+        operations.clear();
+    }
 }
 
 %}
