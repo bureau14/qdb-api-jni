@@ -199,6 +199,15 @@ qdb_error_t qdb_connect(qdb_handle_t handle, const char * uri);
     }
 %}
 
+%inline%{
+    qdb_entry_type_t get_type(qdb_handle_t handle, const char * alias,  error_carrier * err)
+    {
+        qdb_entry_type_t type = qdb_entry_uninitialized;
+        err->error = qdb_get_type(handle, alias, &type);
+        return type;
+    }
+%}
+
 namespace qdb
 {
 std::string make_error_string(qdb_error_t error);
