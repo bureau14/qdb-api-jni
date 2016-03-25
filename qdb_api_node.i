@@ -1,4 +1,4 @@
-qdb_error_t qdb_stop_node(
+qdb_error_t qdb_node_stop(
     qdb_handle_t handle,
     const char * uri,
     const char * reason);
