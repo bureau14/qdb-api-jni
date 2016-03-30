@@ -1,9 +1,8 @@
 cmake_minimum_required(VERSION 3.2.0)
 project(qdb-api-jni)
 
-set(VERSION 2.0.0)
-set(CLASS_JAR_FILE "${CMAKE_BINARY_DIR}/net.quasardb.qdb.jni-${VERSION}.jar")
-set(SOURCE_JAR_FILE "${CMAKE_BINARY_DIR}/net.quasardb.qdb.jni-${VERSION}-sources.jar")
+set(CLASS_JAR_FILE "${CMAKE_BINARY_DIR}/jni.jar")
+set(SOURCE_JAR_FILE "${CMAKE_BINARY_DIR}/jni-sources.jar")
 
 if(CMAKE_SIZEOF_VOID_P EQUAL 8)
     set(ARCH "x64")
@@ -17,7 +16,7 @@ else()
     string(TOLOWER "${CMAKE_SYSTEM_NAME}" SYSTEM)
 endif()
 
-set(DLL_JAR_FILE "${CMAKE_BINARY_DIR}/net.quasardb.qdb.jni-${VERSION}-${SYSTEM}-${ARCH}.jar")
+set(DLL_JAR_FILE "${CMAKE_BINARY_DIR}/jni-${SYSTEM}-${ARCH}.jar")
 
 # macros
 
