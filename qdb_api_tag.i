@@ -71,4 +71,26 @@ qdb_error_t qdb_remove_tag(qdb_handle_t handle, const char * alias, const char *
 
         return res;
     }
+
+    struct tag_iterator
+    {
+    public:
+        const char* alias() { return iterator.alias; }
+        qdb_entry_type_t type() {return iterator.type; }
+
+        qdb_error_t begin(qdb_handle_t handle, const char*tag) {
+            return qdb_tag_iterator_begin(handle, tag, &iterator);
+        }
+
+        qdb_error_t next() {
+            return qdb_tag_iterator_next(&iterator);
+        }
+
+        qdb_error_t close() {
+            return qdb_tag_iterator_close(&iterator);
+        }
+
+    private:
+        qdb_const_tag_iterator_t iterator;
+    };
 %}
