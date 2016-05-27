@@ -215,9 +215,9 @@ std::string make_error_string(qdb_error_t error);
 
 qdb_error_t qdb_remove(qdb_handle_t handle,  const char * alias);
 
-qdb_error_t qdb_purge_all(qdb_handle_t handle);
+qdb_error_t qdb_purge_all(qdb_handle_t handle, int timeout);
 
-qdb_error_t qdb_trim_all(qdb_handle_t handle);
+qdb_error_t qdb_trim_all(qdb_handle_t handle, int timeout);
 
 %include "qdb_api_batch.i"
 %include "qdb_api_blob.i"
