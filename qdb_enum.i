@@ -1,3 +1,7 @@
+%{
+#include <qdb/log.h>
+%}
+
 enum qdb_limits_t
 {
     qdb_l_alias_max_length = 1024
