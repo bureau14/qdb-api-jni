@@ -1,0 +1,8 @@
+AllowShortBlocksOnASingleLine: false
+AllowShortFunctionsOnASingleLine: Empty
+---
+Language: Cpp
+AlwaysBreakAfterDefinitionReturnType: All
+---
+Language: Java
+ColumnLimit: 120
