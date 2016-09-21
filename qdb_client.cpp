@@ -83,6 +83,6 @@ Java_net_quasardb_qdb_jni_qdb_get_1expiry_1time(JNIEnv *env, jclass thisClass, j
                                                 jstring alias, jobject expiry) {
   qdb_entry_metadata_t metadata;
   qdb_error_t err = qdb_get_metadata((qdb_handle_t)handle, StringUTFChars(env, alias), &metadata);
-  setLong(env, expiry, metadata.expiry_time / 10000000);
+  setLong(env, expiry, metadata.expiry_time);
   return err;
 }
