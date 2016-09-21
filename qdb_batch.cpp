@@ -52,8 +52,8 @@ Java_net_quasardb_qdb_jni_qdb_batch_1write_1blob_1compare_1and_1swap(
   qdb_operation_t &op = get_operation(batch, index);
   op.type = qdb_op_blob_cas;
   op.alias = alias ? env->GetStringUTFChars(alias, NULL) : NULL;
-  op.blob_cas.content = env->GetDirectBufferAddress(newContent);
-  op.blob_cas.content_size =
+  op.blob_cas.new_content = env->GetDirectBufferAddress(newContent);
+  op.blob_cas.new_content_size =
       (qdb_size_t)env->GetDirectBufferCapacity(newContent);
   op.blob_cas.comparand = env->GetDirectBufferAddress(comparand);
   op.blob_cas.comparand_size =
@@ -68,8 +68,8 @@ Java_net_quasardb_qdb_jni_qdb_batch_1read_1blob_1compare_1and_1swap(
   qdb_operation_t &op = get_operation(batch, index);
   if (alias)
     env->ReleaseStringUTFChars(alias, op.alias);
-  setByteBuffer(env, originalContent, op.blob_cas.result,
-                op.blob_cas.result_size);
+  setByteBuffer(env, originalContent, op.blob_cas.original_content,
+                op.blob_cas.original_content_size);
   return op.error;
 }
 
@@ -96,7 +96,7 @@ Java_net_quasardb_qdb_jni_qdb_batch_1read_1blob_1get(JNIEnv *env,
   qdb_operation_t &op = get_operation(batch, index);
   if (alias)
     env->ReleaseStringUTFChars(alias, op.alias);
-  setByteBuffer(env, content, op.blob_get.result, op.blob_get.result_size);
+  setByteBuffer(env, content, op.blob_get.content, op.blob_get.content_size);
   return op.error;
 }
 
@@ -111,8 +111,8 @@ Java_net_quasardb_qdb_jni_qdb_batch_1write_1blob_1get_1and_1update(
   qdb_operation_t &op = get_operation(batch, index);
   op.type = qdb_op_blob_get_and_update;
   op.alias = alias ? env->GetStringUTFChars(alias, NULL) : NULL;
-  op.blob_get_and_update.content = env->GetDirectBufferAddress(content);
-  op.blob_get_and_update.content_size =
+  op.blob_get_and_update.new_content = env->GetDirectBufferAddress(content);
+  op.blob_get_and_update.new_content_size =
       (qdb_size_t)env->GetDirectBufferCapacity(content);
   op.blob_get_and_update.expiry_time = expiry;
 }
@@ -124,8 +124,8 @@ Java_net_quasardb_qdb_jni_qdb_batch_1read_1blob_1get_1and_1update(
   qdb_operation_t &op = get_operation(batch, index);
   if (alias)
     env->ReleaseStringUTFChars(alias, op.alias);
-  setByteBuffer(env, content, op.blob_get_and_update.result,
-                op.blob_get_and_update.result_size);
+  setByteBuffer(env, content, op.blob_get_and_update.original_content,
+                op.blob_get_and_update.original_content_size);
   return op.error;
 }
 
