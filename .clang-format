@@ -1,5 +1,11 @@
-AllowShortBlocksOnASingleLine: false
-AllowShortFunctionsOnASingleLine: Empty
+AllowShortFunctionsOnASingleLine: false
+AllowShortIfStatementsOnASingleLine: true
+AllowShortLoopsOnASingleLine: false
+AlwaysBreakTemplateDeclarations: true
+BinPackArguments: true
+BinPackParameters: false
+BreakBeforeBraces: Allman
+IndentWidth: 4
 ---
 Language: Cpp
 AlwaysBreakAfterDefinitionReturnType: All
