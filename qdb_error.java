@@ -20,8 +20,6 @@ public class qdb_error {
   public static final int connection_refused = 0xd300000e;
   public static final int connection_reset = 0xd200000f;
   public static final int unstable_cluster = 0xd2000012;
-  public static final int outdated_topology = 0xd2000014;
-  public static final int wrong_peer = 0xd2000015;
   public static final int try_again = 0xd2000017;
   public static final int conflict = 0xb200001a;
   public static final int not_connected = 0xd200001b;
