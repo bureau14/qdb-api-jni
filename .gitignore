@@ -2,7 +2,8 @@
 /qdb/
 
 # This is the folder where you should run CMake
-/build/
+/build*/
 
 # Auto-generated
 /.idea
+/.vscode
