@@ -74,6 +74,6 @@ Java_net_quasardb_qdb_jni_qdb_get_1location(JNIEnv *env, jclass /*thisClass*/, j
   qdb_remote_node_t node;
   qdb_error_t err = qdb_get_location((qdb_handle_t)handle, StringUTFChars(env, alias), &node);
   setString(env, address, node.address);
-  setInteger(env, address, node.port);
+  setInteger(env, port, node.port);
   return err;
 }
