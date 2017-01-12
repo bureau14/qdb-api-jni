@@ -4,7 +4,7 @@
 #include <qdb/hset.h>
 
 JNIEXPORT jint JNICALL
-Java_net_quasardb_qdb_jni_qdb_hset_1insert(JNIEnv *env, jclass thisClass, jlong handle,
+Java_net_quasardb_qdb_jni_qdb_hset_1insert(JNIEnv *env, jclass /*thisClass*/, jlong handle,
                                            jstring alias, jobject content) {
   const void *contentPtr = env->GetDirectBufferAddress(content);
   qdb_size_t contentSize = (qdb_size_t)env->GetDirectBufferCapacity(content);
@@ -12,7 +12,7 @@ Java_net_quasardb_qdb_jni_qdb_hset_1insert(JNIEnv *env, jclass thisClass, jlong 
 }
 
 JNIEXPORT jint JNICALL
-Java_net_quasardb_qdb_jni_qdb_hset_1erase(JNIEnv *env, jclass thisClass, jlong handle,
+Java_net_quasardb_qdb_jni_qdb_hset_1erase(JNIEnv *env, jclass /*thisClass*/, jlong handle,
                                           jstring alias, jobject content) {
   const void *contentPtr = env->GetDirectBufferAddress(content);
   qdb_size_t contentSize = (qdb_size_t)env->GetDirectBufferCapacity(content);
@@ -20,7 +20,7 @@ Java_net_quasardb_qdb_jni_qdb_hset_1erase(JNIEnv *env, jclass thisClass, jlong h
 }
 
 JNIEXPORT jint JNICALL
-Java_net_quasardb_qdb_jni_qdb_hset_1contains(JNIEnv *env, jclass thisClass, jlong handle,
+Java_net_quasardb_qdb_jni_qdb_hset_1contains(JNIEnv *env, jclass /*thisClass*/, jlong handle,
                                              jstring alias, jobject content) {
   const void *contentPtr = env->GetDirectBufferAddress(content);
   qdb_size_t contentSize = (qdb_size_t)env->GetDirectBufferCapacity(content);

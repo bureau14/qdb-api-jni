@@ -9,8 +9,8 @@ get_operation(jlong batch, jint index) {
 }
 
 extern "C" JNIEXPORT jint JNICALL
-Java_net_quasardb_qdb_jni_qdb_init_1operations(JNIEnv *env, jclass thisClass,
-                                               jlong handle, jint count,
+Java_net_quasardb_qdb_jni_qdb_init_1operations(JNIEnv *env, jclass /*thisClass*/,
+                                               jlong /*handle*/, jint count,
                                                jobject batch) {
   qdb_operation_t *ops = new qdb_operation_t[count];
   qdb_error_t err = qdb_init_operations(ops, count);
@@ -24,8 +24,8 @@ Java_net_quasardb_qdb_jni_qdb_init_1operations(JNIEnv *env, jclass thisClass,
 }
 
 extern "C" JNIEXPORT jint JNICALL
-Java_net_quasardb_qdb_jni_qdb_free_1operations(JNIEnv *env, jclass thisClass,
-                                               jlong handle, jlong batch,
+Java_net_quasardb_qdb_jni_qdb_free_1operations(JNIEnv * /*env*/, jclass /*thisClass*/,
+                                               jlong /*handle*/, jlong batch,
                                                jint count) {
   qdb_operation_t *ops = reinterpret_cast<qdb_operation_t *>(batch);
   qdb_error_t err = qdb_init_operations(ops, count);
@@ -34,11 +34,11 @@ Java_net_quasardb_qdb_jni_qdb_free_1operations(JNIEnv *env, jclass thisClass,
 }
 
 extern "C" JNIEXPORT jint JNICALL
-Java_net_quasardb_qdb_jni_qdb_run_1batch(JNIEnv *env, jclass thisClass,
+Java_net_quasardb_qdb_jni_qdb_run_1batch(JNIEnv * /*env*/, jclass /*thisClass*/,
                                          jlong handle, jlong batch,
                                          jint count) {
   qdb_operation_t *ops = reinterpret_cast<qdb_operation_t *>(batch);
-  return qdb_run_batch((qdb_handle_t)handle, ops, count);
+  return (jint)qdb_run_batch((qdb_handle_t)handle, ops, count);
 }
 
 // -----------------------
@@ -47,7 +47,7 @@ Java_net_quasardb_qdb_jni_qdb_run_1batch(JNIEnv *env, jclass thisClass,
 
 extern "C" JNIEXPORT void JNICALL
 Java_net_quasardb_qdb_jni_qdb_batch_1write_1blob_1compare_1and_1swap(
-    JNIEnv *env, jclass thisClass, jlong batch, jint index, jstring alias,
+    JNIEnv *env, jclass /*thisClass*/, jlong batch, jint index, jstring alias,
     jobject newContent, jobject comparand, jlong expiry) {
   qdb_operation_t &op = get_operation(batch, index);
   op.type = qdb_op_blob_cas;
@@ -63,7 +63,7 @@ Java_net_quasardb_qdb_jni_qdb_batch_1write_1blob_1compare_1and_1swap(
 
 extern "C" JNIEXPORT jint JNICALL
 Java_net_quasardb_qdb_jni_qdb_batch_1read_1blob_1compare_1and_1swap(
-    JNIEnv *env, jclass thisClass, jlong batch, jint index, jstring alias,
+    JNIEnv *env, jclass /*thisClass*/, jlong batch, jint index, jstring alias,
     jobject originalContent) {
   qdb_operation_t &op = get_operation(batch, index);
   if (alias)
@@ -79,7 +79,7 @@ Java_net_quasardb_qdb_jni_qdb_batch_1read_1blob_1compare_1and_1swap(
 
 extern "C" JNIEXPORT void JNICALL
 Java_net_quasardb_qdb_jni_qdb_batch_1write_1blob_1get(JNIEnv *env,
-                                                      jclass thisClass,
+                                                      jclass /*thisClass*/,
                                                       jlong batch, jint index,
                                                       jstring alias) {
   qdb_operation_t &op = get_operation(batch, index);
@@ -89,7 +89,7 @@ Java_net_quasardb_qdb_jni_qdb_batch_1write_1blob_1get(JNIEnv *env,
 
 extern "C" JNIEXPORT jint JNICALL
 Java_net_quasardb_qdb_jni_qdb_batch_1read_1blob_1get(JNIEnv *env,
-                                                     jclass thisClass,
+                                                     jclass /*thisClass*/,
                                                      jlong batch, jint index,
                                                      jstring alias,
                                                      jobject content) {
@@ -106,7 +106,7 @@ Java_net_quasardb_qdb_jni_qdb_batch_1read_1blob_1get(JNIEnv *env,
 
 extern "C" JNIEXPORT void JNICALL
 Java_net_quasardb_qdb_jni_qdb_batch_1write_1blob_1get_1and_1update(
-    JNIEnv *env, jclass thisClass, jlong batch, jint index, jstring alias,
+    JNIEnv *env, jclass /*thisClass*/, jlong batch, jint index, jstring alias,
     jobject content, jlong expiry) {
   qdb_operation_t &op = get_operation(batch, index);
   op.type = qdb_op_blob_get_and_update;
@@ -119,7 +119,7 @@ Java_net_quasardb_qdb_jni_qdb_batch_1write_1blob_1get_1and_1update(
 
 extern "C" JNIEXPORT jint JNICALL
 Java_net_quasardb_qdb_jni_qdb_batch_1read_1blob_1get_1and_1update(
-    JNIEnv *env, jclass thisClass, jlong batch, jint index, jstring alias,
+    JNIEnv *env, jclass /*thisClass*/, jlong batch, jint index, jstring alias,
     jobject content) {
   qdb_operation_t &op = get_operation(batch, index);
   if (alias)
@@ -135,7 +135,7 @@ Java_net_quasardb_qdb_jni_qdb_batch_1read_1blob_1get_1and_1update(
 
 extern "C" JNIEXPORT void JNICALL
 Java_net_quasardb_qdb_jni_qdb_batch_1write_1blob_1put(
-    JNIEnv *env, jclass thisClass, jlong batch, jint index, jstring alias,
+    JNIEnv *env, jclass /*thisClass*/, jlong batch, jint index, jstring alias,
     jobject content, jlong expiry) {
 
   qdb_operation_t &op = get_operation(batch, index);
@@ -148,7 +148,7 @@ Java_net_quasardb_qdb_jni_qdb_batch_1write_1blob_1put(
 
 extern "C" JNIEXPORT jint JNICALL
 Java_net_quasardb_qdb_jni_qdb_batch_1read_1blob_1put(JNIEnv *env,
-                                                     jclass thisClass,
+                                                     jclass /*thisClass*/,
                                                      jlong batch, jint index,
                                                      jstring alias) {
   qdb_operation_t &op = get_operation(batch, index);
@@ -163,7 +163,7 @@ Java_net_quasardb_qdb_jni_qdb_batch_1read_1blob_1put(JNIEnv *env,
 
 extern "C" JNIEXPORT void JNICALL
 Java_net_quasardb_qdb_jni_qdb_batch_1write_1blob_1update(
-    JNIEnv *env, jclass thisClass, jlong batch, jint index, jstring alias,
+    JNIEnv *env, jclass /*thisClass*/, jlong batch, jint index, jstring alias,
     jobject content, jlong expiry) {
   qdb_operation_t &op = get_operation(batch, index);
   op.type = qdb_op_blob_update;
@@ -175,7 +175,7 @@ Java_net_quasardb_qdb_jni_qdb_batch_1write_1blob_1update(
 
 extern "C" JNIEXPORT jint JNICALL
 Java_net_quasardb_qdb_jni_qdb_batch_1read_1blob_1update(JNIEnv *env,
-                                                        jclass thisClass,
+                                                        jclass /*thisClass*/,
                                                         jlong batch, jint index,
                                                         jstring alias) {
   qdb_operation_t &op = get_operation(batch, index);

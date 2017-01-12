@@ -30,6 +30,7 @@ IF (MSVC)
         /EHa          # The exception-handling model that catches both asynchronous (structured) and synchronous (C++) exceptions.
         /GR           # Enable Run-Time Type Information
         /GF           # Eliminate Duplicate Strings
+        /W4
 
         $<$<OR:$<CONFIG:Debug>,$<CONFIG:RelWithDebInfo>>:/Zi> # Produces a program database (PDB) that contains type information and symbolic debugging information for use with the debugger
         $<$<NOT:$<CONFIG:Debug>>:/Ox>  # selects full optimization.

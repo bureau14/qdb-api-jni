@@ -38,9 +38,9 @@ setLong(JNIEnv *env, jobject reference, jlong value) {
 void
 setStringArray(JNIEnv *env, jobject reference, const char **strings, size_t count) {
   jclass stringClass = env->FindClass("java/lang/String");
-  jobjectArray array = env->NewObjectArray(count, stringClass, NULL);
+  jobjectArray array = env->NewObjectArray((jsize)count, stringClass, NULL);
   for (size_t i = 0; i < count; i++) {
-    env->SetObjectArrayElement(array, i, env->NewStringUTF(strings[i]));
+    env->SetObjectArrayElement(array, (jsize)i, env->NewStringUTF(strings[i]));
   }
   setReferenceValue(env, reference, array);
 }

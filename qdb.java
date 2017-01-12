@@ -99,7 +99,7 @@ public final class qdb {
   public static native int node_config(long handle, String uri, Reference<String> content);
   public static native int node_topology(long handle, String uri, Reference<String> content);
   public static native int node_stop(long handle, String uri, String reason);
-  public static native int get_location(long handle, String alias, Reference<String> addres, Reference<Integer> port);
+  public static native int get_location(long handle, String alias, Reference<String> address, Reference<Integer> port);
 
   public static native int init_operations(long handle, int count, Reference<Long> batch);
   public static native int free_operations(long handle, long batch, int count);
