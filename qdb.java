@@ -46,6 +46,7 @@ public final class qdb {
   public static native int expires_at(long handle, String alias, long expiry_time);
   public static native int get_expiry_time(long handle, String alias, Reference<Long> expiry);
   public static native int get_type(long handle, String alias, Reference<Integer> type);
+  public static native int get_metadata(long handle, String alias, ByteBuffer metadata);
 
   public static native int blob_compare_and_swap(long handle, String alias, ByteBuffer newContent, ByteBuffer comparand,
                                                  long expiry, Reference<ByteBuffer> originalContent);

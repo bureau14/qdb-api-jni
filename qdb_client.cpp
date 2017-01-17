@@ -73,6 +73,16 @@ Java_net_quasardb_qdb_jni_qdb_get_1type(JNIEnv *env, jclass /*thisClass*/, jlong
 }
 
 JNIEXPORT jint JNICALL
+Java_net_quasardb_qdb_jni_qdb_get_1metadata(JNIEnv *env, jclass /*thisClass*/, jlong handle, jstring alias,
+                                            jobject meta) {
+  void *metaPtr = env->GetDirectBufferAddress(meta);
+  qdb_size_t metaSize = (qdb_size_t)env->GetDirectBufferCapacity(meta);
+  if (metaSize != sizeof(qdb_entry_metadata_t)) return qdb_e_invalid_argument;
+
+  return qdb_get_metadata((qdb_handle_t)handle, StringUTFChars(env, alias), (qdb_entry_metadata_t *)metaPtr);
+}
+
+JNIEXPORT jint JNICALL
 Java_net_quasardb_qdb_jni_qdb_expires_1at(JNIEnv *env, jclass /*thisClass*/, jlong handle,
                                           jstring alias, jlong expiry) {
   return qdb_expires_at((qdb_handle_t)handle, StringUTFChars(env, alias), expiry);
