@@ -30,7 +30,7 @@ Java_net_quasardb_qdb_jni_qdb_get_1tags(JNIEnv *env, jclass /*thisClass*/, jlong
   qdb_error_t err =
       qdb_get_tags((qdb_handle_t)handle, StringUTFChars(env, alias), &nativeTags, &tagCount);
   setStringArray(env, tags, nativeTags, tagCount);
-  qdb_free_results((qdb_handle_t)handle, nativeTags, tagCount);
+  qdb_release((qdb_handle_t)handle, nativeTags);
   return err;
 }
 

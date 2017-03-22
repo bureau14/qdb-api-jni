@@ -35,10 +35,10 @@ Java_net_quasardb_qdb_jni_qdb_close(JNIEnv * /*env*/, jclass /*thisClass*/, jlon
 }
 
 JNIEXPORT void JNICALL
-Java_net_quasardb_qdb_jni_qdb_free_1buffer(JNIEnv *env, jclass /*thisClass*/, jlong handle,
-                                           jobject buffer) {
+Java_net_quasardb_qdb_jni_qdb_release(JNIEnv *env, jclass /*thisClass*/, jlong handle,
+                                      jobject buffer) {
   void *ptr = env->GetDirectBufferAddress(buffer);
-  qdb_free_buffer((qdb_handle_t)handle, ptr);
+  qdb_release((qdb_handle_t)handle, ptr);
 }
 
 JNIEXPORT jint JNICALL

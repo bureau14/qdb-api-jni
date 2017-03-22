@@ -24,13 +24,11 @@ Java_net_quasardb_qdb_jni_qdb_init_1operations(JNIEnv *env, jclass /*thisClass*/
 }
 
 extern "C" JNIEXPORT jint JNICALL
-Java_net_quasardb_qdb_jni_qdb_free_1operations(JNIEnv * /*env*/, jclass /*thisClass*/,
-                                               jlong /*handle*/, jlong batch,
-                                               jint count) {
-  qdb_operation_t *ops = reinterpret_cast<qdb_operation_t *>(batch);
-  qdb_error_t err = qdb_init_operations(ops, count);
-  delete[] ops;
-  return err;
+Java_net_quasardb_qdb_jni_qdb_delete_1batch(JNIEnv * /*env*/, jclass /*thisClass*/,
+                                            jlong handle, jlong batch) {
+  void *ptr = reinterpret_cast<void *>(batch);
+  qdb_release((qdb_handle_t)handle, ptr);
+  return qdb_e_ok;
 }
 
 extern "C" JNIEXPORT jint JNICALL

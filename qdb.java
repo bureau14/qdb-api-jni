@@ -36,7 +36,7 @@ public final class qdb {
   public static native long open_tcp();
   public static native int connect(long handle, String uri);
   public static native int close(long handle);
-  public static native void free_buffer(long handle, ByteBuffer buffer);
+  public static native void release(long handle, ByteBuffer buffer);
 
   public static native int option_set_timeout(long handle, int millis);
   public static native int purge_all(long handle, int timeout);
@@ -103,7 +103,7 @@ public final class qdb {
   public static native int get_location(long handle, String alias, Reference<String> address, Reference<Integer> port);
 
   public static native int init_operations(long handle, int count, Reference<Long> batch);
-  public static native int free_operations(long handle, long batch, int count);
+  public static native int delete_batch(long handle, long batch);
   public static native int run_batch(long handle, long batch, int count);
 
   public static native void batch_write_blob_compare_and_swap(long batch, int index, String alias,
