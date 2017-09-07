@@ -34,6 +34,7 @@ set(QDB_JNI_SOURCES
     qdb_stream.cpp
     qdb_tag.cpp
     qdb_node.cpp
+    qdb_ts.cpp
 )
 
 add_jar(jni
