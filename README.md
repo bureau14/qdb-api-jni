@@ -7,7 +7,7 @@ Binary package can be downloaded from https://download.quasardb.net/quasardb
 ### Compiling
 
 To compile the JNI API, you will need the C API.
-It can either be installed on the machine (e.g. on unix in /usr/lib or /usr/local/lib) or you can unpack the C API archive in `qdb/`.
+It can either be installed on the machine by installing the C API archive in `qdb/`.
 
 You will need [CMake](http://www.cmake.org/), [SWIG](http://www.swig.org/) and the Java SDK installed.
 
