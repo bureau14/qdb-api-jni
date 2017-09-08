@@ -96,6 +96,8 @@ public final class qdb {
   public static native String tag_iterator_alias(long iterator);
   public static native int tag_iterator_type(long iterator);
 
+  public static native int ts_create(long handle, String alias, qdb_ts_column_info[] columns);
+
   public static native int node_status(long handle, String uri, Reference<String> content);
   public static native int node_config(long handle, String uri, Reference<String> content);
   public static native int node_topology(long handle, String uri, Reference<String> content);
