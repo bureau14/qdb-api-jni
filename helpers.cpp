@@ -1,6 +1,6 @@
 #include "helpers.h"
 
-static void
+void
 setReferenceValue(JNIEnv *env, jobject reference, jobject value) {
   static jfieldID fid = 0;
   if (!fid) {
