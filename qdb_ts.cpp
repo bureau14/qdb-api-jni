@@ -64,6 +64,21 @@ Java_net_quasardb_qdb_jni_qdb_ts_1create(JNIEnv * env, jclass /*thisClass*/, jlo
 }
 
 JNIEXPORT jint JNICALL
+Java_net_quasardb_qdb_jni_qdb_ts_1insert_1columns(JNIEnv * env, jclass /*thisClass*/, jlong handle,
+                                                  jstring alias, jobjectArray columns) {
+  size_t column_count = env->GetArrayLength(columns);
+  qdb_ts_column_info native_columns[column_count];
+
+  columns_to_native(env, columns, native_columns, column_count);
+
+  jint result = qdb_ts_insert_columns((qdb_handle_t)handle, StringUTFChars(env, alias), native_columns, column_count);
+  release_native(native_columns, column_count);
+
+  return result;
+}
+
+
+JNIEXPORT jint JNICALL
 Java_net_quasardb_qdb_jni_qdb_ts_1list_1columns(JNIEnv * env, jclass /*thisClass*/, jlong handle,
                                                 jstring alias, jobject columns) {
   qdb_ts_column_info * native_columns;
@@ -78,6 +93,21 @@ Java_net_quasardb_qdb_jni_qdb_ts_1list_1columns(JNIEnv * env, jclass /*thisClass
   }
 
   qdb_release((qdb_handle_t)handle, native_columns);
+
+  return err;
+}
+
+JNIEXPORT jint JNICALL
+Java_net_quasardb_qdb_jni_qdb_ts_1double_1insert(JNIEnv * env, jclass /*thisClass*/, jlong handle,
+                                                 jstring alias, jstring column, jdoubleArray points) {
+  qdb_size_t points_count = env->GetArrayLength(points);
+  qdb_ts_double_point values[points_count];
+
+  qdb_error_t err = qdb_ts_double_insert((qdb_handle_t)handle,
+                                         StringUTFChars(env, alias),
+                                         StringUTFChars(env, column),
+                                         values,
+                                         0);
 
   return err;
 }
