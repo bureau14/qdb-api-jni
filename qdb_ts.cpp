@@ -59,11 +59,22 @@ double_point_to_native(JNIEnv * env, jobject input, qdb_ts_double_point * native
   jobject timespec;
 
   object_class = env->GetObjectClass(input);
-  timestamp_field = env->GetFieldID(object_class, "timestamp", "net/quasardb/qdb/jni/qdb_timespec");
+
+  timestamp_field = env->GetFieldID(object_class, "timestamp", "Lnet/quasardb/qdb/jni/qdb_timespec;");
   value_field = env->GetFieldID(object_class, "value", "D");
 
   timespecToNative(env, env->GetObjectField(input, timestamp_field), &(native->timestamp));
   native->value = env->GetDoubleField(input, value_field);
+}
+
+void
+double_points_to_native(JNIEnv * env, jobjectArray input, size_t count, qdb_ts_double_point * native) {
+  qdb_ts_double_point * cur = native;
+  for (size_t i = 0; i < count; ++i) {
+    jobject point = (jobject)(env->GetObjectArrayElement(input, i));
+
+    double_point_to_native(env, point, cur++);
+  }
 }
 
 JNIEXPORT jint JNICALL
@@ -116,15 +127,17 @@ Java_net_quasardb_qdb_jni_qdb_ts_1list_1columns(JNIEnv * env, jclass /*thisClass
 
 JNIEXPORT jint JNICALL
 Java_net_quasardb_qdb_jni_qdb_ts_1double_1insert(JNIEnv * env, jclass /*thisClass*/, jlong handle,
-                                                 jstring alias, jstring column, jdoubleArray points) {
+                                                 jstring alias, jstring column, jobjectArray points) {
   qdb_size_t points_count = env->GetArrayLength(points);
   qdb_ts_double_point values[points_count];
+
+  double_points_to_native(env, points, points_count, values);
 
   qdb_error_t err = qdb_ts_double_insert((qdb_handle_t)handle,
                                          StringUTFChars(env, alias),
                                          StringUTFChars(env, column),
                                          values,
-                                         0);
+                                         points_count);
 
   return err;
 }
