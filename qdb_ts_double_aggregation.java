@@ -1,8 +1,8 @@
 package net.quasardb.qdb.jni;
 
 public final class qdb_ts_double_aggregation {
-  protected qdb_ts_range range;
   protected long aggregation_type;
+  protected qdb_ts_range range;
 
   protected long count;
   protected qdb_ts_double_point result;

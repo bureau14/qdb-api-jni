@@ -1,6 +1,6 @@
 #include "net_quasardb_qdb_jni_qdb.h"
 
-
+#include <assert.h>
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -143,15 +143,91 @@ ranges_to_native(JNIEnv * env, jobjectArray input, size_t count, qdb_ts_range_t 
 }
 
 void
-aggregates_to_native(JNIEnv * env, jobjectArray input, size_t count, qdb_ts_double_aggregation_t * native) {
-  printf("aggregates to native, count = %d\n", count);
+native_to_range(JNIEnv * env, qdb_ts_range_t native, jobject * output) {
+  jclass point_class = env->FindClass("net/quasardb/qdb/jni/qdb_ts_range");
+  jmethodID constructor = env->GetMethodID(point_class, "<init>", "(Lnet/quasardb/qdb/jni/qdb_timespec;Lnet/quasardb/qdb/jni/qdb_timespec;)V");
+
+  printf("native: to range, constructor: %p\n", constructor);
   fflush(stdout);
+
+  jobject begin;
+  jobject end;
+
+  nativeToTimespec(env, native.begin, &begin);
+  nativeToTimespec(env, native.end, &end);
+
+  *output = env->NewObject(point_class,
+                           constructor,
+                           begin,
+                           end);
+}
+
+void
+double_aggregate_to_native(JNIEnv *env, jobject input, qdb_ts_double_aggregation_t * native) {
+  assert(input != NULL);
+
+  jfieldID type_field, range_field, count_field, result_field;
+  jclass object_class;
+
+  object_class = env->GetObjectClass(input);
+  type_field = env->GetFieldID(object_class, "aggregation_type", "J");
+  range_field = env->GetFieldID(object_class, "range", "Lnet/quasardb/qdb/jni/qdb_ts_range;");
+  count_field = env->GetFieldID(object_class, "count", "J");
+  result_field = env->GetFieldID(object_class, "result", "Lnet/quasardb/qdb/jni/qdb_ts_double_point;");
+
+  range_to_native(env, env->GetObjectField(input, range_field), &(native->range));
+  double_point_to_native(env, env->GetObjectField(input, result_field), &(native->result));
+  native->type = (qdb_ts_aggregation_type_t)(env->GetLongField(input, type_field));
+  native->count = env->GetLongField(input, count_field);
+
+  fflush(stdout);
+}
+
+void
+double_aggregates_to_native(JNIEnv * env, jobjectArray input, size_t count, qdb_ts_double_aggregation_t * native) {
+  assert(input != NULL);
 
   qdb_ts_double_aggregation_t * cur = native;
   for (size_t i = 0; i < count; ++i) {
-    jobject point; // = (jobject)(env->GetObjectArrayElement(input, i));
+    jobject aggregate = (jobject)(env->GetObjectArrayElement(input, i));
 
-    //range_to_native(env, point, cur++);
+    double_aggregate_to_native(env, aggregate, cur++);
+  }
+}
+
+void
+native_to_double_aggregate(JNIEnv * env, qdb_ts_double_aggregation native, jobject * output) {
+  jclass point_class = env->FindClass("net/quasardb/qdb/jni/qdb_ts_double_aggregation");
+  jmethodID constructor = env->GetMethodID(point_class, "<init>", "(Lnet/quasardb/qdb/jni/qdb_ts_range;JJLnet/quasardb/qdb/jni/qdb_ts_double_point;)V");
+
+  jobject range, result;
+  long aggregation_type, count;
+
+  native_to_range(env, native.range, &range);
+  native_to_double_point(env, native.result, &result);
+
+  *output = env->NewObject(point_class,
+                           constructor,
+                           range,
+                           aggregation_type,
+                           count,
+                           result);
+}
+
+void
+native_to_double_aggregates(JNIEnv * env, qdb_ts_double_aggregation * native, size_t count, jobjectArray * output) {
+  jclass aggregate_class = env->FindClass("net/quasardb/qdb/jni/qdb_ts_double_aggregation");
+  assert (aggregate_class != NULL);
+
+  *output = env->NewObjectArray((jsize)count, aggregate_class, NULL);
+
+  for (size_t i = 0; i < count; i++) {
+    printf("native: iterating over result aggregate %d\n", i);
+    fflush(stdout);
+
+    jobject aggregate;
+    native_to_double_aggregate(env, native[i], &aggregate);
+    env->SetObjectArrayElement(*output, (jsize)i, aggregate);
   }
 }
 
@@ -259,7 +335,7 @@ Java_net_quasardb_qdb_jni_qdb_ts_1double_1aggregate(JNIEnv * env, jclass /*thisC
                                                     jstring alias, jstring column, jobjectArray input, jobject output) {
   qdb_size_t count = env->GetArrayLength(input);
   qdb_ts_double_aggregation_t aggregates[count];
-  aggregates_to_native(env, input, count, aggregates);
+  double_aggregates_to_native(env, input, count, aggregates);
 
   qdb_error_t err = qdb_ts_double_aggregate((qdb_handle_t)handle,
                                             StringUTFChars(env, alias),
@@ -272,7 +348,7 @@ Java_net_quasardb_qdb_jni_qdb_ts_1double_1aggregate(JNIEnv * env, jclass /*thisC
 
   if (QDB_SUCCESS(err)) {
     jobjectArray array;
-    //native_to_double_points(env, native_points, point_count, &array);
+    native_to_double_aggregates(env, aggregates, count, &array);
     setReferenceValue(env, output, array);
     printf("native: done!\n");
     fflush(stdout);
