@@ -18,6 +18,7 @@ set(QDB_JAVA_SOURCES
     qdb_timespec.java
     qdb_ts_column_type.java
     qdb_ts_column_info.java
+    qdb_ts_double_point.java
     tools/JarFileHelper.java
     tools/NativeLibraryLoader.java
 )
