@@ -21,7 +21,10 @@ columns_to_native(JNIEnv * env, jobjectArray columns, qdb_ts_column_info * nativ
     jstring name = (jstring)env->GetObjectField(object, name_field);
 
     native_columns[i].type = (qdb_ts_column_type)(env->GetIntField(object, type_field));
-    native_columns[i].name = strdup(StringUTFChars(env, name)); // Is there a better way to do this ?
+
+    // Is there a better way to do this ? Because we're using strdup here, we need a separate
+    // release function which is fragile.
+    native_columns[i].name = strdup(StringUTFChars(env, name));
   }
 
   fflush(stdout);
@@ -47,6 +50,20 @@ native_to_columns(JNIEnv * env, qdb_ts_column_info * nativeColumns, size_t colum
                                                                   env->NewStringUTF(nativeColumns[i].name),
                                                                   nativeColumns[i].type));
   }
+}
+
+void
+double_point_to_native(JNIEnv * env, jobject input, qdb_ts_double_point * native) {
+  jfieldID timestamp_field, value_field;
+  jclass object_class;
+  jobject timespec;
+
+  object_class = env->GetObjectClass(input);
+  timestamp_field = env->GetFieldID(object_class, "timestamp", "net/quasardb/qdb/jni/qdb_timespec");
+  value_field = env->GetFieldID(object_class, "value", "D");
+
+  timespecToNative(env, env->GetObjectField(input, timestamp_field), &(native->timestamp));
+  native->value = env->GetDoubleField(input, value_field);
 }
 
 JNIEXPORT jint JNICALL
