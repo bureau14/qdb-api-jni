@@ -19,6 +19,7 @@ set(QDB_JAVA_SOURCES
     qdb_ts_column_type.java
     qdb_ts_column_info.java
     qdb_ts_double_point.java
+    qdb_ts_double_aggregation.java
     qdb_ts_range.java
     tools/JarFileHelper.java
     tools/NativeLibraryLoader.java
