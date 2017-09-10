@@ -16,6 +16,7 @@ set(QDB_JAVA_SOURCES
     qdb_entry_type.java
     qdb_stream_mode.java
     qdb_timespec.java
+    qdb_ts_aggregation_type.java
     qdb_ts_column_type.java
     qdb_ts_column_info.java
     qdb_ts_double_point.java

@@ -142,6 +142,19 @@ ranges_to_native(JNIEnv * env, jobjectArray input, size_t count, qdb_ts_range_t 
   }
 }
 
+void
+aggregates_to_native(JNIEnv * env, jobjectArray input, size_t count, qdb_ts_double_aggregation_t * native) {
+  printf("aggregates to native, count = %d\n", count);
+  fflush(stdout);
+
+  qdb_ts_double_aggregation_t * cur = native;
+  for (size_t i = 0; i < count; ++i) {
+    jobject point; // = (jobject)(env->GetObjectArrayElement(input, i));
+
+    //range_to_native(env, point, cur++);
+  }
+}
+
 JNIEXPORT jint JNICALL
 Java_net_quasardb_qdb_jni_qdb_ts_1create(JNIEnv * env, jclass /*thisClass*/, jlong handle,
                                          jstring alias, jobjectArray columns) {
@@ -229,16 +242,41 @@ Java_net_quasardb_qdb_jni_qdb_ts_1double_1get_1ranges(JNIEnv * env, jclass /*thi
                                              &native_points,
                                              &point_count);
 
-  printf("native: retrieved %ud points\n", point_count);
   if (QDB_SUCCESS(err)) {
     jobjectArray array;
     native_to_double_points(env, native_points, point_count, &array);
     setReferenceValue(env, points, array);
-    printf("native: done!\n");
     fflush(stdout);
   }
 
   qdb_release((qdb_handle_t)handle, native_points);
+
+  return err;
+}
+
+JNIEXPORT jint JNICALL
+Java_net_quasardb_qdb_jni_qdb_ts_1double_1aggregate(JNIEnv * env, jclass /*thisClass*/, jlong handle,
+                                                    jstring alias, jstring column, jobjectArray input, jobject output) {
+  qdb_size_t count = env->GetArrayLength(input);
+  qdb_ts_double_aggregation_t aggregates[count];
+  aggregates_to_native(env, input, count, aggregates);
+
+  qdb_error_t err = qdb_ts_double_aggregate((qdb_handle_t)handle,
+                                            StringUTFChars(env, alias),
+                                            StringUTFChars(env, column),
+                                            aggregates,
+                                            count);
+
+  printf("native: retrieved aggregates for %u ranges\n", count);
+  fflush(stdout);
+
+  if (QDB_SUCCESS(err)) {
+    jobjectArray array;
+    //native_to_double_points(env, native_points, point_count, &array);
+    setReferenceValue(env, output, array);
+    printf("native: done!\n");
+    fflush(stdout);
+  }
 
   return err;
 }
