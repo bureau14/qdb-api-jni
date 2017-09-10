@@ -8,4 +8,12 @@ public final class qdb_timespec {
     this.tv_sec = tv_sec;
     this.tv_nsec = tv_nsec;
   }
+
+  public long getEpochSecond() {
+    return this.tv_sec;
+  }
+
+  public long getNano() {
+      return this.tv_nsec;
+  }
 }
