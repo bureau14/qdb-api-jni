@@ -52,7 +52,7 @@ setString(JNIEnv *env, jobject reference, const char *value) {
 
 
 void
-timespecToNatve(JNIEnv *env, jobject input, qdb_timespec_t * output) {
+timespecToNative(JNIEnv *env, jobject input, qdb_timespec_t * output) {
   // qdb_timespec -> tv_sec, tv_nsec
   jfieldID sec_field, nsec_field;
   jclass object_class;
