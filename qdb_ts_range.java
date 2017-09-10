@@ -8,4 +8,13 @@ public final class qdb_ts_range {
     this.begin = begin;
     this.end = end;
   }
+
+  public qdb_timespec getBegin() {
+    return this.begin;
+  }
+
+  public qdb_timespec getEnd() {
+    return this.end;
+  }
+
 }
