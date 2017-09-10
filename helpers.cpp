@@ -58,8 +58,10 @@ timespecToNative(JNIEnv *env, jobject input, qdb_timespec_t * output) {
   jclass object_class;
 
   object_class = env->GetObjectClass(input);
-  sec_field = env->GetFieldID(object_class, "tv_sec", "L");
-  nsec_field = env->GetFieldID(object_class, "tv_nsec", "L");
+
+  sec_field = env->GetFieldID(object_class, "tv_sec", "J");
+  nsec_field = env->GetFieldID(object_class, "tv_nsec", "J");
   output->tv_sec = env->GetLongField(input, sec_field);
   output->tv_nsec = env->GetLongField(input, nsec_field);
+
 }
