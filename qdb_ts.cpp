@@ -105,7 +105,6 @@ native_to_double_points(JNIEnv * env, qdb_ts_double_point * native, size_t count
 
 void
 range_to_native(JNIEnv *env, jobject input, qdb_ts_range_t * native) {
-  // qdb_timespec -> tv_sec, tv_nsec
   jfieldID begin_field, end_field;
   jclass object_class;
 
