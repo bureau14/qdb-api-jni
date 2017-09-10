@@ -65,6 +65,8 @@ double_point_to_native(JNIEnv * env, jobject input, qdb_ts_double_point * native
 
   timespecToNative(env, env->GetObjectField(input, timestamp_field), &(native->timestamp));
   native->value = env->GetDoubleField(input, value_field);
+
+  printf("native, storing double with range time: %d.%d\n", native->timestamp.tv_sec, native->timestamp.tv_nsec);
 }
 
 void
@@ -89,6 +91,8 @@ range_to_native(JNIEnv *env, jobject input, qdb_ts_range_t * native) {
   end_field = env->GetFieldID(object_class, "end", "Lnet/quasardb/qdb/jni/qdb_timespec;");
   timespecToNative(env, env->GetObjectField(input, begin_field), &(native->begin));
   timespecToNative(env, env->GetObjectField(input, end_field), &(native->end));
+
+  printf("native, range begin: %d.%d, range end: %d.%d\n", native->begin.tv_sec, native->begin.tv_nsec, native->end.tv_sec, native->end.tv_nsec);
 }
 
 void
@@ -169,5 +173,26 @@ Java_net_quasardb_qdb_jni_qdb_ts_1double_1insert(JNIEnv * env, jclass /*thisClas
 JNIEXPORT jint JNICALL
 Java_net_quasardb_qdb_jni_qdb_ts_1double_1get_1ranges(JNIEnv * env, jclass /*thisClass*/, jlong handle,
                                                       jstring alias, jstring column, jobjectArray ranges, jobject points) {
-  return 0;
+  qdb_size_t range_count = env->GetArrayLength(ranges);
+  qdb_ts_range_t native_ranges[range_count];
+  ranges_to_native(env, ranges, range_count, native_ranges);
+
+  qdb_ts_double_point * native_points;
+  qdb_size_t point_count;
+
+  printf("native: double_get_ranges\n");
+
+  qdb_error_t err = qdb_ts_double_get_ranges((qdb_handle_t)handle,
+                                             StringUTFChars(env, alias),
+                                             StringUTFChars(env, column),
+                                             native_ranges,
+                                             range_count,
+                                             &native_points,
+                                             &point_count);
+
+  printf("native: retrieved %ud points\n", point_count);
+
+  qdb_release((qdb_handle_t)handle, native_points);
+
+  return err;
 }
