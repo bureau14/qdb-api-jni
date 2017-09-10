@@ -100,6 +100,8 @@ public final class qdb {
   public static native int ts_insert_columns(long handle, String alias, qdb_ts_column_info[] columns);
   public static native int ts_list_columns(long handle, String alias, Reference<qdb_ts_column_info[]> columns);
   public static native int ts_double_insert(long handle, String alias, String column, qdb_ts_double_point[] points);
+  public static native int ts_double_get_ranges(long handle, String alias, String column, qdb_timespec[] ranges,
+                                                Reference<qdb_ts_double_point[]> points);
   public static native int ts_blob_insert(long handle, String alias, String column, ByteBuffer[] points);
 
   public static native int node_status(long handle, String uri, Reference<String> content);

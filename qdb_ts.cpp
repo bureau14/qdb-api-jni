@@ -77,6 +77,30 @@ double_points_to_native(JNIEnv * env, jobjectArray input, size_t count, qdb_ts_d
   }
 }
 
+void
+range_to_native(JNIEnv *env, jobject input, qdb_ts_range_t * native) {
+  // qdb_timespec -> tv_sec, tv_nsec
+  jfieldID begin_field, end_field;
+  jclass object_class;
+
+  object_class = env->GetObjectClass(input);
+
+  begin_field = env->GetFieldID(object_class, "begin", "Lnet/quasardb/qdb/jni/qdb_timespec;");
+  end_field = env->GetFieldID(object_class, "end", "Lnet/quasardb/qdb/jni/qdb_timespec;");
+  timespecToNative(env, env->GetObjectField(input, begin_field), &(native->begin));
+  timespecToNative(env, env->GetObjectField(input, end_field), &(native->end));
+}
+
+void
+ranges_to_native(JNIEnv * env, jobjectArray input, size_t count, qdb_ts_range_t * native) {
+  qdb_ts_range_t * cur = native;
+  for (size_t i = 0; i < count; ++i) {
+    jobject point = (jobject)(env->GetObjectArrayElement(input, i));
+
+    range_to_native(env, point, cur++);
+  }
+}
+
 JNIEXPORT jint JNICALL
 Java_net_quasardb_qdb_jni_qdb_ts_1create(JNIEnv * env, jclass /*thisClass*/, jlong handle,
                                          jstring alias, jobjectArray columns) {
@@ -140,4 +164,10 @@ Java_net_quasardb_qdb_jni_qdb_ts_1double_1insert(JNIEnv * env, jclass /*thisClas
                                          points_count);
 
   return err;
+}
+
+JNIEXPORT jint JNICALL
+Java_net_quasardb_qdb_jni_qdb_ts_1double_1get_1ranges(JNIEnv * env, jclass /*thisClass*/, jlong handle,
+                                                      jstring alias, jstring column, jobjectArray ranges, jobject points) {
+  return 0;
 }
