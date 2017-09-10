@@ -49,3 +49,17 @@ void
 setString(JNIEnv *env, jobject reference, const char *value) {
   setReferenceValue(env, reference, env->NewStringUTF(value));
 }
+
+
+void
+timespecToNatve(JNIEnv *env, jobject input, qdb_timespec_t * output) {
+  // qdb_timespec -> tv_sec, tv_nsec
+  jfieldID sec_field, nsec_field;
+  jclass object_class;
+
+  object_class = env->GetObjectClass(input);
+  sec_field = env->GetFieldID(object_class, "tv_sec", "L");
+  nsec_field = env->GetFieldID(object_class, "tv_nsec", "L");
+  output->tv_sec = env->GetLongField(input, sec_field);
+  output->tv_nsec = env->GetLongField(input, nsec_field);
+}
