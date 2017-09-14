@@ -9,8 +9,6 @@ void setLong(JNIEnv *, jobject, jlong);
 void setInteger(JNIEnv *, jobject, jint);
 void setString(JNIEnv *, jobject, const char *);
 void setStringArray(JNIEnv *, jobject, const char **, size_t);
-void timespecToNative(JNIEnv *, jobject, qdb_timespec_t *);
-void nativeToTimespec(JNIEnv *, qdb_timespec_t, jobject *);
 
 class StringUTFChars {
   JNIEnv *_env;

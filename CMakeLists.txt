@@ -32,6 +32,7 @@ set(QDB_JNI_CLASSES
 
 set(QDB_JNI_SOURCES
     helpers.cpp
+    ts_helpers.cpp
     qdb_batch.cpp
     qdb_blob.cpp
     qdb_client.cpp
