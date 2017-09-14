@@ -207,7 +207,7 @@ native_to_double_aggregate(JNIEnv * env, qdb_ts_double_aggregation native, jobje
 
   native_to_double_point(env, native.result, &result);
 
-  printf("native: allocating new objects\n");
+  printf("native: allocating new objects, output = %p\n", output);
   fflush(stdout);
 
   *output = env->NewObject(point_class,
