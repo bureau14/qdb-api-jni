@@ -188,7 +188,7 @@ native_to_double_aggregate(JNIEnv * env, qdb_ts_double_aggregation native, jobje
   native_to_range(env, native.range, &range);
   native_to_double_point(env, native.result, &result);
 
-  printf("native: adding double aggregate, type: %d, count: %d\n", native.type, native.count);
+  printf("native: adding double aggregate, count: %d\n", native.count);
 
   *output = env->NewObject(point_class,
                            constructor,
