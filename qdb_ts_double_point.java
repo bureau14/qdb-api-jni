@@ -4,7 +4,7 @@ public final class qdb_ts_double_point {
   protected qdb_timespec timestamp;
   protected double value;
 
-  public qdb_ts_double_point(qdb_timespec timestamp, double value){
+  public qdb_ts_double_point(){
     this.value = -1.0;
   }
 

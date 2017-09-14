@@ -4,7 +4,7 @@ public final class qdb_timespec {
   public long tv_sec;
   public long tv_nsec;
 
-  public qdb_timespec(long tv_sec, long tv_nsec){
+  public qdb_timespec(){
     this.tv_sec = -1;
     this.tv_nsec = -1;
   }
