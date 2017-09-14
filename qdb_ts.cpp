@@ -54,7 +54,6 @@ void
 double_point_to_native(JNIEnv * env, jobject input, qdb_ts_double_point * native) {
   jfieldID timestamp_field, value_field;
   jclass object_class;
-  jobject timespec;
 
   object_class = env->GetObjectClass(input);
 
@@ -82,9 +81,6 @@ native_to_double_point(JNIEnv * env, qdb_ts_double_point native, jobject * outpu
 
   jobject timespec;
   nativeToTimespec(env, native.timestamp, &timespec);
-
-  printf("native: setting double point, value: %f\n", native.value);
-  fflush(stdout);
 
   *output = env->NewObject(point_class,
                            constructor,
@@ -137,19 +133,8 @@ native_to_range(JNIEnv * env, qdb_ts_range_t native, jobject * output) {
   jobject begin;
   jobject end;
 
-
-  printf("native: native to range, converting begin..\n");
-  fflush(stdout);
-
   nativeToTimespec(env, native.begin, &begin);
-
-  printf("native: native to range, converting end..\n");
-  fflush(stdout);
-
   nativeToTimespec(env, native.end, &end);
-
-  printf("native: native to range, setting output\n");
-  fflush(stdout);
 
   *output = env->NewObject(point_class,
                            constructor,
@@ -197,18 +182,8 @@ native_to_double_aggregate(JNIEnv * env, qdb_ts_double_aggregation native, jobje
 
   jobject range, result;
 
-  printf("native: converting native range..\n");
-  fflush(stdout);
-
   native_to_range(env, native.range, &range);
-
-  printf("native: converting native double point..\n");
-  fflush(stdout);
-
   native_to_double_point(env, native.result, &result);
-
-  printf("native: allocating new objects\n");
-  fflush(stdout);
 
   jobject aggregate = env->NewObject(point_class,
                                      constructor,
@@ -216,9 +191,6 @@ native_to_double_aggregate(JNIEnv * env, qdb_ts_double_aggregation native, jobje
                                      (jlong)native.type,
                                      (jlong)native.count,
                                      result);
-
-  printf("native: created aggregate, copying to output: %p\n", output);
-  fflush(stdout);
 
   *output = aggregate;
 }
@@ -233,14 +205,7 @@ native_to_double_aggregates(JNIEnv * env, qdb_ts_double_aggregation * native, si
   for (size_t i = 0; i < count; i++) {
     jobject aggregate;
 
-    printf("native: allocating new objects, count = %d\n", i);
-    fflush(stdout);
-
     native_to_double_aggregate(env, native[i], &aggregate);
-
-    printf("native: adding setting object array for count = %d\n", i);
-    fflush(stdout);
-
     env->SetObjectArrayElement(*output, (jsize)i, aggregate);
   }
 }
@@ -350,9 +315,6 @@ JNIEXPORT jint JNICALL
 Java_net_quasardb_qdb_jni_qdb_ts_1double_1aggregate(JNIEnv * env, jclass /*thisClass*/, jlong handle,
                                                     jstring alias, jstring column, jobjectArray input, jobject output) {
   qdb_size_t count = env->GetArrayLength(input);
-
-  printf("native: aggregating double, count: %d\n", count);
-  fflush(stdout);
 
   qdb_ts_double_aggregation_t * aggregates = new qdb_ts_double_aggregation_t[count];
   double_aggregates_to_native(env, input, count, aggregates);

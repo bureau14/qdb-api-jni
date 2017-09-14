@@ -71,9 +71,6 @@ nativeToTimespec(JNIEnv *env, qdb_timespec_t input, jobject * output) {
   jclass timespec_class = env->FindClass("net/quasardb/qdb/jni/qdb_timespec");
   jmethodID constructor = env->GetMethodID(timespec_class, "<init>", "(JJ)V");
 
-  printf("native: converting native to timespec, sec: %d, nsec: %d\n", input.tv_sec, input.tv_nsec);
-  fflush(stdout);
-
   *output = env->NewObject(timespec_class,
                            constructor,
                            input.tv_sec,
