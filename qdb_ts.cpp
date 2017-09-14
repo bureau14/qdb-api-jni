@@ -83,6 +83,8 @@ native_to_double_point(JNIEnv * env, qdb_ts_double_point native, jobject * outpu
   jobject timespec;
   nativeToTimespec(env, native.timestamp, &timespec);
 
+  printf("native: setting double point, value: %f\n", native.value);
+
   *output = env->NewObject(point_class,
                            constructor,
                            timespec,
@@ -186,6 +188,8 @@ native_to_double_aggregate(JNIEnv * env, qdb_ts_double_aggregation native, jobje
   native_to_range(env, native.range, &range);
   native_to_double_point(env, native.result, &result);
 
+  printf("native: adding double aggregate, type: %d, count: %d\n", native.type, native.count);
+
   *output = env->NewObject(point_class,
                            constructor,
                            range,
@@ -199,6 +203,7 @@ native_to_double_aggregates(JNIEnv * env, qdb_ts_double_aggregation * native, si
   jclass aggregate_class = env->FindClass("net/quasardb/qdb/jni/qdb_ts_double_aggregation");
   assert (aggregate_class != NULL);
 
+  printf("native: converting %d double aggregates\n", count);
   *output = env->NewObjectArray((jsize)count, aggregate_class, NULL);
 
   for (size_t i = 0; i < count; i++) {
@@ -323,9 +328,13 @@ Java_net_quasardb_qdb_jni_qdb_ts_1double_1aggregate(JNIEnv * env, jclass /*thisC
                                             aggregates,
                                             count);
 
+  fflush(stdout);
+
   if (QDB_SUCCESS(err)) {
     jobjectArray array;
     native_to_double_aggregates(env, aggregates, count, &array);
+    fflush(stdout);
+
     setReferenceValue(env, output, array);
     fflush(stdout);
   }
