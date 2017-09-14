@@ -139,14 +139,17 @@ native_to_range(JNIEnv * env, qdb_ts_range_t native, jobject * output) {
 
 
   printf("native: native to range, converting begin..\n");
+  fflush(stdout);
 
   nativeToTimespec(env, native.begin, &begin);
 
   printf("native: native to range, converting end..\n");
+  fflush(stdout);
 
   nativeToTimespec(env, native.end, &end);
 
   printf("native: native to range, setting output\n");
+  fflush(stdout);
 
   *output = env->NewObject(point_class,
                            constructor,
@@ -195,14 +198,17 @@ native_to_double_aggregate(JNIEnv * env, qdb_ts_double_aggregation native, jobje
   jobject range, result;
 
   printf("native: converting native range..\n");
+  fflush(stdout);
 
   native_to_range(env, native.range, &range);
 
   printf("native: converting native double point..\n");
+  fflush(stdout);
 
   native_to_double_point(env, native.result, &result);
 
   printf("native: allocating new objects\n");
+  fflush(stdout);
 
   *output = env->NewObject(point_class,
                            constructor,
@@ -223,10 +229,12 @@ native_to_double_aggregates(JNIEnv * env, qdb_ts_double_aggregation * native, si
     jobject aggregate;
 
     printf("native: allocating new objects, count = %d\n", i);
+    fflush(stdout);
 
     native_to_double_aggregate(env, native[i], &aggregate);
 
     printf("native: adding setting object array for count = %d\n", i);
+    fflush(stdout);
 
     env->SetObjectArrayElement(*output, (jsize)i, aggregate);
   }
