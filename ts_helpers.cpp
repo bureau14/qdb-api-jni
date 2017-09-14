@@ -4,7 +4,6 @@
 
 #include "ts_helpers.h"
 
-
 void
 timespecToNative(JNIEnv *env, jobject input, qdb_timespec_t * output) {
   // qdb_timespec -> tv_sec, tv_nsec
@@ -125,6 +124,32 @@ nativeToDoublePoints(JNIEnv * env, qdb_ts_double_point * native, size_t count, j
   }
 }
 
+void
+blobPointToNative(JNIEnv * env, jobject input, qdb_ts_blob_point * native) {
+  jfieldID timestampField, valueField;
+  jclass objectClass;
+  jobject value;
+
+  objectClass = env->GetObjectClass(input);
+
+  timestampField = env->GetFieldID(objectClass, "timestamp", "Lnet/quasardb/qdb/jni/qdb_timespec;");
+  valueField = env->GetFieldID(objectClass, "value", "Ljava/nio/ByteBuffer;");
+  value = env->GetObjectField(input, valueField);
+
+  timespecToNative(env, env->GetObjectField(input, timestampField), &(native->timestamp));
+  native->content = env->GetDirectBufferAddress(value);
+  native->content_length = (qdb_size_t)env->GetDirectBufferCapacity(value);
+}
+
+void
+blobPointsToNative(JNIEnv * env, jobjectArray input, size_t count, qdb_ts_blob_point * native) {
+  qdb_ts_blob_point * cur = native;
+  for (size_t i = 0; i < count; ++i) {
+    jobject point = (jobject)(env->GetObjectArrayElement(input, i));
+
+    blobPointToNative(env, point, cur++);
+  }
+}
 
 void
 rangeToNative(JNIEnv *env, jobject input, qdb_ts_range_t * native) {

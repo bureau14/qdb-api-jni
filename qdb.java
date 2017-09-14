@@ -104,7 +104,11 @@ public final class qdb {
                                                 Reference<qdb_ts_double_point[]> points);
   public static native int ts_double_aggregate(long handle, String alias, String column, qdb_ts_double_aggregation[] input,
                                                Reference<qdb_ts_double_aggregation[]> aggregations);
-  public static native int ts_blob_insert(long handle, String alias, String column, ByteBuffer[] points);
+  public static native int ts_blob_insert(long handle, String alias, String column, qdb_ts_blob_point[] points);
+  public static native int ts_blob_get_ranges(long handle, String alias, String column, qdb_ts_range[] ranges,
+                                              Reference<qdb_ts_blob_point[]> points);
+  public static native int ts_blob_aggregate(long handle, String alias, String column, qdb_ts_blob_aggregation[] input,
+                                             Reference<qdb_ts_blob_aggregation[]> aggregations);
 
   public static native int node_status(long handle, String uri, Reference<String> content);
   public static native int node_config(long handle, String uri, Reference<String> content);

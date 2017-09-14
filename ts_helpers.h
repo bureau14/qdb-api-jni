@@ -17,6 +17,12 @@ void doublePointToNative(JNIEnv * env, jobject input, qdb_ts_double_point * nati
 void doublePointsToNative(JNIEnv * env, jobjectArray input, size_t count, qdb_ts_double_point * native);
 void nativeToDoublePoint(JNIEnv * env, qdb_ts_double_point native, jobject * output);
 void nativeToDoublePoints(JNIEnv * env, qdb_ts_double_point * native, size_t count, jobjectArray * output);
+
+void blobPointToNative(JNIEnv * env, jobject input, qdb_ts_blob_point * native);
+void blobPointsToNative(JNIEnv * env, jobjectArray input, size_t count, qdb_ts_blob_point * native);
+void nativeToBlobPoint(JNIEnv * env, qdb_ts_blob_point native, jobject * output);
+void nativeToBlobPoints(JNIEnv * env, qdb_ts_blob_point * native, size_t count, jobjectArray * output);
+
 void rangeToNative(JNIEnv *env, jobject input, qdb_ts_range_t * native);
 void rangesToNative(JNIEnv * env, jobjectArray input, size_t count, qdb_ts_range_t * native);
 void nativeToRange(JNIEnv * env, qdb_ts_range_t native, jobject * output);
