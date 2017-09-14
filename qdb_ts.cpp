@@ -188,8 +188,6 @@ native_to_double_aggregate(JNIEnv * env, qdb_ts_double_aggregation native, jobje
   native_to_range(env, native.range, &range);
   native_to_double_point(env, native.result, &result);
 
-  printf("native: adding double aggregate, count: %d\n", native.count);
-
   *output = env->NewObject(point_class,
                            constructor,
                            range,
@@ -203,7 +201,6 @@ native_to_double_aggregates(JNIEnv * env, qdb_ts_double_aggregation * native, si
   jclass aggregate_class = env->FindClass("net/quasardb/qdb/jni/qdb_ts_double_aggregation");
   assert (aggregate_class != NULL);
 
-  printf("native: converting %d double aggregates\n", count);
   *output = env->NewObjectArray((jsize)count, aggregate_class, NULL);
 
   for (size_t i = 0; i < count; i++) {
@@ -319,6 +316,9 @@ JNIEXPORT jint JNICALL
 Java_net_quasardb_qdb_jni_qdb_ts_1double_1aggregate(JNIEnv * env, jclass /*thisClass*/, jlong handle,
                                                     jstring alias, jstring column, jobjectArray input, jobject output) {
   qdb_size_t count = env->GetArrayLength(input);
+
+  printf("native: aggregating double, count: %d\n", count);
+
   qdb_ts_double_aggregation_t * aggregates = new qdb_ts_double_aggregation_t[count];
   double_aggregates_to_native(env, input, count, aggregates);
 
