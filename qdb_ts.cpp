@@ -207,15 +207,20 @@ native_to_double_aggregate(JNIEnv * env, qdb_ts_double_aggregation native, jobje
 
   native_to_double_point(env, native.result, &result);
 
-  printf("native: allocating new objects, output = %p\n", output);
+  printf("native: allocating new objects\n");
   fflush(stdout);
 
-  *output = env->NewObject(point_class,
-                           constructor,
-                           range,
-                           native.type,
-                           native.count,
-                           result);
+  jobject aggregate = env->NewObject(point_class,
+                                     constructor,
+                                     range,
+                                     (jlong)native.type,
+                                     (jlong)native.count,
+                                     result);
+
+  printf("native: created aggregate, copying to output: %p\n", output);
+  fflush(stdout);
+
+  *output = aggregate;
 }
 
 void
