@@ -83,8 +83,6 @@ native_to_double_point(JNIEnv * env, qdb_ts_double_point native, jobject * outpu
   jobject timespec;
   nativeToTimespec(env, native.timestamp, &timespec);
 
-  printf("native: setting double point, value: %f\n", native.value);
-
   *output = env->NewObject(point_class,
                            constructor,
                            timespec,
@@ -162,8 +160,6 @@ double_aggregate_to_native(JNIEnv *env, jobject input, qdb_ts_double_aggregation
   double_point_to_native(env, env->GetObjectField(input, result_field), &(native->result));
   native->type = (qdb_ts_aggregation_type_t)(env->GetLongField(input, type_field));
   native->count = env->GetLongField(input, count_field);
-
-  fflush(stdout);
 }
 
 void
@@ -275,8 +271,6 @@ Java_net_quasardb_qdb_jni_qdb_ts_1double_1insert(JNIEnv * env, jclass /*thisClas
                                          values,
                                          points_count);
 
-  fflush(stdout);
-
   delete[] values;
   return err;
 }
@@ -303,7 +297,6 @@ Java_net_quasardb_qdb_jni_qdb_ts_1double_1get_1ranges(JNIEnv * env, jclass /*thi
     jobjectArray array;
     native_to_double_points(env, native_points, point_count, &array);
     setReferenceValue(env, points, array);
-    fflush(stdout);
   }
 
   qdb_release((qdb_handle_t)handle, native_points);
@@ -317,9 +310,6 @@ Java_net_quasardb_qdb_jni_qdb_ts_1double_1aggregate(JNIEnv * env, jclass /*thisC
                                                     jstring alias, jstring column, jobjectArray input, jobject output) {
   qdb_size_t count = env->GetArrayLength(input);
 
-  printf("native: aggregating double, count: %d\n", count);
-  fflush(stdout);
-
   qdb_ts_double_aggregation_t * aggregates = new qdb_ts_double_aggregation_t[count];
   double_aggregates_to_native(env, input, count, aggregates);
 
@@ -329,15 +319,10 @@ Java_net_quasardb_qdb_jni_qdb_ts_1double_1aggregate(JNIEnv * env, jclass /*thisC
                                             aggregates,
                                             count);
 
-  fflush(stdout);
-
   if (QDB_SUCCESS(err)) {
     jobjectArray array;
     native_to_double_aggregates(env, aggregates, count, &array);
-    fflush(stdout);
-
     setReferenceValue(env, output, array);
-    fflush(stdout);
   }
 
   delete[] aggregates;
