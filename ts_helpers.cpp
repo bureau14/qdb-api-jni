@@ -31,6 +31,48 @@ nativeToTimespec(JNIEnv *env, qdb_timespec_t input, jobject * output) {
 
 }
 
+
+void
+rangeToNative(JNIEnv *env, jobject input, qdb_ts_range_t * native) {
+  jfieldID beginField, endField;
+  jclass objectClass;
+
+  objectClass = env->GetObjectClass(input);
+
+  beginField = env->GetFieldID(objectClass, "begin", "Lnet/quasardb/qdb/jni/qdb_timespec;");
+  endField = env->GetFieldID(objectClass, "end", "Lnet/quasardb/qdb/jni/qdb_timespec;");
+
+  timespecToNative(env, env->GetObjectField(input, beginField), &(native->begin));
+  timespecToNative(env, env->GetObjectField(input, endField), &(native->end));
+}
+
+void
+rangesToNative(JNIEnv * env, jobjectArray input, size_t count, qdb_ts_range_t * native) {
+  qdb_ts_range_t * cur = native;
+  for (size_t i = 0; i < count; ++i) {
+    jobject point = (jobject)(env->GetObjectArrayElement(input, i));
+
+    rangeToNative(env, point, cur++);
+  }
+}
+
+void
+nativeToRange(JNIEnv * env, qdb_ts_range_t native, jobject * output) {
+  jclass point_class = env->FindClass("net/quasardb/qdb/jni/qdb_ts_range");
+  jmethodID constructor = env->GetMethodID(point_class, "<init>", "(Lnet/quasardb/qdb/jni/qdb_timespec;Lnet/quasardb/qdb/jni/qdb_timespec;)V");
+
+  jobject begin;
+  jobject end;
+
+  nativeToTimespec(env, native.begin, &begin);
+  nativeToTimespec(env, native.end, &end);
+
+  *output = env->NewObject(point_class,
+                           constructor,
+                           begin,
+                           end);
+}
+
 void
 columnsToNative(JNIEnv * env, jobjectArray columns, qdb_ts_column_info * native_columns, size_t column_count) {
   jfieldID nameField, typeField;
@@ -185,47 +227,6 @@ nativeToBlobPoints(JNIEnv * env, qdb_ts_blob_point * native, size_t count, jobje
 }
 
 void
-rangeToNative(JNIEnv *env, jobject input, qdb_ts_range_t * native) {
-  jfieldID beginField, endField;
-  jclass objectClass;
-
-  objectClass = env->GetObjectClass(input);
-
-  beginField = env->GetFieldID(objectClass, "begin", "Lnet/quasardb/qdb/jni/qdb_timespec;");
-  endField = env->GetFieldID(objectClass, "end", "Lnet/quasardb/qdb/jni/qdb_timespec;");
-
-  timespecToNative(env, env->GetObjectField(input, beginField), &(native->begin));
-  timespecToNative(env, env->GetObjectField(input, endField), &(native->end));
-}
-
-void
-rangesToNative(JNIEnv * env, jobjectArray input, size_t count, qdb_ts_range_t * native) {
-  qdb_ts_range_t * cur = native;
-  for (size_t i = 0; i < count; ++i) {
-    jobject point = (jobject)(env->GetObjectArrayElement(input, i));
-
-    rangeToNative(env, point, cur++);
-  }
-}
-
-void
-nativeToRange(JNIEnv * env, qdb_ts_range_t native, jobject * output) {
-  jclass point_class = env->FindClass("net/quasardb/qdb/jni/qdb_ts_range");
-  jmethodID constructor = env->GetMethodID(point_class, "<init>", "(Lnet/quasardb/qdb/jni/qdb_timespec;Lnet/quasardb/qdb/jni/qdb_timespec;)V");
-
-  jobject begin;
-  jobject end;
-
-  nativeToTimespec(env, native.begin, &begin);
-  nativeToTimespec(env, native.end, &end);
-
-  *output = env->NewObject(point_class,
-                           constructor,
-                           begin,
-                           end);
-}
-
-void
 doubleAggregateToNative(JNIEnv *env, jobject input, qdb_ts_double_aggregation_t * native) {
   assert(input != NULL);
 
@@ -290,6 +291,75 @@ nativeToDoubleAggregates(JNIEnv * env, qdb_ts_double_aggregation * native, size_
     jobject aggregate;
 
     nativeToDoubleAggregate(env, native[i], &aggregate);
+    env->SetObjectArrayElement(*output, (jsize)i, aggregate);
+  }
+}
+
+void
+blobAggregateToNative(JNIEnv *env, jobject input, qdb_ts_blob_aggregation_t * native) {
+  assert(input != NULL);
+
+  jfieldID typeField, rangeField, countField, resultField;
+  jclass objectClass;
+
+  objectClass = env->GetObjectClass(input);
+  typeField = env->GetFieldID(objectClass, "aggregation_type", "J");
+  rangeField = env->GetFieldID(objectClass, "range", "Lnet/quasardb/qdb/jni/qdb_ts_range;");
+  countField = env->GetFieldID(objectClass, "count", "J");
+  resultField = env->GetFieldID(objectClass, "result", "Lnet/quasardb/qdb/jni/qdb_ts_blob_point;");
+
+  rangeToNative(env, env->GetObjectField(input, rangeField), &(native->range));
+  blobPointToNative(env, env->GetObjectField(input, resultField), &(native->result));
+
+  native->type = (qdb_ts_aggregation_type_t)(env->GetLongField(input, typeField));
+  native->count = env->GetLongField(input, countField);
+
+  fflush(stdout);
+}
+
+void
+blobAggregatesToNative(JNIEnv * env, jobjectArray input, size_t count, qdb_ts_blob_aggregation_t * native) {
+  assert(input != NULL);
+
+  qdb_ts_blob_aggregation_t * cur = native;
+  for (size_t i = 0; i < count; ++i) {
+    jobject aggregate = (jobject)(env->GetObjectArrayElement(input, i));
+
+    blobAggregateToNative(env, aggregate, cur++);
+  }
+}
+
+void
+nativeToBlobAggregate(JNIEnv * env, qdb_ts_blob_aggregation native, jobject * output) {
+  jclass point_class = env->FindClass("net/quasardb/qdb/jni/qdb_ts_blob_aggregation");
+  jmethodID constructor = env->GetMethodID(point_class, "<init>", "(Lnet/quasardb/qdb/jni/qdb_ts_range;JJLnet/quasardb/qdb/jni/qdb_ts_blob_point;)V");
+
+  jobject range, result;
+
+  nativeToRange(env, native.range, &range);
+  nativeToBlobPoint(env, native.result, &result);
+
+  jobject aggregate = env->NewObject(point_class,
+                                     constructor,
+                                     range,
+                                     (jlong)native.type,
+                                     (jlong)native.count,
+                                     result);
+
+  *output = aggregate;
+}
+
+void
+nativeToBlobAggregates(JNIEnv * env, qdb_ts_blob_aggregation * native, size_t count, jobjectArray * output) {
+  jclass aggregate_class = env->FindClass("net/quasardb/qdb/jni/qdb_ts_blob_aggregation");
+  assert (aggregate_class != NULL);
+
+  *output = env->NewObjectArray((jsize)count, aggregate_class, NULL);
+
+  for (size_t i = 0; i < count; i++) {
+    jobject aggregate;
+
+    nativeToBlobAggregate(env, native[i], &aggregate);
     env->SetObjectArrayElement(*output, (jsize)i, aggregate);
   }
 }

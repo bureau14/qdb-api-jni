@@ -181,3 +181,27 @@ Java_net_quasardb_qdb_jni_qdb_ts_1blob_1get_1ranges(JNIEnv * env, jclass /*thisC
   delete[] nativeRanges;
   return err;
 }
+
+JNIEXPORT jint JNICALL
+Java_net_quasardb_qdb_jni_qdb_ts_1blob_1aggregate(JNIEnv * env, jclass /*thisClass*/, jlong handle,
+                                                    jstring alias, jstring column, jobjectArray input, jobject output) {
+  qdb_size_t count = env->GetArrayLength(input);
+
+  qdb_ts_blob_aggregation_t * aggregates = new qdb_ts_blob_aggregation_t[count];
+  blobAggregatesToNative(env, input, count, aggregates);
+
+  qdb_error_t err = qdb_ts_blob_aggregate((qdb_handle_t)handle,
+                                            StringUTFChars(env, alias),
+                                            StringUTFChars(env, column),
+                                            aggregates,
+                                            count);
+
+  if (QDB_SUCCESS(err)) {
+    jobjectArray array;
+    nativeToBlobAggregates(env, aggregates, count, &array);
+    setReferenceValue(env, output, array);
+  }
+
+  delete[] aggregates;
+  return err;
+}
