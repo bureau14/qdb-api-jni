@@ -132,19 +132,52 @@ Java_net_quasardb_qdb_jni_qdb_ts_1double_1aggregate(JNIEnv * env, jclass /*thisC
 JNIEXPORT jint JNICALL
 Java_net_quasardb_qdb_jni_qdb_ts_1blob_1insert(JNIEnv * env, jclass /*thisClass*/, jlong handle,
                                                  jstring alias, jstring column, jobjectArray points) {
-  qdb_size_t points_count = env->GetArrayLength(points);
-  qdb_ts_blob_point * values = new qdb_ts_blob_point[points_count];
+  qdb_size_t pointsCount = env->GetArrayLength(points);
+  qdb_ts_blob_point * values = new qdb_ts_blob_point[pointsCount];
 
-  blobPointsToNative(env, points, points_count, values);
+  blobPointsToNative(env, points, pointsCount, values);
 
   qdb_error_t err = qdb_ts_blob_insert((qdb_handle_t)handle,
                                        StringUTFChars(env, alias),
                                        StringUTFChars(env, column),
                                        values,
-                                       points_count);
+                                       pointsCount);
 
   fflush(stdout);
 
   delete[] values;
+  return err;
+}
+
+JNIEXPORT jint JNICALL
+Java_net_quasardb_qdb_jni_qdb_ts_1blob_1get_1ranges(JNIEnv * env, jclass /*thisClass*/, jlong handle,
+                                                    jstring alias, jstring column, jobjectArray ranges, jobject points) {
+  qdb_size_t rangeCount = env->GetArrayLength(ranges);
+  qdb_ts_range_t * nativeRanges = new qdb_ts_range_t[rangeCount];
+  rangesToNative(env, ranges, rangeCount, nativeRanges);
+
+  qdb_ts_blob_point * nativePoints;
+  qdb_size_t pointCount;
+
+  qdb_error_t err = qdb_ts_blob_get_ranges((qdb_handle_t)handle,
+                                           StringUTFChars(env, alias),
+                                           StringUTFChars(env, column),
+                                           nativeRanges,
+                                           rangeCount,
+                                           &nativePoints,
+                                           &pointCount);
+
+  if (QDB_SUCCESS(err)) {
+    jobjectArray array;
+
+    // Note that at this point, we're moving the `nativePoints` buffer to
+    // our java ecosystem, and will be picked up to be cleared by the JVM
+    // garbage collector. As such, we do NOT call `qdb_release` here
+    nativeToBlobPoints(env, nativePoints, pointCount, &array);
+    setReferenceValue(env, points, array);
+    fflush(stdout);
+  }
+
+  delete[] nativeRanges;
   return err;
 }

@@ -7,6 +7,7 @@
 
 void timespecToNative(JNIEnv *, jobject, qdb_timespec_t *);
 void nativeToTimespec(JNIEnv *, qdb_timespec_t, jobject *);
+void nativeToByteBuffer(JNIEnv * env, void const * content, qdb_size_t content_length, jobject * output);
 
 void columnsToNative(JNIEnv * env, jobjectArray columns, qdb_ts_column_info * native_columns, size_t column_count);
 void releaseNative(qdb_ts_column_info * native_columns, size_t column_count);

@@ -152,6 +152,39 @@ blobPointsToNative(JNIEnv * env, jobjectArray input, size_t count, qdb_ts_blob_p
 }
 
 void
+nativeToByteBuffer(JNIEnv * env, void const * content, qdb_size_t contentLength, jobject * output) {
+  *output = env->NewDirectByteBuffer((void *)(content), contentLength);
+}
+
+void
+nativeToBlobPoint(JNIEnv * env, qdb_ts_blob_point native, jobject * output) {
+  jclass pointClass = env->FindClass("net/quasardb/qdb/jni/qdb_ts_blob_point");
+  jmethodID constructor = env->GetMethodID(pointClass, "<init>", "(Lnet/quasardb/qdb/jni/qdb_timespec;Ljava/nio/ByteBuffer;)V");
+
+  jobject timespec, value;
+  nativeToTimespec(env, native.timestamp, &timespec);
+  nativeToByteBuffer(env, native.content, native.content_length, &value);
+
+  *output = env->NewObject(pointClass,
+                           constructor,
+                           timespec,
+                           value);
+}
+
+void
+nativeToBlobPoints(JNIEnv * env, qdb_ts_blob_point * native, size_t count, jobjectArray * output) {
+  jclass pointClass = env->FindClass("net/quasardb/qdb/jni/qdb_ts_blob_point");
+
+  *output = env->NewObjectArray((jsize)count, pointClass, NULL);
+
+  for (size_t i = 0; i < count; i++) {
+    jobject point;
+    nativeToBlobPoint(env, native[i], &point);
+    env->SetObjectArrayElement(*output, (jsize)i, point);
+  }
+}
+
+void
 rangeToNative(JNIEnv *env, jobject input, qdb_ts_range_t * native) {
   jfieldID beginField, endField;
   jclass objectClass;
