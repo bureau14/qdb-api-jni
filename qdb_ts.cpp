@@ -318,6 +318,7 @@ Java_net_quasardb_qdb_jni_qdb_ts_1double_1aggregate(JNIEnv * env, jclass /*thisC
   qdb_size_t count = env->GetArrayLength(input);
 
   printf("native: aggregating double, count: %d\n", count);
+  fflush(stdout);
 
   qdb_ts_double_aggregation_t * aggregates = new qdb_ts_double_aggregation_t[count];
   double_aggregates_to_native(env, input, count, aggregates);
