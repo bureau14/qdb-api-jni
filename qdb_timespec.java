@@ -5,6 +5,11 @@ public final class qdb_timespec {
   public long tv_nsec;
 
   public qdb_timespec(long tv_sec, long tv_nsec){
+    this.tv_sec = -1;
+    this.tv_nsec = -1;
+  }
+
+  public qdb_timespec(long tv_sec, long tv_nsec){
     this.tv_sec = tv_sec;
     this.tv_nsec = tv_nsec;
   }
