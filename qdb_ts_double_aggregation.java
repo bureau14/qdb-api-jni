@@ -15,7 +15,7 @@ public final class qdb_ts_double_aggregation {
   }
 
   public qdb_ts_double_aggregation(qdb_ts_range range, long aggregation_type, long count, qdb_ts_double_point result) {
-    System.out.println("native: double aggregation constructor, type: " + aggregation_type + ", count: " + aggregation_count);
+    System.out.println("native: double aggregation constructor, type: " + aggregation_type + ", count: " + count);
     this.range = range;
     this.aggregation_type = aggregation_type;
     this.count = count;
