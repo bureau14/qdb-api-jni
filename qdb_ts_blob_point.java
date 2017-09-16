@@ -7,6 +7,9 @@ public final class qdb_ts_blob_point {
   protected ByteBuffer value;
 
   public qdb_ts_blob_point(qdb_timespec timestamp, ByteBuffer value){
+    if(!value.isDirect()) {
+      throw new IllegalArgumentException("Not a direct ByteBuffer: " + value.toString());
+    }
     this.timestamp = timestamp;
     this.value = value;
   }
