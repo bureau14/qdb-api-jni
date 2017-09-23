@@ -11,6 +11,7 @@ void nativeToByteBuffer(JNIEnv * env, void const * content, qdb_size_t content_l
 void rangeToNative(JNIEnv *env, jobject input, qdb_ts_range_t * native);
 void rangesToNative(JNIEnv * env, jobjectArray input, size_t count, qdb_ts_range_t * native);
 void nativeToRange(JNIEnv * env, qdb_ts_range_t native, jobject * output);
+void filteredRangesToNative(JNIEnv * env, jobjectArray input, size_t count, qdb_ts_filtered_range_t * native);
 
 void columnsToNative(JNIEnv * env, jobjectArray columns, qdb_ts_column_info * native_columns, size_t column_count);
 void releaseNative(qdb_ts_column_info * native_columns, size_t column_count);

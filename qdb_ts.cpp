@@ -68,18 +68,17 @@ Java_net_quasardb_qdb_jni_qdb_ts_1double_1insert(JNIEnv * env, jclass /*thisClas
                                          values,
                                          points_count);
 
-  fflush(stdout);
-
   delete[] values;
   return err;
 }
 
 JNIEXPORT jint JNICALL
 Java_net_quasardb_qdb_jni_qdb_ts_1double_1get_1ranges(JNIEnv * env, jclass /*thisClass*/, jlong handle,
-                                                      jstring alias, jstring column, jobjectArray ranges, jobject points) {
-  qdb_size_t range_count = env->GetArrayLength(ranges);
-  qdb_ts_range_t * native_ranges = new qdb_ts_range_t[range_count];
-  rangesToNative(env, ranges, range_count, native_ranges);
+                                                      jstring alias, jstring column, jobjectArray filteredRanges, jobject points) {
+  qdb_size_t filteredRangeCount = env->GetArrayLength(filteredRanges);
+  qdb_ts_filtered_range_t * nativeFilteredRanges = new qdb_ts_filtered_range_t[filteredRangeCount];
+
+  filteredRangesToNative(env, filteredRanges, filteredRangeCount, nativeFilteredRanges);
 
   qdb_ts_double_point * native_points;
   qdb_size_t point_count;
@@ -87,10 +86,11 @@ Java_net_quasardb_qdb_jni_qdb_ts_1double_1get_1ranges(JNIEnv * env, jclass /*thi
   qdb_error_t err = qdb_ts_double_get_ranges((qdb_handle_t)handle,
                                              StringUTFChars(env, alias),
                                              StringUTFChars(env, column),
-                                             native_ranges,
-                                             range_count,
+                                             nativeFilteredRanges,
+                                             filteredRangeCount,
                                              &native_points,
                                              &point_count);
+
 
   if (QDB_SUCCESS(err)) {
     jobjectArray array;
@@ -101,7 +101,7 @@ Java_net_quasardb_qdb_jni_qdb_ts_1double_1get_1ranges(JNIEnv * env, jclass /*thi
 
   qdb_release((qdb_handle_t)handle, native_points);
 
-  delete[] native_ranges;
+  delete[] nativeFilteredRanges;
   return err;
 }
 
@@ -111,6 +111,7 @@ Java_net_quasardb_qdb_jni_qdb_ts_1double_1aggregate(JNIEnv * env, jclass /*thisC
   qdb_size_t count = env->GetArrayLength(input);
 
   qdb_ts_double_aggregation_t * aggregates = new qdb_ts_double_aggregation_t[count];
+
   doubleAggregatesToNative(env, input, count, aggregates);
 
   qdb_error_t err = qdb_ts_double_aggregate((qdb_handle_t)handle,
@@ -121,6 +122,7 @@ Java_net_quasardb_qdb_jni_qdb_ts_1double_1aggregate(JNIEnv * env, jclass /*thisC
 
   if (QDB_SUCCESS(err)) {
     jobjectArray array;
+
     nativeToDoubleAggregates(env, aggregates, count, &array);
     setReferenceValue(env, output, array);
   }
@@ -135,6 +137,7 @@ Java_net_quasardb_qdb_jni_qdb_ts_1blob_1insert(JNIEnv * env, jclass /*thisClass*
   qdb_size_t pointsCount = env->GetArrayLength(points);
   qdb_ts_blob_point * values = new qdb_ts_blob_point[pointsCount];
 
+
   blobPointsToNative(env, points, pointsCount, values);
 
   qdb_error_t err = qdb_ts_blob_insert((qdb_handle_t)handle,
@@ -143,18 +146,16 @@ Java_net_quasardb_qdb_jni_qdb_ts_1blob_1insert(JNIEnv * env, jclass /*thisClass*
                                        values,
                                        pointsCount);
 
-  fflush(stdout);
-
   delete[] values;
   return err;
 }
 
 JNIEXPORT jint JNICALL
 Java_net_quasardb_qdb_jni_qdb_ts_1blob_1get_1ranges(JNIEnv * env, jclass /*thisClass*/, jlong handle,
-                                                    jstring alias, jstring column, jobjectArray ranges, jobject points) {
-  qdb_size_t rangeCount = env->GetArrayLength(ranges);
-  qdb_ts_range_t * nativeRanges = new qdb_ts_range_t[rangeCount];
-  rangesToNative(env, ranges, rangeCount, nativeRanges);
+                                                    jstring alias, jstring column, jobjectArray filteredRanges, jobject points) {
+  qdb_size_t filteredRangeCount = env->GetArrayLength(filteredRanges);
+  qdb_ts_filtered_range_t * nativeFilteredRanges = new qdb_ts_filtered_range_t[filteredRangeCount];
+  filteredRangesToNative(env, filteredRanges, filteredRangeCount, nativeFilteredRanges);
 
   qdb_ts_blob_point * nativePoints;
   qdb_size_t pointCount;
@@ -162,8 +163,8 @@ Java_net_quasardb_qdb_jni_qdb_ts_1blob_1get_1ranges(JNIEnv * env, jclass /*thisC
   qdb_error_t err = qdb_ts_blob_get_ranges((qdb_handle_t)handle,
                                            StringUTFChars(env, alias),
                                            StringUTFChars(env, column),
-                                           nativeRanges,
-                                           rangeCount,
+                                           nativeFilteredRanges,
+                                           filteredRangeCount,
                                            &nativePoints,
                                            &pointCount);
 
@@ -178,7 +179,7 @@ Java_net_quasardb_qdb_jni_qdb_ts_1blob_1get_1ranges(JNIEnv * env, jclass /*thisC
     fflush(stdout);
   }
 
-  delete[] nativeRanges;
+  delete[] nativeFilteredRanges;
   return err;
 }
 

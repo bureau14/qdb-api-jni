@@ -2,26 +2,26 @@ package net.quasardb.qdb.jni;
 
 public final class qdb_ts_blob_aggregation {
   protected long aggregation_type;
-  protected qdb_ts_range range;
+  protected qdb_ts_filtered_range filtered_range;
 
   protected long count;
   protected qdb_ts_blob_point result;
 
-  public qdb_ts_blob_aggregation(qdb_ts_range range, long aggregation_type) {
-    this.range = range;
+  public qdb_ts_blob_aggregation(qdb_ts_filtered_range filtered_range, long aggregation_type) {
+    this.filtered_range = filtered_range;
     this.aggregation_type = aggregation_type;
     this.count = -1;
   }
 
-  public qdb_ts_blob_aggregation(qdb_ts_range range, long aggregation_type, long count, qdb_ts_blob_point result) {
-    this.range = range;
+  public qdb_ts_blob_aggregation(qdb_ts_filtered_range filtered_range, long aggregation_type, long count, qdb_ts_blob_point result) {
+    this.filtered_range = filtered_range;
     this.aggregation_type = aggregation_type;
     this.count = count;
     this.result = result;
   }
 
-  public qdb_ts_range getRange() {
-    return this.range;
+  public qdb_ts_filtered_range getFilteredRange() {
+    return this.filtered_range;
   }
 
   public long getAggregationType() {
