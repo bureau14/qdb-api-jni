@@ -47,14 +47,15 @@ void
 rangesToNative(JNIEnv * env, jobjectArray input, size_t count, qdb_ts_range_t * native) {
   qdb_ts_range_t * cur = native;
   for (size_t i = 0; i < count; ++i) {
-    jobject point = (jobject)(env->GetObjectArrayElement(input, i));
+      jobject point =
+          (jobject)(env->GetObjectArrayElement(input, static_cast<jsize>(i)));
 
-    rangeToNative(env, point, cur++);
+      rangeToNative(env, point, cur++);
   }
 }
 
 void
-filterToNative(JNIEnv *env, jobject input, qdb_ts_filter_t * native) {
+filterToNative(JNIEnv * /*env*/, jobject /*input*/, qdb_ts_filter_t * native) {
   native->type = qdb_ts_filter_none;
 }
 
@@ -87,9 +88,10 @@ filteredRangesToNative(JNIEnv * env, jobjectArray input, size_t count, qdb_ts_fi
   qdb_ts_filtered_range_t * cur = native;
 
   for (size_t i = 0; i < count; ++i) {
-    jobject point = (jobject)(env->GetObjectArrayElement(input, i));
+      jobject point =
+          (jobject)(env->GetObjectArrayElement(input, static_cast<jsize>(i)));
 
-    filteredRangeToNative(env, point, cur++);
+      filteredRangeToNative(env, point, cur++);
   }
 }
 
@@ -131,18 +133,20 @@ columnsToNative(JNIEnv * env, jobjectArray columns, qdb_ts_column_info * native_
   jfieldID nameField, typeField;
   jclass objectClass;
   for (size_t i = 0; i < column_count; ++i) {
-    jobject object = (jobject) (env->GetObjectArrayElement(columns, i));
+      jobject object =
+          (jobject)(env->GetObjectArrayElement(columns, static_cast<jsize>(i)));
 
-    objectClass = env->GetObjectClass(object);
-    nameField = env->GetFieldID(objectClass, "name", "Ljava/lang/String;");
-    typeField = env->GetFieldID(objectClass, "type", "I");
-    jstring name = (jstring)env->GetObjectField(object, nameField);
+      objectClass = env->GetObjectClass(object);
+      nameField = env->GetFieldID(objectClass, "name", "Ljava/lang/String;");
+      typeField = env->GetFieldID(objectClass, "type", "I");
+      jstring name = (jstring)env->GetObjectField(object, nameField);
 
-    native_columns[i].type = (qdb_ts_column_type)(env->GetIntField(object, typeField));
+      native_columns[i].type = static_cast<qdb_ts_column_type_t>(
+          env->GetIntField(object, typeField));
 
-    // Is there a better way to do this ? Because we're using strdup here, we need a separate
-    // release function which is fragile.
-    native_columns[i].name = strdup(StringUTFChars(env, name));
+      // Is there a better way to do this? Because we're using strdup here, we
+      // need a separate release function which is fragile.
+      native_columns[i].name = strdup(StringUTFChars(env, name));
   }
 }
 
@@ -186,9 +190,10 @@ void
 doublePointsToNative(JNIEnv * env, jobjectArray input, size_t count, qdb_ts_double_point * native) {
   qdb_ts_double_point * cur = native;
   for (size_t i = 0; i < count; ++i) {
-    jobject point = (jobject)(env->GetObjectArrayElement(input, i));
+      jobject point =
+          (jobject)(env->GetObjectArrayElement(input, static_cast<jsize>(i)));
 
-    doublePointToNative(env, point, cur++);
+      doublePointToNative(env, point, cur++);
   }
 }
 
@@ -240,9 +245,10 @@ void
 blobPointsToNative(JNIEnv * env, jobjectArray input, size_t count, qdb_ts_blob_point * native) {
   qdb_ts_blob_point * cur = native;
   for (size_t i = 0; i < count; ++i) {
-    jobject point = (jobject)(env->GetObjectArrayElement(input, i));
+      jobject point =
+          (jobject)(env->GetObjectArrayElement(input, static_cast<jsize>(i)));
 
-    blobPointToNative(env, point, cur++);
+      blobPointToNative(env, point, cur++);
   }
 }
 
@@ -295,8 +301,9 @@ doubleAggregateToNative(JNIEnv *env, jobject input, qdb_ts_double_aggregation_t 
   filteredRangeToNative(env, env->GetObjectField(input, filteredRangeField), &(native->filtered_range));
   doublePointToNative(env, env->GetObjectField(input, resultField), &(native->result));
 
-  native->type = (qdb_ts_aggregation_type_t)(env->GetLongField(input, typeField));
-  native->count = env->GetLongField(input, countField);
+  native->type = static_cast<qdb_ts_aggregation_type_t>(
+      env->GetLongField(input, typeField));
+  native->count = static_cast<qdb_size_t>(env->GetLongField(input, countField));
 }
 
 void
@@ -305,9 +312,10 @@ doubleAggregatesToNative(JNIEnv * env, jobjectArray input, size_t count, qdb_ts_
 
   qdb_ts_double_aggregation_t * cur = native;
   for (size_t i = 0; i < count; ++i) {
-    jobject aggregate = (jobject)(env->GetObjectArrayElement(input, i));
+      jobject aggregate =
+          (jobject)(env->GetObjectArrayElement(input, static_cast<jsize>(i)));
 
-    doubleAggregateToNative(env, aggregate, cur++);
+      doubleAggregateToNative(env, aggregate, cur++);
   }
 }
 
@@ -362,8 +370,9 @@ blobAggregateToNative(JNIEnv *env, jobject input, qdb_ts_blob_aggregation_t * na
   filteredRangeToNative(env, env->GetObjectField(input, filteredRangeField), &(native->filtered_range));
   blobPointToNative(env, env->GetObjectField(input, resultField), &(native->result));
 
-  native->type = (qdb_ts_aggregation_type_t)(env->GetLongField(input, typeField));
-  native->count = env->GetLongField(input, countField);
+  native->type = static_cast<qdb_ts_aggregation_type_t>(
+      env->GetLongField(input, typeField));
+  native->count = static_cast<qdb_size_t>(env->GetLongField(input, countField));
 
   fflush(stdout);
 }
@@ -374,9 +383,10 @@ blobAggregatesToNative(JNIEnv * env, jobjectArray input, size_t count, qdb_ts_bl
 
   qdb_ts_blob_aggregation_t * cur = native;
   for (size_t i = 0; i < count; ++i) {
-    jobject aggregate = (jobject)(env->GetObjectArrayElement(input, i));
+      jobject aggregate =
+          (jobject)(env->GetObjectArrayElement(input, static_cast<jsize>(i)));
 
-    blobAggregateToNative(env, aggregate, cur++);
+      blobAggregateToNative(env, aggregate, cur++);
   }
 }
 
