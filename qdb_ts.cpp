@@ -1,3 +1,4 @@
+#include <stdlib.h>
 #include <qdb/ts.h>
 
 #include "helpers.h"
@@ -58,9 +59,14 @@ JNIEXPORT jint JNICALL
 Java_net_quasardb_qdb_jni_qdb_ts_1double_1insert(JNIEnv * env, jclass /*thisClass*/, jlong handle,
                                                  jstring alias, jstring column, jobjectArray points) {
   qdb_size_t points_count = env->GetArrayLength(points);
-  qdb_ts_double_point * values = new qdb_ts_double_point[points_count];
+  qdb_ts_double_point * values = (qdb_ts_double_point *)(malloc(points_count * sizeof(qdb_ts_double_point)));
 
   doublePointsToNative(env, points, points_count, values);
+
+  for (qdb_size_t i = 0; i < points_count; ++i) {
+    printf("[JNI] 1 inserting double point: %lf, ts: %ul.%ul\n", values[i].value, values[i].timestamp.tv_sec, values[i].timestamp.tv_nsec);
+    fflush(stdout);
+  }
 
   qdb_error_t err = qdb_ts_double_insert((qdb_handle_t)handle,
                                          StringUTFChars(env, alias),
@@ -68,7 +74,12 @@ Java_net_quasardb_qdb_jni_qdb_ts_1double_1insert(JNIEnv * env, jclass /*thisClas
                                          values,
                                          points_count);
 
-  delete[] values;
+  for (qdb_size_t i = 0; i < points_count; ++i) {
+    printf("[JNI] 2 inserting double point: %lf, ts: %ul.%ul\n", values[i].value, values[i].timestamp.tv_sec, values[i].timestamp.tv_nsec);
+    fflush(stdout);
+  }
+
+  free(values);
   return err;
 }
 
@@ -76,7 +87,7 @@ JNIEXPORT jint JNICALL
 Java_net_quasardb_qdb_jni_qdb_ts_1double_1get_1ranges(JNIEnv * env, jclass /*thisClass*/, jlong handle,
                                                       jstring alias, jstring column, jobjectArray filteredRanges, jobject points) {
   qdb_size_t filteredRangeCount = env->GetArrayLength(filteredRanges);
-  qdb_ts_filtered_range_t * nativeFilteredRanges = new qdb_ts_filtered_range_t[filteredRangeCount];
+  qdb_ts_filtered_range_t * nativeFilteredRanges = (qdb_ts_filtered_range_t *)(malloc(filteredRangeCount * sizeof(qdb_ts_filtered_range_t)));
 
   filteredRangesToNative(env, filteredRanges, filteredRangeCount, nativeFilteredRanges);
 
@@ -93,15 +104,19 @@ Java_net_quasardb_qdb_jni_qdb_ts_1double_1get_1ranges(JNIEnv * env, jclass /*thi
 
 
   if (QDB_SUCCESS(err)) {
+    for (qdb_size_t i = 0; i < point_count; ++i) {
+      printf("[JNI] retrieved double point: %lf, ts: %ul.%ul\n", native_points[i].value, native_points[i].timestamp.tv_sec, native_points[i].timestamp.tv_nsec);
+      fflush(stdout);
+    }
+
     jobjectArray array;
     nativeToDoublePoints(env, native_points, point_count, &array);
     setReferenceValue(env, points, array);
-    fflush(stdout);
   }
 
   qdb_release((qdb_handle_t)handle, native_points);
 
-  delete[] nativeFilteredRanges;
+  free(nativeFilteredRanges);
   return err;
 }
 
