@@ -70,11 +70,6 @@ Java_net_quasardb_qdb_jni_qdb_ts_1double_1insert(JNIEnv * env, jclass /*thisClas
                                          values,
                                          points_count);
 
-  for (qdb_size_t i = 0; i < points_count; ++i) {
-    printf("[JNI %d] inserting double point: %lf, ts: %ul.%ul\n", pthread_self(), values[i].value, values[i].timestamp.tv_sec, values[i].timestamp.tv_nsec);
-    fflush(stdout);
-  }
-
   free(values);
   return err;
 }
@@ -100,11 +95,6 @@ Java_net_quasardb_qdb_jni_qdb_ts_1double_1get_1ranges(JNIEnv * env, jclass /*thi
 
 
   if (QDB_SUCCESS(err)) {
-    for (qdb_size_t i = 0; i < point_count; ++i) {
-      printf("[JNI %d] retrieved double point: %lf, ts: %ul.%ul\n", pthread_self(), native_points[i].value, native_points[i].timestamp.tv_sec, native_points[i].timestamp.tv_nsec);
-      fflush(stdout);
-    }
-
     jobjectArray array;
     nativeToDoublePoints(env, native_points, point_count, &array);
     setReferenceValue(env, points, array);
@@ -187,7 +177,6 @@ Java_net_quasardb_qdb_jni_qdb_ts_1blob_1get_1ranges(JNIEnv * env, jclass /*thisC
     // garbage collector. As such, we do NOT call `qdb_release` here
     nativeToBlobPoints(env, nativePoints, pointCount, &array);
     setReferenceValue(env, points, array);
-    fflush(stdout);
   }
 
   delete[] nativeFilteredRanges;

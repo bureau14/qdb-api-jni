@@ -373,8 +373,6 @@ blobAggregateToNative(JNIEnv *env, jobject input, qdb_ts_blob_aggregation_t * na
   native->type = static_cast<qdb_ts_aggregation_type_t>(
       env->GetLongField(input, typeField));
   native->count = static_cast<qdb_size_t>(env->GetLongField(input, countField));
-
-  fflush(stdout);
 }
 
 void
