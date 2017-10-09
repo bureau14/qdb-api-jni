@@ -1,4 +1,3 @@
-#include <pthread.h>
 #include <stdlib.h>
 #include <qdb/ts.h>
 
