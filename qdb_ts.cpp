@@ -1,3 +1,4 @@
+#include <pthread.h>
 #include <stdlib.h>
 #include <qdb/ts.h>
 
@@ -63,11 +64,6 @@ Java_net_quasardb_qdb_jni_qdb_ts_1double_1insert(JNIEnv * env, jclass /*thisClas
 
   doublePointsToNative(env, points, points_count, values);
 
-  for (qdb_size_t i = 0; i < points_count; ++i) {
-    printf("[JNI] 1 inserting double point: %lf, ts: %ul.%ul\n", values[i].value, values[i].timestamp.tv_sec, values[i].timestamp.tv_nsec);
-    fflush(stdout);
-  }
-
   qdb_error_t err = qdb_ts_double_insert((qdb_handle_t)handle,
                                          StringUTFChars(env, alias),
                                          StringUTFChars(env, column),
@@ -75,7 +71,7 @@ Java_net_quasardb_qdb_jni_qdb_ts_1double_1insert(JNIEnv * env, jclass /*thisClas
                                          points_count);
 
   for (qdb_size_t i = 0; i < points_count; ++i) {
-    printf("[JNI] 2 inserting double point: %lf, ts: %ul.%ul\n", values[i].value, values[i].timestamp.tv_sec, values[i].timestamp.tv_nsec);
+    printf("[JNI %d] inserting double point: %lf, ts: %ul.%ul\n", pthread_self(), values[i].value, values[i].timestamp.tv_sec, values[i].timestamp.tv_nsec);
     fflush(stdout);
   }
 
@@ -105,7 +101,7 @@ Java_net_quasardb_qdb_jni_qdb_ts_1double_1get_1ranges(JNIEnv * env, jclass /*thi
 
   if (QDB_SUCCESS(err)) {
     for (qdb_size_t i = 0; i < point_count; ++i) {
-      printf("[JNI] retrieved double point: %lf, ts: %ul.%ul\n", native_points[i].value, native_points[i].timestamp.tv_sec, native_points[i].timestamp.tv_nsec);
+      printf("[JNI %d] retrieved double point: %lf, ts: %ul.%ul\n", pthread_self(), native_points[i].value, native_points[i].timestamp.tv_sec, native_points[i].timestamp.tv_nsec);
       fflush(stdout);
     }
 
