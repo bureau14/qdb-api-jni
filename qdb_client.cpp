@@ -30,6 +30,39 @@ Java_net_quasardb_qdb_jni_qdb_connect(JNIEnv *env, jclass /*thisClass*/, jlong h
 }
 
 JNIEXPORT jint JNICALL
+Java_net_quasardb_qdb_jni_qdb_secure_1connect(JNIEnv *env, jclass /*thisClass*/, jlong handle, jstring uri, jobject securityOptions) {
+
+  qdb_error_t err;
+  jclass objectClass;
+  jfieldID userNameField, userPrivateKeyField, clusterPublicKeyField;
+
+  objectClass = env->GetObjectClass(securityOptions);
+  userNameField = env->GetFieldID(objectClass, "user_name", "Ljava/lang/String;");
+  userPrivateKeyField = env->GetFieldID(objectClass, "user_private_key", "Ljava/lang/String;");
+  clusterPublicKeyField = env->GetFieldID(objectClass, "cluster_public_key", "Ljava/lang/String;");
+
+  jstring userName = (jstring)env->GetObjectField(securityOptions, userNameField);
+  jstring userPrivateKey = (jstring)env->GetObjectField(securityOptions, userPrivateKeyField);
+  jstring clusterPublicKey = (jstring)env->GetObjectField(securityOptions, clusterPublicKeyField);
+
+  err = qdb_option_set_cluster_public_key((qdb_handle_t)handle,
+                                          StringUTFChars(env, clusterPublicKey));
+  if (QDB_FAILURE(err)) {
+    return err;
+  }
+
+  err = qdb_option_set_user_credentials((qdb_handle_t)handle,
+                                        StringUTFChars(env, userName),
+                                        StringUTFChars(env, userPrivateKey));
+  if (QDB_FAILURE(err)) {
+    return err;
+  }
+
+  StringUTFChars nativeUri(env, uri);
+  return qdb_connect((qdb_handle_t)handle, nativeUri);
+}
+
+JNIEXPORT jint JNICALL
 Java_net_quasardb_qdb_jni_qdb_close(JNIEnv * /*env*/, jclass /*thisClass*/, jlong handle) {
   return qdb_close((qdb_handle_t)handle);
 }

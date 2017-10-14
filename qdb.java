@@ -35,6 +35,7 @@ public final class qdb {
 
   public static native long open_tcp();
   public static native int connect(long handle, String uri);
+  public static native int secure_connect(long handle, String uri, qdb_cluster_security_options securityOptions);
   public static native int close(long handle);
   public static native void release(long handle, ByteBuffer buffer);
 

@@ -10,6 +10,7 @@ include(compile_options.cmake)
 set(QDB_JAVA_SOURCES
     Reference.java
     qdb.java
+    qdb_cluster_security_options.java
     qdb_error.java
     qdb_err_origin.java
     qdb_err_severity.java
