@@ -13,7 +13,7 @@ Java_net_quasardb_qdb_jni_qdb_ts_1create(JNIEnv * env, jclass /*thisClass*/, jlo
 
   columnsToNative(env, columns, native_columns, column_count);
 
-  jint result = qdb_ts_create((qdb_handle_t)handle, StringUTFChars(env, alias), (qdb_duration_t)shard_size, native_columns, column_count);
+  jint result = qdb_ts_create((qdb_handle_t)handle, StringUTFChars(env, alias), (qdb_uint_t)shard_size, native_columns, column_count);
   releaseNative(native_columns, column_count);
 
   delete[] native_columns;
