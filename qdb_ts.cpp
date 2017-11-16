@@ -56,6 +56,35 @@ Java_net_quasardb_qdb_jni_qdb_ts_1list_1columns(JNIEnv * env, jclass /*thisClass
 }
 
 JNIEXPORT jint JNICALL
+Java_net_quasardb_qdb_jni_qdb_ts_1local_1table_1init(JNIEnv * env, jclass /*thisClass*/, jlong handle,
+                                                     jstring alias, jobjectArray columns, jobject localTable) {
+  size_t columnCount = env->GetArrayLength(columns);
+  qdb_ts_column_info * nativeColumns = new qdb_ts_column_info[columnCount];
+
+  columnsToNative(env, columns, nativeColumns, columnCount);
+
+  qdb_local_table_t nativeLocalTable;
+
+  qdb_error_t err = qdb_ts_local_table_init((qdb_handle_t)handle,
+                                            StringUTFChars(env, alias),
+                                            nativeColumns,
+                                            columnCount,
+                                            &nativeLocalTable);
+  if (QDB_SUCCESS(err)) {
+    setLong(env, localTable, reinterpret_cast<long>(nativeLocalTable));
+  }
+
+  return err;
+}
+
+JNIEXPORT void JNICALL
+Java_net_quasardb_qdb_jni_qdb_ts_1local_1table_1release(JNIEnv * env, jclass /*thisClass*/, jlong handle,
+                                                        jlong localTable) {
+  qdb_release((qdb_handle_t)handle,
+              (qdb_local_table_t)localTable);
+}
+
+JNIEXPORT jint JNICALL
 Java_net_quasardb_qdb_jni_qdb_ts_1double_1insert(JNIEnv * env, jclass /*thisClass*/, jlong handle,
                                                  jstring alias, jstring column, jobjectArray points) {
   qdb_size_t points_count = env->GetArrayLength(points);
