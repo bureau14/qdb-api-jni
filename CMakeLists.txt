@@ -7,30 +7,18 @@ find_package(JNI REQUIRED)
 include(UseJava)
 include(compile_options.cmake)
 
-set(QDB_JAVA_SOURCES
-    Reference.java
-    qdb.java
-    qdb_cluster_security_options.java
-    qdb_error.java
-    qdb_err_origin.java
-    qdb_err_severity.java
-    qdb_entry_type.java
-    qdb_stream_mode.java
-    qdb_timespec.java
-    qdb_ts_aggregation_type.java
-    qdb_ts_blob_point.java
-    qdb_ts_blob_aggregation.java
-    qdb_ts_column_type.java
-    qdb_ts_column_info.java
-    qdb_ts_double_point.java
-    qdb_ts_double_aggregation.java
-    qdb_ts_filter.java
-    qdb_ts_filtered_range.java
-    qdb_ts_no_filter.java
-    qdb_ts_range.java
-    tools/JarFileHelper.java
-    tools/NativeLibraryLoader.java
-)
+file(GLOB QDB_JAVA_SOURCES
+  "*.java"
+  "tools/*.java"
+  "src/main/net/quasardb/qdb/exceptions/connection/*.java"
+  "src/main/net/quasardb/qdb/exceptions/input/*.java"
+  "src/main/net/quasardb/qdb/exceptions/operation/*.java"
+  "src/main/net/quasardb/qdb/exceptions/protocol/*.java"
+  "src/main/net/quasardb/qdb/exceptions/system/*.java"
+  "src/main/net/quasardb/qdb/exceptions/system/remote/*.java"
+  "src/main/net/quasardb/qdb/exceptions/system/local/*.java"
+  "src/main/net/quasardb/qdb/exceptions/*.java"
+  "src/main/net/quasardb/qdb/*.java")
 
 set(QDB_JNI_CLASSES
     net.quasardb.qdb.jni.qdb
@@ -52,8 +40,7 @@ set(QDB_JNI_SOURCES
 )
 
 add_jar(jni
-    ${QDB_JAVA_SOURCES}
-)
+  ${QDB_JAVA_SOURCES})
 
 create_javah(TARGET qdb_api_jni_headers
     CLASSES ${QDB_JNI_CLASSES}
