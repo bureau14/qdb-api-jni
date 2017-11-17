@@ -10,29 +10,33 @@ import net.quasardb.qdb.jni.*;
 
 public class QdbTimespec implements Serializable {
 
-    protected LocalDateTime value;
+    private qdb_timespec value;
+
+    public QdbTimespec (qdb_timespec value) {
+        this.value = value;
+    }
+
+    public QdbTimespec (LocalDateTime value) {
+        this(new qdb_timespec(value.atZone(ZoneId.systemDefault()).toEpochSecond(),
+                              value.getNano()));
+    }
 
     public QdbTimespec (Timestamp value) {
         this(value.toLocalDateTime());
     }
 
-    public QdbTimespec (LocalDateTime value) {
-        this.value = value;
-    }
-
-    public LocalDateTime getValue() {
+    public qdb_timespec getValue() {
         return this.value;
     }
 
-    public qdb_timespec toNative() {
-        return new qdb_timespec(this.value.atZone(ZoneId.systemDefault()).toEpochSecond(),
-                                this.value.getNano());
+    public LocalDateTime asLocalDateTime() {
+        return LocalDateTime.ofInstant(this.asInstant(),
+                                       ZoneId.systemDefault());
     }
 
-    public static QdbTimespec fromNative(qdb_timespec input) {
-        return new QdbTimespec(LocalDateTime.ofInstant(Instant.ofEpochSecond(input.getEpochSecond(),
-                                                                             input.getNano()),
-                                                       ZoneId.systemDefault()));
+    public Instant asInstant() {
+        return Instant.ofEpochSecond(this.value.getEpochSecond(),
+                                     this.value.getNano());
     }
 
     @Override
