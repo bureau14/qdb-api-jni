@@ -1,6 +1,8 @@
 package net.quasardb.qdb.jni;
 
-public final class qdb_timespec {
+import java.io.Serializable;
+
+public final class qdb_timespec implements Serializable {
   public long tv_sec;
   public long tv_nsec;
 
