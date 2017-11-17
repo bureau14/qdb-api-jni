@@ -31,15 +31,7 @@ public final class QdbTimeSeriesTable {
 
         Reference<Long> theLocalTable = new Reference<Long>();
         qdb.ts_local_table_init(this.session.handle(), this.name, columns.value, theLocalTable);
-        this.localTable = theLocalTable.value;
-    }
-
-    QdbTimeSeriesTable(QdbSession session, String name, qdb_ts_column_info[] columns) {
-        this.session = session;
-        this.name = name;
-
-        Reference<Long> theLocalTable = new Reference<Long>();
-        qdb.ts_local_table_init(this.session.handle(), this.name, columns, theLocalTable);
+        QdbExceptionFactory.throwIfError(err);
 
         this.localTable = theLocalTable.value;
     }
@@ -50,7 +42,7 @@ public final class QdbTimeSeriesTable {
     @Override
     protected void finalize() throws Throwable {
         try {
-            qdb.ts_local_table_release(this.session.handle(),localTable);
+            qdb.ts_local_table_release(this.session.handle(), localTable);
         } finally {
             super.finalize();
         }
