@@ -69,7 +69,29 @@ public class QdbTimeSeriesValue {
             this.blobValue = ByteBuffer.allocateDirect(size);
             this.blobValue.put(value);
             this.blobValue.rewind();
+
+            value.rewind();
         }
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (!(obj instanceof QdbTimeSeriesValue)) return false;
+        QdbTimeSeriesValue rhs = (QdbTimeSeriesValue)obj;
+
+        if (this.getType() != rhs.getType()) {
+            return false;
+        }
+
+        switch (this.getType()) {
+        case DOUBLE:
+            return this.getDouble() == rhs.getDouble();
+
+        case BLOB:
+            return this.getBlob().equals(rhs.getBlob());
+        }
+
+        return false;
     }
 
     public Type getType() {
