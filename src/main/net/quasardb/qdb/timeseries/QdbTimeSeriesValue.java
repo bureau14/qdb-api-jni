@@ -9,9 +9,9 @@ import net.quasardb.qdb.jni.*;
  */
 public class QdbTimeSeriesValue implements Serializable {
 
-    protected Type type;
-    protected double doubleValue;
-    protected ByteBuffer blobValue;
+    public Type type;
+    public double doubleValue;
+    public ByteBuffer blobValue;
 
     public enum Type {
         UNINITIALIZED(qdb_ts_column_type.uninitialized),

@@ -54,4 +54,12 @@ public final class QdbTimeSeriesTable {
     public String getName() {
         return this.name;
     }
+
+    /**
+     * Append a new row to the table.
+     */
+    public void append(QdbTimeSeriesRow row) {
+        int err = qdb.ts_table_row_append(this.localTable, row.getTimestamp().getValue(), row.getValues());
+        QdbExceptionFactory.throwIfError(err);
+    }
 }

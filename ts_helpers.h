@@ -36,3 +36,8 @@ void blobAggregateToNative(JNIEnv *env, jobject input, qdb_ts_blob_aggregation_t
 void blobAggregatesToNative(JNIEnv * env, jobjectArray input, size_t count, qdb_ts_blob_aggregation_t * native);
 void nativeToBlobAggregate(JNIEnv * env, qdb_ts_blob_aggregation native, jobject * output);
 void nativeToBlobAggregates(JNIEnv * env, qdb_ts_blob_aggregation * native, size_t count, jobjectArray * output);
+
+qdb_error_t
+tableRowAppend(JNIEnv *env, qdb_local_table_t localTable, jobject time, jobjectArray values, size_t count, qdb_size_t * rowIndex);
+qdb_error_t
+tableRowSetColumnValue(JNIEnv * env, qdb_local_table_t localTable, size_t columnIndex, jobject value);

@@ -381,7 +381,7 @@ blobAggregatesToNative(JNIEnv * env, jobjectArray input, size_t count, qdb_ts_bl
 
   qdb_ts_blob_aggregation_t * cur = native;
   for (size_t i = 0; i < count; ++i) {
-      jobject aggregate =
+    jobject aggregate =
           (jobject)(env->GetObjectArrayElement(input, static_cast<jsize>(i)));
 
       blobAggregateToNative(env, aggregate, cur++);
@@ -421,4 +421,108 @@ nativeToBlobAggregates(JNIEnv * env, qdb_ts_blob_aggregation * native, size_t co
     nativeToBlobAggregate(env, native[i], &aggregate);
     env->SetObjectArrayElement(*output, (jsize)i, aggregate);
   }
+}
+
+void
+printObjectClass(JNIEnv * env, jobject value) {
+  jclass cls = env->GetObjectClass(value);
+
+  // First get the class object
+  jmethodID mid = env->GetMethodID(cls, "getClass", "()Ljava/lang/Class;");
+  jobject clsObj = env->CallObjectMethod(value, mid);
+
+  // Now get the class object's class descriptor
+  cls = env->GetObjectClass(clsObj);
+
+  // Find the getName() method on the class object
+  mid = env->GetMethodID(cls, "getName", "()Ljava/lang/String;");
+
+  // Call the getName() to get a jstring object back
+  jstring strObj = (jstring)env->CallObjectMethod(clsObj, mid);
+
+  // Now get the c string from the java jstring object
+  const char* str = env->GetStringUTFChars(strObj, NULL);
+
+  // Print the class name
+  printf("\nCalling class is: %s\n", str);
+
+  // Release the memory pinned char array
+  env->ReleaseStringUTFChars(strObj, str);
+}
+
+qdb_ts_column_type_t
+columnTypeFromColumnValue(JNIEnv * env, jobject value) {
+  jclass objectClass;
+  jobject typeObject;
+  jfieldID typeField, typeValueField;
+  jmethodID methodId;
+
+  objectClass = env->GetObjectClass(value);
+
+  // First get the
+  methodId = env->GetMethodID(objectClass, "getType", "()Lnet/quasardb/qdb/QdbTimeSeriesValue$Type;");
+  typeObject = env->CallObjectMethod(value, methodId);
+
+  objectClass = env->GetObjectClass(typeObject);
+
+  typeValueField = env->GetFieldID(objectClass, "value", "I");
+  return (qdb_ts_column_type_t)(env->GetIntField(typeObject, typeValueField));
+}
+
+qdb_error_t
+tableRowSetDoubleColumnValue(JNIEnv * env, qdb_local_table_t localTable, size_t columnIndex, jobject value) {
+  jclass objectClass = env->GetObjectClass(value);
+  jmethodID methodId = env->GetMethodID(objectClass, "getDouble", "()D");
+
+  return qdb_ts_row_set_double(localTable, columnIndex, env->CallDoubleMethod(value, methodId));
+}
+
+qdb_error_t
+tableRowSetColumnValue(JNIEnv * env, qdb_local_table_t localTable, size_t columnIndex, jobject value) {
+  jclass objectClass;
+  jobject typeObject;
+  jfieldID typeField;
+  jmethodID methodId;
+
+  printf("value = %p\n", value);
+
+  printf("setting row value, index: %d\n", columnIndex);
+  fflush(stdout);
+
+  qdb_ts_column_type_t type = columnTypeFromColumnValue(env, value);
+
+  printf("value type: %d\n", type);
+  fflush(stdout);
+
+  switch(type) {
+  case qdb_ts_column_double:
+    return tableRowSetDoubleColumnValue(env, localTable, columnIndex, value);
+    break;
+
+  case qdb_ts_column_blob:
+    printf("got blob!\n");
+    break;
+
+  default:
+    break;
+  }
+}
+
+
+qdb_error_t
+tableRowAppend(JNIEnv * env, qdb_local_table_t localTable, jobject time, jobjectArray values, size_t count, qdb_size_t * rowIndex) {
+  qdb_timespec_t nativeTime;
+  timespecToNative(env, time, &nativeTime);
+
+  for (size_t i = 0; i < count; i++) {
+    jobject value =
+      (jobject)(env->GetObjectArrayElement(values, static_cast<jsize>(i)));
+    qdb_error_t err = tableRowSetColumnValue(env, localTable, i, value);
+
+    if (!QDB_SUCCESS(err)) {
+      return err;
+    }
+  }
+
+  return qdb_ts_table_row_append(localTable, &nativeTime, rowIndex);
 }

@@ -85,6 +85,19 @@ Java_net_quasardb_qdb_jni_qdb_ts_1local_1table_1release(JNIEnv * env, jclass /*t
 }
 
 JNIEXPORT jint JNICALL
+Java_net_quasardb_qdb_jni_qdb_ts_1table_1row_1append(JNIEnv * env, jclass /*thisClass*/, jlong localTable, jobject time, jobjectArray values) {
+  qdb_size_t rowIndex;
+
+  qdb_error_t err = tableRowAppend(env, (qdb_local_table_t)localTable, time, values, env->GetArrayLength(values), &rowIndex);
+
+  if (QDB_SUCCESS(err)) {
+    printf("got row index: %d\n", rowIndex);
+  }
+
+  return err;
+}
+
+JNIEXPORT jint JNICALL
 Java_net_quasardb_qdb_jni_qdb_ts_1double_1insert(JNIEnv * env, jclass /*thisClass*/, jlong handle,
                                                  jstring alias, jstring column, jobjectArray points) {
   qdb_size_t points_count = env->GetArrayLength(points);
