@@ -40,7 +40,6 @@ public final class QdbAutoFlushTimeSeriesTable extends QdbTimeSeriesTable {
         this.threshold = threshold;
     }
 
-
     @Override
     public void append(QdbTimeSeriesRow row) throws IOException {
         super.append(row);

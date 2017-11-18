@@ -510,7 +510,7 @@ tableRowSetColumnValue(JNIEnv * env, qdb_local_table_t localTable, size_t column
     break;
 
   default:
-    break;
+    return qdb_e_ok;
   }
 }
 

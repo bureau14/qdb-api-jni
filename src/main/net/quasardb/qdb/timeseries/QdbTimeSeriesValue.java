@@ -41,6 +41,13 @@ public class QdbTimeSeriesValue implements Serializable {
     }
 
     /**
+     * Create a null / empty value.
+     */
+    public static QdbTimeSeriesValue createNull() {
+        return new QdbTimeSeriesValue(Type.UNINITIALIZED);
+    }
+
+    /**
      * Represents a double value.
      */
     public static QdbTimeSeriesValue createDouble(double value) {
