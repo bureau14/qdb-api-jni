@@ -12,7 +12,6 @@ import java.util.*;
  */
 public class QdbTimeSeriesTable implements AutoCloseable, Flushable {
 
-    int autoFlush;
     QdbSession session;
     String name;
     Long localTable;
