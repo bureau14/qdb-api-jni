@@ -477,6 +477,20 @@ tableRowSetDoubleColumnValue(JNIEnv * env, qdb_local_table_t localTable, size_t 
   return qdb_ts_row_set_double(localTable, columnIndex, env->CallDoubleMethod(value, methodId));
 }
 
+
+qdb_error_t
+tableRowSetBlobColumnValue(JNIEnv * env, qdb_local_table_t localTable, size_t columnIndex, jobject value) {
+  jclass objectClass = env->GetObjectClass(value);
+  jmethodID methodId = env->GetMethodID(objectClass, "getBlob", "()Ljava/nio/ByteBuffer;");
+
+  jobject blobValue = env->CallObjectMethod(value, methodId);
+
+  return qdb_ts_row_set_blob(localTable,
+                             columnIndex,
+                             env->GetDirectBufferAddress(blobValue),
+                             (qdb_size_t)env->GetDirectBufferCapacity(blobValue));
+}
+
 qdb_error_t
 tableRowSetColumnValue(JNIEnv * env, qdb_local_table_t localTable, size_t columnIndex, jobject value) {
   jclass objectClass;
@@ -484,15 +498,7 @@ tableRowSetColumnValue(JNIEnv * env, qdb_local_table_t localTable, size_t column
   jfieldID typeField;
   jmethodID methodId;
 
-  printf("value = %p\n", value);
-
-  printf("setting row value, index: %d\n", columnIndex);
-  fflush(stdout);
-
   qdb_ts_column_type_t type = columnTypeFromColumnValue(env, value);
-
-  printf("value type: %d\n", type);
-  fflush(stdout);
 
   switch(type) {
   case qdb_ts_column_double:
@@ -500,7 +506,7 @@ tableRowSetColumnValue(JNIEnv * env, qdb_local_table_t localTable, size_t column
     break;
 
   case qdb_ts_column_blob:
-    printf("got blob!\n");
+    return tableRowSetBlobColumnValue(env, localTable, columnIndex, value);
     break;
 
   default:

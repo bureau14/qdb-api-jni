@@ -1,6 +1,8 @@
 package net.quasardb.qdb;
 
 import java.io.IOException;
+import java.io.Flushable;
+import java.lang.AutoCloseable;
 import java.nio.channels.SeekableByteChannel;
 import net.quasardb.qdb.jni.*;
 import java.util.*;
@@ -8,7 +10,7 @@ import java.util.*;
 /**
  * Represents a timeseries table.
  */
-public final class QdbTimeSeriesTable {
+public final class QdbTimeSeriesTable implements AutoCloseable, Flushable {
 
     QdbSession session;
     String name;
@@ -42,10 +44,29 @@ public final class QdbTimeSeriesTable {
     @Override
     protected void finalize() throws Throwable {
         try {
-            qdb.ts_local_table_release(this.session.handle(), localTable);
+            qdb.ts_local_table_release(this.session.handle(), this.localTable);
         } finally {
             super.finalize();
         }
+    }
+
+    /**
+     * Closes the timeseries table and local cache so that memory can be reclaimed. Flushes
+     * all remaining output.
+     */
+    public void close() throws IOException {
+        this.flush();
+        qdb.ts_local_table_release(this.session.handle(), this.localTable);
+
+        this.localTable = null;
+    }
+
+    /**
+     * Flush current local cache to server.
+     */
+    public void flush() throws IOException {
+        int err = qdb.ts_push(this.localTable);
+        QdbExceptionFactory.throwIfError(err);
     }
 
     /**
@@ -60,14 +81,6 @@ public final class QdbTimeSeriesTable {
      */
     public void append(QdbTimeSeriesRow row) {
         int err = qdb.ts_table_row_append(this.localTable, row.getTimestamp().getValue(), row.getValues());
-        QdbExceptionFactory.throwIfError(err);
-    }
-
-    /**
-     * Flush current local cache to server.
-     */
-    public void flush() {
-        int err = qdb.ts_push(this.localTable);
         QdbExceptionFactory.throwIfError(err);
     }
 }

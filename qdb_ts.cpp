@@ -91,8 +91,7 @@ Java_net_quasardb_qdb_jni_qdb_ts_1table_1row_1append(JNIEnv * env, jclass /*this
   qdb_error_t err = tableRowAppend(env, (qdb_local_table_t)localTable, time, values, env->GetArrayLength(values), &rowIndex);
 
   if (QDB_SUCCESS(err)) {
-    printf("got row index: %d\n", rowIndex);
-    fflush(stdout);
+    // NOOP ?
   }
 
   return err;
