@@ -56,10 +56,18 @@ public final class QdbTimeSeriesTable {
     }
 
     /**
-     * Append a new row to the table.
+     * Append a new row to the local table cache.
      */
     public void append(QdbTimeSeriesRow row) {
         int err = qdb.ts_table_row_append(this.localTable, row.getTimestamp().getValue(), row.getValues());
+        QdbExceptionFactory.throwIfError(err);
+    }
+
+    /**
+     * Flush current local cache to server.
+     */
+    public void flush() {
+        int err = qdb.ts_push(this.localTable);
         QdbExceptionFactory.throwIfError(err);
     }
 }

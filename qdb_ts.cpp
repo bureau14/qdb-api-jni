@@ -92,9 +92,15 @@ Java_net_quasardb_qdb_jni_qdb_ts_1table_1row_1append(JNIEnv * env, jclass /*this
 
   if (QDB_SUCCESS(err)) {
     printf("got row index: %d\n", rowIndex);
+    fflush(stdout);
   }
 
   return err;
+}
+
+JNIEXPORT jint JNICALL
+Java_net_quasardb_qdb_jni_qdb_ts_1push(JNIEnv * env, jclass /*thisClass*/, jlong localTable) {
+  return qdb_ts_push((qdb_local_table_t)localTable);
 }
 
 JNIEXPORT jint JNICALL
