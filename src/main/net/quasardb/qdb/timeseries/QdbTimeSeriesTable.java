@@ -15,6 +15,7 @@ public class QdbTimeSeriesTable implements AutoCloseable, Flushable {
     QdbSession session;
     String name;
     Long localTable;
+    Map <String, Integer> columnOffsets;
 
     /**
      * Initialize a new timeseries table.
@@ -36,6 +37,13 @@ public class QdbTimeSeriesTable implements AutoCloseable, Flushable {
         QdbExceptionFactory.throwIfError(err);
 
         this.localTable = theLocalTable.value;
+
+        // Keep track of the columns that are part of this table, so
+        // we can later look them up.
+        this.columnOffsets = new HashMap(columns.value.length);
+        for (int i = 0; i < columns.value.length; ++i) {
+            this.columnOffsets.put(columns.value[i].name, i);
+        }
     }
 
     /**
@@ -74,6 +82,22 @@ public class QdbTimeSeriesTable implements AutoCloseable, Flushable {
      */
     public String getName() {
         return this.name;
+    }
+
+    /**
+     * Utility function that looks up a column's index by its id. The first
+     * column starts with 0.
+     *
+     * @param id String identifier of the column.
+     * @returns The index of the column inside the timeseries table definition.
+     */
+    public int columnIndexById (String id) {
+        Integer offset = this.columnOffsets.get(id);
+        if (offset == null) {
+            throw new QdbInvalidArgumentException();
+        }
+
+        return offset.intValue();
     }
 
     /**
