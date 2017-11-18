@@ -29,8 +29,6 @@ public final class QdbTimeSeriesRow {
         this(new QdbTimespec(timestamp), values);
     }
 
-
-
     public QdbTimespec getTimestamp() {
         return this.timestamp;
     }

@@ -10,8 +10,9 @@ import java.util.*;
 /**
  * Represents a timeseries table.
  */
-public final class QdbTimeSeriesTable implements AutoCloseable, Flushable {
+public class QdbTimeSeriesTable implements AutoCloseable, Flushable {
 
+    int autoFlush;
     QdbSession session;
     String name;
     Long localTable;
@@ -79,7 +80,7 @@ public final class QdbTimeSeriesTable implements AutoCloseable, Flushable {
     /**
      * Append a new row to the local table cache.
      */
-    public void append(QdbTimeSeriesRow row) {
+    public void append(QdbTimeSeriesRow row) throws IOException {
         int err = qdb.ts_table_row_append(this.localTable, row.getTimestamp().getValue(), row.getValues());
         QdbExceptionFactory.throwIfError(err);
     }
