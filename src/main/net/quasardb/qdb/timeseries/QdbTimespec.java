@@ -39,6 +39,10 @@ public class QdbTimespec implements Serializable {
                                      this.value.getNano());
     }
 
+    public Timestamp asTimestamp() {
+        return Timestamp.valueOf(this.asLocalDateTime());
+    }
+
     @Override
     public boolean equals(Object obj) {
         if (!(obj instanceof QdbTimespec)) return false;
