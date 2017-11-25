@@ -8,7 +8,7 @@ import java.nio.ByteBuffer;
 /**
  * Defines an easy-to-use interface to the quasardb cluster.
  */
-class QdbSession {
+public class QdbSession {
     private transient long handle;
     private qdb_cluster_security_options securityOptions;
 
