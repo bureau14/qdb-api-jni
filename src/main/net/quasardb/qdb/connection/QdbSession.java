@@ -3,7 +3,10 @@ package net.quasardb.qdb;
 import net.quasardb.qdb.jni.*;
 import java.nio.ByteBuffer;
 
-final class QdbSession {
+/**
+ * Defines an easy-to-use interface to the quasardb cluster.
+ */
+class QdbSession {
     private transient long handle;
 
     public QdbSession() {

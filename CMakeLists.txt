@@ -18,6 +18,7 @@ file(GLOB QDB_JAVA_SOURCES
   "src/main/net/quasardb/qdb/exceptions/system/remote/*.java"
   "src/main/net/quasardb/qdb/exceptions/system/local/*.java"
   "src/main/net/quasardb/qdb/exceptions/*.java"
+  "src/main/net/quasardb/qdb/connection/*.java"
   "src/main/net/quasardb/qdb/timeseries/*.java"
   "src/main/net/quasardb/qdb/*.java")
 
@@ -41,7 +42,8 @@ set(QDB_JNI_SOURCES
 )
 
 add_jar(jni
-  ${QDB_JAVA_SOURCES})
+  SOURCES ${QDB_JAVA_SOURCES}
+  INCLUDE_JARS lib/stormpot-2.4.jar)
 
 create_javah(TARGET qdb_api_jni_headers
     CLASSES ${QDB_JNI_CLASSES}

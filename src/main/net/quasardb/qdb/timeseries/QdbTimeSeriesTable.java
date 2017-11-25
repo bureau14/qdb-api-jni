@@ -111,7 +111,6 @@ public class QdbTimeSeriesTable implements AutoCloseable, Flushable {
         QdbExceptionFactory.throwIfError(err);
     }
 
-
     /**
      * Append a new row to the local table cache.
      */
