@@ -15,7 +15,7 @@ import java.util.*;
  */
 public class QdbTimeSeriesTable implements AutoCloseable, Flushable {
 
-    QdbSession session;
+    QdbSessionPool pool;
     String name;
     Long localTable;
     Map <String, Integer> columnOffsets;
@@ -26,8 +26,8 @@ public class QdbTimeSeriesTable implements AutoCloseable, Flushable {
      * @param session Active connection with the QdbCluster
      * @param name Timeseries name. Must already exist.
      */
-    QdbTimeSeriesTable(QdbSession session, String name) {
-        this.session = session;
+    QdbTimeSeriesTable(QdbSessionPool pool, String name) {
+        this.pool = pool;
         this.name = name;
 
         Reference<qdb_ts_column_info[]> columns =
