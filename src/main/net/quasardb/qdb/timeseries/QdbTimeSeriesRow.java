@@ -1,6 +1,7 @@
 package net.quasardb.qdb;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.nio.channels.SeekableByteChannel;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
@@ -11,7 +12,7 @@ import java.util.*;
 /**
  * Represents a timeseries row.
  */
-public final class QdbTimeSeriesRow {
+public final class QdbTimeSeriesRow implements Serializable {
 
     private QdbTimespec timestamp;
     private QdbTimeSeriesValue[] values;
