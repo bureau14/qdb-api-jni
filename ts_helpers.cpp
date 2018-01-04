@@ -129,7 +129,7 @@ nativeToFilteredRange(JNIEnv * env, qdb_ts_filtered_range_t native, jobject * ou
 }
 
 void
-columnsToNative(JNIEnv * env, jobjectArray columns, qdb_ts_column_info * native_columns, size_t column_count) {
+columnsToNative(JNIEnv * env, jobjectArray columns, qdb_ts_column_info_t * native_columns, size_t column_count) {
   jfieldID nameField, typeField;
   jclass objectClass;
   for (size_t i = 0; i < column_count; ++i) {
@@ -144,22 +144,29 @@ columnsToNative(JNIEnv * env, jobjectArray columns, qdb_ts_column_info * native_
       native_columns[i].type = static_cast<qdb_ts_column_type_t>(
           env->GetIntField(object, typeField));
 
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(disable: 4996) // 'strdup': The POSIX name for this item is deprecated. Instead, use the ISO C and C++ conformant name: _strdup.
+#endif
       // Is there a better way to do this? Because we're using strdup here, we
       // need a separate release function which is fragile.
       native_columns[i].name = strdup(StringUTFChars(env, name));
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
   }
 }
 
 void
-releaseNative(qdb_ts_column_info * native_columns, size_t column_count) {
+releaseNative(qdb_ts_column_info_t * native_columns, size_t column_count) {
   for (size_t i = 0; i < column_count; ++i) {
     free((void *)(native_columns[i].name));
   }
 }
 
 void
-nativeToColumns(JNIEnv * env, qdb_ts_column_info * nativeColumns, size_t column_count, jobjectArray * columns) {
-  jclass column_class = env->FindClass("net/quasardb/qdb/jni/qdb_ts_column_info");
+nativeToColumns(JNIEnv * env, qdb_ts_column_info_t * nativeColumns, size_t column_count, jobjectArray * columns) {
+  jclass column_class = env->FindClass("net/quasardb/qdb/jni/qdb_ts_column_info_t");
   jmethodID constructor = env->GetMethodID(column_class, "<init>", "(Ljava/lang/String;I)V");
 
   *columns = env->NewObjectArray((jsize)column_count, column_class, NULL);
@@ -320,8 +327,8 @@ doubleAggregatesToNative(JNIEnv * env, jobjectArray input, size_t count, qdb_ts_
 }
 
 void
-nativeToDoubleAggregate(JNIEnv * env, qdb_ts_double_aggregation native, jobject * output) {
-  jclass point_class = env->FindClass("net/quasardb/qdb/jni/qdb_ts_double_aggregation");
+nativeToDoubleAggregate(JNIEnv * env, qdb_ts_double_aggregation_t native, jobject * output) {
+  jclass point_class = env->FindClass("net/quasardb/qdb/jni/qdb_ts_double_aggregation_t");
   jmethodID constructor = env->GetMethodID(point_class, "<init>", "(Lnet/quasardb/qdb/jni/qdb_ts_filtered_range;JJLnet/quasardb/qdb/jni/qdb_ts_double_point;)V");
 
   jobject filteredRange, result;
@@ -340,8 +347,8 @@ nativeToDoubleAggregate(JNIEnv * env, qdb_ts_double_aggregation native, jobject 
 }
 
 void
-nativeToDoubleAggregates(JNIEnv * env, qdb_ts_double_aggregation * native, size_t count, jobjectArray * output) {
-  jclass aggregate_class = env->FindClass("net/quasardb/qdb/jni/qdb_ts_double_aggregation");
+nativeToDoubleAggregates(JNIEnv * env, qdb_ts_double_aggregation_t * native, size_t count, jobjectArray * output) {
+  jclass aggregate_class = env->FindClass("net/quasardb/qdb/jni/qdb_ts_double_aggregation_t");
   assert (aggregate_class != NULL);
 
   *output = env->NewObjectArray((jsize)count, aggregate_class, NULL);
@@ -389,8 +396,8 @@ blobAggregatesToNative(JNIEnv * env, jobjectArray input, size_t count, qdb_ts_bl
 }
 
 void
-nativeToBlobAggregate(JNIEnv * env, qdb_ts_blob_aggregation native, jobject * output) {
-  jclass point_class = env->FindClass("net/quasardb/qdb/jni/qdb_ts_blob_aggregation");
+nativeToBlobAggregate(JNIEnv * env, qdb_ts_blob_aggregation_t native, jobject * output) {
+  jclass point_class = env->FindClass("net/quasardb/qdb/jni/qdb_ts_blob_aggregation_t");
   jmethodID constructor = env->GetMethodID(point_class, "<init>", "(Lnet/quasardb/qdb/jni/qdb_ts_filtered_range;JJLnet/quasardb/qdb/jni/qdb_ts_blob_point;)V");
 
   jobject filteredRange, result;
@@ -409,8 +416,8 @@ nativeToBlobAggregate(JNIEnv * env, qdb_ts_blob_aggregation native, jobject * ou
 }
 
 void
-nativeToBlobAggregates(JNIEnv * env, qdb_ts_blob_aggregation * native, size_t count, jobjectArray * output) {
-  jclass aggregate_class = env->FindClass("net/quasardb/qdb/jni/qdb_ts_blob_aggregation");
+nativeToBlobAggregates(JNIEnv * env, qdb_ts_blob_aggregation_t * native, size_t count, jobjectArray * output) {
+  jclass aggregate_class = env->FindClass("net/quasardb/qdb/jni/qdb_ts_blob_aggregation_t");
   assert (aggregate_class != NULL);
 
   *output = env->NewObjectArray((jsize)count, aggregate_class, NULL);
@@ -454,7 +461,8 @@ qdb_ts_column_type_t
 columnTypeFromColumnValue(JNIEnv * env, jobject value) {
   jclass objectClass;
   jobject typeObject;
-  jfieldID typeField, typeValueField;
+  // jfieldID typeField;
+  jfieldID typeValueField;
   jmethodID methodId;
 
   objectClass = env->GetObjectClass(value);
@@ -493,10 +501,10 @@ tableRowSetBlobColumnValue(JNIEnv * env, qdb_local_table_t localTable, size_t co
 
 qdb_error_t
 tableRowSetColumnValue(JNIEnv * env, qdb_local_table_t localTable, size_t columnIndex, jobject value) {
-  jclass objectClass;
-  jobject typeObject;
-  jfieldID typeField;
-  jmethodID methodId;
+  // jclass objectClass;
+  // jobject typeObject;
+  // jfieldID typeField;
+  // jmethodID methodId;
 
   qdb_ts_column_type_t type = columnTypeFromColumnValue(env, value);
 
