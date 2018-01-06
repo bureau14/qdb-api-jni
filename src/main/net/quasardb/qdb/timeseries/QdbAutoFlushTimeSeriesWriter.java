@@ -11,7 +11,7 @@ import java.util.*;
  * Represents a timeseries table that automatically flushes the local cache when
  * a certain threshold has been reached.
  */
-public final class QdbAutoFlushTimeSeriesTable extends QdbTimeSeriesTable {
+public final class QdbAutoFlushTimeSeriesWriter extends QdbTimeSeriesWriter {
 
     long counter;
     long threshold;
@@ -22,8 +22,8 @@ public final class QdbAutoFlushTimeSeriesTable extends QdbTimeSeriesTable {
      * @param session Active connection with the QdbCluster
      * @param name Timeseries name. Must already exist.
      */
-    QdbAutoFlushTimeSeriesTable(QdbSession session, String name) {
-        this(session, name, 50000);
+    QdbAutoFlushTimeSeriesWriter(QdbSession session, QdbTimeSeriesTable table) {
+        this(session, table, 50000);
     }
 
     /**
@@ -33,8 +33,8 @@ public final class QdbAutoFlushTimeSeriesTable extends QdbTimeSeriesTable {
      * @param name Timeseries name. Must already exist.
      * @param threshold The amount of rows to keep in local buffer before automatic flushing occurs.
      */
-    QdbAutoFlushTimeSeriesTable(QdbSession session, String name, long threshold) {
-        super(session, name);
+    QdbAutoFlushTimeSeriesWriter(QdbSession session, QdbTimeSeriesTable table, long threshold) {
+        super(session, table);
 
         this.counter = 0;
         this.threshold = threshold;
