@@ -1,7 +1,6 @@
 package net.quasardb.qdb;
 
 import java.io.IOException;
-import java.io.Flushable;
 import java.lang.AutoCloseable;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
@@ -13,7 +12,7 @@ import java.util.*;
 /**
  * Represents a timeseries table.
  */
-public class QdbTimeSeriesReader {
+public class QdbTimeSeriesReader implements AutoCloseable {
     QdbSession session;
     QdbTimeSeriesTable table;
     Long localTable;
@@ -27,5 +26,32 @@ public class QdbTimeSeriesReader {
         QdbExceptionFactory.throwIfError(err);
 
         this.localTable = theLocalTable.value;
+    }
+
+    /**
+     * Returns the underlying table that is being written to.
+     */
+    public QdbTimeSeriesTable getTable() {
+        return this.table;
+    }
+
+    /**
+     * Cleans up the internal representation of the local table.
+     */
+    @Override
+    protected void finalize() throws Throwable {
+        try {
+            qdb.ts_local_table_release(this.session.handle(), this.localTable);
+        } finally {
+            super.finalize();
+        }
+    }
+
+    /**
+     * Closes the timeseries table and local cache so that memory can be reclaimed.
+     */
+    public void close() throws IOException {
+        qdb.ts_local_table_release(this.session.handle(), this.localTable);
+        this.localTable = null;
     }
 }
