@@ -43,6 +43,43 @@ public class QdbTimeSeriesTable implements Serializable {
     }
 
     /**
+     * Initializes new writer for a timeseries table.
+     *
+     * @param session Active connection with the QdbCluster
+     * @param name Timeseries table name. Must already exist.
+     */
+    public static QdbTimeSeriesWriter writer(QdbSession session, String name) {
+        return new QdbTimeSeriesWriter(session,
+                                       new QdbTimeSeriesTable(session, name));
+    }
+
+    /**
+     * Initializes new writer for a timeseries table that periodically flushes
+     * its local cache.
+     *
+     * @param session Active connection with the QdbCluster
+     * @param name Timeseries table name. Must already exist.
+     */
+    public static QdbAutoFlushTimeSeriesWriter autoFlushWriter(QdbSession session, String name) {
+        return new QdbAutoFlushTimeSeriesWriter(session,
+                                                new QdbTimeSeriesTable(session, name));
+    }
+
+    /**
+     * Initializes new writer for a timeseries table that periodically flushes
+     * its local cache.
+     *
+     * @param session Active connection with the QdbCluster
+     * @param name Timeseries table name. Must already exist.
+     * @param threshold The amount of rows to keep in local buffer before automatic flushing occurs.
+     */
+    public static QdbAutoFlushTimeSeriesWriter autoFlushWriter(QdbSession session, String name, long threshold) {
+        return new QdbAutoFlushTimeSeriesWriter(session,
+                                                new QdbTimeSeriesTable(session, name),
+                                                threshold);
+    }
+
+    /**
      * Returns the timeseries table name.
      */
     public String getName() {
@@ -53,7 +90,7 @@ public class QdbTimeSeriesTable implements Serializable {
      * Returns internal representation of columns, for internal use
      * only.
      */
-    public qdb_ts_column_info[] getColumns() {
+    public qdb_ts_column_info[] getColumnInfo() {
         return this.columns;
     }
 

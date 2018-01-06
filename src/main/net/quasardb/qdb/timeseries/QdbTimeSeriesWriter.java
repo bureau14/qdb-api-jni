@@ -23,10 +23,17 @@ public class QdbTimeSeriesWriter implements AutoCloseable, Flushable {
         this.table = table;
 
         Reference<Long> theLocalTable = new Reference<Long>();
-        int err = qdb.ts_local_table_init(this.session.handle(), table.getName(), table.getColumns(), theLocalTable);
+        int err = qdb.ts_local_table_init(this.session.handle(), table.getName(), table.getColumnInfo(), theLocalTable);
         QdbExceptionFactory.throwIfError(err);
 
         this.localTable = theLocalTable.value;
+    }
+
+    /**
+     * Returns the underlying table that is being written to.
+     */
+    public QdbTimeSeriesTable getTable() {
+        return this.table;
     }
 
     /**
