@@ -80,6 +80,17 @@ public class QdbTimeSeriesTable implements Serializable {
     }
 
     /**
+     * Initializes new reader for a timeseries table.
+     *
+     * @param session Active connection with the QdbCluster
+     * @param name Timeseries table name. Must already exist.
+     */
+    public static QdbTimeSeriesReader reader(QdbSession session, String name) {
+        return new QdbTimeSeriesReader (session,
+                                        new QdbTimeSeriesTable(session, name));
+    }
+
+    /**
      * Returns the timeseries table name.
      */
     public String getName() {
