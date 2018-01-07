@@ -102,6 +102,25 @@ Java_net_quasardb_qdb_jni_qdb_ts_1push(JNIEnv * /*env*/, jclass /*thisClass*/, j
 }
 
 JNIEXPORT jint JNICALL
+Java_net_quasardb_qdb_jni_qdb_ts_1table_1get_1ranges(JNIEnv * env, jclass /*thisClass*/, jlong localTable, jobjectArray ranges) {
+
+  int err = tableGetRanges(env, (qdb_local_table_t)localTable, ranges);
+
+  if (QDB_SUCCESS(err)) {
+    // NOOP ?
+    printf("*NATIVE* successfully retrieved table ranges for local table?\n");
+    fflush(stdout);
+  }
+
+  return err;
+}
+
+JNIEXPORT jint JNICALL
+Java_net_quasardb_qdb_jni_qdb_ts_1table_1next_1row(JNIEnv * /*env*/, jclass /*thisClass*/, jlong localTable) {
+  return 0;
+}
+
+JNIEXPORT jint JNICALL
 Java_net_quasardb_qdb_jni_qdb_ts_1double_1insert(JNIEnv * env, jclass /*thisClass*/, jlong handle,
                                                  jstring alias, jstring column, jobjectArray points) {
   qdb_size_t points_count = env->GetArrayLength(points);

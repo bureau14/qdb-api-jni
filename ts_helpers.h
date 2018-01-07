@@ -41,3 +41,5 @@ qdb_error_t
 tableRowAppend(JNIEnv *env, qdb_local_table_t localTable, jobject time, jobjectArray values, size_t count, qdb_size_t * rowIndex);
 qdb_error_t
 tableRowSetColumnValue(JNIEnv * env, qdb_local_table_t localTable, size_t columnIndex, jobject value);
+qdb_error_t
+tableGetRanges(JNIEnv *env, qdb_local_table_t localTable, jobjectArray ranges);

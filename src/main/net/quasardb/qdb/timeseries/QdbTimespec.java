@@ -31,12 +31,37 @@ public class QdbTimespec implements Serializable {
         this(value.toLocalDateTime());
     }
 
+    public QdbTimespec (Instant value) {
+        this(value.getEpochSecond(),
+             value.getNano());
+    }
+
     public long getSec() {
         return this.sec;
     }
 
     public long getNano() {
         return this.nsec;
+    }
+
+    public static QdbTimespec now() {
+        return new QdbTimespec(Instant.now());
+    }
+
+    /**
+     * Returns copy of this instance with the specified duration in seconds added.
+     */
+    public QdbTimespec plusSeconds(long secondsToAdd) {
+        return new QdbTimespec(this.sec + secondsToAdd,
+                               this.nsec);
+    }
+
+    /**
+     * Returns copy of this instance with the specified duration in nanoseconds added.
+     */
+    public QdbTimespec plusNanos(long nanosToAdd) {
+        return new QdbTimespec(this.sec,
+                               this.nsec + nanosToAdd);
     }
 
     public Instant asInstant() {

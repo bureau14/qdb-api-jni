@@ -561,3 +561,18 @@ tableRowAppend(JNIEnv * env, qdb_local_table_t localTable, jobject time, jobject
 
   return qdb_ts_table_row_append(localTable, &nativeTime, rowIndex);
 }
+
+
+qdb_error_t
+tableGetRanges(JNIEnv *env, qdb_local_table_t localTable, jobjectArray ranges) {
+  qdb_size_t rangesCount = env->GetArrayLength(ranges);
+  qdb_ts_filtered_range_t * nativeRanges =
+    (qdb_ts_filtered_range_t *)(malloc(rangesCount * sizeof(qdb_ts_filtered_range_t)));
+
+  filteredRangesToNative(env, ranges, rangesCount, nativeRanges);
+
+  qdb_error_t err = qdb_ts_table_get_ranges(localTable, nativeRanges, rangesCount);
+
+  free(nativeRanges);
+  return err;
+}

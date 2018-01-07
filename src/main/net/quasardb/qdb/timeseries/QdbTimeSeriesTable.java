@@ -87,7 +87,8 @@ public class QdbTimeSeriesTable implements Serializable {
      */
     public static QdbTimeSeriesReader reader(QdbSession session, String name, QdbFilteredRange[] ranges) {
         return new QdbTimeSeriesReader (session,
-                                        new QdbTimeSeriesTable(session, name));
+                                        new QdbTimeSeriesTable(session, name),
+                                        ranges);
     }
 
     /**
