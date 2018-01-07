@@ -103,16 +103,16 @@ public final class qdb {
   public static native int ts_list_columns(long handle, String alias, Reference<qdb_ts_column_info[]> columns);
   public static native int ts_local_table_init(long handle, String alias, qdb_ts_column_info[] columns, Reference<Long> localTable);
   public static native void ts_local_table_release(long handle, long localTable);
-  public static native int ts_table_row_append(long localTable, qdb_timespec time, QdbTimeSeriesValue[] values);
+  public static native int ts_table_row_append(long localTable, QdbTimespec time, QdbTimeSeriesValue[] values);
   public static native int ts_push(long localTable);
 
   public static native int ts_double_insert(long handle, String alias, String column, qdb_ts_double_point[] points);
-  public static native int ts_double_get_ranges(long handle, String alias, String column, qdb_ts_filtered_range[] ranges,
+  public static native int ts_double_get_ranges(long handle, String alias, String column, QdbFilteredRange[] ranges,
                                                 Reference<qdb_ts_double_point[]> points);
   public static native int ts_double_aggregate(long handle, String alias, String column, qdb_ts_double_aggregation[] input,
                                                Reference<qdb_ts_double_aggregation[]> aggregations);
   public static native int ts_blob_insert(long handle, String alias, String column, qdb_ts_blob_point[] points);
-  public static native int ts_blob_get_ranges(long handle, String alias, String column, qdb_ts_filtered_range[] ranges,
+  public static native int ts_blob_get_ranges(long handle, String alias, String column, QdbFilteredRange[] ranges,
                                               Reference<qdb_ts_blob_point[]> points);
   public static native int ts_blob_aggregate(long handle, String alias, String column, qdb_ts_blob_aggregation[] input,
                                              Reference<qdb_ts_blob_aggregation[]> aggregations);

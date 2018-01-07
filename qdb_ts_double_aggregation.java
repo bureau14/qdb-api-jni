@@ -1,26 +1,28 @@
 package net.quasardb.qdb.jni;
 
+import net.quasardb.qdb.QdbFilteredRange;
+
 public final class qdb_ts_double_aggregation {
   protected long aggregation_type;
-  protected qdb_ts_filtered_range filtered_range;
+  protected QdbFilteredRange filtered_range;
 
   protected long count;
   protected qdb_ts_double_point result;
 
-  public qdb_ts_double_aggregation(qdb_ts_filtered_range filtered_range, long aggregation_type) {
+  public qdb_ts_double_aggregation(QdbFilteredRange filtered_range, long aggregation_type) {
     this.filtered_range = filtered_range;
     this.aggregation_type = aggregation_type;
     this.count = -1;
   }
 
-  public qdb_ts_double_aggregation(qdb_ts_filtered_range filtered_range, long aggregation_type, long count, qdb_ts_double_point result) {
+  public qdb_ts_double_aggregation(QdbFilteredRange filtered_range, long aggregation_type, long count, qdb_ts_double_point result) {
     this.filtered_range = filtered_range;
     this.aggregation_type = aggregation_type;
     this.count = count;
     this.result = result;
   }
 
-  public qdb_ts_filtered_range getFilteredRange() {
+  public QdbFilteredRange getFilteredRange() {
     return this.filtered_range;
   }
 

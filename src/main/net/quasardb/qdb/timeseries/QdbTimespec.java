@@ -9,34 +9,44 @@ import java.time.Instant;
 import net.quasardb.qdb.jni.*;
 
 public class QdbTimespec implements Serializable {
+    private long sec;
+    private long nsec;
 
-    private qdb_timespec value;
+    public QdbTimespec(){
+        this.sec = -1;
+        this.nsec = -1;
+    }
 
-    public QdbTimespec (qdb_timespec value) {
-        this.value = value;
+    public QdbTimespec(long sec, long nsec){
+        this.sec = sec;
+        this.nsec = nsec;
     }
 
     public QdbTimespec (LocalDateTime value) {
-        this(new qdb_timespec(value.atZone(ZoneId.systemDefault()).toEpochSecond(),
-                              value.getNano()));
+        this(value.atZone(ZoneId.systemDefault()).toEpochSecond(),
+             value.getNano());
     }
 
     public QdbTimespec (Timestamp value) {
         this(value.toLocalDateTime());
     }
 
-    public qdb_timespec getValue() {
-        return this.value;
+    public long getSec() {
+        return this.sec;
+    }
+
+    public long getNano() {
+        return this.nsec;
+    }
+
+    public Instant asInstant() {
+        return Instant.ofEpochSecond(this.sec,
+                                     this.nsec);
     }
 
     public LocalDateTime asLocalDateTime() {
         return LocalDateTime.ofInstant(this.asInstant(),
                                        ZoneId.systemDefault());
-    }
-
-    public Instant asInstant() {
-        return Instant.ofEpochSecond(this.value.getEpochSecond(),
-                                     this.value.getNano());
     }
 
     public Timestamp asTimestamp() {
@@ -47,11 +57,10 @@ public class QdbTimespec implements Serializable {
     public boolean equals(Object obj) {
         if (!(obj instanceof QdbTimespec)) return false;
         QdbTimespec rhs = (QdbTimespec)obj;
-
-        return true;
+        return rhs.getSec() == this.sec && rhs.getNano() == this.nsec;
     }
 
     public String toString() {
-        return "QdbTimespec (value: " + this.value.toString() + ")";
+        return "QdbTimespec (sec: " + this.sec + ", nsec: " + this.nsec + ")";
     }
 }

@@ -85,7 +85,7 @@ public class QdbTimeSeriesTable implements Serializable {
      * @param session Active connection with the QdbCluster
      * @param name Timeseries table name. Must already exist.
      */
-    public static QdbTimeSeriesReader reader(QdbSession session, String name) {
+    public static QdbTimeSeriesReader reader(QdbSession session, String name, QdbFilteredRange[] ranges) {
         return new QdbTimeSeriesReader (session,
                                         new QdbTimeSeriesTable(session, name));
     }

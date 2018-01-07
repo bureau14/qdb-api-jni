@@ -11,7 +11,7 @@ import net.quasardb.qdb.jni.*;
 import java.util.*;
 
 /**
- * Represents a timeseries table.
+ * High-performance bulk writer for a QuasarDB timeseries table.
  */
 public class QdbTimeSeriesWriter implements AutoCloseable, Flushable {
     QdbSession session;
@@ -71,7 +71,7 @@ public class QdbTimeSeriesWriter implements AutoCloseable, Flushable {
      * Append a new row to the local table cache.
      */
     public void append(QdbTimeSeriesRow row) throws IOException {
-        int err = qdb.ts_table_row_append(this.localTable, row.getTimestamp().getValue(), row.getValues());
+        int err = qdb.ts_table_row_append(this.localTable, row.getTimestamp(), row.getValues());
         QdbExceptionFactory.throwIfError(err);
     }
 
