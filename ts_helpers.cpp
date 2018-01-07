@@ -11,15 +11,16 @@ timespecToNative(JNIEnv *env, jobject input, qdb_timespec_t * output) {
 
   object_class = env->GetObjectClass(input);
 
-  sec_field = env->GetFieldID(object_class, "tv_sec", "J");
-  nsec_field = env->GetFieldID(object_class, "tv_nsec", "J");
+  sec_field = env->GetFieldID(object_class, "sec", "J");
+  nsec_field = env->GetFieldID(object_class, "nsec", "J");
+
   output->tv_sec = env->GetLongField(input, sec_field);
   output->tv_nsec = env->GetLongField(input, nsec_field);
 }
 
 void
 nativeToTimespec(JNIEnv *env, qdb_timespec_t input, jobject * output) {
-  jclass timespec_class = env->FindClass("net/quasardb/qdb/jni/qdb_timespec");
+  jclass timespec_class = env->FindClass("net/quasardb/qdb/QdbTimespec");
   assert(timespec_class != NULL);
   jmethodID constructor = env->GetMethodID(timespec_class, "<init>", "(JJ)V");
   assert(constructor != NULL);
@@ -37,8 +38,8 @@ rangeToNative(JNIEnv *env, jobject input, qdb_ts_range_t * native) {
 
   objectClass = env->GetObjectClass(input);
 
-  beginField = env->GetFieldID(objectClass, "begin", "Lnet/quasardb/qdb/jni/qdb_timespec;");
-  endField = env->GetFieldID(objectClass, "end", "Lnet/quasardb/qdb/jni/qdb_timespec;");
+  beginField = env->GetFieldID(objectClass, "begin", "Lnet/quasardb/qdb/QdbTimespec;");
+  endField = env->GetFieldID(objectClass, "end", "Lnet/quasardb/qdb/QdbTimespec;");
 
   timespecToNative(env, env->GetObjectField(input, beginField), &(native->begin));
   timespecToNative(env, env->GetObjectField(input, endField), &(native->end));
@@ -79,7 +80,8 @@ filteredRangeToNative(JNIEnv *env, jobject input, qdb_ts_filtered_range_t * nati
   jclass objectClass;
 
   objectClass = env->GetObjectClass(input);
-  rangeField = env->GetFieldID(objectClass, "range", "Lnet/quasardb/qdb/jni/qdb_ts_range;");
+
+  rangeField = env->GetFieldID(objectClass, "range", "Lnet/quasardb/qdb/QdbTimeRange;");
   filterField = env->GetFieldID(objectClass, "filter", "Lnet/quasardb/qdb/jni/qdb_ts_filter;");
 
   rangeToNative(env, env->GetObjectField(input, rangeField), &(native->range));
@@ -100,9 +102,9 @@ filteredRangesToNative(JNIEnv * env, jobjectArray input, size_t count, qdb_ts_fi
 
 void
 nativeToRange(JNIEnv * env, qdb_ts_range_t native, jobject * output) {
-  jclass point_class = env->FindClass("net/quasardb/qdb/jni/qdb_ts_range");
+  jclass point_class = env->FindClass("net/quasardb/qdb/QdbTimeRange");
   assert(point_class != NULL);
-  jmethodID constructor = env->GetMethodID(point_class, "<init>", "(Lnet/quasardb/qdb/jni/qdb_timespec;Lnet/quasardb/qdb/jni/qdb_timespec;)V");
+  jmethodID constructor = env->GetMethodID(point_class, "<init>", "(Lnet/quasardb/qdb/QdbTimespec;Lnet/quasardb/qdb/QdbTimespec;)V");
   assert(constructor != NULL);
 
   jobject begin;
@@ -119,9 +121,9 @@ nativeToRange(JNIEnv * env, qdb_ts_range_t native, jobject * output) {
 
 void
 nativeToFilteredRange(JNIEnv * env, qdb_ts_filtered_range_t native, jobject * output) {
-  jclass filtered_range_class = env->FindClass("net/quasardb/qdb/jni/qdb_ts_filtered_range");
+  jclass filtered_range_class = env->FindClass("net/quasardb/qdb/QdbFilteredRange");
   assert(filtered_range_class != NULL);
-  jmethodID constructor = env->GetMethodID(filtered_range_class, "<init>", "(Lnet/quasardb/qdb/jni/qdb_ts_range;Lnet/quasardb/qdb/jni/qdb_ts_filter;)V");
+  jmethodID constructor = env->GetMethodID(filtered_range_class, "<init>", "(Lnet/quasardb/qdb/QdbTimeRange;Lnet/quasardb/qdb/jni/qdb_ts_filter;)V");
   assert(constructor != NULL);
 
   jobject range, filter;
@@ -195,7 +197,7 @@ doublePointToNative(JNIEnv * env, jobject input, qdb_ts_double_point * native) {
 
   objectClass = env->GetObjectClass(input);
 
-  timestampField = env->GetFieldID(objectClass, "timestamp", "Lnet/quasardb/qdb/jni/qdb_timespec;");
+  timestampField = env->GetFieldID(objectClass, "timestamp", "Lnet/quasardb/qdb/QdbTimespec;");
   valueField = env->GetFieldID(objectClass, "value", "D");
 
   timespecToNative(env, env->GetObjectField(input, timestampField), &(native->timestamp));
@@ -217,7 +219,7 @@ void
 nativeToDoublePoint(JNIEnv * env, qdb_ts_double_point native, jobject * output) {
   jclass pointClass = env->FindClass("net/quasardb/qdb/jni/qdb_ts_double_point");
   assert(pointClass != NULL);
-  jmethodID constructor = env->GetMethodID(pointClass, "<init>", "(Lnet/quasardb/qdb/jni/qdb_timespec;D)V");
+  jmethodID constructor = env->GetMethodID(pointClass, "<init>", "(Lnet/quasardb/qdb/QdbTimespec;D)V");
   assert(constructor != NULL);
 
   jobject timespec;
@@ -251,7 +253,7 @@ blobPointToNative(JNIEnv * env, jobject input, qdb_ts_blob_point * native) {
 
   objectClass = env->GetObjectClass(input);
 
-  timestampField = env->GetFieldID(objectClass, "timestamp", "Lnet/quasardb/qdb/jni/qdb_timespec;");
+  timestampField = env->GetFieldID(objectClass, "timestamp", "Lnet/quasardb/qdb/QdbTimespec;");
   valueField = env->GetFieldID(objectClass, "value", "Ljava/nio/ByteBuffer;");
   value = env->GetObjectField(input, valueField);
 
@@ -280,7 +282,7 @@ void
 nativeToBlobPoint(JNIEnv * env, qdb_ts_blob_point native, jobject * output) {
   jclass pointClass = env->FindClass("net/quasardb/qdb/jni/qdb_ts_blob_point");
   assert(pointClass != NULL);
-  jmethodID constructor = env->GetMethodID(pointClass, "<init>", "(Lnet/quasardb/qdb/jni/qdb_timespec;Ljava/nio/ByteBuffer;)V");
+  jmethodID constructor = env->GetMethodID(pointClass, "<init>", "(Lnet/quasardb/qdb/QdbTimespec;Ljava/nio/ByteBuffer;)V");
   assert(constructor != NULL);
 
   jobject timespec, value;
@@ -316,7 +318,7 @@ doubleAggregateToNative(JNIEnv *env, jobject input, qdb_ts_double_aggregation_t 
 
   objectClass = env->GetObjectClass(input);
   typeField = env->GetFieldID(objectClass, "aggregation_type", "J");
-  filteredRangeField = env->GetFieldID(objectClass, "filtered_range", "Lnet/quasardb/qdb/jni/qdb_ts_filtered_range;");
+  filteredRangeField = env->GetFieldID(objectClass, "filtered_range", "Lnet/quasardb/qdb/QdbFilteredRange;");
   countField = env->GetFieldID(objectClass, "count", "J");
   resultField = env->GetFieldID(objectClass, "result", "Lnet/quasardb/qdb/jni/qdb_ts_double_point;");
 
@@ -345,7 +347,7 @@ void
 nativeToDoubleAggregate(JNIEnv * env, qdb_ts_double_aggregation_t native, jobject * output) {
   jclass point_class = env->FindClass("net/quasardb/qdb/jni/qdb_ts_double_aggregation");
   assert(point_class != NULL);
-  jmethodID constructor = env->GetMethodID(point_class, "<init>", "(Lnet/quasardb/qdb/jni/qdb_ts_filtered_range;JJLnet/quasardb/qdb/jni/qdb_ts_double_point;)V");
+  jmethodID constructor = env->GetMethodID(point_class, "<init>", "(Lnet/quasardb/qdb/QdbFilteredRange;JJLnet/quasardb/qdb/jni/qdb_ts_double_point;)V");
   assert(constructor != NULL);
 
   jobject filteredRange, result;
@@ -387,7 +389,7 @@ blobAggregateToNative(JNIEnv *env, jobject input, qdb_ts_blob_aggregation_t * na
 
   objectClass = env->GetObjectClass(input);
   typeField = env->GetFieldID(objectClass, "aggregation_type", "J");
-  filteredRangeField = env->GetFieldID(objectClass, "filtered_range", "Lnet/quasardb/qdb/jni/qdb_ts_filtered_range;");
+  filteredRangeField = env->GetFieldID(objectClass, "filtered_range", "Lnet/quasardb/qdb/QdbFilteredRange;");
   countField = env->GetFieldID(objectClass, "count", "J");
   resultField = env->GetFieldID(objectClass, "result", "Lnet/quasardb/qdb/jni/qdb_ts_blob_point;");
 
@@ -416,7 +418,7 @@ void
 nativeToBlobAggregate(JNIEnv * env, qdb_ts_blob_aggregation_t native, jobject * output) {
   jclass point_class = env->FindClass("net/quasardb/qdb/jni/qdb_ts_blob_aggregation");
   assert(point_class != NULL);
-  jmethodID constructor = env->GetMethodID(point_class, "<init>", "(Lnet/quasardb/qdb/jni/qdb_ts_filtered_range;JJLnet/quasardb/qdb/jni/qdb_ts_blob_point;)V");
+  jmethodID constructor = env->GetMethodID(point_class, "<init>", "(Lnet/quasardb/qdb/QdbFilteredRange;JJLnet/quasardb/qdb/jni/qdb_ts_blob_point;)V");
   assert(constructor != NULL);
 
   jobject filteredRange, result;

@@ -9,8 +9,8 @@ import java.time.Instant;
 import net.quasardb.qdb.jni.*;
 
 public class QdbTimespec implements Serializable {
-    private long sec;
-    private long nsec;
+    protected long sec;
+    protected long nsec;
 
     public QdbTimespec(){
         this.sec = -1;
