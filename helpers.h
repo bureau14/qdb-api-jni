@@ -3,6 +3,7 @@
 #include <jni.h>
 #include <qdb/client.h>
 
+jobject getReferenceValue(JNIEnv *env, jobject reference);
 void setReferenceValue(JNIEnv *env, jobject reference, jobject value);
 void setByteBuffer(JNIEnv *, jobject, const void *, jlong);
 void setLong(JNIEnv *, jobject, jlong);

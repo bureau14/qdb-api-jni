@@ -57,6 +57,14 @@ public class QdbTimeSeriesValue implements Serializable {
     }
 
     /**
+     * Updates value to take a certain double value;
+     */
+    public void setDouble(double value) {
+        this.type = Type.DOUBLE;
+        this.doubleValue = value;
+    }
+
+    /**
      * Represents a blob value. Warning: assumes byte array will stay in memory for
      * as long as this object lives.
      */

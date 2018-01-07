@@ -576,3 +576,63 @@ tableGetRanges(JNIEnv *env, qdb_local_table_t localTable, jobjectArray ranges) {
   free(nativeRanges);
   return err;
 }
+
+qdb_error_t
+tableGetRowDoubleValue(JNIEnv *env, qdb_local_table_t localTable, qdb_size_t index, jobject * output) {
+  double value;
+  qdb_error_t err = qdb_ts_row_get_double(localTable, index, &value);
+
+  printf("retrieved double value: %f\n", value);
+  fflush(stdout);
+}
+
+qdb_error_t
+tableGetRowValues (JNIEnv *env, qdb_local_table_t localTable, qdb_ts_column_info_t * columns, qdb_size_t count, jobjectArray values) {
+  qdb_error_t err;
+
+  for (size_t i = 0; i < count; ++i) {
+    qdb_ts_column_info_t column = columns[i];
+
+    jobject value;
+    switch (column.type) {
+    case qdb_ts_column_double:
+      err = tableGetRowDoubleValue(env, localTable, i, &value);
+      break;
+
+    default:
+      printf("unrecognised column type: %d\n", column.type);
+      fflush(stdout);
+      assert(false);
+      break;
+    }
+
+    if(!QDB_SUCCESS(err)) {
+      return err;
+    }
+
+    env->SetObjectArrayElement(values, (jsize)i, value);
+  }
+}
+
+qdb_error_t
+tableGetRow(JNIEnv *env, qdb_local_table_t localTable, qdb_ts_column_info_t * columns, qdb_size_t columnCount, jobject * output) {
+  printf("*NATIVE* tableGetRow!\n");
+  fflush(stdout);
+
+  qdb_timespec_t timestamp;
+  qdb_error_t err = qdb_ts_table_next_row(localTable, &timestamp);
+
+  if (QDB_SUCCESS(err) && err != qdb_e_iterator_end) {
+    jclass value_class = env->FindClass("net/quasardb/qdb/QdbTimeSeriesValue");
+    assert(value_class != NULL);
+    jobjectArray values = env->NewObjectArray((jsize)columnCount, value_class, NULL);
+
+    printf("values = %p\n", values);
+    printf("got timestamp with sec = %d, nsec = %d\n", timestamp.tv_sec, timestamp.tv_nsec);
+    fflush(stdout);
+
+    err = tableGetRowValues(env, localTable, columns, columnCount, values);
+  }
+
+  return err;
+}

@@ -10,6 +10,16 @@ setReferenceValue(JNIEnv *env, jobject reference, jobject value) {
   env->SetObjectField(reference, fid, value);
 }
 
+jobject
+getReferenceValue(JNIEnv *env, jobject reference) {
+  static jfieldID fid = 0;
+  if (!fid) {
+    jclass thisClass = env->GetObjectClass(reference);
+    fid = env->GetFieldID(thisClass, "value", "Ljava/lang/Object;");
+  }
+  env->GetObjectField(reference, fid);
+}
+
 void
 setByteBuffer(JNIEnv *env, jobject reference, const void *ptr, jlong size) {
   setReferenceValue(env, reference, ptr ? env->NewDirectByteBuffer((void *)ptr, size) : NULL);

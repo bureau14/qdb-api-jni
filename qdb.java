@@ -106,7 +106,7 @@ public final class qdb {
   public static native int ts_table_row_append(long localTable, QdbTimespec time, QdbTimeSeriesValue[] values);
   public static native int ts_push(long localTable);
   public static native int ts_table_get_ranges(long localTable, QdbFilteredRange[] ranges);
-  public static native int ts_table_next_row(long localTable);
+  public static native int ts_table_next_row(long localTable, qdb_ts_column_info[] columns, Reference<QdbTimeSeriesRow> output);
 
   public static native int ts_double_insert(long handle, String alias, String column, qdb_ts_double_point[] points);
   public static native int ts_double_get_ranges(long handle, String alias, String column, QdbFilteredRange[] ranges,

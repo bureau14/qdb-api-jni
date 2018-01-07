@@ -16,7 +16,7 @@ public class QdbTimeSeriesReader implements AutoCloseable, Iterator<QdbTimeSerie
     QdbSession session;
     QdbTimeSeriesTable table;
     Long localTable;
-    QdbTimeSeriesRow next;
+    Reference<QdbTimeSeriesRow> next;
 
     public QdbTimeSeriesReader(QdbSession session, QdbTimeSeriesTable table, QdbFilteredRange[] ranges) {
         if (ranges.length <= 0) {
@@ -25,7 +25,7 @@ public class QdbTimeSeriesReader implements AutoCloseable, Iterator<QdbTimeSerie
 
         this.session = session;
         this.table = table;
-        this.next = null;
+        this.next = new Reference<QdbTimeSeriesRow>();
 
         Reference<Long> theLocalTable = new Reference<Long>();
         int err = qdb.ts_local_table_init(this.session.handle(), table.getName(), table.getColumnInfo(), theLocalTable);
@@ -35,6 +35,8 @@ public class QdbTimeSeriesReader implements AutoCloseable, Iterator<QdbTimeSerie
 
         err = qdb.ts_table_get_ranges(this.localTable, ranges);
         QdbExceptionFactory.throwIfError(err);
+
+        this.readNext();
     }
 
     /**
@@ -57,20 +59,11 @@ public class QdbTimeSeriesReader implements AutoCloseable, Iterator<QdbTimeSerie
     }
 
     /**
-     * Closes the timeseries table and local cache so that memory can be reclaimed.
-     */
-    public void close() throws IOException {
-        qdb.ts_local_table_release(this.session.handle(), this.localTable);
-        this.localTable = null;
-    }
-
-    /**
-     * Reads the next row from local table.
+     * Reads the next row from local table. Transparently updates the local
+     * reference to the internal row.
      */
     private void readNext() {
-        assert(this.next == null);
-
-        int err = qdb.ts_table_next_row(this.localTable);
+        int err = qdb.ts_table_next_row(this.localTable, this.table.getColumnInfo(), this.next);
         QdbExceptionFactory.throwIfError(err);
     }
 
@@ -78,9 +71,17 @@ public class QdbTimeSeriesReader implements AutoCloseable, Iterator<QdbTimeSerie
      * Reads the next row from local table when appropriate.
      */
     private void maybeReadNext() {
-        if (this.next == null) {
+        if (this.next.isEmpty()) {
             this.readNext();
         }
+    }
+
+    /**
+     * Closes the timeseries table and local cache so that memory can be reclaimed.
+     */
+    public void close() throws IOException {
+        qdb.ts_local_table_release(this.session.handle(), this.localTable);
+        this.localTable = null;
     }
 
     public boolean hasNext() {

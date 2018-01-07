@@ -11,6 +11,10 @@ public class Reference<T> {
         return this.value;
     }
 
+    public void set(T value) {
+        this.value = value;
+    }
+
     public boolean isEmpty() {
         return this.value == null;
     }

@@ -116,8 +116,27 @@ Java_net_quasardb_qdb_jni_qdb_ts_1table_1get_1ranges(JNIEnv * env, jclass /*this
 }
 
 JNIEXPORT jint JNICALL
-Java_net_quasardb_qdb_jni_qdb_ts_1table_1next_1row(JNIEnv * /*env*/, jclass /*thisClass*/, jlong localTable) {
-  return 0;
+Java_net_quasardb_qdb_jni_qdb_ts_1table_1next_1row(JNIEnv * env, jclass /*thisClass*/, jlong localTable, jobjectArray columns, jobject output) {
+  printf("*NATIVE* filling output, then advancing to next row...\n");
+  fflush(stdout);
+
+  size_t columnCount = env->GetArrayLength(columns);
+  qdb_ts_column_info_t * nativeColumns = (qdb_ts_column_info_t *)(malloc (columnCount * sizeof(qdb_ts_column_info_t)));
+
+  columnsToNative(env, columns, nativeColumns, columnCount);
+
+  printf("*NATIVE* attempting to get current row, columnCount = %d, nativeColumns = %p\n", columnCount, nativeColumns);
+  fflush(stdout);
+
+  jobject row;
+  qdb_error_t err = tableGetRow(env, (qdb_local_table_t)localTable, nativeColumns, columnCount, &row);
+
+  setReferenceValue(env, output, row);
+
+  printf("*NATIVE* has reference value: %p\n", row);
+  fflush(stdout);
+
+  return err;
 }
 
 JNIEXPORT jint JNICALL
