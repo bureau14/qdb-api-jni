@@ -65,6 +65,10 @@ public class QdbTimeSeriesReader implements AutoCloseable, Iterator<QdbTimeSerie
     private void readNext() {
         int err = qdb.ts_table_next_row(this.localTable, this.table.getColumnInfo(), this.next);
         QdbExceptionFactory.throwIfError(err);
+
+        if (!this.next.isEmpty()) {
+            System.out.println("after readNext, this.next = " + this.next.value.toString());
+        }
     }
 
     /**
@@ -86,7 +90,7 @@ public class QdbTimeSeriesReader implements AutoCloseable, Iterator<QdbTimeSerie
 
     public boolean hasNext() {
         this.maybeReadNext();
-        return this.next != null;
+        return !(this.next.isEmpty());
     }
 
     public QdbTimeSeriesRow next() {

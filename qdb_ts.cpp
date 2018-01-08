@@ -1,3 +1,4 @@
+#include <cassert>
 #include <stdlib.h>
 #include <qdb/ts.h>
 
@@ -131,10 +132,17 @@ Java_net_quasardb_qdb_jni_qdb_ts_1table_1next_1row(JNIEnv * env, jclass /*thisCl
   jobject row;
   qdb_error_t err = tableGetRow(env, (qdb_local_table_t)localTable, nativeColumns, columnCount, &row);
 
-  setReferenceValue(env, output, row);
+  if (err == qdb_e_iterator_end) {
+    return err;
+  }
 
-  printf("*NATIVE* has reference value: %p\n", row);
-  fflush(stdout);
+  if (QDB_SUCCESS(err)) {
+    assert(row != NULL);
+    printf("*NATIVE* has reference value: %p\n", row);
+    fflush(stdout);
+    setReferenceValue(env, output, row);
+  }
+
 
   return err;
 }

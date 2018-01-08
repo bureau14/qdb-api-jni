@@ -62,6 +62,8 @@ public class QdbTimeSeriesValue implements Serializable {
     public void setDouble(double value) {
         this.type = Type.DOUBLE;
         this.doubleValue = value;
+
+        System.out.println("java set double value: " + value);
     }
 
     /**

@@ -1,4 +1,5 @@
 #include "ts_helpers.h"
+
 #include <cassert>
 #include <cstring>
 #include <cstdlib>
@@ -506,7 +507,6 @@ tableRowSetDoubleColumnValue(JNIEnv * env, qdb_local_table_t localTable, size_t 
   return qdb_ts_row_set_double(localTable, columnIndex, env->CallDoubleMethod(value, methodId));
 }
 
-
 qdb_error_t
 tableRowSetBlobColumnValue(JNIEnv * env, qdb_local_table_t localTable, size_t columnIndex, jobject value) {
   jclass objectClass = env->GetObjectClass(value);
@@ -578,25 +578,41 @@ tableGetRanges(JNIEnv *env, qdb_local_table_t localTable, jobjectArray ranges) {
 }
 
 qdb_error_t
-tableGetRowDoubleValue(JNIEnv *env, qdb_local_table_t localTable, qdb_size_t index, jobject * output) {
+tableGetRowDoubleValue(JNIEnv *env, qdb_local_table_t localTable, qdb_size_t index, jobject output) {
   double value;
   qdb_error_t err = qdb_ts_row_get_double(localTable, index, &value);
 
-  printf("retrieved double value: %f\n", value);
-  fflush(stdout);
+  if (QDB_SUCCESS(err)) {
+    jclass objectClass = env->GetObjectClass(output);
+    jmethodID methodId = env->GetMethodID(objectClass, "setDouble", "(D)V");
+    assert(methodId != NULL);
+
+    env->CallVoidMethod(output, methodId, value);
+
+    printf("*NATIVE* stored double value: %f!\n", value);
+    fflush(stdout);
+  }
+
+  return err;
 }
 
 qdb_error_t
 tableGetRowValues (JNIEnv *env, qdb_local_table_t localTable, qdb_ts_column_info_t * columns, qdb_size_t count, jobjectArray values) {
   qdb_error_t err;
 
+  jclass valueClass = env->FindClass("net/quasardb/qdb/QdbTimeSeriesValue");
+  assert(valueClass != NULL);
+  jmethodID constructor = env->GetStaticMethodID(valueClass, "createNull", "()Lnet/quasardb/qdb/QdbTimeSeriesValue;");
+  assert(constructor != NULL);
+
+
   for (size_t i = 0; i < count; ++i) {
     qdb_ts_column_info_t column = columns[i];
 
-    jobject value;
+    jobject value = env->CallStaticObjectMethod(valueClass, constructor);
     switch (column.type) {
     case qdb_ts_column_double:
-      err = tableGetRowDoubleValue(env, localTable, i, &value);
+      err = tableGetRowDoubleValue(env, localTable, i, value);
       break;
 
     default:
@@ -607,11 +623,17 @@ tableGetRowValues (JNIEnv *env, qdb_local_table_t localTable, qdb_ts_column_info
     }
 
     if(!QDB_SUCCESS(err)) {
+      printf("**** NATIVE ***** failure detected: %d\n", err);
+      fflush(stdout);
       return err;
     }
 
+    printf("*NATIVE* setting value array index %d to %p\n", i, value);
+    fflush(stdout);
     env->SetObjectArrayElement(values, (jsize)i, value);
   }
+
+  return qdb_e_ok;
 }
 
 qdb_error_t
@@ -622,16 +644,36 @@ tableGetRow(JNIEnv *env, qdb_local_table_t localTable, qdb_ts_column_info_t * co
   qdb_timespec_t timestamp;
   qdb_error_t err = qdb_ts_table_next_row(localTable, &timestamp);
 
-  if (QDB_SUCCESS(err) && err != qdb_e_iterator_end) {
+  if (err == qdb_e_iterator_end) {
+    return err;
+  }
+
+  if (QDB_SUCCESS(err)) {
     jclass value_class = env->FindClass("net/quasardb/qdb/QdbTimeSeriesValue");
     assert(value_class != NULL);
     jobjectArray values = env->NewObjectArray((jsize)columnCount, value_class, NULL);
 
-    printf("values = %p\n", values);
     printf("got timestamp with sec = %d, nsec = %d\n", timestamp.tv_sec, timestamp.tv_nsec);
     fflush(stdout);
 
     err = tableGetRowValues(env, localTable, columns, columnCount, values);
+
+    if (QDB_SUCCESS(err)) {
+      jclass row_class = env->FindClass("net/quasardb/qdb/QdbTimeSeriesRow");
+      assert(row_class != NULL);
+
+      jmethodID constructor = env->GetMethodID(row_class, "<init>", "(Lnet/quasardb/qdb/QdbTimespec;[Lnet/quasardb/qdb/QdbTimeSeriesValue;)V");
+      assert(constructor != NULL);
+
+      jobject timespec;
+      nativeToTimespec(env, timestamp, &timespec);
+      assert(timespec != NULL);
+
+      *output = env->NewObject(row_class,
+                               constructor,
+                               timespec,
+                               values);
+    }
   }
 
   return err;
