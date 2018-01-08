@@ -638,11 +638,17 @@ tableGetRowValues (JNIEnv *env, qdb_local_table_t localTable, qdb_ts_column_info
 
 qdb_error_t
 tableGetRow(JNIEnv *env, qdb_local_table_t localTable, qdb_ts_column_info_t * columns, qdb_size_t columnCount, jobject * output) {
+
+  qdb_timespec_t timestamp;
+
   printf("*NATIVE* tableGetRow!\n");
   fflush(stdout);
 
-  qdb_timespec_t timestamp;
   qdb_error_t err = qdb_ts_table_next_row(localTable, &timestamp);
+
+  printf("*NATIVE* qdb_ts_table_next_row returned %d!\n", err);
+  fflush(stdout);
+
 
   if (err == qdb_e_iterator_end) {
     return err;
@@ -653,7 +659,7 @@ tableGetRow(JNIEnv *env, qdb_local_table_t localTable, qdb_ts_column_info_t * co
     assert(value_class != NULL);
     jobjectArray values = env->NewObjectArray((jsize)columnCount, value_class, NULL);
 
-    printf("got timestamp with sec = %d, nsec = %d\n", timestamp.tv_sec, timestamp.tv_nsec);
+    printf("*NATIVE* got timestamp with sec = %d, nsec = %d\n", timestamp.tv_sec, timestamp.tv_nsec);
     fflush(stdout);
 
     err = tableGetRowValues(env, localTable, columns, columnCount, values);
