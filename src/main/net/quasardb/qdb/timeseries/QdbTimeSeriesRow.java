@@ -37,4 +37,20 @@ public final class QdbTimeSeriesRow implements Serializable {
     public QdbTimeSeriesValue[] getValues() {
         return this.values;
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (!(obj instanceof QdbTimeSeriesRow)) return false;
+        QdbTimeSeriesRow rhs = (QdbTimeSeriesRow)obj;
+
+        System.out.println("clomparing QdbTimeSeriesRow equalit!");
+
+        return
+            this.getTimestamp().equals(rhs.getTimestamp()) &&
+            Arrays.equals(this.getValues(), rhs.getValues());
+    }
+
+    public String toString() {
+        return "QdbTimeSeriesRow (timestamp: " + this.timestamp.toString() + ", values = " + Arrays.toString(this.values) + ")";
+    }
 }
