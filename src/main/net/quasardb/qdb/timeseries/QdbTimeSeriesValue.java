@@ -114,6 +114,8 @@ public class QdbTimeSeriesValue implements Serializable {
         if (!(obj instanceof QdbTimeSeriesValue)) return false;
         QdbTimeSeriesValue rhs = (QdbTimeSeriesValue)obj;
 
+        System.out.println("comparing qdb time series value equality!");
+
         if (this.getType() != rhs.getType()) {
             return false;
         }
@@ -206,6 +208,19 @@ public class QdbTimeSeriesValue implements Serializable {
         }
 
         return this.blobValue;
+    }
+
+    public String toString() {
+
+        switch (this.type) {
+        case DOUBLE:
+            return "QdbTimeSeriesValue (type = DOUBLE, value = " + this.doubleValue + ")";
+
+        case BLOB:
+            return "QdbTimeSeriesValue (type = BLOB, value = " + this.blobValue.hashCode() + ")";
+        }
+
+        return "QdbTimeSeriesValue (type = INVALID)";
     }
 
 }
