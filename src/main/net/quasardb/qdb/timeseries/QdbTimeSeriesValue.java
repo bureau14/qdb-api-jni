@@ -62,8 +62,6 @@ public class QdbTimeSeriesValue implements Serializable {
     public void setDouble(double value) {
         this.type = Type.DOUBLE;
         this.doubleValue = value;
-
-        System.out.println("java set double value: " + value);
     }
 
     /**
@@ -113,8 +111,6 @@ public class QdbTimeSeriesValue implements Serializable {
     public boolean equals(Object obj) {
         if (!(obj instanceof QdbTimeSeriesValue)) return false;
         QdbTimeSeriesValue rhs = (QdbTimeSeriesValue)obj;
-
-        System.out.println("comparing qdb time series value equality!");
 
         if (this.getType() != rhs.getType()) {
             return false;

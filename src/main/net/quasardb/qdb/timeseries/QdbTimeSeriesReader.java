@@ -61,10 +61,8 @@ public class QdbTimeSeriesReader implements AutoCloseable, Iterator<QdbTimeSerie
      * reference to the internal row.
      */
     private void readNext() {
-        System.out.println("5 readNext, this.next = " + this.next.get());
         int err = qdb.ts_table_next_row(this.localTable, this.table.getColumnInfo(), this.next);
         QdbExceptionFactory.throwIfError(err);
-        System.out.println("6 readNext, this.next = " + this.next.get());
     }
 
     /**
@@ -85,9 +83,7 @@ public class QdbTimeSeriesReader implements AutoCloseable, Iterator<QdbTimeSerie
     }
 
     public boolean hasNext() {
-        System.out.println("1 hasNext, this.next = " + this.next.get());
         this.maybeReadNext();
-        System.out.println("2 hasNext, this.next = " + this.next.get());
 
         return !(this.next.isEmpty());
     }
@@ -96,10 +92,7 @@ public class QdbTimeSeriesReader implements AutoCloseable, Iterator<QdbTimeSerie
      * Modifies internal state to move forward to the next row.
      */
     public QdbTimeSeriesRow next() {
-        System.out.println("3 next, this.next = " + this.next.get());
         this.maybeReadNext();
-
-        System.out.println("4 next, this.next = " + this.next.get());
 
         if (this.hasNext() == false) {
             throw new QdbInvalidIteratorException();

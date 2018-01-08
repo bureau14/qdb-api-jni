@@ -43,8 +43,6 @@ public final class QdbTimeSeriesRow implements Serializable {
         if (!(obj instanceof QdbTimeSeriesRow)) return false;
         QdbTimeSeriesRow rhs = (QdbTimeSeriesRow)obj;
 
-        System.out.println("clomparing QdbTimeSeriesRow equalit!");
-
         return
             this.getTimestamp().equals(rhs.getTimestamp()) &&
             Arrays.equals(this.getValues(), rhs.getValues());
