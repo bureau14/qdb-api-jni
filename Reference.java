@@ -11,6 +11,16 @@ public class Reference<T> {
         return this.value;
     }
 
+    /**
+     * Clears reference and returns last known value.
+     */
+    public T pop() {
+        T tmp = this.get();
+        this.clear();
+        assert(this.isEmpty() == true);
+        return tmp;
+    }
+
     public void set(T value) {
         this.value = value;
     }
