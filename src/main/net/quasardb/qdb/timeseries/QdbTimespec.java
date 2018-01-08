@@ -5,6 +5,7 @@ import java.sql.Timestamp;
 import java.time.ZoneId;
 import java.time.LocalDateTime;
 import java.time.Instant;
+import java.time.Clock;
 
 import net.quasardb.qdb.jni.*;
 
@@ -45,7 +46,7 @@ public class QdbTimespec implements Serializable {
     }
 
     public static QdbTimespec now() {
-        return new QdbTimespec(Instant.now());
+        return qdb.timespec_now();
     }
 
     /**

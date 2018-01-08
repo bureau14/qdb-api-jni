@@ -649,7 +649,6 @@ tableGetRow(JNIEnv *env, qdb_local_table_t localTable, qdb_ts_column_info_t * co
   printf("*NATIVE* qdb_ts_table_next_row returned %d!\n", err);
   fflush(stdout);
 
-
   if (err == qdb_e_iterator_end) {
     return err;
   }

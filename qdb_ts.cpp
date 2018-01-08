@@ -297,3 +297,21 @@ Java_net_quasardb_qdb_jni_qdb_ts_1blob_1aggregate(JNIEnv * env, jclass /*thisCla
   delete[] aggregates;
   return err;
 }
+
+JNIEXPORT jobject JNICALL
+Java_net_quasardb_qdb_jni_qdb_timespec_1now(JNIEnv * env, jclass /*thisClass*/) {
+  jclass timespec_class = env->FindClass("net/quasardb/qdb/QdbTimespec");
+  assert(timespec_class != NULL);
+  jmethodID constructor = env->GetMethodID(timespec_class, "<init>", "(JJ)V");
+  assert(constructor != NULL);
+
+  timespec ts;
+  int err = clock_gettime(CLOCK_REALTIME, &ts);
+  assert(err == 0);
+
+  return env->NewObject(timespec_class,
+                        constructor,
+                        ts.tv_sec,
+                        ts.tv_nsec);
+
+}
