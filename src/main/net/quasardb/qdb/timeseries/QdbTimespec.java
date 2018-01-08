@@ -80,8 +80,12 @@ public class QdbTimespec implements Serializable {
 
     @Override
     public boolean equals(Object obj) {
+        System.out.println("comparing timespec equality!");
+
         if (!(obj instanceof QdbTimespec)) return false;
         QdbTimespec rhs = (QdbTimespec)obj;
+
+
         return rhs.getSec() == this.sec && rhs.getNano() == this.nsec;
     }
 
