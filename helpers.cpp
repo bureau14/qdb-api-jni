@@ -17,7 +17,8 @@ getReferenceValue(JNIEnv *env, jobject reference) {
     jclass thisClass = env->GetObjectClass(reference);
     fid = env->GetFieldID(thisClass, "value", "Ljava/lang/Object;");
   }
-  env->GetObjectField(reference, fid);
+
+  return env->GetObjectField(reference, fid);
 }
 
 void
