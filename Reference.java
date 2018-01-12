@@ -8,6 +8,7 @@ public class Reference<T> {
     }
 
     public T get() {
+        assert(this.isEmpty() == false);
         return this.value;
     }
 
