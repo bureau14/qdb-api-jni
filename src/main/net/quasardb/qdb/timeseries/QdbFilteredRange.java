@@ -22,4 +22,8 @@ public final class QdbFilteredRange {
     public qdb_ts_filter getFilter() {
         return this.filter;
     }
+
+    public String toString() {
+        return "QdbFilteredRange(range: " + this.range.toString() + ", filter: " + this.filter.toString() +  ")";
+    }
 }
