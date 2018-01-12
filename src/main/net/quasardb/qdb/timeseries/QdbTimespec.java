@@ -10,6 +10,7 @@ import java.time.Clock;
 import net.quasardb.qdb.jni.*;
 
 public class QdbTimespec implements Serializable {
+    private static Clock clock = new QdbClock();
     protected long sec;
     protected long nsec;
 
@@ -46,7 +47,11 @@ public class QdbTimespec implements Serializable {
     }
 
     public static QdbTimespec now() {
-        return qdb.timespec_now();
+        return new QdbTimespec(Instant.now(QdbTimespec.clock));
+    }
+
+    public static QdbTimespec now(Clock clock) {
+        return new QdbTimespec(Instant.now(clock));
     }
 
     /**

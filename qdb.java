@@ -98,7 +98,6 @@ public final class qdb {
   public static native String tag_iterator_alias(long iterator);
   public static native int tag_iterator_type(long iterator);
 
-  public static native QdbTimespec timespec_now();
   public static native int ts_create(long handle, String alias, long shard_size, qdb_ts_column_info[] columns);
   public static native int ts_insert_columns(long handle, String alias, qdb_ts_column_info[] columns);
   public static native int ts_list_columns(long handle, String alias, Reference<qdb_ts_column_info[]> columns);
