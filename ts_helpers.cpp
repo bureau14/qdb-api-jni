@@ -574,6 +574,10 @@ tableRowSetColumnValue(JNIEnv * env, qdb_local_table_t localTable, size_t column
     return tableRowSetBlobColumnValue(env, localTable, columnIndex, value);
     break;
 
+  case qdb_ts_column_uninitialized:
+    return qdb_e_ok;
+    break;
+
   default:
     return qdb_e_incompatible_type;
   }
@@ -627,6 +631,15 @@ tableGetRowInt64Value(JNIEnv *env, qdb_local_table_t localTable, qdb_size_t inde
   }
 
   return err;
+}
+
+void
+tableGetRowNullValue(JNIEnv *env, qdb_local_table_t localTable, qdb_size_t index, jobject output) {
+  jclass objectClass = env->GetObjectClass(output);
+  jmethodID methodId = env->GetMethodID(objectClass, "setNull", "()V");
+  assert(methodId != NULL);
+
+  env->CallVoidMethod(output, methodId);
 }
 
 qdb_error_t
@@ -721,6 +734,10 @@ tableGetRowValues (JNIEnv *env, qdb_local_table_t localTable, qdb_ts_column_info
 
     case qdb_ts_column_blob:
       err = tableGetRowBlobValue(env, localTable, i, value);
+      break;
+
+    case qdb_ts_column_uninitialized:
+      tableGetRowNullValue(env, localTable, i, value);
       break;
 
     default:

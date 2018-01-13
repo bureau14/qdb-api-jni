@@ -43,7 +43,7 @@ public class QdbTimeSeriesValue implements Serializable {
                 return Type.TIMESTAMP;
             }
 
-            throw new QdbInvalidArgumentException("Cannot convert int to QdbTimeSeriesValue.Type: " + type);
+            return Type.UNINITIALIZED;
         }
     }
 
@@ -56,6 +56,13 @@ public class QdbTimeSeriesValue implements Serializable {
      */
     public static QdbTimeSeriesValue createNull() {
         return new QdbTimeSeriesValue(Type.UNINITIALIZED);
+    }
+
+    /**
+     * Updates value to represent an unintialised value.
+     */
+    public void setNull() {
+        this.type = Type.UNINITIALIZED;
     }
 
     /**
@@ -190,8 +197,11 @@ public class QdbTimeSeriesValue implements Serializable {
 
         case BLOB:
             return this.getBlob().equals(rhs.getBlob());
-        }
 
+        case UNINITIALIZED:
+            // null == null always true
+            return true;
+        }
 
         return false;
     }
