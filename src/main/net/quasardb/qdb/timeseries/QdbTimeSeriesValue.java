@@ -81,6 +81,23 @@ public class QdbTimeSeriesValue implements Serializable {
     }
 
     /**
+     * Updates value to take a certain blob value. Warning: assumes byte array will
+     * stay in memory for as long as this object lives.
+     */
+    public void setBlob(byte[] value) {
+        this.type = Type.BLOB;
+        this.blobValue = ByteBuffer.wrap(value);
+    }
+
+    /**
+     * Updates value to take a certain blob value;
+     */
+    public void setBlob(ByteBuffer value) {
+        this.type = Type.BLOB;
+        this.blobValue = value.duplicate();
+    }
+
+    /**
      * Represents a safe blob value that copies the byte array.
      */
     public static QdbTimeSeriesValue createSafeBlob(byte[] value) {

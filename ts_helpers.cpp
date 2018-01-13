@@ -594,6 +594,31 @@ tableGetRowDoubleValue(JNIEnv *env, qdb_local_table_t localTable, qdb_size_t ind
 }
 
 qdb_error_t
+tableGetRowBlobValue(JNIEnv *env, qdb_local_table_t localTable, qdb_size_t index, jobject output) {
+
+  void const * value;
+  qdb_size_t length;
+
+  qdb_error_t err = qdb_ts_row_get_blob(localTable, index, &value, &length);
+
+  if (QDB_SUCCESS(err)) {
+    assert(value != NULL);
+
+    jobject byteBuffer;
+    nativeToByteBuffer(env, value, length, &byteBuffer);
+    assert(byteBuffer != NULL);
+
+    jclass objectClass = env->GetObjectClass(output);
+    jmethodID methodId = env->GetMethodID(objectClass, "setBlob", "(Ljava/nio/ByteBuffer;)V");
+    assert(methodId != NULL);
+
+    env->CallVoidMethod(output, methodId, byteBuffer);
+  }
+
+  return err;
+}
+
+qdb_error_t
 tableGetRowValues (JNIEnv *env, qdb_local_table_t localTable, qdb_ts_column_info_t * columns, qdb_size_t count, jobjectArray values) {
   qdb_error_t err;
 
@@ -610,6 +635,10 @@ tableGetRowValues (JNIEnv *env, qdb_local_table_t localTable, qdb_ts_column_info
     switch (column.type) {
     case qdb_ts_column_double:
       err = tableGetRowDoubleValue(env, localTable, i, value);
+      break;
+
+    case qdb_ts_column_blob:
+      err = tableGetRowBlobValue(env, localTable, i, value);
       break;
 
     default:

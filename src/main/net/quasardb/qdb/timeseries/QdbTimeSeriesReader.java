@@ -31,7 +31,7 @@ public class QdbTimeSeriesReader implements AutoCloseable, Iterator<QdbTimeSerie
         int err = qdb.ts_local_table_init(this.session.handle(), table.getName(), table.getColumnInfo(), theLocalTable);
         QdbExceptionFactory.throwIfError(err);
 
-        this.localTable = theLocalTable.value;
+        this.localTable = theLocalTable.get();
 
         err = qdb.ts_table_get_ranges(this.localTable, ranges);
         QdbExceptionFactory.throwIfError(err);
@@ -50,7 +50,7 @@ public class QdbTimeSeriesReader implements AutoCloseable, Iterator<QdbTimeSerie
     @Override
     protected void finalize() throws Throwable {
         try {
-            qdb.ts_local_table_release(this.session.handle(), this.localTable);
+            this.close();
         } finally {
             super.finalize();
         }
