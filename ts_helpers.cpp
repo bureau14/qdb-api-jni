@@ -500,17 +500,43 @@ columnTypeFromColumnValue(JNIEnv * env, jobject value) {
 }
 
 qdb_error_t
+tableRowSetInt64ColumnValue(JNIEnv * env, qdb_local_table_t localTable, size_t columnIndex, jobject value) {
+  jclass objectClass = env->GetObjectClass(value);
+  jmethodID methodId = env->GetMethodID(objectClass, "getInt64", "()J");
+  assert(methodId != NULL);
+
+  return qdb_ts_row_set_int64(localTable, columnIndex, env->CallLongMethod(value, methodId));
+}
+
+qdb_error_t
 tableRowSetDoubleColumnValue(JNIEnv * env, qdb_local_table_t localTable, size_t columnIndex, jobject value) {
   jclass objectClass = env->GetObjectClass(value);
   jmethodID methodId = env->GetMethodID(objectClass, "getDouble", "()D");
+  assert(methodId != NULL);
 
   return qdb_ts_row_set_double(localTable, columnIndex, env->CallDoubleMethod(value, methodId));
+}
+
+qdb_error_t
+tableRowSetTimestampColumnValue(JNIEnv * env, qdb_local_table_t localTable, size_t columnIndex, jobject value) {
+  jclass objectClass = env->GetObjectClass(value);
+  jmethodID methodId = env->GetMethodID(objectClass, "getTimestamp", "()Lnet/quasardb/qdb/QdbTimespec;");
+  assert(methodId != NULL);
+
+  jobject timestampObject = env->CallObjectMethod(value, methodId);
+  assert(timestampObject != NULL);
+
+  qdb_timespec_t timestamp;
+  timespecToNative(env, timestampObject, &timestamp);
+
+  return qdb_ts_row_set_timestamp(localTable, columnIndex, &timestamp);
 }
 
 qdb_error_t
 tableRowSetBlobColumnValue(JNIEnv * env, qdb_local_table_t localTable, size_t columnIndex, jobject value) {
   jclass objectClass = env->GetObjectClass(value);
   jmethodID methodId = env->GetMethodID(objectClass, "getBlob", "()Ljava/nio/ByteBuffer;");
+  assert(methodId != NULL);
 
   jobject blobValue = env->CallObjectMethod(value, methodId);
 
@@ -519,6 +545,8 @@ tableRowSetBlobColumnValue(JNIEnv * env, qdb_local_table_t localTable, size_t co
                              env->GetDirectBufferAddress(blobValue),
                              (qdb_size_t)env->GetDirectBufferCapacity(blobValue));
 }
+
+
 
 qdb_error_t
 tableRowSetColumnValue(JNIEnv * env, qdb_local_table_t localTable, size_t columnIndex, jobject value) {
@@ -530,8 +558,16 @@ tableRowSetColumnValue(JNIEnv * env, qdb_local_table_t localTable, size_t column
   qdb_ts_column_type_t type = columnTypeFromColumnValue(env, value);
 
   switch(type) {
+  case qdb_ts_column_int64:
+    return tableRowSetInt64ColumnValue(env, localTable, columnIndex, value);
+    break;
+
   case qdb_ts_column_double:
     return tableRowSetDoubleColumnValue(env, localTable, columnIndex, value);
+    break;
+
+  case qdb_ts_column_timestamp:
+    return tableRowSetTimestampColumnValue(env, localTable, columnIndex, value);
     break;
 
   case qdb_ts_column_blob:
@@ -539,7 +575,7 @@ tableRowSetColumnValue(JNIEnv * env, qdb_local_table_t localTable, size_t column
     break;
 
   default:
-    return qdb_e_ok;
+    return qdb_e_incompatible_type;
   }
 }
 
@@ -578,6 +614,22 @@ tableGetRanges(JNIEnv *env, qdb_local_table_t localTable, jobjectArray ranges) {
 }
 
 qdb_error_t
+tableGetRowInt64Value(JNIEnv *env, qdb_local_table_t localTable, qdb_size_t index, jobject output) {
+  jlong value;
+  qdb_error_t err = qdb_ts_row_get_int64(localTable, index, &value);
+
+  if (QDB_SUCCESS(err)) {
+    jclass objectClass = env->GetObjectClass(output);
+    jmethodID methodId = env->GetMethodID(objectClass, "setInt64", "(J)V");
+    assert(methodId != NULL);
+
+    env->CallVoidMethod(output, methodId, value);
+  }
+
+  return err;
+}
+
+qdb_error_t
 tableGetRowDoubleValue(JNIEnv *env, qdb_local_table_t localTable, qdb_size_t index, jobject output) {
   double value;
   qdb_error_t err = qdb_ts_row_get_double(localTable, index, &value);
@@ -588,6 +640,28 @@ tableGetRowDoubleValue(JNIEnv *env, qdb_local_table_t localTable, qdb_size_t ind
     assert(methodId != NULL);
 
     env->CallVoidMethod(output, methodId, value);
+  }
+
+  return err;
+}
+
+qdb_error_t
+tableGetRowTimestampValue(JNIEnv *env, qdb_local_table_t localTable, qdb_size_t index, jobject output) {
+
+  qdb_timespec_t value;
+
+  qdb_error_t err = qdb_ts_row_get_timestamp(localTable, index, &value);
+
+  if (QDB_SUCCESS(err)) {
+    jobject timestampObject;
+    nativeToTimespec(env, value, &timestampObject);
+    assert(timestampObject != NULL);
+
+    jclass objectClass = env->GetObjectClass(output);
+    jmethodID methodId = env->GetMethodID(objectClass, "setTimestamp", "(Lnet/quasardb/qdb/QdbTimespec;)V");
+    assert(methodId != NULL);
+
+    env->CallVoidMethod(output, methodId, timestampObject);
   }
 
   return err;
@@ -637,18 +711,24 @@ tableGetRowValues (JNIEnv *env, qdb_local_table_t localTable, qdb_ts_column_info
       err = tableGetRowDoubleValue(env, localTable, i, value);
       break;
 
+    case qdb_ts_column_int64:
+      err = tableGetRowInt64Value(env, localTable, i, value);
+      break;
+
+    case qdb_ts_column_timestamp:
+      err = tableGetRowTimestampValue(env, localTable, i, value);
+      break;
+
     case qdb_ts_column_blob:
       err = tableGetRowBlobValue(env, localTable, i, value);
       break;
 
     default:
-      printf("unrecognised column type: %d\n", column.type);
-      fflush(stdout);
-      assert(false);
+      err = qdb_e_incompatible_type;
       break;
     }
 
-    if(!QDB_SUCCESS(err)) {
+    if(QDB_FAILURE(err)) {
       return err;
     }
 

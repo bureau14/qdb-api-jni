@@ -10,13 +10,18 @@ import net.quasardb.qdb.jni.*;
 public class QdbTimeSeriesValue implements Serializable {
 
     public Type type;
+    public long int64Value;
     public double doubleValue;
+    public QdbTimespec timestampValue;
     public ByteBuffer blobValue;
 
     public enum Type {
         UNINITIALIZED(qdb_ts_column_type.uninitialized),
         DOUBLE(qdb_ts_column_type.double_),
-        BLOB(qdb_ts_column_type.blob);
+        BLOB(qdb_ts_column_type.blob),
+        INT64(qdb_ts_column_type.int64),
+        TIMESTAMP(qdb_ts_column_type.timestamp)
+        ;
 
         protected final int value;
         Type(int type) {
@@ -30,9 +35,15 @@ public class QdbTimeSeriesValue implements Serializable {
 
             case qdb_ts_column_type.blob:
                 return Type.BLOB;
+
+            case qdb_ts_column_type.int64:
+                return Type.INT64;
+
+            case qdb_ts_column_type.timestamp:
+                return Type.TIMESTAMP;
             }
 
-            return Type.UNINITIALIZED;
+            throw new QdbInvalidArgumentException("Cannot convert int to QdbTimeSeriesValue.Type: " + type);
         }
     }
 
@@ -45,6 +56,23 @@ public class QdbTimeSeriesValue implements Serializable {
      */
     public static QdbTimeSeriesValue createNull() {
         return new QdbTimeSeriesValue(Type.UNINITIALIZED);
+    }
+
+    /**
+     * Represents a long integer
+     */
+    public static QdbTimeSeriesValue createInt64(long value) {
+        QdbTimeSeriesValue val = new QdbTimeSeriesValue(Type.INT64);
+        val.int64Value = value;
+        return val;
+    }
+
+    /**
+     * Updates value to take a certain long integer value;
+     */
+    public void setInt64(long value) {
+        this.type = Type.INT64;
+        this.int64Value = value;
     }
 
     /**
@@ -62,6 +90,23 @@ public class QdbTimeSeriesValue implements Serializable {
     public void setDouble(double value) {
         this.type = Type.DOUBLE;
         this.doubleValue = value;
+    }
+
+    /**
+     * Represents a long integer
+     */
+    public static QdbTimeSeriesValue createTimestamp(QdbTimespec value) {
+        QdbTimeSeriesValue val = new QdbTimeSeriesValue(Type.TIMESTAMP);
+        val.timestampValue = value;
+        return val;
+    }
+
+    /**
+     * Updates value to take a certain long integer value;
+     */
+    public void setTimestamp(QdbTimespec value) {
+        this.type = Type.TIMESTAMP;
+        this.timestampValue = value;
     }
 
     /**
@@ -134,12 +179,19 @@ public class QdbTimeSeriesValue implements Serializable {
         }
 
         switch (this.getType()) {
+        case INT64:
+            return this.getInt64() == rhs.getInt64();
+
         case DOUBLE:
             return this.getDouble() == rhs.getDouble();
+
+        case TIMESTAMP:
+            return this.getTimestamp().equals(rhs.getTimestamp());
 
         case BLOB:
             return this.getBlob().equals(rhs.getBlob());
         }
+
 
         return false;
     }
@@ -207,12 +259,28 @@ public class QdbTimeSeriesValue implements Serializable {
         return this.type;
     }
 
+    public long getInt64() {
+        if (this.type != Type.INT64) {
+            throw new QdbIncompatibleTypeException();
+        }
+
+        return this.int64Value;
+    }
+
     public double getDouble() {
         if (this.type != Type.DOUBLE) {
             throw new QdbIncompatibleTypeException();
         }
 
         return this.doubleValue;
+    }
+
+    public QdbTimespec getTimestamp() {
+        if (this.type != Type.TIMESTAMP) {
+            throw new QdbIncompatibleTypeException();
+        }
+
+        return this.timestampValue;
     }
 
     public ByteBuffer getBlob() {
@@ -226,8 +294,14 @@ public class QdbTimeSeriesValue implements Serializable {
     public String toString() {
 
         switch (this.type) {
+        case INT64:
+            return "QdbTimeSeriesValue (type = INT64, value = " + this.int64Value + ")";
+
         case DOUBLE:
             return "QdbTimeSeriesValue (type = DOUBLE, value = " + this.doubleValue + ")";
+
+        case TIMESTAMP:
+            return "QdbTimeSeriesValue (type = TIMESTAMP, value = " + this.timestampValue + ")";
 
         case BLOB:
             return "QdbTimeSeriesValue (type = BLOB, value = " + this.blobValue.hashCode() + ")";
