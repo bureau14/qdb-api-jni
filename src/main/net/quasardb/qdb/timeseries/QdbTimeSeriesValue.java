@@ -211,8 +211,16 @@ public class QdbTimeSeriesValue implements Serializable {
         stream.writeInt(this.type.value);
 
         switch (this.type) {
+        case INT64:
+            stream.writeLong(this.int64Value);
+            break;
+
         case DOUBLE:
             stream.writeDouble(this.doubleValue);
+            break;
+
+        case TIMESTAMP:
+            stream.writeObject(this.timestampValue);
             break;
 
         case BLOB:
@@ -240,8 +248,16 @@ public class QdbTimeSeriesValue implements Serializable {
         this.type = Type.fromInt(stream.readInt());
 
         switch (this.type) {
+        case INT64:
+            this.int64Value = stream.readLong();
+            break;
+
         case DOUBLE:
             this.doubleValue = stream.readDouble();
+            break;
+
+        case TIMESTAMP:
+            this.timestampValue = (QdbTimespec)(stream.readObject());
             break;
 
         case BLOB:
