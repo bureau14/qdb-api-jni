@@ -45,4 +45,4 @@ qdb_error_t
 tableGetRanges(JNIEnv *env, qdb_local_table_t localTable, jobjectArray ranges);
 
 qdb_error_t
-tableGetRow(JNIEnv *env, qdb_local_table_t localTable, qdb_ts_column_info_t * columns, qdb_size_t columnCount, jobject * output);
+tableGetRow(JNIEnv *env, qdb_local_table_t localTable, qdb_ts_column_info_t * columns, qdb_size_t columnCount, jobject output);

@@ -16,7 +16,10 @@ public class QdbTimeSeriesReader implements AutoCloseable, Iterator<QdbTimeSerie
     QdbSession session;
     QdbTimeSeriesTable table;
     Long localTable;
-    Reference<QdbTimeSeriesRow> next;
+
+
+    QdbTimeSeriesRow next;
+    QdbTimeSeriesRow prev;
 
     public QdbTimeSeriesReader(QdbSession session, QdbTimeSeriesTable table, QdbFilteredRange[] ranges) {
         if (ranges.length <= 0) {
@@ -25,7 +28,9 @@ public class QdbTimeSeriesReader implements AutoCloseable, Iterator<QdbTimeSerie
 
         this.session = session;
         this.table = table;
-        this.next = new Reference<QdbTimeSeriesRow>();
+        this.next = null;
+        this.prev = QdbTimeSeriesRow.createNull(table.getColumnInfo().length);
+        System.out.println("Creating NULL row, this.prev = " + this.prev.toString());
 
         Reference<Long> theLocalTable = new Reference<Long>();
         int err = qdb.ts_local_table_init(this.session.handle(), table.getName(), table.getColumnInfo(), theLocalTable);
@@ -61,15 +66,41 @@ public class QdbTimeSeriesReader implements AutoCloseable, Iterator<QdbTimeSerie
      * reference to the internal row.
      */
     private void readNext() {
-        int err = qdb.ts_table_next_row(this.localTable, this.table.getColumnInfo(), this.next);
+        assert(this.prev != null);
+        assert(this.next == null);
+
+        System.out.println("invoking .readNext(), prev = " + this.prev.toString());
+
+        int err = qdb.ts_table_next_row(this.localTable, this.table.getColumnInfo(), this.prev);
         QdbExceptionFactory.throwIfError(err);
+
+        System.out.println("after .readNext(), prev = " + this.prev.toString());
+
+        this.next = this.prev;
+        this.prev = null;
+    }
+
+    /**
+     * When a new row is being read, the next and prev are being switched so that we
+     * do not accidentally return the same value twice.
+     */
+    private void swapNext() {
+        System.out.println("swapNext, prev = " + this.prev);
+        System.out.println("swapNext, next = " + this.next);
+
+        assert(this.prev == null);
+        assert(this.next != null);
+
+        this.prev = this.next;
+        this.next = null;
+
     }
 
     /**
      * Reads the next row from local table when appropriate.
      */
     private void maybeReadNext() {
-        if (this.next.isEmpty()) {
+        if (this.next == null) {
             this.readNext();
         }
     }
@@ -85,7 +116,7 @@ public class QdbTimeSeriesReader implements AutoCloseable, Iterator<QdbTimeSerie
     public boolean hasNext() {
         this.maybeReadNext();
 
-        return !(this.next.isEmpty());
+        return this.next != null;
     }
 
     /**
@@ -98,6 +129,10 @@ public class QdbTimeSeriesReader implements AutoCloseable, Iterator<QdbTimeSerie
             throw new QdbInvalidIteratorException();
         }
 
-        return this.next.pop();
+        System.out.println("QdbTimeSeriesReader.next(), calling swapNext()");
+
+        this.swapNext();
+
+        return this.prev;
     }
 }

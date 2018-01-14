@@ -27,18 +27,20 @@ set(QDB_JNI_CLASSES
 )
 
 set(QDB_JNI_SOURCES
-    helpers.cpp
-    ts_helpers.cpp
-    qdb_batch.cpp
-    qdb_blob.cpp
-    qdb_client.cpp
-    qdb_deque.cpp
-    qdb_hset.cpp
-    qdb_int.cpp
-    qdb_stream.cpp
-    qdb_tag.cpp
-    qdb_node.cpp
-    qdb_ts.cpp
+  loader.cpp
+  cache.cpp
+  helpers.cpp
+  ts_helpers.cpp
+  qdb_batch.cpp
+  qdb_blob.cpp
+  qdb_client.cpp
+  qdb_deque.cpp
+  qdb_hset.cpp
+  qdb_int.cpp
+  qdb_stream.cpp
+  qdb_tag.cpp
+  qdb_node.cpp
+  qdb_ts.cpp
 )
 
 add_jar(jni

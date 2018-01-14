@@ -115,22 +115,20 @@ Java_net_quasardb_qdb_jni_qdb_ts_1table_1get_1ranges(JNIEnv * env, jclass /*this
 }
 
 JNIEXPORT jint JNICALL
-Java_net_quasardb_qdb_jni_qdb_ts_1table_1next_1row(JNIEnv * env, jclass /*thisClass*/, jlong localTable, jobjectArray columns, jobject output) {
+Java_net_quasardb_qdb_jni_qdb_ts_1table_1next_1row(JNIEnv * env, jclass /*thisClass*/, jlong localTable, jobjectArray columns, jobject row) {
   size_t columnCount = env->GetArrayLength(columns);
   qdb_ts_column_info_t * nativeColumns = (qdb_ts_column_info_t *)(malloc (columnCount * sizeof(qdb_ts_column_info_t)));
 
   columnsToNative(env, columns, nativeColumns, columnCount);
 
-  jobject row;
-  qdb_error_t err = tableGetRow(env, (qdb_local_table_t)localTable, nativeColumns, columnCount, &row);
+  qdb_error_t err = tableGetRow(env, (qdb_local_table_t)localTable, nativeColumns, columnCount, row);
 
   if (err == qdb_e_iterator_end) {
     return err;
   }
 
   if (QDB_SUCCESS(err)) {
-    assert(row != NULL);
-    setReferenceValue(env, output, row);
+    // NOOP?
   }
 
 

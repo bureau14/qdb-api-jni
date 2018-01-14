@@ -242,7 +242,6 @@ public class QdbTimeSeriesValue implements Serializable {
         value.rewind();
     }
 
-
     private void readObject(java.io.ObjectInputStream stream)
         throws IOException, ClassNotFoundException {
         this.type = Type.fromInt(stream.readInt());

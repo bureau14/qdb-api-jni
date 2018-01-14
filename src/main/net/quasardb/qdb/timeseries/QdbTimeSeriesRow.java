@@ -8,6 +8,8 @@ import java.time.LocalDateTime;
 
 import net.quasardb.qdb.jni.*;
 import java.util.*;
+import java.util.stream.Stream;
+
 
 /**
  * Represents a timeseries row.
@@ -28,6 +30,15 @@ public final class QdbTimeSeriesRow implements Serializable {
 
     public QdbTimeSeriesRow(Timestamp timestamp, QdbTimeSeriesValue[] values) {
         this(new QdbTimespec(timestamp), values);
+    }
+
+    public static QdbTimeSeriesRow createNull(int length) {
+        QdbTimeSeriesValue[] nullValues =
+            Stream.generate(QdbTimeSeriesValue::createNull)
+            .limit(length)
+            .toArray(QdbTimeSeriesValue[]::new);
+
+        return new QdbTimeSeriesRow(new QdbTimespec(), nullValues);
     }
 
     public QdbTimespec getTimestamp() {
