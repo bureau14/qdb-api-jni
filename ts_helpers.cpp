@@ -620,7 +620,7 @@ tableGetRanges(JNIEnv *env, qdb_local_table_t localTable, jobjectArray ranges) {
 qdb_error_t
 tableGetRowInt64Value(JNIEnv *env, qdb_local_table_t localTable, qdb_size_t index, jobject output) {
   jlong value;
-  qdb_error_t err = qdb_ts_row_get_int64(localTable, index, &value);
+  qdb_error_t err = qdb_ts_row_get_int64(localTable, index, static_cast<qdb_int_t *>(&value));
 
   if (QDB_SUCCESS(err)) {
     jclass objectClass = env->GetObjectClass(output);
