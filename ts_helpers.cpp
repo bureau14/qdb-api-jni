@@ -182,6 +182,7 @@ nativeToColumns(JNIEnv * env, qdb_ts_column_info_t * nativeColumns, size_t colum
   assert(constructor != NULL);
 
   *columns = env->NewObjectArray((jsize)column_count, column_class, NULL);
+  assert(*columns != NULL);
 
   for (size_t i = 0; i < column_count; i++) {
     env->SetObjectArrayElement(*columns, (jsize)i, env->NewObject(column_class,
