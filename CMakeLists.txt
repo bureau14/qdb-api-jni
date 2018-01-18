@@ -42,8 +42,7 @@ set(QDB_JNI_SOURCES
 )
 
 add_jar(jni
-  SOURCES ${QDB_JAVA_SOURCES}
-  INCLUDE_JARS lib/stormpot-2.4.jar)
+  SOURCES ${QDB_JAVA_SOURCES})
 
 create_javah(TARGET qdb_api_jni_headers
     CLASSES ${QDB_JNI_CLASSES}
