@@ -1,4 +1,4 @@
-package net.quasardb.qdb;
+package net.quasardb.qdb.ts;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -8,13 +8,15 @@ import java.sql.Timestamp;
 import java.time.LocalDateTime;
 
 import java.nio.channels.SeekableByteChannel;
-import net.quasardb.qdb.jni.*;
 import java.util.*;
+
+import net.quasardb.qdb.*;
+import net.quasardb.qdb.jni.*;
 
 /**
  * Represents a timeseries table.
  */
-public class QdbTimeSeriesTable implements Serializable {
+public class Table implements Serializable {
     String name;
     qdb_ts_column_info[] columns;
     Map <String, Integer> columnOffsets;
@@ -25,7 +27,7 @@ public class QdbTimeSeriesTable implements Serializable {
      * @param session Active connection with the QdbCluster
      * @param name Timeseries name. Must already exist.
      */
-    QdbTimeSeriesTable(QdbSession session, String name) {
+    Table(QdbSession session, String name) {
         this.name = name;
 
         Reference<qdb_ts_column_info[]> columns =
@@ -48,9 +50,9 @@ public class QdbTimeSeriesTable implements Serializable {
      * @param session Active connection with the QdbCluster
      * @param name Timeseries table name. Must already exist.
      */
-    public static QdbTimeSeriesWriter writer(QdbSession session, String name) {
-        return new QdbTimeSeriesWriter(session,
-                                       new QdbTimeSeriesTable(session, name));
+    public static Writer writer(QdbSession session, String name) {
+        return new Writer(session,
+                          new Table(session, name));
     }
 
     /**
@@ -60,9 +62,9 @@ public class QdbTimeSeriesTable implements Serializable {
      * @param session Active connection with the QdbCluster
      * @param name Timeseries table name. Must already exist.
      */
-    public static QdbAutoFlushTimeSeriesWriter autoFlushWriter(QdbSession session, String name) {
-        return new QdbAutoFlushTimeSeriesWriter(session,
-                                                new QdbTimeSeriesTable(session, name));
+    public static AutoFlushWriter autoFlushWriter(QdbSession session, String name) {
+        return new AutoFlushWriter(session,
+                                   new Table(session, name));
     }
 
     /**
@@ -73,10 +75,10 @@ public class QdbTimeSeriesTable implements Serializable {
      * @param name Timeseries table name. Must already exist.
      * @param threshold The amount of rows to keep in local buffer before automatic flushing occurs.
      */
-    public static QdbAutoFlushTimeSeriesWriter autoFlushWriter(QdbSession session, String name, long threshold) {
-        return new QdbAutoFlushTimeSeriesWriter(session,
-                                                new QdbTimeSeriesTable(session, name),
-                                                threshold);
+    public static AutoFlushWriter autoFlushWriter(QdbSession session, String name, long threshold) {
+        return new AutoFlushWriter(session,
+                                   new Table(session, name),
+                                   threshold);
     }
 
     /**
@@ -86,10 +88,10 @@ public class QdbTimeSeriesTable implements Serializable {
      * @param name    Timeseries table name. Must already exist.
      * @param ranges  Filtered time ranges to look for.
      */
-    public static QdbTimeSeriesReader reader(QdbSession session, String name, QdbFilteredRange[] ranges) {
-        return new QdbTimeSeriesReader (session,
-                                        new QdbTimeSeriesTable(session, name),
-                                        ranges);
+    public static Reader reader(QdbSession session, String name, FilteredRange[] ranges) {
+        return new Reader (session,
+                           new Table(session, name),
+                           ranges);
     }
 
     /**
@@ -99,12 +101,12 @@ public class QdbTimeSeriesTable implements Serializable {
      * @param name    Timeseries table name. Must already exist.
      * @param ranges  Time ranges to look for.
      */
-    public static QdbTimeSeriesReader reader(QdbSession session, String name, QdbTimeRange[] ranges) {
+    public static Reader reader(QdbSession session, String name, TimeRange[] ranges) {
         return reader(session, name,
                       Arrays
                       .stream(ranges)
-                      .map(QdbFilteredRange::new)
-                      .toArray(QdbFilteredRange[]::new));
+                      .map(FilteredRange::new)
+                      .toArray(FilteredRange[]::new));
     }
 
     /**

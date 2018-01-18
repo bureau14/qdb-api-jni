@@ -1,4 +1,4 @@
-package net.quasardb.qdb;
+package net.quasardb.qdb.ts;
 
 import java.io.IOException;
 import java.lang.AutoCloseable;
@@ -6,26 +6,28 @@ import java.sql.Timestamp;
 import java.time.LocalDateTime;
 
 import java.nio.channels.SeekableByteChannel;
-import net.quasardb.qdb.jni.*;
 import java.util.*;
+
+import net.quasardb.qdb.*;
+import net.quasardb.qdb.jni.*;
 
 /**
  * Represents a timeseries table.
  */
-public class QdbTimeSeriesReader implements AutoCloseable, Iterator<QdbTimeSeriesRow> {
+public class Reader implements AutoCloseable, Iterator<Row> {
     QdbSession session;
-    QdbTimeSeriesTable table;
+    Table table;
     Long localTable;
-    Reference<QdbTimeSeriesRow> next;
+    Reference<Row> next;
 
-    public QdbTimeSeriesReader(QdbSession session, QdbTimeSeriesTable table, QdbFilteredRange[] ranges) {
+    public Reader(QdbSession session, Table table, FilteredRange[] ranges) {
         if (ranges.length <= 0) {
-            throw new QdbInvalidArgumentException("QdbTimeSeriesReader requires at least one QdbFilteredRange to read");
+            throw new QdbInvalidArgumentException("Reader requires at least one FilteredRange to read");
         }
 
         this.session = session;
         this.table = table;
-        this.next = new Reference<QdbTimeSeriesRow>();
+        this.next = new Reference<Row>();
 
         Reference<Long> theLocalTable = new Reference<Long>();
         int err = qdb.ts_local_table_init(this.session.handle(), table.getName(), table.getColumnInfo(), theLocalTable);
@@ -40,7 +42,7 @@ public class QdbTimeSeriesReader implements AutoCloseable, Iterator<QdbTimeSerie
     /**
      * Returns the underlying table that is being written to.
      */
-    public QdbTimeSeriesTable getTable() {
+    public Table getTable() {
         return this.table;
     }
 
@@ -91,7 +93,7 @@ public class QdbTimeSeriesReader implements AutoCloseable, Iterator<QdbTimeSerie
     /**
      * Modifies internal state to move forward to the next row.
      */
-    public QdbTimeSeriesRow next() {
+    public Row next() {
         this.maybeReadNext();
 
         if (this.hasNext() == false) {

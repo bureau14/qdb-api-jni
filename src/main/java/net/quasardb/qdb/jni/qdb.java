@@ -1,7 +1,9 @@
 package net.quasardb.qdb.jni;
 
 import java.nio.ByteBuffer;
+
 import net.quasardb.qdb.*;
+import net.quasardb.qdb.ts.*;
 
 public final class qdb {
   static {
@@ -103,23 +105,23 @@ public final class qdb {
   public static native int ts_list_columns(long handle, String alias, Reference<qdb_ts_column_info[]> columns);
   public static native int ts_local_table_init(long handle, String alias, qdb_ts_column_info[] columns, Reference<Long> localTable);
   public static native void ts_local_table_release(long handle, long localTable);
-  public static native int ts_table_row_append(long localTable, QdbTimespec time, QdbTimeSeriesValue[] values);
+  public static native int ts_table_row_append(long localTable, Timespec time, Value[] values);
   public static native int ts_push(long localTable);
-  public static native int ts_table_get_ranges(long localTable, QdbFilteredRange[] ranges);
-  public static native int ts_table_next_row(long localTable, qdb_ts_column_info[] columns, Reference<QdbTimeSeriesRow> output);
+  public static native int ts_table_get_ranges(long localTable, FilteredRange[] ranges);
+  public static native int ts_table_next_row(long localTable, qdb_ts_column_info[] columns, Reference<Row> output);
 
   public static native int ts_double_insert(long handle, String alias, String column, qdb_ts_double_point[] points);
-  public static native int ts_double_get_ranges(long handle, String alias, String column, QdbFilteredRange[] ranges,
+  public static native int ts_double_get_ranges(long handle, String alias, String column, FilteredRange[] ranges,
                                                 Reference<qdb_ts_double_point[]> points);
   public static native int ts_double_aggregate(long handle, String alias, String column, qdb_ts_double_aggregation[] input,
                                                Reference<qdb_ts_double_aggregation[]> aggregations);
   public static native int ts_blob_insert(long handle, String alias, String column, qdb_ts_blob_point[] points);
-  public static native int ts_blob_get_ranges(long handle, String alias, String column, QdbFilteredRange[] ranges,
+  public static native int ts_blob_get_ranges(long handle, String alias, String column, FilteredRange[] ranges,
                                               Reference<qdb_ts_blob_point[]> points);
   public static native int ts_blob_aggregate(long handle, String alias, String column, qdb_ts_blob_aggregation[] input,
                                              Reference<qdb_ts_blob_aggregation[]> aggregations);
 
-  public static native int query_execute(long handle, String query, Reference<QdbTimeSeriesQueryResult> result);
+    //public static native int query_execute(long handle, String query, Reference<QdbTimeSeriesQueryResult> result);
 
   public static native int node_status(long handle, String uri, Reference<String> content);
   public static native int node_config(long handle, String uri, Reference<String> content);

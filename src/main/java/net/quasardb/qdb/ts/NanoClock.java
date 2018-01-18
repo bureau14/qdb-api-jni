@@ -1,21 +1,21 @@
-package net.quasardb.qdb;
+package net.quasardb.qdb.ts;
 
 import java.time.ZoneId;
 import java.time.Instant;
 import java.time.Clock;
 
-public class QdbClock extends Clock
+public class NanoClock extends Clock
 {
     private final Clock clock;
     private final long initialNanos;
     private final Instant initialInstant;
 
-    public QdbClock()
+    public NanoClock()
     {
-        this(Clock.systemUTC());
+        this(java.time.Clock.systemUTC());
     }
 
-    public QdbClock(final Clock clock)
+    public NanoClock(final Clock clock)
     {
         this.clock = clock;
         initialInstant = clock.instant();
@@ -35,9 +35,9 @@ public class QdbClock extends Clock
     }
 
     @Override
-    public Clock withZone(final ZoneId zone)
+    public NanoClock withZone(final ZoneId zone)
     {
-        return new QdbClock(clock.withZone(zone));
+        return new NanoClock(clock.withZone(zone));
     }
 
     private long getSystemNanos()

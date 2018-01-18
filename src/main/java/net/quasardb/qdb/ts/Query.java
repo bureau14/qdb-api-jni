@@ -14,14 +14,4 @@ import java.util.*;
  */
 public final class Query implements Serializable {
 
-    private String query;
-
-    public static void of(String query) {
-        this.query = query;
-    }
-
-    public void execute(QdbSession session) {
-        return execute(QdbSession session, QdbTimeSeriesQueryResult
-    }
-
 }

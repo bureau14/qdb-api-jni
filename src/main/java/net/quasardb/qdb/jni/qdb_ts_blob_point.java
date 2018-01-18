@@ -1,13 +1,13 @@
 package net.quasardb.qdb.jni;
 
-import net.quasardb.qdb.QdbTimespec;
+import net.quasardb.qdb.ts.Timespec;
 import java.nio.ByteBuffer;
 
 public final class qdb_ts_blob_point {
-  protected QdbTimespec timestamp;
+  protected Timespec timestamp;
   protected ByteBuffer value;
 
-  public qdb_ts_blob_point(QdbTimespec timestamp, ByteBuffer value){
+  public qdb_ts_blob_point(Timespec timestamp, ByteBuffer value){
     if(!value.isDirect()) {
       throw new IllegalArgumentException("Not a direct ByteBuffer: " + value.toString());
     }
@@ -15,7 +15,7 @@ public final class qdb_ts_blob_point {
     this.value = value;
   }
 
-  public QdbTimespec getTimestamp() {
+  public Timespec getTimestamp() {
     return this.timestamp;
   }
 

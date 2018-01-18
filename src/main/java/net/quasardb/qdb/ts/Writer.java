@@ -1,4 +1,4 @@
-package net.quasardb.qdb;
+package net.quasardb.qdb.ts;
 
 import java.io.IOException;
 import java.io.Flushable;
@@ -7,18 +7,20 @@ import java.sql.Timestamp;
 import java.time.LocalDateTime;
 
 import java.nio.channels.SeekableByteChannel;
-import net.quasardb.qdb.jni.*;
 import java.util.*;
+
+import net.quasardb.qdb.*;
+import net.quasardb.qdb.jni.*;
 
 /**
  * High-performance bulk writer for a QuasarDB timeseries table.
  */
-public class QdbTimeSeriesWriter implements AutoCloseable, Flushable {
+public class Writer implements AutoCloseable, Flushable {
     QdbSession session;
-    QdbTimeSeriesTable table;
+    Table table;
     Long localTable;
 
-    public QdbTimeSeriesWriter(QdbSession session, QdbTimeSeriesTable table) {
+    public Writer(QdbSession session, Table table) {
         this.session = session;
         this.table = table;
 
@@ -32,7 +34,7 @@ public class QdbTimeSeriesWriter implements AutoCloseable, Flushable {
     /**
      * Returns the underlying table that is being written to.
      */
-    public QdbTimeSeriesTable getTable() {
+    public Table getTable() {
         return this.table;
     }
 
@@ -70,7 +72,7 @@ public class QdbTimeSeriesWriter implements AutoCloseable, Flushable {
     /**
      * Append a new row to the local table cache.
      */
-    public void append(QdbTimeSeriesRow row) throws IOException {
+    public void append(Row row) throws IOException {
         int err = qdb.ts_table_row_append(this.localTable, row.getTimestamp(), row.getValues());
         QdbExceptionFactory.throwIfError(err);
     }
@@ -78,21 +80,21 @@ public class QdbTimeSeriesWriter implements AutoCloseable, Flushable {
     /**
      * Append a new row to the local table cache.
      */
-    public void append(QdbTimespec timestamp, QdbTimeSeriesValue[] value) throws IOException {
-        this.append(new QdbTimeSeriesRow(timestamp, value));
+    public void append(Timespec timestamp, Value[] value) throws IOException {
+        this.append(new Row(timestamp, value));
     }
 
     /**
      * Append a new row to the local table cache.
      */
-    public void append(LocalDateTime timestamp, QdbTimeSeriesValue[] value) throws IOException {
-        this.append(new QdbTimeSeriesRow(timestamp, value));
+    public void append(LocalDateTime timestamp, Value[] value) throws IOException {
+        this.append(new Row(timestamp, value));
     }
 
     /**
      * Append a new row to the local table cache.
      */
-    public void append(Timestamp timestamp, QdbTimeSeriesValue[] value) throws IOException {
-        this.append(new QdbTimeSeriesRow(timestamp, value));
+    public void append(Timestamp timestamp, Value[] value) throws IOException {
+        this.append(new Row(timestamp, value));
     }
 }

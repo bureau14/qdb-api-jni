@@ -1,18 +1,20 @@
-package net.quasardb.qdb;
+package net.quasardb.qdb.ts;
 
 import java.io.*;
 import java.nio.ByteBuffer;
+
+import net.quasardb.qdb.*;
 import net.quasardb.qdb.jni.*;
 
 /**
  * Represents a timeseries table.
  */
-public class QdbTimeSeriesValue implements Serializable {
+public class Value implements Serializable {
 
     public Type type;
     public long int64Value;
     public double doubleValue;
-    public QdbTimespec timestampValue;
+    public Timespec timestampValue;
     public ByteBuffer blobValue;
 
     public enum Type {
@@ -47,15 +49,15 @@ public class QdbTimeSeriesValue implements Serializable {
         }
     }
 
-    protected QdbTimeSeriesValue(Type type) {
+    protected Value(Type type) {
         this.type = type;
     }
 
     /**
      * Create a null / empty value.
      */
-    public static QdbTimeSeriesValue createNull() {
-        return new QdbTimeSeriesValue(Type.UNINITIALIZED);
+    public static Value createNull() {
+        return new Value(Type.UNINITIALIZED);
     }
 
     /**
@@ -68,8 +70,8 @@ public class QdbTimeSeriesValue implements Serializable {
     /**
      * Represents a long integer
      */
-    public static QdbTimeSeriesValue createInt64(long value) {
-        QdbTimeSeriesValue val = new QdbTimeSeriesValue(Type.INT64);
+    public static Value createInt64(long value) {
+        Value val = new Value(Type.INT64);
         val.int64Value = value;
         return val;
     }
@@ -85,8 +87,8 @@ public class QdbTimeSeriesValue implements Serializable {
     /**
      * Represents a double value.
      */
-    public static QdbTimeSeriesValue createDouble(double value) {
-        QdbTimeSeriesValue val = new QdbTimeSeriesValue(Type.DOUBLE);
+    public static Value createDouble(double value) {
+        Value val = new Value(Type.DOUBLE);
         val.doubleValue = value;
         return val;
     }
@@ -102,8 +104,8 @@ public class QdbTimeSeriesValue implements Serializable {
     /**
      * Represents a long integer
      */
-    public static QdbTimeSeriesValue createTimestamp(QdbTimespec value) {
-        QdbTimeSeriesValue val = new QdbTimeSeriesValue(Type.TIMESTAMP);
+    public static Value createTimestamp(Timespec value) {
+        Value val = new Value(Type.TIMESTAMP);
         val.timestampValue = value;
         return val;
     }
@@ -111,7 +113,7 @@ public class QdbTimeSeriesValue implements Serializable {
     /**
      * Updates value to take a certain long integer value;
      */
-    public void setTimestamp(QdbTimespec value) {
+    public void setTimestamp(Timespec value) {
         this.type = Type.TIMESTAMP;
         this.timestampValue = value;
     }
@@ -120,14 +122,14 @@ public class QdbTimeSeriesValue implements Serializable {
      * Represents a blob value. Warning: assumes byte array will stay in memory for
      * as long as this object lives.
      */
-    public static QdbTimeSeriesValue createBlob(byte[] value) {
-        QdbTimeSeriesValue val = new QdbTimeSeriesValue(Type.BLOB);
+    public static Value createBlob(byte[] value) {
+        Value val = new Value(Type.BLOB);
         val.blobValue = ByteBuffer.wrap(value);
         return val;
     }
 
-    public static QdbTimeSeriesValue createBlob(ByteBuffer value) {
-        QdbTimeSeriesValue val = new QdbTimeSeriesValue(Type.BLOB);
+    public static Value createBlob(ByteBuffer value) {
+        Value val = new Value(Type.BLOB);
         val.blobValue = value.duplicate();
         return val;
     }
@@ -152,8 +154,8 @@ public class QdbTimeSeriesValue implements Serializable {
     /**
      * Represents a safe blob value that copies the byte array.
      */
-    public static QdbTimeSeriesValue createSafeBlob(byte[] value) {
-        QdbTimeSeriesValue val = new QdbTimeSeriesValue(Type.BLOB);
+    public static Value createSafeBlob(byte[] value) {
+        Value val = new Value(Type.BLOB);
 
         int size = value.length;
         val.blobValue = ByteBuffer.allocateDirect(size);
@@ -163,8 +165,8 @@ public class QdbTimeSeriesValue implements Serializable {
         return val;
     }
 
-    public static QdbTimeSeriesValue createSafeBlob(ByteBuffer value) {
-        QdbTimeSeriesValue val = new QdbTimeSeriesValue(Type.BLOB);
+    public static Value createSafeBlob(ByteBuffer value) {
+        Value val = new Value(Type.BLOB);
 
         int size = value.capacity();
         val.blobValue = ByteBuffer.allocateDirect(size);
@@ -178,8 +180,8 @@ public class QdbTimeSeriesValue implements Serializable {
 
     @Override
     public boolean equals(Object obj) {
-        if (!(obj instanceof QdbTimeSeriesValue)) return false;
-        QdbTimeSeriesValue rhs = (QdbTimeSeriesValue)obj;
+        if (!(obj instanceof Value)) return false;
+        Value rhs = (Value)obj;
 
         if (this.getType() != rhs.getType()) {
             return false;
@@ -257,7 +259,7 @@ public class QdbTimeSeriesValue implements Serializable {
             break;
 
         case TIMESTAMP:
-            this.timestampValue = (QdbTimespec)(stream.readObject());
+            this.timestampValue = (Timespec)(stream.readObject());
             break;
 
         case BLOB:
@@ -301,7 +303,7 @@ public class QdbTimeSeriesValue implements Serializable {
         return this.doubleValue;
     }
 
-    public QdbTimespec getTimestamp() {
+    public Timespec getTimestamp() {
         if (this.type != Type.TIMESTAMP) {
             throw new QdbIncompatibleTypeException();
         }
@@ -321,19 +323,19 @@ public class QdbTimeSeriesValue implements Serializable {
 
         switch (this.type) {
         case INT64:
-            return "QdbTimeSeriesValue (type = INT64, value = " + this.int64Value + ")";
+            return "Value (type = INT64, value = " + this.int64Value + ")";
 
         case DOUBLE:
-            return "QdbTimeSeriesValue (type = DOUBLE, value = " + this.doubleValue + ")";
+            return "Value (type = DOUBLE, value = " + this.doubleValue + ")";
 
         case TIMESTAMP:
-            return "QdbTimeSeriesValue (type = TIMESTAMP, value = " + this.timestampValue + ")";
+            return "Value (type = TIMESTAMP, value = " + this.timestampValue + ")";
 
         case BLOB:
-            return "QdbTimeSeriesValue (type = BLOB, value = " + this.blobValue.hashCode() + ")";
+            return "Value (type = BLOB, value = " + this.blobValue.hashCode() + ")";
         }
 
-        return "QdbTimeSeriesValue (type = INVALID)";
+        return "Value (type = INVALID)";
     }
 
 }

@@ -19,7 +19,7 @@ file(GLOB QDB_JAVA_SOURCES
   "src/main/java/net/quasardb/qdb/exceptions/*.java"
   "src/main/java/net/quasardb/qdb/connection/*.java"
   "src/main/java/net/quasardb/qdb/jni/*.java"
-  "src/main/java/net/quasardb/qdb/timeseries/*.java"
+  "src/main/java/net/quasardb/qdb/ts/*.java"
   "src/main/java/net/quasardb/qdb/*.java")
 
 set(QDB_JNI_CLASSES

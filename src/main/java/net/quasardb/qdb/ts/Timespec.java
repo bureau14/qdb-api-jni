@@ -1,4 +1,4 @@
-package net.quasardb.qdb;
+package net.quasardb.qdb.ts;
 
 import java.io.Serializable;
 import java.sql.Timestamp;
@@ -9,31 +9,31 @@ import java.time.Clock;
 
 import net.quasardb.qdb.jni.*;
 
-public class QdbTimespec implements Serializable {
-    private static Clock clock = new QdbClock();
+public class Timespec implements Serializable {
+    private static Clock clock = new NanoClock();
     protected long sec;
     protected long nsec;
 
-    public QdbTimespec(){
+    public Timespec(){
         this.sec = -1;
         this.nsec = -1;
     }
 
-    public QdbTimespec(long sec, long nsec){
+    public Timespec(long sec, long nsec){
         this.sec = sec;
         this.nsec = nsec;
     }
 
-    public QdbTimespec (LocalDateTime value) {
+    public Timespec (LocalDateTime value) {
         this(value.atZone(ZoneId.systemDefault()).toEpochSecond(),
              value.getNano());
     }
 
-    public QdbTimespec (Timestamp value) {
+    public Timespec (Timestamp value) {
         this(value.toLocalDateTime());
     }
 
-    public QdbTimespec (Instant value) {
+    public Timespec (Instant value) {
         this(value.getEpochSecond(),
              value.getNano());
     }
@@ -46,28 +46,28 @@ public class QdbTimespec implements Serializable {
         return this.nsec;
     }
 
-    public static QdbTimespec now() {
-        return new QdbTimespec(Instant.now(QdbTimespec.clock));
+    public static Timespec now() {
+        return new Timespec(Instant.now(Timespec.clock));
     }
 
-    public static QdbTimespec now(Clock clock) {
-        return new QdbTimespec(Instant.now(clock));
+    public static Timespec now(Clock clock) {
+        return new Timespec(Instant.now(clock));
     }
 
     /**
      * Returns copy of this instance with the specified duration in seconds added.
      */
-    public QdbTimespec plusSeconds(long secondsToAdd) {
-        return new QdbTimespec(this.sec + secondsToAdd,
-                               this.nsec);
+    public Timespec plusSeconds(long secondsToAdd) {
+        return new Timespec(this.sec + secondsToAdd,
+                            this.nsec);
     }
 
     /**
      * Returns copy of this instance with the specified duration in nanoseconds added.
      */
-    public QdbTimespec plusNanos(long nanosToAdd) {
-        return new QdbTimespec(this.sec,
-                               this.nsec + nanosToAdd);
+    public Timespec plusNanos(long nanosToAdd) {
+        return new Timespec(this.sec,
+                            this.nsec + nanosToAdd);
     }
 
     public Instant asInstant() {
@@ -86,14 +86,13 @@ public class QdbTimespec implements Serializable {
 
     @Override
     public boolean equals(Object obj) {
-        if (!(obj instanceof QdbTimespec)) return false;
-        QdbTimespec rhs = (QdbTimespec)obj;
-
+        if (!(obj instanceof Timespec)) return false;
+        Timespec rhs = (Timespec)obj;
 
         return rhs.getSec() == this.sec && rhs.getNano() == this.nsec;
     }
 
     public String toString() {
-        return "QdbTimespec (sec: " + this.sec + ", nsec: " + this.nsec + ")";
+        return "Timespec (sec: " + this.sec + ", nsec: " + this.nsec + ")";
     }
 }

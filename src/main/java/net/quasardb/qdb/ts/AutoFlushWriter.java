@@ -1,17 +1,19 @@
-package net.quasardb.qdb;
+package net.quasardb.qdb.ts;
 
 import java.io.IOException;
 import java.io.Flushable;
 import java.lang.AutoCloseable;
 import java.nio.channels.SeekableByteChannel;
-import net.quasardb.qdb.jni.*;
 import java.util.*;
+
+import net.quasardb.qdb.*;
+import net.quasardb.qdb.jni.*;
 
 /**
  * Represents a timeseries table that automatically flushes the local cache when
  * a certain threshold has been reached.
  */
-public final class QdbAutoFlushTimeSeriesWriter extends QdbTimeSeriesWriter {
+public final class AutoFlushWriter extends Writer {
 
     long counter;
     long threshold;
@@ -22,7 +24,7 @@ public final class QdbAutoFlushTimeSeriesWriter extends QdbTimeSeriesWriter {
      * @param session Active connection with the QdbCluster
      * @param name Timeseries name. Must already exist.
      */
-    QdbAutoFlushTimeSeriesWriter(QdbSession session, QdbTimeSeriesTable table) {
+    AutoFlushWriter(QdbSession session, Table table) {
         this(session, table, 50000);
     }
 
@@ -33,7 +35,7 @@ public final class QdbAutoFlushTimeSeriesWriter extends QdbTimeSeriesWriter {
      * @param name Timeseries name. Must already exist.
      * @param threshold The amount of rows to keep in local buffer before automatic flushing occurs.
      */
-    QdbAutoFlushTimeSeriesWriter(QdbSession session, QdbTimeSeriesTable table, long threshold) {
+    AutoFlushWriter(QdbSession session, Table table, long threshold) {
         super(session, table);
 
         this.counter = 0;
@@ -41,7 +43,7 @@ public final class QdbAutoFlushTimeSeriesWriter extends QdbTimeSeriesWriter {
     }
 
     @Override
-    public void append(QdbTimeSeriesRow row) throws IOException {
+    public void append(Row row) throws IOException {
         super.append(row);
 
         if (++counter >= threshold) {

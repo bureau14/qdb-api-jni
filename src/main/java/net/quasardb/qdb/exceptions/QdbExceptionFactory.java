@@ -2,7 +2,7 @@ package net.quasardb.qdb;
 
 import net.quasardb.qdb.jni.*;
 
-class QdbExceptionFactory {
+public class QdbExceptionFactory {
 
     public static void throwIfError(int err) {
         if (qdb_error.severity(err) == qdb_err_severity.info)
