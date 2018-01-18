@@ -8,7 +8,6 @@ include(UseJava)
 include(compile_options.cmake)
 
 file(GLOB QDB_JAVA_SOURCES
-  "*.java"
   "tools/*.java"
   "src/main/java/net/quasardb/qdb/exceptions/connection/*.java"
   "src/main/java/net/quasardb/qdb/exceptions/input/*.java"
@@ -19,6 +18,7 @@ file(GLOB QDB_JAVA_SOURCES
   "src/main/java/net/quasardb/qdb/exceptions/system/local/*.java"
   "src/main/java/net/quasardb/qdb/exceptions/*.java"
   "src/main/java/net/quasardb/qdb/connection/*.java"
+  "src/main/java/net/quasardb/qdb/jni/*.java"
   "src/main/java/net/quasardb/qdb/timeseries/*.java"
   "src/main/java/net/quasardb/qdb/*.java")
 
@@ -27,18 +27,18 @@ set(QDB_JNI_CLASSES
 )
 
 set(QDB_JNI_SOURCES
-    helpers.cpp
-    ts_helpers.cpp
-    qdb_batch.cpp
-    qdb_blob.cpp
-    qdb_client.cpp
-    qdb_deque.cpp
-    qdb_hset.cpp
-    qdb_int.cpp
-    qdb_stream.cpp
-    qdb_tag.cpp
-    qdb_node.cpp
-    qdb_ts.cpp
+  src/main/c++/net/quasardb/qdb/jni/helpers.cpp
+  src/main/c++/net/quasardb/qdb/jni/ts_helpers.cpp
+  src/main/c++/net/quasardb/qdb/jni/qdb_batch.cpp
+  src/main/c++/net/quasardb/qdb/jni/qdb_blob.cpp
+  src/main/c++/net/quasardb/qdb/jni/qdb_client.cpp
+  src/main/c++/net/quasardb/qdb/jni/qdb_deque.cpp
+  src/main/c++/net/quasardb/qdb/jni/qdb_hset.cpp
+  src/main/c++/net/quasardb/qdb/jni/qdb_int.cpp
+  src/main/c++/net/quasardb/qdb/jni/qdb_stream.cpp
+  src/main/c++/net/quasardb/qdb/jni/qdb_tag.cpp
+  src/main/c++/net/quasardb/qdb/jni/qdb_node.cpp
+  src/main/c++/net/quasardb/qdb/jni/qdb_ts.cpp
 )
 
 add_jar(jni
