@@ -10,17 +10,17 @@ include(compile_options.cmake)
 file(GLOB QDB_JAVA_SOURCES
   "*.java"
   "tools/*.java"
-  "src/main/net/quasardb/qdb/exceptions/connection/*.java"
-  "src/main/net/quasardb/qdb/exceptions/input/*.java"
-  "src/main/net/quasardb/qdb/exceptions/operation/*.java"
-  "src/main/net/quasardb/qdb/exceptions/protocol/*.java"
-  "src/main/net/quasardb/qdb/exceptions/system/*.java"
-  "src/main/net/quasardb/qdb/exceptions/system/remote/*.java"
-  "src/main/net/quasardb/qdb/exceptions/system/local/*.java"
-  "src/main/net/quasardb/qdb/exceptions/*.java"
-  "src/main/net/quasardb/qdb/connection/*.java"
-  "src/main/net/quasardb/qdb/timeseries/*.java"
-  "src/main/net/quasardb/qdb/*.java")
+  "src/main/java/net/quasardb/qdb/exceptions/connection/*.java"
+  "src/main/java/net/quasardb/qdb/exceptions/input/*.java"
+  "src/main/java/net/quasardb/qdb/exceptions/operation/*.java"
+  "src/main/java/net/quasardb/qdb/exceptions/protocol/*.java"
+  "src/main/java/net/quasardb/qdb/exceptions/system/*.java"
+  "src/main/java/net/quasardb/qdb/exceptions/system/remote/*.java"
+  "src/main/java/net/quasardb/qdb/exceptions/system/local/*.java"
+  "src/main/java/net/quasardb/qdb/exceptions/*.java"
+  "src/main/java/net/quasardb/qdb/connection/*.java"
+  "src/main/java/net/quasardb/qdb/timeseries/*.java"
+  "src/main/java/net/quasardb/qdb/*.java")
 
 set(QDB_JNI_CLASSES
     net.quasardb.qdb.jni.qdb
