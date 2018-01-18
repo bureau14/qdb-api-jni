@@ -119,6 +119,8 @@ public final class qdb {
   public static native int ts_blob_aggregate(long handle, String alias, String column, qdb_ts_blob_aggregation[] input,
                                              Reference<qdb_ts_blob_aggregation[]> aggregations);
 
+  public static native int query_execute(long handle, String query, Reference<QdbTimeSeriesQueryResult> result);
+
   public static native int node_status(long handle, String uri, Reference<String> content);
   public static native int node_config(long handle, String uri, Reference<String> content);
   public static native int node_topology(long handle, String uri, Reference<String> content);

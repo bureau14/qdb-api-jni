@@ -83,12 +83,28 @@ public class QdbTimeSeriesTable implements Serializable {
      * Initializes new reader for a timeseries table.
      *
      * @param session Active connection with the QdbCluster
-     * @param name Timeseries table name. Must already exist.
+     * @param name    Timeseries table name. Must already exist.
+     * @param ranges  Filtered time ranges to look for.
      */
     public static QdbTimeSeriesReader reader(QdbSession session, String name, QdbFilteredRange[] ranges) {
         return new QdbTimeSeriesReader (session,
                                         new QdbTimeSeriesTable(session, name),
                                         ranges);
+    }
+
+    /**
+     * Initializes new reader for a timeseries table.
+     *
+     * @param session Active connection with the QdbCluster
+     * @param name    Timeseries table name. Must already exist.
+     * @param ranges  Time ranges to look for.
+     */
+    public static QdbTimeSeriesReader reader(QdbSession session, String name, QdbTimeRange[] ranges) {
+        return reader(session, name,
+                      Arrays
+                      .stream(ranges)
+                      .map(QdbFilteredRange::new)
+                      .toArray(QdbFilteredRange[]::new));
     }
 
     /**
