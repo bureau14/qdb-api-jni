@@ -1,6 +1,6 @@
 package net.quasardb.qdb.jni;
 
-public class Reference<T> {
+public final class Reference<T> {
     public T value;
 
     public void clear() {
@@ -10,6 +10,12 @@ public class Reference<T> {
     public T get() {
         assert(this.isEmpty() == false);
         return this.value;
+    }
+
+    public static <T> Reference<T> of(T value) {
+        Reference<T> tmp = new Reference<T>();
+        tmp.value = value;
+        return tmp;
     }
 
     /**

@@ -3,7 +3,11 @@ package net.quasardb.qdb.jni;
 import java.nio.ByteBuffer;
 
 import net.quasardb.qdb.*;
-import net.quasardb.qdb.ts.*;
+import net.quasardb.qdb.ts.Timespec;
+import net.quasardb.qdb.ts.FilteredRange;
+import net.quasardb.qdb.ts.Row;
+import net.quasardb.qdb.ts.Value;
+import net.quasardb.qdb.ts.Result;
 
 public final class qdb {
   static {
@@ -121,7 +125,7 @@ public final class qdb {
   public static native int ts_blob_aggregate(long handle, String alias, String column, qdb_ts_blob_aggregation[] input,
                                              Reference<qdb_ts_blob_aggregation[]> aggregations);
 
-    //public static native int query_execute(long handle, String query, Reference<QdbTimeSeriesQueryResult> result);
+  public static native int query_execute(long handle, String query, Reference<Result> result);
 
   public static native int node_status(long handle, String uri, Reference<String> content);
   public static native int node_config(long handle, String uri, Reference<String> content);

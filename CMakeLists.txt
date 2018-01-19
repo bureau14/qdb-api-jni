@@ -39,6 +39,7 @@ set(QDB_JNI_SOURCES
   src/main/c++/net/quasardb/qdb/jni/qdb_tag.cpp
   src/main/c++/net/quasardb/qdb/jni/qdb_node.cpp
   src/main/c++/net/quasardb/qdb/jni/qdb_ts.cpp
+  src/main/c++/net/quasardb/qdb/jni/qdb_query.cpp
 )
 
 add_jar(jni
