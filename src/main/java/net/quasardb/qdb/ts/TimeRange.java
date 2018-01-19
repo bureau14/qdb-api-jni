@@ -18,8 +18,22 @@ public class TimeRange implements Serializable {
         return this.begin;
     }
 
+    /**
+     * Returns a copy of this timerange with a different begin.
+     */
+    public TimeRange withBegin(Timespec b) {
+        return new TimeRange(b, this.end);
+    }
+
     public Timespec getEnd() {
         return this.end;
+    }
+
+    /**
+     * Returns a copy of this timerange with a different end.
+     */
+    public TimeRange withEnd(Timespec e) {
+        return new TimeRange(this.begin, e);
     }
 
     public String toString() {

@@ -30,7 +30,11 @@ public class Value implements Serializable {
             this.value = type;
         }
 
-        protected static Type fromInt(int type) {
+        public int asInt() {
+            return this.value;
+        }
+
+        public static Type fromInt(int type) {
             switch(type) {
             case qdb_ts_column_type.double_:
                 return Type.DOUBLE;
