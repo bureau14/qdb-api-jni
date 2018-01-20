@@ -12,10 +12,10 @@ public final class Result {
     public static class Table {
         protected String name;
         protected String[] columns;
-        protected Row[] rows;
+        protected Value[][] rows;
 
         public String toString() {
-            return "Table (name: " + this.name + ", columns: " + Arrays.toString(this.columns) + ", rows: " + Arrays.toString(this.rows) + ")";
+            return "Table (name: " + this.name + ", columns: " + Arrays.toString(this.columns) + ", rows: " + Arrays.deepToString(this.rows) + ")";
         }
     }
 

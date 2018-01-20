@@ -8,20 +8,14 @@
 #include "helpers.h"
 #include "net_quasardb_qdb_jni_qdb.h"
 
-jobject
+jobjectArray
 nativeToRow(JNIEnv * env, qdb_point_result_t const values[], qdb_size_t count) {
 
-  jclass rowClass = qdb::jni::lookup_class(env, "net/quasardb/qdb/ts/Row");
-  jclass timespecClass = qdb::jni::lookup_class(env, "net/quasardb/qdb/ts/Timespec");
   jclass valueClass = qdb::jni::lookup_class(env, "net/quasardb/qdb/ts/Value");
-
   jobjectArray outputValues = env->NewObjectArray(count, valueClass, NULL);
 
   printf("* NATIVE * iterating over %d columns!\n", count);
   fflush(stdout);
-
-  jmethodID timespecConstructor = env->GetMethodID(timespecClass, "<init>", "()V");
-  jobject timestamp = env->NewObject(timespecClass, timespecConstructor);;
 
   for (qdb_size_t i = 0; i < count; ++i) {
     jobject value =
@@ -31,12 +25,7 @@ nativeToRow(JNIEnv * env, qdb_point_result_t const values[], qdb_size_t count) {
     env->DeleteLocalRef(value);
   }
 
-  jmethodID rowConstructor = env->GetMethodID(rowClass, "<init>", "(Lnet/quasardb/qdb/ts/Timespec;[Lnet/quasardb/qdb/ts/Value;)V");
-  jobject output = env->NewObject(rowClass, rowConstructor, timestamp, outputValues);
-
-  env->DeleteLocalRef(timestamp);
-  env->DeleteLocalRef(outputValues);
-  return output;
+  return outputValues;
 }
 
 qdb_error_t
@@ -44,7 +33,7 @@ nativeToTable(JNIEnv * env, qdb_table_result_t const & input, jclass tableClass,
 
   // :TODO: cache!
   jclass valueClass = qdb::jni::lookup_class(env, "net/quasardb/qdb/ts/Value");
-  jclass rowClass = qdb::jni::lookup_class(env, "net/quasardb/qdb/ts/Row");
+  jclass valuesClass = qdb::jni::lookup_class(env, "[Lnet/quasardb/qdb/ts/Value;");
   jmethodID valueConstructor = qdb::jni::lookup_methodID(env, valueClass, "<init>", "()V");
 
   printf("* NATIVE * converting result to table: %p\n", table);
@@ -59,19 +48,19 @@ nativeToTable(JNIEnv * env, qdb_table_result_t const & input, jclass tableClass,
   env->SetObjectField(table, nameFieldId, name);
   env->DeleteLocalRef(name);
 
-  jobjectArray output_rows = env->NewObjectArray(input.rows_count, rowClass, NULL);
+  jobjectArray output_rows = env->NewObjectArray(input.rows_count, valuesClass, NULL);
 
   qdb_error_t err = qdb_e_ok;
   for (qdb_size_t i = 0; i < input.rows_count; ++i) {
     qdb_point_result_t const * input_row = input.rows[i];
 
-    jobject output_row = nativeToRow(env, input.rows[i], input.columns_count);
+    jobjectArray output_row = nativeToRow(env, input.rows[i], input.columns_count);
     env->SetObjectArrayElement(output_rows, i, output_row);
     env->DeleteLocalRef(output_row);
   }
 
   jfieldID rowsFieldId = qdb::jni::lookup_fieldID(env, tableClass,
-                                                  "rows", "[Lnet/quasardb/qdb/ts/Row;");
+                                                  "rows", "[[Lnet/quasardb/qdb/ts/Value;");
   env->SetObjectField(table, rowsFieldId, output_rows);
 
   env->DeleteLocalRef(output_rows);
