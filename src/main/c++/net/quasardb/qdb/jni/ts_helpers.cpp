@@ -4,6 +4,36 @@
 #include <cstring>
 #include <cstdlib>
 
+
+qdb_ts_column_type_t
+columnTypeFromTypeEnum(JNIEnv * env, jobject typeObject) {
+  jclass objectClass;
+  jfieldID typeValueField;
+
+  objectClass = env->GetObjectClass(typeObject);
+  assert(objectClass != NULL);
+  typeValueField = env->GetFieldID(objectClass, "value", "I");
+
+  return (qdb_ts_column_type_t)(env->GetIntField(typeObject, typeValueField));
+}
+
+qdb_ts_column_type_t
+columnTypeFromColumnValue(JNIEnv * env, jobject value) {
+  jclass objectClass;
+  jobject typeObject;
+  // jfieldID typeField;
+  jfieldID typeValueField;
+  jmethodID methodId;
+
+  objectClass = env->GetObjectClass(value);
+
+  // First get the
+  methodId = env->GetMethodID(objectClass, "getType", "()Lnet/quasardb/qdb/ts/Value$Type;");
+  assert(methodId != NULL);
+
+  return columnTypeFromTypeEnum(env, env->CallObjectMethod(value, methodId));
+}
+
 void
 timespecToNative(JNIEnv *env, jobject input, qdb_timespec_t * output) {
   // qdb_timespec -> tv_sec, tv_nsec
@@ -148,11 +178,12 @@ columnsToNative(JNIEnv * env, jobjectArray columns, qdb_ts_column_info_t * nativ
 
       objectClass = env->GetObjectClass(object);
       nameField = env->GetFieldID(objectClass, "name", "Ljava/lang/String;");
-      typeField = env->GetFieldID(objectClass, "type", "I");
+      typeField = env->GetFieldID(objectClass, "type", "Lnet/quasardb/qdb/ts/Value$Type;");
+
       jstring name = (jstring)env->GetObjectField(object, nameField);
 
-      native_columns[i].type = static_cast<qdb_ts_column_type_t>(
-          env->GetIntField(object, typeField));
+      native_columns[i].type =
+        columnTypeFromTypeEnum(env, env->GetObjectField(object, typeField));
 
 #ifdef _MSC_VER
 #pragma warning(push)
@@ -176,7 +207,7 @@ releaseNative(qdb_ts_column_info_t * native_columns, size_t column_count) {
 
 void
 nativeToColumns(JNIEnv * env, qdb_ts_column_info_t * nativeColumns, size_t column_count, jobjectArray * columns) {
-  jclass column_class = env->FindClass("net/quasardb/qdb/jni/qdb_ts_column_info");
+  jclass column_class = env->FindClass("net/quasardb/qdb/ts/Column");
   assert(column_class != NULL);
   jmethodID constructor = env->GetMethodID(column_class, "<init>", "(Ljava/lang/String;I)V");
   assert(constructor != NULL);
@@ -478,28 +509,6 @@ printObjectClass(JNIEnv * env, jobject value) {
 
   // Release the memory pinned char array
   env->ReleaseStringUTFChars(strObj, str);
-}
-
-qdb_ts_column_type_t
-columnTypeFromColumnValue(JNIEnv * env, jobject value) {
-  jclass objectClass;
-  jobject typeObject;
-  // jfieldID typeField;
-  jfieldID typeValueField;
-  jmethodID methodId;
-
-  objectClass = env->GetObjectClass(value);
-
-  // First get the
-  methodId = env->GetMethodID(objectClass, "getType", "()Lnet/quasardb/qdb/ts/Value$Type;");
-  assert(methodId != NULL);
-
-  typeObject = env->CallObjectMethod(value, methodId);
-  objectClass = env->GetObjectClass(typeObject);
-  assert(objectClass != NULL);
-
-  typeValueField = env->GetFieldID(objectClass, "value", "I");
-  return (qdb_ts_column_type_t)(env->GetIntField(typeObject, typeValueField));
 }
 
 qdb_error_t

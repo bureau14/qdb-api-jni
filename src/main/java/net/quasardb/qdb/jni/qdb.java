@@ -8,6 +8,7 @@ import net.quasardb.qdb.ts.FilteredRange;
 import net.quasardb.qdb.ts.Row;
 import net.quasardb.qdb.ts.Value;
 import net.quasardb.qdb.ts.Result;
+import net.quasardb.qdb.ts.Column;
 
 public final class qdb {
   static {
@@ -104,15 +105,15 @@ public final class qdb {
   public static native String tag_iterator_alias(long iterator);
   public static native int tag_iterator_type(long iterator);
 
-  public static native int ts_create(long handle, String alias, long shard_size, qdb_ts_column_info[] columns);
-  public static native int ts_insert_columns(long handle, String alias, qdb_ts_column_info[] columns);
-  public static native int ts_list_columns(long handle, String alias, Reference<qdb_ts_column_info[]> columns);
-  public static native int ts_local_table_init(long handle, String alias, qdb_ts_column_info[] columns, Reference<Long> localTable);
+  public static native int ts_create(long handle, String alias, long shard_size, Column[] columns);
+  public static native int ts_insert_columns(long handle, String alias, Column[] columns);
+  public static native int ts_list_columns(long handle, String alias, Reference<Column[]> columns);
+  public static native int ts_local_table_init(long handle, String alias, Column[] columns, Reference<Long> localTable);
   public static native void ts_local_table_release(long handle, long localTable);
   public static native int ts_table_row_append(long localTable, Timespec time, Value[] values);
   public static native int ts_push(long localTable);
   public static native int ts_table_get_ranges(long localTable, FilteredRange[] ranges);
-  public static native int ts_table_next_row(long localTable, qdb_ts_column_info[] columns, Reference<Row> output);
+  public static native int ts_table_next_row(long localTable, Column[] columns, Reference<Row> output);
 
   public static native int ts_double_insert(long handle, String alias, String column, qdb_ts_double_point[] points);
   public static native int ts_double_get_ranges(long handle, String alias, String column, FilteredRange[] ranges,

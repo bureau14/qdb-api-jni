@@ -18,7 +18,7 @@ import net.quasardb.qdb.jni.*;
  */
 public class Table implements Serializable {
     String name;
-    qdb_ts_column_info[] columns;
+    Column[] columns;
     Map <String, Integer> columnOffsets;
 
     /**
@@ -30,8 +30,8 @@ public class Table implements Serializable {
     Table(QdbSession session, String name) {
         this.name = name;
 
-        Reference<qdb_ts_column_info[]> columns =
-            new Reference<qdb_ts_column_info[]>();
+        Reference<Column[]> columns =
+            new Reference<Column[]>();
         int err = qdb.ts_list_columns(session.handle(), this.name, columns);
         QdbExceptionFactory.throwIfError(err);
         this.columns = columns.value;
@@ -120,7 +120,7 @@ public class Table implements Serializable {
      * Returns internal representation of columns, for internal use
      * only.
      */
-    public qdb_ts_column_info[] getColumnInfo() {
+    public Column[] getColumnInfo() {
         return this.columns;
     }
 
