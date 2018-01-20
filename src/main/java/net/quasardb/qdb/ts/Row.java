@@ -15,8 +15,8 @@ import java.util.*;
  */
 public final class Row implements Serializable {
 
-    private Timespec timestamp;
-    private Value[] values;
+    protected Timespec timestamp;
+    protected Value[] values;
 
     public Row(Timespec timestamp, Value[] values) {
         this.timestamp = timestamp;

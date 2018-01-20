@@ -53,6 +53,10 @@ public class Value implements Serializable {
         }
     }
 
+    public Value() {
+        this(Type.UNINITIALIZED);
+    }
+
     protected Value(Type type) {
         this.type = type;
     }

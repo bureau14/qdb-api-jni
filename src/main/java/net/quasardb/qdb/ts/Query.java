@@ -14,19 +14,12 @@ import net.quasardb.qdb.QdbExceptionFactory;
 public final class Query {
 
     private String query;
-    private Optional<Result> result;
 
     protected Query() {
     }
 
     protected Query(String query) {
         this.query = query;
-        this.result = Optional.empty();
-    }
-
-    protected Query(String query, Result result) {
-        this.query = query;
-        this.result = Optional.of(result);
     }
 
     /**
@@ -45,23 +38,13 @@ public final class Query {
     public static Query of(String query) {
         return new Query(query);
     }
-    /**
-     * Returns a copy of this query object that reuses an existing
-     * Result's memory.
-     */
-    public Query withResult(Result result) {
-        return new Query(this.query, result);
-    }
 
     public Result execute(QdbSession session) {
         if (this.query == null) {
             throw new QdbInputException("Cannot execute an empty query");
         }
 
-        System.out.println("executing query: " + this.query);
-
-        Reference<Result> result =
-            Reference.of(this.result.orElse(new Result()));
+        Reference<Result> result = new Reference<Result>();
 
         int err = qdb.query_execute(session.handle(), this.query, result);
         QdbExceptionFactory.throwIfError(err);

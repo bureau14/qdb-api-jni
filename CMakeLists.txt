@@ -29,6 +29,8 @@ set(QDB_JNI_CLASSES
 set(QDB_JNI_SOURCES
   src/main/c++/net/quasardb/qdb/jni/helpers.cpp
   src/main/c++/net/quasardb/qdb/jni/ts_helpers.cpp
+  src/main/c++/net/quasardb/qdb/jni/util/qdb_jni.cpp
+  src/main/c++/net/quasardb/qdb/jni/ts/qdb_value.cpp
   src/main/c++/net/quasardb/qdb/jni/qdb_batch.cpp
   src/main/c++/net/quasardb/qdb/jni/qdb_blob.cpp
   src/main/c++/net/quasardb/qdb/jni/qdb_client.cpp
