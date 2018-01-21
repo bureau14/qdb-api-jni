@@ -541,7 +541,9 @@ tableRowSetTimestampColumnValue(JNIEnv * env, qdb_local_table_t localTable, size
   qdb_timespec_t timestamp;
   timespecToNative(env, timestampObject, &timestamp);
 
-  return qdb_ts_row_set_timestamp(localTable, columnIndex, &timestamp);
+  qdb_error_t err = qdb_ts_row_set_timestamp(localTable, columnIndex, &timestamp);
+  env->DeleteLocalRef(timestampObject);
+  return err;
 }
 
 qdb_error_t
@@ -552,10 +554,23 @@ tableRowSetBlobColumnValue(JNIEnv * env, qdb_local_table_t localTable, size_t co
 
   jobject blobValue = env->CallObjectMethod(value, methodId);
 
-  return qdb_ts_row_set_blob(localTable,
-                             columnIndex,
-                             env->GetDirectBufferAddress(blobValue),
-                             (qdb_size_t)env->GetDirectBufferCapacity(blobValue));
+  void * blob_addr = env->GetDirectBufferAddress(blobValue);
+  qdb_size_t blob_size = (qdb_size_t)(env->GetDirectBufferCapacity(blobValue));
+
+  char * blob_addr_c = (char *)(blob_addr);
+  printf("* NATIVE * local table setting blob value: \n");
+  for (qdb_size_t i = 0; i < blob_size; i ++) {
+    printf(" %2x", blob_addr_c[i]);
+  }
+  printf("\n");
+  fflush(stdout);
+
+  qdb_error_t err =  qdb_ts_row_set_blob(localTable,
+                                         columnIndex,
+                                         blob_addr,
+                                         blob_size);
+  env->DeleteLocalRef(blobValue);
+  return err;
 }
 
 
