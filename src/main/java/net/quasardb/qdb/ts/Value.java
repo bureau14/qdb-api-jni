@@ -174,6 +174,8 @@ public class Value implements Serializable {
     }
 
     public static Value createSafeBlob(ByteBuffer value) {
+        System.out.println("createSafeBlob from ByteBuffer, value.hashCode() = " + value.hashCode());
+
         Value val = new Value(Type.BLOB);
 
         int size = value.capacity();
