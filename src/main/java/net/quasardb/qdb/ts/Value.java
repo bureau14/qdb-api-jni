@@ -11,6 +11,8 @@ import net.quasardb.qdb.jni.*;
  */
 public class Value implements Serializable {
 
+    private final static char[] hexArray = "0123456789ABCDEF".toCharArray();
+
     public Type type;
     public long int64Value;
     public double doubleValue;
@@ -155,6 +157,12 @@ public class Value implements Serializable {
      * Updates value to take a certain blob value;
      */
     public void setBlob(ByteBuffer value) {
+        System.out.println("setBlob, value.hashCode() = " + value.hashCode());
+        byte[] buf = new byte[value.capacity()];
+        value.get(buf);
+        value.rewind();
+        System.out.println("setBlob, value hex = " + bytesToHex(buf));
+
         this.type = Type.BLOB;
         this.blobValue = value.duplicate();
     }
@@ -175,6 +183,10 @@ public class Value implements Serializable {
 
     public static Value createSafeBlob(ByteBuffer value) {
         System.out.println("createSafeBlob from ByteBuffer, value.hashCode() = " + value.hashCode());
+        byte[] buf = new byte[value.capacity()];
+        value.get(buf);
+        value.rewind();
+        System.out.println("createSafeBlob from ByteBuffer, value hex = " + bytesToHex(buf));
 
         Value val = new Value(Type.BLOB);
 
@@ -187,6 +199,17 @@ public class Value implements Serializable {
 
         return val;
     }
+
+    private static String bytesToHex(byte[] bytes) {
+        char[] hexChars = new char[bytes.length * 2];
+        for ( int j = 0; j < bytes.length; j++ ) {
+            int v = bytes[j] & 0xFF;
+            hexChars[j * 2] = hexArray[v >>> 4];
+            hexChars[j * 2 + 1] = hexArray[v & 0x0F];
+        }
+        return new String(hexChars);
+    }
+
 
     @Override
     public boolean equals(Object obj) {
@@ -326,7 +349,14 @@ public class Value implements Serializable {
             throw new QdbIncompatibleTypeException();
         }
 
-        return this.blobValue;
+        System.out.println("getBlob, value.hashCode() = " + this.blobValue.hashCode());
+        byte[] buf = new byte[this.blobValue.capacity()];
+        this.blobValue.get(buf);
+        this.blobValue.rewind();
+        System.out.println("getBlob, value hex = " + bytesToHex(buf));
+
+
+        return this.blobValue.asReadOnlyBuffer();
     }
 
     public String toString() {

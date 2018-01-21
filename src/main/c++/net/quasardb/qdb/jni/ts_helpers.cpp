@@ -1,5 +1,7 @@
 #include "ts_helpers.h"
 
+#include "util/qdb_jni.h"
+
 #include <cassert>
 #include <cstring>
 #include <cstdlib>
@@ -306,9 +308,9 @@ blobPointsToNative(JNIEnv * env, jobjectArray input, size_t count, qdb_ts_blob_p
   }
 }
 
-void
-nativeToByteBuffer(JNIEnv * env, void const * content, qdb_size_t contentLength, jobject * output) {
-  *output = env->NewDirectByteBuffer((void *)(content), contentLength);
+jobject
+nativeToByteBuffer(JNIEnv * env, void const * content, qdb_size_t contentLength) {
+  return env->NewDirectByteBuffer((void *)(content), contentLength);
 }
 
 void
@@ -318,9 +320,9 @@ nativeToBlobPoint(JNIEnv * env, qdb_ts_blob_point native, jobject * output) {
   jmethodID constructor = env->GetMethodID(pointClass, "<init>", "(Lnet/quasardb/qdb/ts/Timespec;Ljava/nio/ByteBuffer;)V");
   assert(constructor != NULL);
 
-  jobject timespec, value;
+  jobject timespec;
   nativeToTimespec(env, native.timestamp, &timespec);
-  nativeToByteBuffer(env, native.content, native.content_length, &value);
+  jobject value = nativeToByteBuffer(env, native.content, native.content_length);
 
   *output = env->NewObject(pointClass,
                            constructor,
@@ -557,13 +559,8 @@ tableRowSetBlobColumnValue(JNIEnv * env, qdb_local_table_t localTable, size_t co
   void * blob_addr = env->GetDirectBufferAddress(blobValue);
   qdb_size_t blob_size = (qdb_size_t)(env->GetDirectBufferCapacity(blobValue));
 
-  char * blob_addr_c = (char *)(blob_addr);
-  printf("* NATIVE * local table setting blob value: \n");
-  for (qdb_size_t i = 0; i < blob_size; i ++) {
-    printf(" %2x", blob_addr_c[i]);
-  }
-  printf("\n");
-  fflush(stdout);
+  qdb::jni::println(env, "* NATIVE * bulk writer setting blob value: ");
+  qdb::jni::hexdump(env, blob_addr, blob_size);
 
   qdb_error_t err =  qdb_ts_row_set_blob(localTable,
                                          columnIndex,
@@ -710,16 +707,18 @@ tableGetRowTimestampValue(JNIEnv *env, qdb_local_table_t localTable, qdb_size_t 
 qdb_error_t
 tableGetRowBlobValue(JNIEnv *env, qdb_local_table_t localTable, qdb_size_t index, jobject output) {
 
-  void const * value;
-  qdb_size_t length;
+  void const * value = NULL;
+  qdb_size_t length = 0;
 
   qdb_error_t err = qdb_ts_row_get_blob(localTable, index, &value, &length);
 
   if (QDB_SUCCESS(err)) {
     assert(value != NULL);
 
-    jobject byteBuffer;
-    nativeToByteBuffer(env, value, length, &byteBuffer);
+    qdb::jni::println(env, "* NATIVE * bulk reader retrieving blob value: ");
+    qdb::jni::hexdump(env, value, length);
+
+    jobject byteBuffer = nativeToByteBuffer(env, value, length);
     assert(byteBuffer != NULL);
 
     jclass objectClass = env->GetObjectClass(output);

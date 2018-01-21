@@ -79,25 +79,15 @@ qdb::value::_from_native_blob(JNIEnv * env, qdb_point_result_t const & input) {
                                                           "createSafeBlob",
                                                           "(Ljava/nio/ByteBuffer;)Lnet/quasardb/qdb/ts/Value;");
 
-  printf("*NATIVE* qdb_value table reading blob value: \n");
-  char * arr = (char *)(input.payload.blob.content);
+  qdb::jni::println(env, "* NATIVE * query getting blob value:");
+  qdb::jni::hexdump(env, input.payload.blob.content, input.payload.blob.content_length);
 
-  for (qdb_size_t i = 0; i < input.payload.blob.content_length; i ++) {
-    printf(" %2x", arr[i]);
-  }
-  printf("\n");
-  fflush(stdout);
-
-  jobject byteBuffer;
-  nativeToByteBuffer(env,
-                     input.payload.blob.content,
-                     input.payload.blob.content_length,
-                     &byteBuffer);
+  jobject byteBuffer = nativeToByteBuffer(env,
+                                          input.payload.blob.content,
+                                          input.payload.blob.content_length);
   assert(byteBuffer != NULL);
 
-  jobject tmp = env->CallStaticObjectMethod(valueClass, constructor, byteBuffer);
-  env->DeleteLocalRef(byteBuffer);
-  return tmp;
+  return env->CallStaticObjectMethod(valueClass, constructor, byteBuffer);
 }
 
 /* static */ jobject

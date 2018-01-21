@@ -7,7 +7,7 @@
 
 void timespecToNative(JNIEnv *, jobject, qdb_timespec_t *);
 void nativeToTimespec(JNIEnv *, qdb_timespec_t, jobject *);
-void nativeToByteBuffer(JNIEnv * env, void const * content, qdb_size_t content_length, jobject * output);
+jobject nativeToByteBuffer(JNIEnv * env, void const * content, qdb_size_t content_length);
 void rangeToNative(JNIEnv *env, jobject input, qdb_ts_range_t * native);
 void rangesToNative(JNIEnv * env, jobjectArray input, size_t count, qdb_ts_range_t * native);
 void nativeToRange(JNIEnv * env, qdb_ts_range_t native, jobject * output);
