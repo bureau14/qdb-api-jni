@@ -86,7 +86,9 @@ qdb::value::_from_native_blob(JNIEnv * env, qdb_point_result_t const & input) {
                      &byteBuffer);
   assert(byteBuffer != NULL);
 
-  return env->CallStaticObjectMethod(valueClass, constructor, byteBuffer);
+  jobject tmp = env->CallStaticObjectMethod(valueClass, constructor, byteBuffer);
+  env->DeleteLocalRef(byteBuffer);
+  return tmp;
 }
 
 /* static */ jobject
