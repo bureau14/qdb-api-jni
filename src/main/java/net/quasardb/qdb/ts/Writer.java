@@ -73,6 +73,7 @@ public class Writer implements AutoCloseable, Flushable {
      * Append a new row to the local table cache.
      */
     public void append(Row row) throws IOException {
+        System.out.println("writer appending row: " + row.toString());
         int err = qdb.ts_table_row_append(this.localTable, row.getTimestamp(), row.getValues());
         QdbExceptionFactory.throwIfError(err);
     }
