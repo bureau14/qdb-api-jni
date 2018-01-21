@@ -28,6 +28,22 @@ nativeToRow(JNIEnv * env, qdb_point_result_t const values[], qdb_size_t count) {
   return outputValues;
 }
 
+jobjectArray
+nativeToColumns(JNIEnv * env, qdb_string_t const columns[], qdb_size_t count) {
+
+  jclass stringClass = qdb::jni::lookup_class(env, "java/lang/String");
+  jobjectArray outputColumns = env->NewObjectArray(count, stringClass, NULL);
+  assert(outputColumns != NULL);
+
+  for (qdb_size_t i = 0; i < count; ++i) {
+    jstring column = env->NewStringUTF(columns[i].data);
+    env->SetObjectArrayElement(outputColumns, i, column);
+    env->DeleteLocalRef(column);
+  }
+
+  return outputColumns;
+}
+
 qdb_error_t
 nativeToTable(JNIEnv * env, qdb_table_result_t const & input, jclass tableClass, jobject & table) {
 
@@ -44,9 +60,16 @@ nativeToTable(JNIEnv * env, qdb_table_result_t const & input, jclass tableClass,
 
   jfieldID nameFieldId = qdb::jni::lookup_fieldID(env, tableClass,
                                                   "name", "Ljava/lang/String;");
+  jfieldID columnsFieldId = qdb::jni::lookup_fieldID(env, tableClass,
+                                                     "columns", "[Ljava/lang/String;");
+
   jstring name = env->NewStringUTF(input.table_name.data);
   env->SetObjectField(table, nameFieldId, name);
   env->DeleteLocalRef(name);
+
+  jobjectArray output_columns = nativeToColumns(env, input.columns_names, input.columns_count);
+  env->SetObjectField(table, columnsFieldId, output_columns);
+  env->DeleteLocalRef(output_columns);
 
   jobjectArray output_rows = env->NewObjectArray(input.rows_count, valuesClass, NULL);
 
