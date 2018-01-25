@@ -7,9 +7,11 @@
 #include "net_quasardb_qdb_jni_qdb.h"
 
 JNIEXPORT jint JNICALL
-Java_net_quasardb_qdb_jni_qdb_ts_1create(JNIEnv * env, jclass /*thisClass*/, jlong handle,
+Java_net_quasardb_qdb_jni_qdb_ts_1create(JNIEnv * jniEnv, jclass /*thisClass*/, jlong handle,
                                          jstring alias, jlong shard_size, jobjectArray columns) {
-  size_t column_count = env->GetArrayLength(columns);
+  qdb::jni::env env(jniEnv);
+
+  size_t column_count = env.instance().GetArrayLength(columns);
   qdb_ts_column_info_t * native_columns = new qdb_ts_column_info_t[column_count];
 
   columnsToNative(env, columns, native_columns, column_count);
@@ -22,9 +24,11 @@ Java_net_quasardb_qdb_jni_qdb_ts_1create(JNIEnv * env, jclass /*thisClass*/, jlo
 }
 
 JNIEXPORT jint JNICALL
-Java_net_quasardb_qdb_jni_qdb_ts_1insert_1columns(JNIEnv * env, jclass /*thisClass*/, jlong handle,
+Java_net_quasardb_qdb_jni_qdb_ts_1insert_1columns(JNIEnv * jniEnv, jclass /*thisClass*/, jlong handle,
                                                   jstring alias, jobjectArray columns) {
-  size_t column_count = env->GetArrayLength(columns);
+  qdb::jni::env env(jniEnv);
+
+  size_t column_count = env.instance().GetArrayLength(columns);
   qdb_ts_column_info_t * native_columns = new qdb_ts_column_info_t[column_count];
 
   columnsToNative(env, columns, native_columns, column_count);
@@ -37,8 +41,10 @@ Java_net_quasardb_qdb_jni_qdb_ts_1insert_1columns(JNIEnv * env, jclass /*thisCla
 }
 
 JNIEXPORT jint JNICALL
-Java_net_quasardb_qdb_jni_qdb_ts_1list_1columns(JNIEnv * env, jclass /*thisClass*/, jlong handle,
+Java_net_quasardb_qdb_jni_qdb_ts_1list_1columns(JNIEnv * jniEnv, jclass /*thisClass*/, jlong handle,
                                                 jstring alias, jobject columns) {
+  qdb::jni::env env(jniEnv);
+
   qdb_ts_column_info_t * native_columns;
   qdb_size_t column_count;
 
@@ -56,9 +62,11 @@ Java_net_quasardb_qdb_jni_qdb_ts_1list_1columns(JNIEnv * env, jclass /*thisClass
 }
 
 JNIEXPORT jint JNICALL
-Java_net_quasardb_qdb_jni_qdb_ts_1local_1table_1init(JNIEnv * env, jclass /*thisClass*/, jlong handle,
+Java_net_quasardb_qdb_jni_qdb_ts_1local_1table_1init(JNIEnv * jniEnv, jclass /*thisClass*/, jlong handle,
                                                      jstring alias, jobjectArray columns, jobject localTable) {
-  size_t columnCount = env->GetArrayLength(columns);
+  qdb::jni::env env(jniEnv);
+
+  size_t columnCount = env.instance().GetArrayLength(columns);
   qdb_ts_column_info_t * nativeColumns = new qdb_ts_column_info_t[columnCount];
 
   columnsToNative(env, columns, nativeColumns, columnCount);
@@ -85,10 +93,12 @@ Java_net_quasardb_qdb_jni_qdb_ts_1local_1table_1release(JNIEnv * /*env*/, jclass
 }
 
 JNIEXPORT jint JNICALL
-Java_net_quasardb_qdb_jni_qdb_ts_1table_1row_1append(JNIEnv * env, jclass /*thisClass*/, jlong localTable, jobject time, jobjectArray values) {
+Java_net_quasardb_qdb_jni_qdb_ts_1table_1row_1append(JNIEnv * jniEnv, jclass /*thisClass*/, jlong localTable, jobject time, jobjectArray values) {
+  qdb::jni::env env(jniEnv);
+
   qdb_size_t rowIndex;
 
-  qdb_error_t err = tableRowAppend(env, (qdb_local_table_t)localTable, time, values, env->GetArrayLength(values), &rowIndex);
+  qdb_error_t err = tableRowAppend(env, (qdb_local_table_t)localTable, time, values, env.instance().GetArrayLength(values), &rowIndex);
 
   if (QDB_SUCCESS(err)) {
     // NOOP ?
@@ -103,7 +113,8 @@ Java_net_quasardb_qdb_jni_qdb_ts_1push(JNIEnv * /*env*/, jclass /*thisClass*/, j
 }
 
 JNIEXPORT jint JNICALL
-Java_net_quasardb_qdb_jni_qdb_ts_1table_1get_1ranges(JNIEnv * env, jclass /*thisClass*/, jlong localTable, jobjectArray ranges) {
+Java_net_quasardb_qdb_jni_qdb_ts_1table_1get_1ranges(JNIEnv * jniEnv, jclass /*thisClass*/, jlong localTable, jobjectArray ranges) {
+  qdb::jni::env env(jniEnv);
 
   int err = tableGetRanges(env, (qdb_local_table_t)localTable, ranges);
 
@@ -115,8 +126,10 @@ Java_net_quasardb_qdb_jni_qdb_ts_1table_1get_1ranges(JNIEnv * env, jclass /*this
 }
 
 JNIEXPORT jint JNICALL
-Java_net_quasardb_qdb_jni_qdb_ts_1table_1next_1row(JNIEnv * env, jclass /*thisClass*/, jlong localTable, jobjectArray columns, jobject output) {
-  size_t columnCount = env->GetArrayLength(columns);
+Java_net_quasardb_qdb_jni_qdb_ts_1table_1next_1row(JNIEnv * jniEnv, jclass /*thisClass*/, jlong localTable, jobjectArray columns, jobject output) {
+  qdb::jni::env env(jniEnv);
+
+  size_t columnCount = env.instance().GetArrayLength(columns);
   qdb_ts_column_info_t * nativeColumns = (qdb_ts_column_info_t *)(malloc (columnCount * sizeof(qdb_ts_column_info_t)));
 
   columnsToNative(env, columns, nativeColumns, columnCount);
@@ -138,9 +151,11 @@ Java_net_quasardb_qdb_jni_qdb_ts_1table_1next_1row(JNIEnv * env, jclass /*thisCl
 }
 
 JNIEXPORT jint JNICALL
-Java_net_quasardb_qdb_jni_qdb_ts_1double_1insert(JNIEnv * env, jclass /*thisClass*/, jlong handle,
+Java_net_quasardb_qdb_jni_qdb_ts_1double_1insert(JNIEnv * jniEnv, jclass /*thisClass*/, jlong handle,
                                                  jstring alias, jstring column, jobjectArray points) {
-  qdb_size_t points_count = env->GetArrayLength(points);
+  qdb::jni::env env(jniEnv);
+
+  qdb_size_t points_count = env.instance().GetArrayLength(points);
   qdb_ts_double_point * values = (qdb_ts_double_point *)(malloc(points_count * sizeof(qdb_ts_double_point)));
 
   doublePointsToNative(env, points, points_count, values);
@@ -156,9 +171,11 @@ Java_net_quasardb_qdb_jni_qdb_ts_1double_1insert(JNIEnv * env, jclass /*thisClas
 }
 
 JNIEXPORT jint JNICALL
-Java_net_quasardb_qdb_jni_qdb_ts_1double_1get_1ranges(JNIEnv * env, jclass /*thisClass*/, jlong handle,
+Java_net_quasardb_qdb_jni_qdb_ts_1double_1get_1ranges(JNIEnv * jniEnv, jclass /*thisClass*/, jlong handle,
                                                       jstring alias, jstring column, jobjectArray filteredRanges, jobject points) {
-  qdb_size_t filteredRangeCount = env->GetArrayLength(filteredRanges);
+  qdb::jni::env env(jniEnv);
+
+  qdb_size_t filteredRangeCount = env.instance().GetArrayLength(filteredRanges);
   qdb_ts_filtered_range_t * nativeFilteredRanges = (qdb_ts_filtered_range_t *)(malloc(filteredRangeCount * sizeof(qdb_ts_filtered_range_t)));
 
   filteredRangesToNative(env, filteredRanges, filteredRangeCount, nativeFilteredRanges);
@@ -188,9 +205,11 @@ Java_net_quasardb_qdb_jni_qdb_ts_1double_1get_1ranges(JNIEnv * env, jclass /*thi
 }
 
 JNIEXPORT jint JNICALL
-Java_net_quasardb_qdb_jni_qdb_ts_1double_1aggregate(JNIEnv * env, jclass /*thisClass*/, jlong handle,
+Java_net_quasardb_qdb_jni_qdb_ts_1double_1aggregate(JNIEnv * jniEnv, jclass /*thisClass*/, jlong handle,
                                                     jstring alias, jstring column, jobjectArray input, jobject output) {
-  qdb_size_t count = env->GetArrayLength(input);
+  qdb::jni::env env(jniEnv);
+
+  qdb_size_t count = env.instance().GetArrayLength(input);
 
   qdb_ts_double_aggregation_t * aggregates = new qdb_ts_double_aggregation_t[count];
 
@@ -214,9 +233,11 @@ Java_net_quasardb_qdb_jni_qdb_ts_1double_1aggregate(JNIEnv * env, jclass /*thisC
 }
 
 JNIEXPORT jint JNICALL
-Java_net_quasardb_qdb_jni_qdb_ts_1blob_1insert(JNIEnv * env, jclass /*thisClass*/, jlong handle,
+Java_net_quasardb_qdb_jni_qdb_ts_1blob_1insert(JNIEnv * jniEnv, jclass /*thisClass*/, jlong handle,
                                                  jstring alias, jstring column, jobjectArray points) {
-  qdb_size_t pointsCount = env->GetArrayLength(points);
+  qdb::jni::env env(jniEnv);
+
+  qdb_size_t pointsCount = env.instance().GetArrayLength(points);
   qdb_ts_blob_point * values = new qdb_ts_blob_point[pointsCount];
 
 
@@ -233,9 +254,11 @@ Java_net_quasardb_qdb_jni_qdb_ts_1blob_1insert(JNIEnv * env, jclass /*thisClass*
 }
 
 JNIEXPORT jint JNICALL
-Java_net_quasardb_qdb_jni_qdb_ts_1blob_1get_1ranges(JNIEnv * env, jclass /*thisClass*/, jlong handle,
+Java_net_quasardb_qdb_jni_qdb_ts_1blob_1get_1ranges(JNIEnv * jniEnv, jclass /*thisClass*/, jlong handle,
                                                     jstring alias, jstring column, jobjectArray filteredRanges, jobject points) {
-  qdb_size_t filteredRangeCount = env->GetArrayLength(filteredRanges);
+  qdb::jni::env env(jniEnv);
+
+  qdb_size_t filteredRangeCount = env.instance().GetArrayLength(filteredRanges);
   qdb_ts_filtered_range_t * nativeFilteredRanges = new qdb_ts_filtered_range_t[filteredRangeCount];
   filteredRangesToNative(env, filteredRanges, filteredRangeCount, nativeFilteredRanges);
 
@@ -265,9 +288,11 @@ Java_net_quasardb_qdb_jni_qdb_ts_1blob_1get_1ranges(JNIEnv * env, jclass /*thisC
 }
 
 JNIEXPORT jint JNICALL
-Java_net_quasardb_qdb_jni_qdb_ts_1blob_1aggregate(JNIEnv * env, jclass /*thisClass*/, jlong handle,
+Java_net_quasardb_qdb_jni_qdb_ts_1blob_1aggregate(JNIEnv * jniEnv, jclass /*thisClass*/, jlong handle,
                                                     jstring alias, jstring column, jobjectArray input, jobject output) {
-  qdb_size_t count = env->GetArrayLength(input);
+  qdb::jni::env env(jniEnv);
+
+  qdb_size_t count = env.instance().GetArrayLength(input);
 
   qdb_ts_blob_aggregation_t * aggregates = new qdb_ts_blob_aggregation_t[count];
   blobAggregatesToNative(env, input, count, aggregates);

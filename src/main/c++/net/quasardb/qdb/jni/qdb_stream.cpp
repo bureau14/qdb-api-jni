@@ -1,11 +1,14 @@
 #include "net_quasardb_qdb_jni_qdb.h"
 
+#include "env.h"
 #include "helpers.h"
 #include <qdb/stream.h>
 
 JNIEXPORT jint JNICALL
-Java_net_quasardb_qdb_jni_qdb_stream_1open(JNIEnv * env, jclass /*thisClass*/, jlong handle,
+Java_net_quasardb_qdb_jni_qdb_stream_1open(JNIEnv * jniEnv, jclass /*thisClass*/, jlong handle,
                                            jstring alias, jint mode, jobject stream) {
+  qdb::jni::env env(jniEnv);
+
   qdb_stream_t nativeStream;
   qdb_error_t err = qdb_stream_open((qdb_handle_t)handle, StringUTFChars(env, alias),
                                     (qdb_stream_mode_t)mode, &nativeStream);
@@ -19,26 +22,32 @@ Java_net_quasardb_qdb_jni_qdb_stream_1close(JNIEnv * /*env*/, jclass /*thisClass
 }
 
 JNIEXPORT jint JNICALL
-Java_net_quasardb_qdb_jni_qdb_stream_1read(JNIEnv * env, jclass /*thisClass*/, jlong stream,
+Java_net_quasardb_qdb_jni_qdb_stream_1read(JNIEnv * jniEnv, jclass /*thisClass*/, jlong stream,
                                            jobject content, jobject bytesRead) {
-  void *contentPtr = env->GetDirectBufferAddress(content);
-  qdb_size_t contentSize = (qdb_size_t)env->GetDirectBufferCapacity(content);
+  qdb::jni::env env(jniEnv);
+
+  void *contentPtr = env.instance().GetDirectBufferAddress(content);
+  qdb_size_t contentSize = (qdb_size_t)env.instance().GetDirectBufferCapacity(content);
   qdb_error_t err = qdb_stream_read((qdb_stream_t)stream, contentPtr, &contentSize);
   setLong(env, bytesRead, contentSize);
   return err;
 }
 
 JNIEXPORT jint JNICALL
-Java_net_quasardb_qdb_jni_qdb_stream_1write(JNIEnv * env, jclass /*thisClass*/, jlong stream,
+Java_net_quasardb_qdb_jni_qdb_stream_1write(JNIEnv * jniEnv, jclass /*thisClass*/, jlong stream,
                                             jobject content) {
-  const void *contentPtr = env->GetDirectBufferAddress(content);
-  qdb_size_t contentSize = (qdb_size_t)env->GetDirectBufferCapacity(content);
+  qdb::jni::env env(jniEnv);
+
+  const void *contentPtr = env.instance().GetDirectBufferAddress(content);
+  qdb_size_t contentSize = (qdb_size_t)env.instance().GetDirectBufferCapacity(content);
   return qdb_stream_write((qdb_stream_t)stream, contentPtr, contentSize);
 }
 
 JNIEXPORT jint JNICALL
-Java_net_quasardb_qdb_jni_qdb_stream_1size(JNIEnv * env, jclass /*thisClass*/, jlong stream,
+Java_net_quasardb_qdb_jni_qdb_stream_1size(JNIEnv * jniEnv, jclass /*thisClass*/, jlong stream,
                                            jobject size) {
+  qdb::jni::env env(jniEnv);
+
   qdb_stream_size_t nativeSize = 0;
   qdb_error_t err = qdb_stream_size((qdb_stream_t)stream, &nativeSize);
   setLong(env, size, nativeSize);
@@ -46,8 +55,10 @@ Java_net_quasardb_qdb_jni_qdb_stream_1size(JNIEnv * env, jclass /*thisClass*/, j
 }
 
 JNIEXPORT jint JNICALL
-Java_net_quasardb_qdb_jni_qdb_stream_1getpos(JNIEnv * env, jclass /*thisClass*/, jlong stream,
+Java_net_quasardb_qdb_jni_qdb_stream_1getpos(JNIEnv * jniEnv, jclass /*thisClass*/, jlong stream,
                                              jobject position) {
+  qdb::jni::env env(jniEnv);
+
   qdb_stream_size_t nativePosition = 0;
   qdb_error_t err = qdb_stream_getpos((qdb_stream_t)stream, &nativePosition);
   setLong(env, position, nativePosition);

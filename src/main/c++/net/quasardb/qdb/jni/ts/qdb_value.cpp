@@ -2,10 +2,11 @@
 #include "../util/qdb_jni.h"
 #include "../ts_helpers.h"
 
+#include "../env.h"
 #include "qdb_value.h"
 
 /* static */ jobject
-qdb::value::from_native(JNIEnv * env, qdb_point_result_t const & input) {
+qdb::value::from_native(qdb::jni::env & env, qdb_point_result_t const & input) {
   // :TODO: cache!
   jclass valueClass = qdb::jni::lookup_class(env, "net/quasardb/qdb/ts/Value");
   jmethodID constructor = qdb::jni::lookup_staticMethodID(env, valueClass,
@@ -40,27 +41,27 @@ qdb::value::from_native(JNIEnv * env, qdb_point_result_t const & input) {
 }
 
 /* static */ jobject
-qdb::value::_from_native_int64(JNIEnv * env, qdb_point_result_t const & input) {
+qdb::value::_from_native_int64(qdb::jni::env & env, qdb_point_result_t const & input) {
   jclass valueClass = qdb::jni::lookup_class(env, "net/quasardb/qdb/ts/Value");
   jmethodID constructor = qdb::jni::lookup_staticMethodID(env, valueClass,
                                                           "createInt64",
                                                           "(J)Lnet/quasardb/qdb/ts/Value;");
 
-  return env->CallStaticObjectMethod(valueClass, constructor, input.payload.int64_.value);
+  return env.instance().CallStaticObjectMethod(valueClass, constructor, input.payload.int64_.value);
 }
 
 /* static */ jobject
-qdb::value::_from_native_double(JNIEnv * env, qdb_point_result_t const & input) {
+qdb::value::_from_native_double(qdb::jni::env & env, qdb_point_result_t const & input) {
   jclass valueClass = qdb::jni::lookup_class(env, "net/quasardb/qdb/ts/Value");
   jmethodID constructor = qdb::jni::lookup_staticMethodID(env, valueClass,
                                                           "createDouble",
                                                           "(D)Lnet/quasardb/qdb/ts/Value;");
 
-  return env->CallStaticObjectMethod(valueClass, constructor, input.payload.double_.value);
+  return env.instance().CallStaticObjectMethod(valueClass, constructor, input.payload.double_.value);
 }
 
 /* static */ jobject
-qdb::value::_from_native_timestamp(JNIEnv * env, qdb_point_result_t const & input) {
+qdb::value::_from_native_timestamp(qdb::jni::env & env, qdb_point_result_t const & input) {
   jclass valueClass = qdb::jni::lookup_class(env, "net/quasardb/qdb/ts/Value");
   jmethodID constructor = qdb::jni::lookup_staticMethodID(env, valueClass,
                                                           "createTimestamp",
@@ -69,11 +70,11 @@ qdb::value::_from_native_timestamp(JNIEnv * env, qdb_point_result_t const & inpu
   jobject timestamp;
   nativeToTimespec(env, input.payload.timestamp.value, &timestamp);
 
-  return env->CallStaticObjectMethod(valueClass, constructor, timestamp);
+  return env.instance().CallStaticObjectMethod(valueClass, constructor, timestamp);
 }
 
 /* static */ jobject
-qdb::value::_from_native_blob(JNIEnv * env, qdb_point_result_t const & input) {
+qdb::value::_from_native_blob(qdb::jni::env & env, qdb_point_result_t const & input) {
   jclass valueClass = qdb::jni::lookup_class(env, "net/quasardb/qdb/ts/Value");
   jmethodID constructor = qdb::jni::lookup_staticMethodID(env, valueClass,
                                                           "createSafeBlob",
@@ -87,15 +88,15 @@ qdb::value::_from_native_blob(JNIEnv * env, qdb_point_result_t const & input) {
                                           input.payload.blob.content_length);
   assert(byteBuffer != NULL);
 
-  return env->CallStaticObjectMethod(valueClass, constructor, byteBuffer);
+  return env.instance().CallStaticObjectMethod(valueClass, constructor, byteBuffer);
 }
 
 /* static */ jobject
-qdb::value::_from_native_null(JNIEnv * env) {
+qdb::value::_from_native_null(qdb::jni::env & env) {
   jclass valueClass = qdb::jni::lookup_class(env, "net/quasardb/qdb/ts/Value");
   jmethodID constructor = qdb::jni::lookup_staticMethodID(env, valueClass,
                                                           "createNull",
                                                           "()Lnet/quasardb/qdb/ts/Value;");
 
-  return env->CallStaticObjectMethod(valueClass, constructor);
+  return env.instance().CallStaticObjectMethod(valueClass, constructor);
 }

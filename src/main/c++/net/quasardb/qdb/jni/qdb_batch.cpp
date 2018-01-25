@@ -3,15 +3,19 @@
 #include "helpers.h"
 #include <qdb/batch.h>
 
+#include "env.h"
+
 static qdb_operation_t &
 get_operation(jlong batch, jint index) {
   return reinterpret_cast<qdb_operation_t *>(batch)[index];
 }
 
 extern "C" JNIEXPORT jint JNICALL
-Java_net_quasardb_qdb_jni_qdb_init_1operations(JNIEnv *env, jclass /*thisClass*/,
+Java_net_quasardb_qdb_jni_qdb_init_1operations(JNIEnv * jniEnv, jclass /*thisClass*/,
                                                jlong /*handle*/, jint count,
                                                jobject batch) {
+  qdb::jni::env env(jniEnv);
+
   qdb_operation_t *ops = new qdb_operation_t[count];
   qdb_error_t err = qdb_init_operations(ops, count);
   if (QDB_SUCCESS(err)) {
@@ -45,27 +49,31 @@ Java_net_quasardb_qdb_jni_qdb_run_1batch(JNIEnv * /*env*/, jclass /*thisClass*/,
 
 extern "C" JNIEXPORT void JNICALL
 Java_net_quasardb_qdb_jni_qdb_batch_1write_1blob_1compare_1and_1swap(
-    JNIEnv *env, jclass /*thisClass*/, jlong batch, jint index, jstring alias,
+    JNIEnv * jniEnv, jclass /*thisClass*/, jlong batch, jint index, jstring alias,
     jobject newContent, jobject comparand, jlong expiry) {
+  qdb::jni::env env(jniEnv);
+
   qdb_operation_t &op = get_operation(batch, index);
   op.type = qdb_op_blob_cas;
-  op.alias = alias ? env->GetStringUTFChars(alias, NULL) : NULL;
-  op.blob_cas.new_content = env->GetDirectBufferAddress(newContent);
+  op.alias = alias ? env.instance().GetStringUTFChars(alias, NULL) : NULL;
+  op.blob_cas.new_content = env.instance().GetDirectBufferAddress(newContent);
   op.blob_cas.new_content_size =
-      (qdb_size_t)env->GetDirectBufferCapacity(newContent);
-  op.blob_cas.comparand = env->GetDirectBufferAddress(comparand);
+      (qdb_size_t)env.instance().GetDirectBufferCapacity(newContent);
+  op.blob_cas.comparand = env.instance().GetDirectBufferAddress(comparand);
   op.blob_cas.comparand_size =
-      (qdb_size_t)env->GetDirectBufferCapacity(comparand);
+      (qdb_size_t)env.instance().GetDirectBufferCapacity(comparand);
   op.blob_cas.expiry_time = expiry;
 }
 
 extern "C" JNIEXPORT jint JNICALL
 Java_net_quasardb_qdb_jni_qdb_batch_1read_1blob_1compare_1and_1swap(
-    JNIEnv *env, jclass /*thisClass*/, jlong batch, jint index, jstring alias,
+    JNIEnv * jniEnv, jclass /*thisClass*/, jlong batch, jint index, jstring alias,
     jobject originalContent) {
+  qdb::jni::env env(jniEnv);
+
   qdb_operation_t &op = get_operation(batch, index);
   if (alias)
-    env->ReleaseStringUTFChars(alias, op.alias);
+    env.instance().ReleaseStringUTFChars(alias, op.alias);
   setByteBuffer(env, originalContent, op.blob_cas.original_content,
                 op.blob_cas.original_content_size);
   return op.error;
@@ -76,24 +84,28 @@ Java_net_quasardb_qdb_jni_qdb_batch_1read_1blob_1compare_1and_1swap(
 // -----------------------
 
 extern "C" JNIEXPORT void JNICALL
-Java_net_quasardb_qdb_jni_qdb_batch_1write_1blob_1get(JNIEnv *env,
+Java_net_quasardb_qdb_jni_qdb_batch_1write_1blob_1get(JNIEnv * jniEnv,
                                                       jclass /*thisClass*/,
                                                       jlong batch, jint index,
                                                       jstring alias) {
+  qdb::jni::env env(jniEnv);
+
   qdb_operation_t &op = get_operation(batch, index);
   op.type = qdb_op_blob_get;
-  op.alias = alias ? env->GetStringUTFChars(alias, NULL) : NULL;
+  op.alias = alias ? env.instance().GetStringUTFChars(alias, NULL) : NULL;
 }
 
 extern "C" JNIEXPORT jint JNICALL
-Java_net_quasardb_qdb_jni_qdb_batch_1read_1blob_1get(JNIEnv *env,
+Java_net_quasardb_qdb_jni_qdb_batch_1read_1blob_1get(JNIEnv * jniEnv,
                                                      jclass /*thisClass*/,
                                                      jlong batch, jint index,
                                                      jstring alias,
                                                      jobject content) {
+  qdb::jni::env env(jniEnv);
+
   qdb_operation_t &op = get_operation(batch, index);
   if (alias)
-    env->ReleaseStringUTFChars(alias, op.alias);
+    env.instance().ReleaseStringUTFChars(alias, op.alias);
   setByteBuffer(env, content, op.blob_get.content, op.blob_get.content_size);
   return op.error;
 }
@@ -104,24 +116,28 @@ Java_net_quasardb_qdb_jni_qdb_batch_1read_1blob_1get(JNIEnv *env,
 
 extern "C" JNIEXPORT void JNICALL
 Java_net_quasardb_qdb_jni_qdb_batch_1write_1blob_1get_1and_1update(
-    JNIEnv *env, jclass /*thisClass*/, jlong batch, jint index, jstring alias,
+    JNIEnv * jniEnv, jclass /*thisClass*/, jlong batch, jint index, jstring alias,
     jobject content, jlong expiry) {
+  qdb::jni::env env(jniEnv);
+
   qdb_operation_t &op = get_operation(batch, index);
   op.type = qdb_op_blob_get_and_update;
-  op.alias = alias ? env->GetStringUTFChars(alias, NULL) : NULL;
-  op.blob_get_and_update.new_content = env->GetDirectBufferAddress(content);
+  op.alias = alias ? env.instance().GetStringUTFChars(alias, NULL) : NULL;
+  op.blob_get_and_update.new_content = env.instance().GetDirectBufferAddress(content);
   op.blob_get_and_update.new_content_size =
-      (qdb_size_t)env->GetDirectBufferCapacity(content);
+      (qdb_size_t)env.instance().GetDirectBufferCapacity(content);
   op.blob_get_and_update.expiry_time = expiry;
 }
 
 extern "C" JNIEXPORT jint JNICALL
 Java_net_quasardb_qdb_jni_qdb_batch_1read_1blob_1get_1and_1update(
-    JNIEnv *env, jclass /*thisClass*/, jlong batch, jint index, jstring alias,
+    JNIEnv * jniEnv, jclass /*thisClass*/, jlong batch, jint index, jstring alias,
     jobject content) {
+  qdb::jni::env env(jniEnv);
+
   qdb_operation_t &op = get_operation(batch, index);
   if (alias)
-    env->ReleaseStringUTFChars(alias, op.alias);
+    env.instance().ReleaseStringUTFChars(alias, op.alias);
   setByteBuffer(env, content, op.blob_get_and_update.original_content,
                 op.blob_get_and_update.original_content_size);
   return op.error;
@@ -133,25 +149,28 @@ Java_net_quasardb_qdb_jni_qdb_batch_1read_1blob_1get_1and_1update(
 
 extern "C" JNIEXPORT void JNICALL
 Java_net_quasardb_qdb_jni_qdb_batch_1write_1blob_1put(
-    JNIEnv *env, jclass /*thisClass*/, jlong batch, jint index, jstring alias,
+    JNIEnv * jniEnv, jclass /*thisClass*/, jlong batch, jint index, jstring alias,
     jobject content, jlong expiry) {
+  qdb::jni::env env(jniEnv);
 
   qdb_operation_t &op = get_operation(batch, index);
   op.type = qdb_op_blob_put;
-  op.alias = alias ? env->GetStringUTFChars(alias, NULL) : NULL;
-  op.blob_put.content = env->GetDirectBufferAddress(content);
-  op.blob_put.content_size = (qdb_size_t)env->GetDirectBufferCapacity(content);
+  op.alias = alias ? env.instance().GetStringUTFChars(alias, NULL) : NULL;
+  op.blob_put.content = env.instance().GetDirectBufferAddress(content);
+  op.blob_put.content_size = (qdb_size_t)env.instance().GetDirectBufferCapacity(content);
   op.blob_put.expiry_time = expiry;
 }
 
 extern "C" JNIEXPORT jint JNICALL
-Java_net_quasardb_qdb_jni_qdb_batch_1read_1blob_1put(JNIEnv *env,
+Java_net_quasardb_qdb_jni_qdb_batch_1read_1blob_1put(JNIEnv * jniEnv,
                                                      jclass /*thisClass*/,
                                                      jlong batch, jint index,
                                                      jstring alias) {
+  qdb::jni::env env(jniEnv);
+
   qdb_operation_t &op = get_operation(batch, index);
   if (alias)
-    env->ReleaseStringUTFChars(alias, op.alias);
+    env.instance().ReleaseStringUTFChars(alias, op.alias);
   return op.error;
 }
 
@@ -161,23 +180,27 @@ Java_net_quasardb_qdb_jni_qdb_batch_1read_1blob_1put(JNIEnv *env,
 
 extern "C" JNIEXPORT void JNICALL
 Java_net_quasardb_qdb_jni_qdb_batch_1write_1blob_1update(
-    JNIEnv *env, jclass /*thisClass*/, jlong batch, jint index, jstring alias,
+    JNIEnv * jniEnv, jclass /*thisClass*/, jlong batch, jint index, jstring alias,
     jobject content, jlong expiry) {
+  qdb::jni::env env(jniEnv);
+
   qdb_operation_t &op = get_operation(batch, index);
   op.type = qdb_op_blob_update;
-  op.alias = alias ? env->GetStringUTFChars(alias, NULL) : NULL;
-  op.blob_put.content = env->GetDirectBufferAddress(content);
-  op.blob_put.content_size = (qdb_size_t)env->GetDirectBufferCapacity(content);
+  op.alias = alias ? env.instance().GetStringUTFChars(alias, NULL) : NULL;
+  op.blob_put.content = env.instance().GetDirectBufferAddress(content);
+  op.blob_put.content_size = (qdb_size_t)env.instance().GetDirectBufferCapacity(content);
   op.blob_put.expiry_time = expiry;
 }
 
 extern "C" JNIEXPORT jint JNICALL
-Java_net_quasardb_qdb_jni_qdb_batch_1read_1blob_1update(JNIEnv *env,
+Java_net_quasardb_qdb_jni_qdb_batch_1read_1blob_1update(JNIEnv * jniEnv,
                                                         jclass /*thisClass*/,
                                                         jlong batch, jint index,
                                                         jstring alias) {
+  qdb::jni::env env(jniEnv);
+
   qdb_operation_t &op = get_operation(batch, index);
   if (alias)
-    env->ReleaseStringUTFChars(alias, op.alias);
+    env.instance().ReleaseStringUTFChars(alias, op.alias);
   return op.error;
 }

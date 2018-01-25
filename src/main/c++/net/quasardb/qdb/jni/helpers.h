@@ -3,28 +3,30 @@
 #include <jni.h>
 #include <qdb/client.h>
 
-jobject getReferenceValue(JNIEnv *env, jobject reference);
-void setReferenceValue(JNIEnv *env, jobject reference, jobject value);
-void setByteBuffer(JNIEnv *, jobject, const void *, jlong);
-void setLong(JNIEnv *, jobject, jlong);
-void setInteger(JNIEnv *, jobject, jint);
-void setString(JNIEnv *, jobject, const char *);
-void setStringArray(JNIEnv *, jobject, const char **, size_t);
+#include "env.h"
+
+jobject getReferenceValue(qdb::jni::env & env, jobject reference);
+void setReferenceValue(qdb::jni::env & env, jobject reference, jobject value);
+void setByteBuffer(qdb::jni::env & env, jobject, const void *, jlong);
+void setLong(qdb::jni::env & env, jobject, jlong);
+void setInteger(qdb::jni::env & env, jobject, jint);
+void setString(qdb::jni::env & env, jobject, const char *);
+void setStringArray(qdb::jni::env & env, jobject, const char **, size_t);
 
 class StringUTFChars {
-  JNIEnv *_env;
+  qdb::jni::env & _env;
   jstring _str;
   const char *_ptr;
 
 public:
-  StringUTFChars(JNIEnv *env, jstring str) : _env(env), _str(str), _ptr(0) {
+  StringUTFChars(qdb::jni::env & env, jstring str) : _env(env), _str(str), _ptr(0) {
     if (str)
-      _ptr = env->GetStringUTFChars(str, NULL);
+      _ptr = env.instance().GetStringUTFChars(str, NULL);
   }
 
   ~StringUTFChars() {
     if (_ptr)
-      _env->ReleaseStringUTFChars(_str, _ptr);
+      _env.instance().ReleaseStringUTFChars(_str, _ptr);
   }
 
   operator const char *() const {

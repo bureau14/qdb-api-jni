@@ -5,14 +5,15 @@
 #include "util/qdb_jni.h"
 #include "ts/qdb_value.h"
 
+#include "env.h"
 #include "helpers.h"
 #include "net_quasardb_qdb_jni_qdb.h"
 
 jobjectArray
-nativeToRow(JNIEnv * env, qdb_point_result_t const values[], qdb_size_t count) {
+nativeToRow(qdb::jni::env & env, qdb_point_result_t const values[], qdb_size_t count) {
 
   jclass valueClass = qdb::jni::lookup_class(env, "net/quasardb/qdb/ts/Value");
-  jobjectArray outputValues = env->NewObjectArray(count, valueClass, NULL);
+  jobjectArray outputValues = env.instance().NewObjectArray(count, valueClass, NULL);
 
   printf("* NATIVE * iterating over %d columns!\n", count);
   fflush(stdout);
@@ -21,33 +22,31 @@ nativeToRow(JNIEnv * env, qdb_point_result_t const values[], qdb_size_t count) {
     jobject value =
       qdb::value::from_native(env, values[i]);
 
-    env->SetObjectArrayElement(outputValues, i, value);
-    env->DeleteLocalRef(value);
+    env.instance().SetObjectArrayElement(outputValues, i, value);
+    env.instance().DeleteLocalRef(value);
   }
 
   return outputValues;
 }
 
 jobjectArray
-nativeToColumns(JNIEnv * env, qdb_string_t const columns[], qdb_size_t count) {
+nativeToColumns(qdb::jni::env & env, qdb_string_t const columns[], qdb_size_t count) {
 
   jclass stringClass = qdb::jni::lookup_class(env, "java/lang/String");
-  jobjectArray outputColumns = env->NewObjectArray(count, stringClass, NULL);
+  jobjectArray outputColumns = env.instance().NewObjectArray(count, stringClass, NULL);
   assert(outputColumns != NULL);
 
   for (qdb_size_t i = 0; i < count; ++i) {
-    jstring column = env->NewStringUTF(columns[i].data);
-    env->SetObjectArrayElement(outputColumns, i, column);
-    env->DeleteLocalRef(column);
+    jstring column = env.instance().NewStringUTF(columns[i].data);
+    env.instance().SetObjectArrayElement(outputColumns, i, column);
+    env.instance().DeleteLocalRef(column);
   }
 
   return outputColumns;
 }
 
 qdb_error_t
-nativeToTable(JNIEnv * env, qdb_table_result_t const & input, jclass tableClass, jobject & table) {
-
-  // :TODO: cache!
+nativeToTable(qdb::jni::env & env, qdb_table_result_t const & input, jclass tableClass, jobject & table) {
   jclass valueClass = qdb::jni::lookup_class(env, "net/quasardb/qdb/ts/Value");
   jclass valuesClass = qdb::jni::lookup_class(env, "[Lnet/quasardb/qdb/ts/Value;");
   jmethodID valueConstructor = qdb::jni::lookup_methodID(env, valueClass, "<init>", "()V");
@@ -63,39 +62,36 @@ nativeToTable(JNIEnv * env, qdb_table_result_t const & input, jclass tableClass,
   jfieldID columnsFieldId = qdb::jni::lookup_fieldID(env, tableClass,
                                                      "columns", "[Ljava/lang/String;");
 
-  jstring name = env->NewStringUTF(input.table_name.data);
-  env->SetObjectField(table, nameFieldId, name);
-  env->DeleteLocalRef(name);
+  jstring name = env.instance().NewStringUTF(input.table_name.data);
+  env.instance().SetObjectField(table, nameFieldId, name);
+  env.instance().DeleteLocalRef(name);
 
   jobjectArray output_columns = nativeToColumns(env, input.columns_names, input.columns_count);
-  env->SetObjectField(table, columnsFieldId, output_columns);
-  env->DeleteLocalRef(output_columns);
+  env.instance().SetObjectField(table, columnsFieldId, output_columns);
+  env.instance().DeleteLocalRef(output_columns);
 
-  jobjectArray output_rows = env->NewObjectArray(input.rows_count, valuesClass, NULL);
+  jobjectArray output_rows = env.instance().NewObjectArray(input.rows_count, valuesClass, NULL);
 
   qdb_error_t err = qdb_e_ok;
   for (qdb_size_t i = 0; i < input.rows_count; ++i) {
     qdb_point_result_t const * input_row = input.rows[i];
 
     jobjectArray output_row = nativeToRow(env, input.rows[i], input.columns_count);
-    env->SetObjectArrayElement(output_rows, i, output_row);
-    env->DeleteLocalRef(output_row);
+    env.instance().SetObjectArrayElement(output_rows, i, output_row);
+    env.instance().DeleteLocalRef(output_row);
   }
 
   jfieldID rowsFieldId = qdb::jni::lookup_fieldID(env, tableClass,
                                                   "rows", "[[Lnet/quasardb/qdb/ts/Value;");
-  env->SetObjectField(table, rowsFieldId, output_rows);
-
-  env->DeleteLocalRef(output_rows);
+  env.instance().SetObjectField(table, rowsFieldId, output_rows);
+  env.instance().DeleteLocalRef(output_rows);
 
   return err;
 }
 
 qdb_error_t
-nativeToResult(JNIEnv * env, qdb_query_result_t const & input, jclass resultClass, jobject & result) {
-  assert(result != NULL);
+nativeToResult(qdb::jni::env & env, qdb_query_result_t const & input, jclass resultClass, jobject & result) {
 
-  // :TODO: cache!
   jclass tableClass = qdb::jni::lookup_class(env, "net/quasardb/qdb/ts/Result$Table");
   jmethodID tableConstuctor = qdb::jni::lookup_methodID(env, tableClass, "<init>", "()V");
   jfieldID tablesFieldId = qdb::jni::lookup_fieldID(env,
@@ -103,30 +99,32 @@ nativeToResult(JNIEnv * env, qdb_query_result_t const & input, jclass resultClas
                                                     "tables",
                                                     "[Lnet/quasardb/qdb/ts/Result$Table;");
 
-  jobjectArray tables = env->NewObjectArray(input.tables_count, tableClass, NULL);
-  env->SetObjectField(result, tablesFieldId, tables);
+  jobjectArray tables = env.instance().NewObjectArray(input.tables_count, tableClass, NULL);
+  env.instance().SetObjectField(result, tablesFieldId, tables);
 
   qdb_error_t err = qdb_e_ok;
   for (qdb_size_t i = 0; i < input.tables_count; ++i) {
-    jobject table = env->NewObject(tableClass, tableConstuctor);
+    jobject table = env.instance().NewObject(tableClass, tableConstuctor);
     err = nativeToTable(env, input.tables[i], tableClass, table);
 
     if(QDB_FAILURE(err)) {
       break;
     }
 
-    env->SetObjectArrayElement(tables, i, table);
-    env->DeleteLocalRef(table);
+    env.instance().SetObjectArrayElement(tables, i, table);
+    env.instance().DeleteLocalRef(table);
   }
 
-  env->DeleteLocalRef(tables);
+  env.instance().DeleteLocalRef(tables);
   return err;
 }
 
 JNIEXPORT jint JNICALL
-Java_net_quasardb_qdb_jni_qdb_query_1execute(JNIEnv * env, jclass /*thisClass*/, jlong handle,
+Java_net_quasardb_qdb_jni_qdb_query_1execute(JNIEnv * jniEnv, jclass /*thisClass*/, jlong handle,
                                              jstring query, jobject outputReference) {
+  qdb::jni::env env(jniEnv);
 
+  // :TODO: cache!
   jobject output = NULL;
   qdb_query_result_t * result;
   qdb_error_t err = qdb_exp_query((qdb_handle_t)(handle),
@@ -139,7 +137,7 @@ Java_net_quasardb_qdb_jni_qdb_query_1execute(JNIEnv * env, jclass /*thisClass*/,
     // :TODO: cache!
     jclass outputClass = qdb::jni::lookup_class(env, "net/quasardb/qdb/ts/Result");
     jmethodID constructor = qdb::jni::lookup_methodID(env, outputClass, "<init>", "()V");
-    output = env->NewObject(outputClass, constructor);
+    output = env.instance().NewObject(outputClass, constructor);
     assert(output != NULL);
 
     err = nativeToResult(env, *result, outputClass, output);
@@ -148,7 +146,7 @@ Java_net_quasardb_qdb_jni_qdb_query_1execute(JNIEnv * env, jclass /*thisClass*/,
   if (QDB_SUCCESS(err)) {
     assert(output != NULL);
     setReferenceValue(env, outputReference, output);
-    env->DeleteLocalRef(output);
+    env.instance().DeleteLocalRef(output);
   }
 
   qdb_release((qdb_handle_t)handle, result);

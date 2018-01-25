@@ -5,26 +5,34 @@
 #include <stdlib.h>
 
 JNIEXPORT jint JNICALL
-Java_net_quasardb_qdb_jni_qdb_attach_1tag(JNIEnv *env, jclass /*thisClass*/, jlong handle,
+Java_net_quasardb_qdb_jni_qdb_attach_1tag(JNIEnv * jniEnv, jclass /*thisClass*/, jlong handle,
                                           jstring alias, jstring tag) {
+  qdb::jni::env env(jniEnv);
+
   return qdb_attach_tag((qdb_handle_t)handle, StringUTFChars(env, alias), StringUTFChars(env, tag));
 }
 
 JNIEXPORT jint JNICALL
-Java_net_quasardb_qdb_jni_qdb_has_1tag(JNIEnv *env, jclass /*thisClass*/, jlong handle, jstring alias,
+Java_net_quasardb_qdb_jni_qdb_has_1tag(JNIEnv * jniEnv, jclass /*thisClass*/, jlong handle, jstring alias,
                                        jstring tag) {
+  qdb::jni::env env(jniEnv);
+
   return qdb_has_tag((qdb_handle_t)handle, StringUTFChars(env, alias), StringUTFChars(env, tag));
 }
 
 JNIEXPORT jint JNICALL
-Java_net_quasardb_qdb_jni_qdb_detach_1tag(JNIEnv *env, jclass /*thisClass*/, jlong handle,
+Java_net_quasardb_qdb_jni_qdb_detach_1tag(JNIEnv * jniEnv, jclass /*thisClass*/, jlong handle,
                                           jstring alias, jstring tag) {
+  qdb::jni::env env(jniEnv);
+
   return qdb_detach_tag((qdb_handle_t)handle, StringUTFChars(env, alias), StringUTFChars(env, tag));
 }
 
 JNIEXPORT jint JNICALL
-Java_net_quasardb_qdb_jni_qdb_get_1tags(JNIEnv *env, jclass /*thisClass*/, jlong handle, jstring alias,
+Java_net_quasardb_qdb_jni_qdb_get_1tags(JNIEnv * jniEnv, jclass /*thisClass*/, jlong handle, jstring alias,
                                         jobject tags) {
+  qdb::jni::env env(jniEnv);
+
   const char **nativeTags = NULL;
   size_t tagCount = 0;
   qdb_error_t err =
@@ -35,8 +43,10 @@ Java_net_quasardb_qdb_jni_qdb_get_1tags(JNIEnv *env, jclass /*thisClass*/, jlong
 }
 
 JNIEXPORT jint JNICALL
-Java_net_quasardb_qdb_jni_qdb_tag_1iterator_1begin(JNIEnv *env, jclass /*thisClass*/, jlong handle,
+Java_net_quasardb_qdb_jni_qdb_tag_1iterator_1begin(JNIEnv * jniEnv, jclass /*thisClass*/, jlong handle,
                                                    jstring alias, jobject iterator) {
+  qdb::jni::env env(jniEnv);
+
   qdb_const_tag_iterator_t *nativeIterator = new qdb_const_tag_iterator_t;
   qdb_error_t err =
       qdb_tag_iterator_begin((qdb_handle_t)handle, StringUTFChars(env, alias), nativeIterator);
@@ -62,9 +72,11 @@ Java_net_quasardb_qdb_jni_qdb_tag_1iterator_1close(JNIEnv * /*env*/, jclass /*th
 }
 
 JNIEXPORT jstring JNICALL
-Java_net_quasardb_qdb_jni_qdb_tag_1iterator_1alias(JNIEnv *env, jclass /*thisClass*/, jlong iterator) {
+Java_net_quasardb_qdb_jni_qdb_tag_1iterator_1alias(JNIEnv * jniEnv, jclass /*thisClass*/, jlong iterator) {
+  qdb::jni::env env(jniEnv);
+
   if (iterator)
-    return env->NewStringUTF(((qdb_const_tag_iterator_t *)iterator)->alias);
+    return env.instance().NewStringUTF(((qdb_const_tag_iterator_t *)iterator)->alias);
   else
     return NULL;
 }
