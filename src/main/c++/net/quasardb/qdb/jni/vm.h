@@ -4,15 +4,13 @@
 #include <cassert>
 #include <jni.h>
 
-#include <boost/core/noncopyable.hpp>
-
 namespace qdb {
   namespace jni {
 
     /**
      * Singleton wrapper around a JavaVM pointer.
      */
-    class vm : private boost::noncopyable {
+    class vm {
     private:
       static JavaVM * _vm;
 
