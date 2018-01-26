@@ -1,7 +1,8 @@
-#include "net_quasardb_qdb_jni_qdb.h"
-
-#include "helpers.h"
 #include <qdb/blob.h>
+
+#include "net_quasardb_qdb_jni_qdb.h"
+#include "../env.h"
+#include "../util/helpers.h"
 
 JNIEXPORT jint JNICALL
 Java_net_quasardb_qdb_jni_qdb_blob_1compare_1and_1swap(JNIEnv * jniEnv, jclass /*thisClass*/, jlong handle,

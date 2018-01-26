@@ -1,9 +1,8 @@
-#include "net_quasardb_qdb_jni_qdb.h"
-
-#include "helpers.h"
 #include <qdb/batch.h>
 
-#include "env.h"
+#include "net_quasardb_qdb_jni_qdb.h"
+#include "../util/helpers.h"
+#include "../env.h"
 
 static qdb_operation_t &
 get_operation(jlong batch, jint index) {

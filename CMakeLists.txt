@@ -29,21 +29,21 @@ set(QDB_JNI_CLASSES
 set(QDB_JNI_SOURCES
   src/main/c++/net/quasardb/qdb/jni/env.cpp
   src/main/c++/net/quasardb/qdb/jni/vm.cpp
-  src/main/c++/net/quasardb/qdb/jni/helpers.cpp
-  src/main/c++/net/quasardb/qdb/jni/ts_helpers.cpp
   src/main/c++/net/quasardb/qdb/jni/util/qdb_jni.cpp
   src/main/c++/net/quasardb/qdb/jni/ts/qdb_value.cpp
-  src/main/c++/net/quasardb/qdb/jni/qdb_batch.cpp
-  src/main/c++/net/quasardb/qdb/jni/qdb_blob.cpp
-  src/main/c++/net/quasardb/qdb/jni/qdb_client.cpp
-  src/main/c++/net/quasardb/qdb/jni/qdb_deque.cpp
-  src/main/c++/net/quasardb/qdb/jni/qdb_hset.cpp
-  src/main/c++/net/quasardb/qdb/jni/qdb_int.cpp
-  src/main/c++/net/quasardb/qdb/jni/qdb_stream.cpp
-  src/main/c++/net/quasardb/qdb/jni/qdb_tag.cpp
-  src/main/c++/net/quasardb/qdb/jni/qdb_node.cpp
-  src/main/c++/net/quasardb/qdb/jni/qdb_ts.cpp
-  src/main/c++/net/quasardb/qdb/jni/qdb_query.cpp
+  src/main/c++/net/quasardb/qdb/jni/util/helpers.cpp
+  src/main/c++/net/quasardb/qdb/jni/util/ts_helpers.cpp
+  src/main/c++/net/quasardb/qdb/jni/export/qdb_batch.cpp
+  src/main/c++/net/quasardb/qdb/jni/export/qdb_blob.cpp
+  src/main/c++/net/quasardb/qdb/jni/export/qdb_client.cpp
+  src/main/c++/net/quasardb/qdb/jni/export/qdb_deque.cpp
+  src/main/c++/net/quasardb/qdb/jni/export/qdb_hset.cpp
+  src/main/c++/net/quasardb/qdb/jni/export/qdb_int.cpp
+  src/main/c++/net/quasardb/qdb/jni/export/qdb_stream.cpp
+  src/main/c++/net/quasardb/qdb/jni/export/qdb_tag.cpp
+  src/main/c++/net/quasardb/qdb/jni/export/qdb_node.cpp
+  src/main/c++/net/quasardb/qdb/jni/export/qdb_ts.cpp
+  src/main/c++/net/quasardb/qdb/jni/export/qdb_query.cpp
 )
 
 add_jar(jni

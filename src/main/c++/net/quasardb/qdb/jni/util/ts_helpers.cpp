@@ -1,7 +1,7 @@
 #include "ts_helpers.h"
 
-#include "util/qdb_jni.h"
-#include "env.h"
+#include "../util/qdb_jni.h"
+#include "../env.h"
 
 #include <cassert>
 #include <cstring>

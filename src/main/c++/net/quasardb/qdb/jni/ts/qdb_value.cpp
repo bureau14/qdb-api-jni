@@ -1,8 +1,8 @@
 #include <cassert>
-#include "../util/qdb_jni.h"
-#include "../ts_helpers.h"
 
 #include "../env.h"
+#include "../util/qdb_jni.h"
+#include "../util/ts_helpers.h"
 #include "qdb_value.h"
 
 /* static */ jobject

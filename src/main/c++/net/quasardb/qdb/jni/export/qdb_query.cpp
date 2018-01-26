@@ -2,12 +2,12 @@
 #include <stdlib.h>
 #include <qdb/query.h>
 
-#include "util/qdb_jni.h"
-#include "ts/qdb_value.h"
-
-#include "env.h"
-#include "helpers.h"
 #include "net_quasardb_qdb_jni_qdb.h"
+#include "../ts/qdb_value.h"
+#include "../env.h"
+#include "../util/helpers.h"
+#include "../util/qdb_jni.h"
+
 
 jobjectArray
 nativeToRow(qdb::jni::env & env, qdb_point_result_t const values[], qdb_size_t count) {

@@ -2,9 +2,10 @@
 #include <stdlib.h>
 #include <qdb/ts.h>
 
-#include "helpers.h"
-#include "ts_helpers.h"
 #include "net_quasardb_qdb_jni_qdb.h"
+#include "../env.h"
+#include "../util/helpers.h"
+#include "../util/ts_helpers.h"
 
 JNIEXPORT jint JNICALL
 Java_net_quasardb_qdb_jni_qdb_ts_1create(JNIEnv * jniEnv, jclass /*thisClass*/, jlong handle,

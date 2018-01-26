@@ -3,7 +3,11 @@
 #include <jni.h>
 #include <qdb/client.h>
 
-#include "env.h"
+namespace qdb {
+  namespace jni {
+    class env;
+  };
+};
 
 jobject getReferenceValue(qdb::jni::env & env, jobject reference);
 void setReferenceValue(qdb::jni::env & env, jobject reference, jobject value);
@@ -19,15 +23,8 @@ class StringUTFChars {
   const char *_ptr;
 
 public:
-  StringUTFChars(qdb::jni::env & env, jstring str) : _env(env), _str(str), _ptr(0) {
-    if (str)
-      _ptr = env.instance().GetStringUTFChars(str, NULL);
-  }
-
-  ~StringUTFChars() {
-    if (_ptr)
-      _env.instance().ReleaseStringUTFChars(_str, _ptr);
-  }
+  StringUTFChars(qdb::jni::env & env, jstring str);
+  ~StringUTFChars();
 
   operator const char *() const {
     return _ptr;

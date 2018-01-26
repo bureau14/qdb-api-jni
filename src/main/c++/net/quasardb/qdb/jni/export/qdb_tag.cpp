@@ -1,8 +1,9 @@
-#include "net_quasardb_qdb_jni_qdb.h"
-
-#include "helpers.h"
-#include <qdb/tag.h>
 #include <stdlib.h>
+#include <qdb/tag.h>
+
+#include "net_quasardb_qdb_jni_qdb.h"
+#include "../env.h"
+#include "../util/helpers.h"
 
 JNIEXPORT jint JNICALL
 Java_net_quasardb_qdb_jni_qdb_attach_1tag(JNIEnv * jniEnv, jclass /*thisClass*/, jlong handle,

@@ -1,8 +1,8 @@
-#include "net_quasardb_qdb_jni_qdb.h"
-
-#include "env.h"
-#include "helpers.h"
 #include <qdb/integer.h>
+
+#include "net_quasardb_qdb_jni_qdb.h"
+#include "../env.h"
+#include "../util/helpers.h"
 
 JNIEXPORT jint JNICALL
 Java_net_quasardb_qdb_jni_qdb_int_1put(JNIEnv * jniEnv, jclass /*thisClass*/, jlong handle, jstring alias,

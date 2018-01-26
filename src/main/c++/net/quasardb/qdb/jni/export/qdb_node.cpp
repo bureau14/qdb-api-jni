@@ -1,8 +1,8 @@
-#include "net_quasardb_qdb_jni_qdb.h"
-
-#include "env.h"
-#include "helpers.h"
 #include <qdb/node.h>
+
+#include "net_quasardb_qdb_jni_qdb.h"
+#include "../env.h"
+#include "../util/helpers.h"
 
 /*
  * Class:     net_quasardb_qdb_jni_qdb
