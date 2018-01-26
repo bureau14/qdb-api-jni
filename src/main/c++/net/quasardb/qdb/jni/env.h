@@ -68,9 +68,7 @@ namespace qdb {
        * a env(JavaVM &) constructor or env(JNIEnv *) constructor so that the
        * JavaVM singleton is properly initialised.
        */
-      env() {
-        env(qdb::jni::vm::instance());
-      }
+      env() : env(qdb::jni::vm::instance()) {}
 
       JNIEnv & instance() {
         assert(_env != NULL);
