@@ -3,6 +3,7 @@
 #include "../env.h"
 #include "../util/qdb_jni.h"
 #include "../util/ts_helpers.h"
+#include "../guard/local.h"
 #include "qdb_value.h"
 
 /* static */ jobject
