@@ -11,21 +11,43 @@ namespace qdb {
 
     /**
      * Provides safe access to the JNIEnv environment.
+     *
+     * A JNIEnv can be acquired in two ways: the most obvious way that the
+     * JNIEnv is provided when the JVM invokes a native function. However, a
+     * JNIEnv can also be resolved from the JavaVM, provided that the active
+     * thread is attached to the JVM.
+     *
+     * Where a JNIEnv cannot be shared between threads, a JavaVM can be. This
+     * class wraps around the necessary boilerplate to make this completely
+     * transparent, at the cost of a small performance penalty during object
+     * construction.
+     *
+     * If available, one should always initialise a qdb::jni::env from an
+     * existing JNIEnv.
      */
     class env {
     private:
-      static JavaVM * _vm;
-
       JNIEnv * _env;
 
     public:
+      /**
+       * Initialise an env from a JNIEnv *. This is the most commonly used
+       * method of initialisation, and will ensure qdb::jni::vm is initialised.
+       */
       env(JNIEnv * e) :
         _env(e) {
-        _maybe_init(e);
+        qdb::jni::vm::instance(*e);
       };
 
-      env(JavaVM * vm) {
-        _maybe_init(vm);
+      /**
+       * Initialise an env from a JavaVM &. This can be used in cases where
+       * a JNIEnv * is not available, and this constructor will acquire a
+       * JNIEnv * for the current thread from the JavaVM.
+       *
+       * \warning Requires the current thread to be attached to the JVM.
+       */
+      env(JavaVM & vm) {
+        qdb::jni::vm::instance(vm);
 
         void * e = NULL;
 
@@ -33,16 +55,21 @@ namespace qdb {
         // thread) this will return JNI_EDETACHED. In this case, the user should first
         // attach their native to the global VM, and only then try to resolve an
         // env.
-        jint err = vm->GetEnv(&e, JNI_VERSION_1_6);
+        jint err = vm.GetEnv(&e, JNI_VERSION_1_6);
         assert(err == JNI_OK);
         assert(e != NULL);
 
         env((JNIEnv *)(e));
       }
 
+      /**
+       * Initialise an env from the global JavaVM singleton. For this method to
+       * work, this requires an earlier invocation of this class using either
+       * a env(JavaVM &) constructor or env(JNIEnv *) constructor so that the
+       * JavaVM singleton is properly initialised.
+       */
       env() {
-        assert(_vm != NULL);
-        env(_vm);
+        env(qdb::jni::vm::instance());
       }
 
       JNIEnv & instance() {
@@ -55,40 +82,6 @@ namespace qdb {
       env (env const &&) = delete;
       env & operator=(env const &) = delete;
       env & operator=(env const &&) = delete;
-
-    private:
-      static void
-      _maybe_init(JNIEnv * e) {
-        if (_vm == NULL) {
-          JavaVM * vm = NULL;
-          jint err = e->GetJavaVM(&vm);
-          assert(err == 0);
-          assert(vm != NULL);
-
-          _init(vm);
-        }
-
-        assert(_vm != NULL);
-      }
-
-      static void
-      _maybe_init(JavaVM * vm) {
-        if (_vm == NULL) {
-          _init(vm);
-        }
-
-        assert(_vm != NULL);
-      }
-
-      static void
-      _init(JavaVM * vm) {
-        // :TODO: this is actually a race condition when two threads race for
-        //        initializing the _vm. This should eventually probably be fixed
-        //        using the double checked locking optimisation thingie.
-
-        assert(_vm == NULL);
-        _vm = vm;
-      }
 
     };
   };

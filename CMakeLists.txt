@@ -28,6 +28,7 @@ set(QDB_JNI_CLASSES
 
 set(QDB_JNI_SOURCES
   src/main/c++/net/quasardb/qdb/jni/env.cpp
+  src/main/c++/net/quasardb/qdb/jni/vm.cpp
   src/main/c++/net/quasardb/qdb/jni/helpers.cpp
   src/main/c++/net/quasardb/qdb/jni/ts_helpers.cpp
   src/main/c++/net/quasardb/qdb/jni/util/qdb_jni.cpp
