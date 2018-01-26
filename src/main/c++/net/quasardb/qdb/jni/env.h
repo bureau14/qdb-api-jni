@@ -4,10 +4,10 @@
 #include <cassert>
 #include <jni.h>
 
-#include "vm.h"
-
 namespace qdb {
   namespace jni {
+
+    class vm;
 
     /**
      * Provides safe access to the JNIEnv environment.
@@ -34,10 +34,7 @@ namespace qdb {
        * Initialise an env from a JNIEnv *. This is the most commonly used
        * method of initialisation, and will ensure qdb::jni::vm is initialised.
        */
-      env(JNIEnv * e) :
-        _env(e) {
-        qdb::jni::vm::instance(*e);
-      };
+      env(JNIEnv * e);
 
       /**
        * Initialise an env from a JavaVM &. This can be used in cases where
@@ -46,21 +43,7 @@ namespace qdb {
        *
        * \warning Requires the current thread to be attached to the JVM.
        */
-      env(JavaVM & vm) {
-        qdb::jni::vm::instance(vm);
-
-        void * e = NULL;
-
-        // If the current thread is not attached to the VM (e.g. background, native
-        // thread) this will return JNI_EDETACHED. In this case, the user should first
-        // attach their native to the global VM, and only then try to resolve an
-        // env.
-        jint err = vm.GetEnv(&e, JNI_VERSION_1_6);
-        assert(err == JNI_OK);
-        assert(e != NULL);
-
-        env((JNIEnv *)(e));
-      }
+      env(JavaVM & vm);
 
       /**
        * Initialise an env from the global JavaVM singleton. For this method to
@@ -68,7 +51,7 @@ namespace qdb {
        * a env(JavaVM &) constructor or env(JNIEnv *) constructor so that the
        * JavaVM singleton is properly initialised.
        */
-      env() : env(qdb::jni::vm::instance()) {}
+      env();
 
       JNIEnv & instance() {
         assert(_env != NULL);
