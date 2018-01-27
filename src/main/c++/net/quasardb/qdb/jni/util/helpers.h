@@ -16,17 +16,3 @@ void setLong(qdb::jni::env & env, jobject, jlong);
 void setInteger(qdb::jni::env & env, jobject, jint);
 void setString(qdb::jni::env & env, jobject, const char *);
 void setStringArray(qdb::jni::env & env, jobject, const char **, size_t);
-
-class StringUTFChars {
-  qdb::jni::env & _env;
-  jstring _str;
-  const char *_ptr;
-
-public:
-  StringUTFChars(qdb::jni::env & env, jstring str);
-  ~StringUTFChars();
-
-  operator const char *() const {
-    return _ptr;
-  }
-};

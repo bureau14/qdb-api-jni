@@ -2,7 +2,9 @@
 #include <qdb/tag.h>
 
 #include "net_quasardb_qdb_jni_qdb.h"
+
 #include "../env.h"
+#include "../string.h"
 #include "../util/helpers.h"
 
 JNIEXPORT jint JNICALL
@@ -10,7 +12,7 @@ Java_net_quasardb_qdb_jni_qdb_attach_1tag(JNIEnv * jniEnv, jclass /*thisClass*/,
                                           jstring alias, jstring tag) {
   qdb::jni::env env(jniEnv);
 
-  return qdb_attach_tag((qdb_handle_t)handle, StringUTFChars(env, alias), StringUTFChars(env, tag));
+  return qdb_attach_tag((qdb_handle_t)handle, qdb::jni::string::get_chars(env, alias), qdb::jni::string::get_chars(env, tag));
 }
 
 JNIEXPORT jint JNICALL
@@ -18,7 +20,7 @@ Java_net_quasardb_qdb_jni_qdb_has_1tag(JNIEnv * jniEnv, jclass /*thisClass*/, jl
                                        jstring tag) {
   qdb::jni::env env(jniEnv);
 
-  return qdb_has_tag((qdb_handle_t)handle, StringUTFChars(env, alias), StringUTFChars(env, tag));
+  return qdb_has_tag((qdb_handle_t)handle, qdb::jni::string::get_chars(env, alias), qdb::jni::string::get_chars(env, tag));
 }
 
 JNIEXPORT jint JNICALL
@@ -26,7 +28,7 @@ Java_net_quasardb_qdb_jni_qdb_detach_1tag(JNIEnv * jniEnv, jclass /*thisClass*/,
                                           jstring alias, jstring tag) {
   qdb::jni::env env(jniEnv);
 
-  return qdb_detach_tag((qdb_handle_t)handle, StringUTFChars(env, alias), StringUTFChars(env, tag));
+  return qdb_detach_tag((qdb_handle_t)handle, qdb::jni::string::get_chars(env, alias), qdb::jni::string::get_chars(env, tag));
 }
 
 JNIEXPORT jint JNICALL
@@ -37,7 +39,7 @@ Java_net_quasardb_qdb_jni_qdb_get_1tags(JNIEnv * jniEnv, jclass /*thisClass*/, j
   const char **nativeTags = NULL;
   size_t tagCount = 0;
   qdb_error_t err =
-      qdb_get_tags((qdb_handle_t)handle, StringUTFChars(env, alias), &nativeTags, &tagCount);
+      qdb_get_tags((qdb_handle_t)handle, qdb::jni::string::get_chars(env, alias), &nativeTags, &tagCount);
   setStringArray(env, tags, nativeTags, tagCount);
   qdb_release((qdb_handle_t)handle, nativeTags);
   return err;
@@ -50,7 +52,7 @@ Java_net_quasardb_qdb_jni_qdb_tag_1iterator_1begin(JNIEnv * jniEnv, jclass /*thi
 
   qdb_const_tag_iterator_t *nativeIterator = new qdb_const_tag_iterator_t;
   qdb_error_t err =
-      qdb_tag_iterator_begin((qdb_handle_t)handle, StringUTFChars(env, alias), nativeIterator);
+      qdb_tag_iterator_begin((qdb_handle_t)handle, qdb::jni::string::get_chars(env, alias), nativeIterator);
   if (QDB_SUCCESS(err)) {
     setLong(env, iterator, (jlong)nativeIterator);
   } else {

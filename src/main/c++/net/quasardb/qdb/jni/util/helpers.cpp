@@ -61,16 +61,3 @@ void
 setString(qdb::jni::env & env, jobject reference, const char *value) {
   setReferenceValue(env, reference, env.instance().NewStringUTF(value));
 }
-
-StringUTFChars::StringUTFChars(qdb::jni::env & env, jstring str) : _env(env), _str(str), _ptr(0) {
-  if (str) {
-    _ptr = env.instance().GetStringUTFChars(str, NULL);
-  }
-}
-
-StringUTFChars::~StringUTFChars() {
-  if (_ptr) {
-    _env.instance().ReleaseStringUTFChars(_str, _ptr);
-  }
-
-}

@@ -3,7 +3,9 @@
 #include <qdb/ts.h>
 
 #include "net_quasardb_qdb_jni_qdb.h"
+
 #include "../env.h"
+#include "../string.h"
 #include "../util/helpers.h"
 #include "../util/ts_helpers.h"
 
@@ -17,7 +19,7 @@ Java_net_quasardb_qdb_jni_qdb_ts_1create(JNIEnv * jniEnv, jclass /*thisClass*/, 
 
   columnsToNative(env, columns, native_columns, column_count);
 
-  jint result = qdb_ts_create((qdb_handle_t)handle, StringUTFChars(env, alias), (qdb_uint_t)shard_size, native_columns, column_count);
+  jint result = qdb_ts_create((qdb_handle_t)handle, qdb::jni::string::get_chars(env, alias), (qdb_uint_t)shard_size, native_columns, column_count);
   releaseNative(native_columns, column_count);
 
   delete[] native_columns;
@@ -34,7 +36,7 @@ Java_net_quasardb_qdb_jni_qdb_ts_1insert_1columns(JNIEnv * jniEnv, jclass /*this
 
   columnsToNative(env, columns, native_columns, column_count);
 
-  jint result = qdb_ts_insert_columns((qdb_handle_t)handle, StringUTFChars(env, alias), native_columns, column_count);
+  jint result = qdb_ts_insert_columns((qdb_handle_t)handle, qdb::jni::string::get_chars(env, alias), native_columns, column_count);
   releaseNative(native_columns, column_count);
 
   delete[] native_columns;
@@ -49,7 +51,7 @@ Java_net_quasardb_qdb_jni_qdb_ts_1list_1columns(JNIEnv * jniEnv, jclass /*thisCl
   qdb_ts_column_info_t * native_columns;
   qdb_size_t column_count;
 
-  qdb_error_t err = qdb_ts_list_columns((qdb_handle_t)handle, StringUTFChars(env, alias), &native_columns, &column_count);
+  qdb_error_t err = qdb_ts_list_columns((qdb_handle_t)handle, qdb::jni::string::get_chars(env, alias), &native_columns, &column_count);
 
   if (QDB_SUCCESS(err)) {
     jobjectArray array;
@@ -75,7 +77,7 @@ Java_net_quasardb_qdb_jni_qdb_ts_1local_1table_1init(JNIEnv * jniEnv, jclass /*t
   qdb_local_table_t nativeLocalTable;
 
   qdb_error_t err = qdb_ts_local_table_init((qdb_handle_t)handle,
-                                            StringUTFChars(env, alias),
+                                            qdb::jni::string::get_chars(env, alias),
                                             nativeColumns,
                                             columnCount,
                                             &nativeLocalTable);
@@ -162,8 +164,8 @@ Java_net_quasardb_qdb_jni_qdb_ts_1double_1insert(JNIEnv * jniEnv, jclass /*thisC
   doublePointsToNative(env, points, points_count, values);
 
   qdb_error_t err = qdb_ts_double_insert((qdb_handle_t)handle,
-                                         StringUTFChars(env, alias),
-                                         StringUTFChars(env, column),
+                                         qdb::jni::string::get_chars(env, alias),
+                                         qdb::jni::string::get_chars(env, column),
                                          values,
                                          points_count);
 
@@ -185,8 +187,8 @@ Java_net_quasardb_qdb_jni_qdb_ts_1double_1get_1ranges(JNIEnv * jniEnv, jclass /*
   qdb_size_t point_count;
 
   qdb_error_t err = qdb_ts_double_get_ranges((qdb_handle_t)handle,
-                                             StringUTFChars(env, alias),
-                                             StringUTFChars(env, column),
+                                             qdb::jni::string::get_chars(env, alias),
+                                             qdb::jni::string::get_chars(env, column),
                                              nativeFilteredRanges,
                                              filteredRangeCount,
                                              &native_points,
@@ -217,8 +219,8 @@ Java_net_quasardb_qdb_jni_qdb_ts_1double_1aggregate(JNIEnv * jniEnv, jclass /*th
   doubleAggregatesToNative(env, input, count, aggregates);
 
   qdb_error_t err = qdb_ts_double_aggregate((qdb_handle_t)handle,
-                                            StringUTFChars(env, alias),
-                                            StringUTFChars(env, column),
+                                            qdb::jni::string::get_chars(env, alias),
+                                            qdb::jni::string::get_chars(env, column),
                                             aggregates,
                                             count);
 
@@ -245,8 +247,8 @@ Java_net_quasardb_qdb_jni_qdb_ts_1blob_1insert(JNIEnv * jniEnv, jclass /*thisCla
   blobPointsToNative(env, points, pointsCount, values);
 
   qdb_error_t err = qdb_ts_blob_insert((qdb_handle_t)handle,
-                                       StringUTFChars(env, alias),
-                                       StringUTFChars(env, column),
+                                       qdb::jni::string::get_chars(env, alias),
+                                       qdb::jni::string::get_chars(env, column),
                                        values,
                                        pointsCount);
 
@@ -267,8 +269,8 @@ Java_net_quasardb_qdb_jni_qdb_ts_1blob_1get_1ranges(JNIEnv * jniEnv, jclass /*th
   qdb_size_t pointCount;
 
   qdb_error_t err = qdb_ts_blob_get_ranges((qdb_handle_t)handle,
-                                           StringUTFChars(env, alias),
-                                           StringUTFChars(env, column),
+                                           qdb::jni::string::get_chars(env, alias),
+                                           qdb::jni::string::get_chars(env, column),
                                            nativeFilteredRanges,
                                            filteredRangeCount,
                                            &nativePoints,
@@ -299,8 +301,8 @@ Java_net_quasardb_qdb_jni_qdb_ts_1blob_1aggregate(JNIEnv * jniEnv, jclass /*this
   blobAggregatesToNative(env, input, count, aggregates);
 
   qdb_error_t err = qdb_ts_blob_aggregate((qdb_handle_t)handle,
-                                            StringUTFChars(env, alias),
-                                            StringUTFChars(env, column),
+                                            qdb::jni::string::get_chars(env, alias),
+                                            qdb::jni::string::get_chars(env, column),
                                             aggregates,
                                             count);
 

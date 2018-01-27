@@ -1,7 +1,9 @@
 #include <qdb/client.h>
 
 #include "net_quasardb_qdb_jni_qdb.h"
+
 #include "../env.h"
+#include "../string.h"
 #include "../util/helpers.h"
 
 JNIEXPORT jstring JNICALL
@@ -34,8 +36,8 @@ JNIEXPORT jint JNICALL
 Java_net_quasardb_qdb_jni_qdb_connect(JNIEnv * jniEnv, jclass /*thisClass*/, jlong handle, jstring uri) {
   qdb::jni::env env(jniEnv);
 
-  StringUTFChars nativeUri(env, uri);
-  return qdb_connect((qdb_handle_t)handle, nativeUri);
+  return qdb_connect((qdb_handle_t)handle,
+                     qdb::jni::string::get_chars(env, uri));
 }
 
 JNIEXPORT jint JNICALL
@@ -56,20 +58,20 @@ Java_net_quasardb_qdb_jni_qdb_secure_1connect(JNIEnv * jniEnv, jclass /*thisClas
   jstring clusterPublicKey = (jstring)env.instance().GetObjectField(securityOptions, clusterPublicKeyField);
 
   err = qdb_option_set_cluster_public_key((qdb_handle_t)handle,
-                                          StringUTFChars(env, clusterPublicKey));
+                                          qdb::jni::string::get_chars(env, clusterPublicKey));
   if (QDB_FAILURE(err)) {
     return err;
   }
 
   err = qdb_option_set_user_credentials((qdb_handle_t)handle,
-                                        StringUTFChars(env, userName),
-                                        StringUTFChars(env, userPrivateKey));
+                                        qdb::jni::string::get_chars(env, userName),
+                                        qdb::jni::string::get_chars(env, userPrivateKey));
   if (QDB_FAILURE(err)) {
     return err;
   }
 
-  StringUTFChars nativeUri(env, uri);
-  return qdb_connect((qdb_handle_t)handle, nativeUri);
+  return qdb_connect((qdb_handle_t)handle,
+                     qdb::jni::string::get_chars(env, uri));
 }
 
 JNIEXPORT jint JNICALL
@@ -107,7 +109,7 @@ JNIEXPORT jint JNICALL
 Java_net_quasardb_qdb_jni_qdb_remove(JNIEnv * jniEnv, jclass /*thisClass*/, jlong handle, jstring alias) {
   qdb::jni::env env(jniEnv);
 
-  return qdb_remove((qdb_handle_t)handle, StringUTFChars(env, alias));
+  return qdb_remove((qdb_handle_t)handle, qdb::jni::string::get_chars(env, alias));
 }
 
 JNIEXPORT jint JNICALL
@@ -116,7 +118,7 @@ Java_net_quasardb_qdb_jni_qdb_get_1type(JNIEnv * jniEnv, jclass /*thisClass*/, j
   qdb::jni::env env(jniEnv);
 
   qdb_entry_metadata_t metadata;
-  qdb_error_t err = qdb_get_metadata((qdb_handle_t)handle, StringUTFChars(env, alias), &metadata);
+  qdb_error_t err = qdb_get_metadata((qdb_handle_t)handle, qdb::jni::string::get_chars(env, alias), &metadata);
   setInteger(env, type, metadata.type);
   return err;
 }
@@ -130,7 +132,7 @@ Java_net_quasardb_qdb_jni_qdb_get_1metadata(JNIEnv * jniEnv, jclass /*thisClass*
   qdb_size_t metaSize = (qdb_size_t)env.instance().GetDirectBufferCapacity(meta);
   if (metaSize != sizeof(qdb_entry_metadata_t)) return qdb_e_invalid_argument;
 
-  return qdb_get_metadata((qdb_handle_t)handle, StringUTFChars(env, alias), (qdb_entry_metadata_t *)metaPtr);
+  return qdb_get_metadata((qdb_handle_t)handle, qdb::jni::string::get_chars(env, alias), (qdb_entry_metadata_t *)metaPtr);
 }
 
 JNIEXPORT jint JNICALL
@@ -138,7 +140,7 @@ Java_net_quasardb_qdb_jni_qdb_expires_1at(JNIEnv * jniEnv, jclass /*thisClass*/,
                                           jstring alias, jlong expiry) {
   qdb::jni::env env(jniEnv);
 
-  return qdb_expires_at((qdb_handle_t)handle, StringUTFChars(env, alias), expiry);
+  return qdb_expires_at((qdb_handle_t)handle, qdb::jni::string::get_chars(env, alias), expiry);
 }
 
 JNIEXPORT jint JNICALL
@@ -147,7 +149,7 @@ Java_net_quasardb_qdb_jni_qdb_get_1expiry_1time(JNIEnv * jniEnv, jclass /*thisCl
   qdb::jni::env env(jniEnv);
 
   qdb_entry_metadata_t metadata;
-  qdb_error_t err = qdb_get_metadata((qdb_handle_t)handle, StringUTFChars(env, alias), &metadata);
+  qdb_error_t err = qdb_get_metadata((qdb_handle_t)handle, qdb::jni::string::get_chars(env, alias), &metadata);
   setLong(env, expiry, static_cast<qdb_time_t>(metadata.expiry_time.tv_sec) * 1000 +
     static_cast<qdb_time_t>(metadata.expiry_time.tv_nsec / 1000000ull));
   return err;
