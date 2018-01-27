@@ -562,9 +562,6 @@ tableRowSetBlobColumnValue(qdb::jni::env & env, qdb_local_table_t localTable, si
   void * blob_addr = env.instance().GetDirectBufferAddress(blobValue);
   qdb_size_t blob_size = (qdb_size_t)(env.instance().GetDirectBufferCapacity(blobValue));
 
-  qdb::jni::debug::println(env, "* NATIVE * bulk writer setting blob value: ");
-  qdb::jni::debug::hexdump(env, blob_addr, blob_size);
-
   qdb_error_t err =  qdb_ts_row_set_blob(localTable,
                                          columnIndex,
                                          blob_addr,
@@ -717,9 +714,6 @@ tableGetRowBlobValue(qdb::jni::env & env, qdb_local_table_t localTable, qdb_size
 
   if (QDB_SUCCESS(err)) {
     assert(value != NULL);
-
-    qdb::jni::debug::println(env, "* NATIVE * bulk reader retrieving blob value: ");
-    qdb::jni::debug::hexdump(env, value, length);
 
     jobject byteBuffer = nativeToByteBuffer(env, value, length);
     assert(byteBuffer != NULL);

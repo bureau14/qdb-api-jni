@@ -82,9 +82,6 @@ qdb::value::_from_native_blob(qdb::jni::env & env, qdb_point_result_t const & in
                                                                      "createSafeBlob",
                                                                      "(Ljava/nio/ByteBuffer;)Lnet/quasardb/qdb/ts/Value;");
 
-  jni::debug::println(env, "* NATIVE * query getting blob value:");
-  jni::debug::hexdump(env, input.payload.blob.content, input.payload.blob.content_length);
-
   jobject byteBuffer = nativeToByteBuffer(env,
                                           input.payload.blob.content,
                                           input.payload.blob.content_length);
