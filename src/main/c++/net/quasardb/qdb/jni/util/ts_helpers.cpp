@@ -142,17 +142,14 @@ nativeToRange(qdb::jni::env & env, qdb_ts_range_t native) {
                           nativeToTimespec(env, native.end).release()));
 }
 
-void
-nativeToFilteredRange(qdb::jni::env & env, qdb_ts_filtered_range_t native, jobject * output) {
-  jclass filtered_range_class = env.instance().FindClass("net/quasardb/qdb/ts/FilteredRange");
-  assert(filtered_range_class != NULL);
-  jmethodID constructor = env.instance().GetMethodID(filtered_range_class, "<init>", "(Lnet/quasardb/qdb/ts/TimeRange;Lnet/quasardb/qdb/jni/qdb_ts_filter;)V");
-  assert(constructor != NULL);
-
-  *output = env.instance().NewObject(filtered_range_class,
-                                     constructor,
-                                     nativeToRange(env, native.range).release(),
-                                     nativeToFilter(env, native.filter).release());
+jni::guard::local_ref<jobject>
+nativeToFilteredRange(qdb::jni::env & env, qdb_ts_filtered_range_t native) {
+  return std::move(
+      jni::object::create(env,
+                          "net/quasardb/qdb/ts/FilteredRange",
+                          "(Lnet/quasardb/qdb/ts/TimeRange;Lnet/quasardb/qdb/jni/qdb_ts_filter;)V",
+                          nativeToRange(env, native.range).release(),
+                          nativeToFilter(env, native.filter).release()));
 }
 
 void
@@ -365,17 +362,15 @@ nativeToDoubleAggregate(qdb::jni::env & env, qdb_ts_double_aggregation_t native,
   jmethodID constructor = env.instance().GetMethodID(point_class, "<init>", "(Lnet/quasardb/qdb/ts/FilteredRange;JJLnet/quasardb/qdb/jni/qdb_ts_double_point;)V");
   assert(constructor != NULL);
 
-  jobject filteredRange, result;
-
-  nativeToFilteredRange(env, native.filtered_range, &filteredRange);
+  jobject result;
   nativeToDoublePoint(env, native.result, &result);
 
   jobject aggregate = env.instance().NewObject(point_class,
-                                     constructor,
-                                     filteredRange,
-                                     (jlong)native.type,
-                                     (jlong)native.count,
-                                     result);
+                                               constructor,
+                                               nativeToFilteredRange(env, native.filtered_range).release(),
+                                               (jlong)native.type,
+                                               (jlong)native.count,
+                                               result);
 
   *output = aggregate;
 }
@@ -436,17 +431,15 @@ nativeToBlobAggregate(qdb::jni::env & env, qdb_ts_blob_aggregation_t native, job
   jmethodID constructor = env.instance().GetMethodID(point_class, "<init>", "(Lnet/quasardb/qdb/ts/FilteredRange;JJLnet/quasardb/qdb/jni/qdb_ts_blob_point;)V");
   assert(constructor != NULL);
 
-  jobject filteredRange, result;
-
-  nativeToFilteredRange(env, native.filtered_range, &filteredRange);
+  jobject result;
   nativeToBlobPoint(env, native.result, &result);
 
   jobject aggregate = env.instance().NewObject(point_class,
-                                     constructor,
-                                     filteredRange,
-                                     (jlong)native.type,
-                                     (jlong)native.count,
-                                     result);
+                                               constructor,
+                                               nativeToFilteredRange(env, native.filtered_range).release(),
+                                               (jlong)native.type,
+                                               (jlong)native.count,
+                                               result);
 
   *output = aggregate;
 }
