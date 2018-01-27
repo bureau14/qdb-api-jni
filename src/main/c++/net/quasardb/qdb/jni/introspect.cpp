@@ -1,3 +1,4 @@
+#include "env.h"
 #include "introspect.h"
 
 /* static */ jclass

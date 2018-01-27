@@ -2,8 +2,6 @@
 
 #include <jni.h>
 
-#include "guard/local.h"
-
 namespace qdb {
   namespace jni {
 

@@ -1,7 +1,6 @@
 #pragma once
 
 #include <string>
-#include <jni.h>
 
 namespace qdb {
   namespace jni {

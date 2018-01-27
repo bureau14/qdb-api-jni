@@ -72,4 +72,5 @@ StringUTFChars::~StringUTFChars() {
   if (_ptr) {
     _env.instance().ReleaseStringUTFChars(_str, _ptr);
   }
+
 }

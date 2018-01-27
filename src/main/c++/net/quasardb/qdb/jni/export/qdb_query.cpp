@@ -5,6 +5,7 @@
 #include "net_quasardb_qdb_jni_qdb.h"
 
 #include "../guard/local.h"
+#include "../string.h"
 #include "../env.h"
 #include "../debug.h"
 #include "../introspect.h"
@@ -129,9 +130,14 @@ Java_net_quasardb_qdb_jni_qdb_query_1execute(JNIEnv * jniEnv, jclass /*thisClass
   // :TODO: cache!
   jobject output = NULL;
   qdb_query_result_t * result;
-  qdb_error_t err = qdb_exp_query((qdb_handle_t)(handle),
-                                  StringUTFChars(env, query),
-                                  &result);
+  qdb_error_t err;
+
+  {
+      qdb::jni::guard::string && query_chars = qdb::jni::string::get_chars(env, query);
+      err = qdb_exp_query((qdb_handle_t)(handle),
+                          query_chars,
+                          &result);
+  }
 
   if (QDB_SUCCESS(err)) {
     assert(result != NULL);
