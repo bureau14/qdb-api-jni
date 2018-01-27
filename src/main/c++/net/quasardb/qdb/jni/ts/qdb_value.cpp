@@ -4,7 +4,7 @@
 #include "../debug.h"
 #include "../introspect.h"
 #include "../util/ts_helpers.h"
-#include "../guard/local.h"
+#include "../guard/local_ref.h"
 #include "qdb_value.h"
 
 /* static */ jobject

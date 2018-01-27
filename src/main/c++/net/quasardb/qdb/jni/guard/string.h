@@ -32,12 +32,6 @@ namespace qdb {
                     _ptr (ptr) {
                 }
 
-                ~string() {
-                    if (_ptr != NULL) {
-                        _env.instance().ReleaseStringUTFChars(_str, _ptr);
-                    }
-                }
-
                 string(string && o) noexcept
                     : _env(o._env),
                       _str(o._str),
@@ -45,6 +39,12 @@ namespace qdb {
                     // By setting the other ptr to NULL, we're now effectively
                     // claiming ownership of the char *.
                     o._ptr = NULL;
+                }
+
+                ~string() {
+                    if (_ptr != NULL) {
+                        _env.instance().ReleaseStringUTFChars(_str, _ptr);
+                    }
                 }
 
                 string(string const &) = delete;

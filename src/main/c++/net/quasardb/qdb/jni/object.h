@@ -11,8 +11,6 @@ namespace qdb {
     class object {
     public:
 
-
-
     };
   };
 };

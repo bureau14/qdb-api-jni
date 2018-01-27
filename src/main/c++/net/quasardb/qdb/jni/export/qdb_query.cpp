@@ -4,7 +4,7 @@
 
 #include "net_quasardb_qdb_jni_qdb.h"
 
-#include "../guard/local.h"
+#include "../guard/local_ref.h"
 #include "../string.h"
 #include "../env.h"
 #include "../debug.h"
