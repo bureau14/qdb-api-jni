@@ -96,17 +96,14 @@ filterToNative(qdb::jni::env & /*env*/, jobject /*input*/, qdb_ts_filter_t * nat
   native->type = qdb_ts_filter_none;
 }
 
-void
-nativeToFilter(qdb::jni::env & env, qdb_ts_filter_t input, jobject * output) {
+jni::guard::local_ref<jobject>
+nativeToFilter(qdb::jni::env & env, qdb_ts_filter_t input) {
   assert(input.type == qdb_ts_filter_none);
 
-  jclass no_filter_class = env.instance().FindClass("net/quasardb/qdb/jni/qdb_ts_no_filter");
-  assert(no_filter_class != NULL);
-  jmethodID constructor = env.instance().GetMethodID(no_filter_class, "<init>", "()V");
-  assert(constructor != NULL);
-
-  *output = env.instance().NewObject(no_filter_class,
-                           constructor);
+  return std::move(
+      jni::object::create(env,
+                          "net/quasardb/qdb/jni/qdb_ts_no_filter",
+                          "()V"));
 }
 
 void
@@ -135,17 +132,14 @@ filteredRangesToNative(qdb::jni::env & env, jobjectArray input, size_t count, qd
   }
 }
 
-void
-nativeToRange(qdb::jni::env & env, qdb_ts_range_t native, jobject * output) {
-  jclass point_class = env.instance().FindClass("net/quasardb/qdb/ts/TimeRange");
-  assert(point_class != NULL);
-  jmethodID constructor = env.instance().GetMethodID(point_class, "<init>", "(Lnet/quasardb/qdb/ts/Timespec;Lnet/quasardb/qdb/ts/Timespec;)V");
-  assert(constructor != NULL);
-
-  *output = env.instance().NewObject(point_class,
-                                     constructor,
-                                     nativeToTimespec(env, native.begin).release(),
-                                     nativeToTimespec(env, native.end).release());
+jni::guard::local_ref<jobject>
+nativeToRange(qdb::jni::env & env, qdb_ts_range_t native) {
+  return std::move(
+      jni::object::create(env,
+                          "net/quasardb/qdb/ts/TimeRange",
+                          "(Lnet/quasardb/qdb/ts/Timespec;Lnet/quasardb/qdb/ts/Timespec;)V",
+                          nativeToTimespec(env, native.begin).release(),
+                          nativeToTimespec(env, native.end).release()));
 }
 
 void
@@ -155,15 +149,10 @@ nativeToFilteredRange(qdb::jni::env & env, qdb_ts_filtered_range_t native, jobje
   jmethodID constructor = env.instance().GetMethodID(filtered_range_class, "<init>", "(Lnet/quasardb/qdb/ts/TimeRange;Lnet/quasardb/qdb/jni/qdb_ts_filter;)V");
   assert(constructor != NULL);
 
-  jobject range, filter;
-
-  nativeToRange(env, native.range, &range);
-  nativeToFilter(env, native.filter, &filter);
-
   *output = env.instance().NewObject(filtered_range_class,
-                           constructor,
-                           range,
-                           filter);
+                                     constructor,
+                                     nativeToRange(env, native.range).release(),
+                                     nativeToFilter(env, native.filter).release());
 }
 
 void
@@ -780,16 +769,12 @@ tableGetRow(qdb::jni::env & env, qdb_local_table_t localTable, qdb_ts_column_inf
     err = tableGetRowValues(env, localTable, columns, columnCount, values);
 
     if (QDB_SUCCESS(err)) {
-      jclass row_class = env.instance().FindClass("net/quasardb/qdb/ts/Row");
-      assert(row_class != NULL);
-
-      jmethodID constructor = env.instance().GetMethodID(row_class, "<init>", "(Lnet/quasardb/qdb/ts/Timespec;[Lnet/quasardb/qdb/ts/Value;)V");
-      assert(constructor != NULL);
-
-      *output = env.instance().NewObject(row_class,
-                                         constructor,
-                                         nativeToTimespec(env, timestamp).release(),
-                                         values);
+        *output =
+            jni::object::create(env,
+                                "net/quasardb/qdb/ts/Row",
+                                "(Lnet/quasardb/qdb/ts/Timespec;[Lnet/quasardb/qdb/ts/Value;)V",
+                                nativeToTimespec(env, timestamp).release(),
+                                values).release();
     }
   }
 

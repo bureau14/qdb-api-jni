@@ -20,7 +20,10 @@ nativeToTimespec(qdb::jni::env &, qdb_timespec_t);
 jobject nativeToByteBuffer(qdb::jni::env & env, void const * content, qdb_size_t content_length);
 void rangeToNative(qdb::jni::env &env, jobject input, qdb_ts_range_t * native);
 void rangesToNative(qdb::jni::env & env, jobjectArray input, size_t count, qdb_ts_range_t * native);
-void nativeToRange(qdb::jni::env & env, qdb_ts_range_t native, jobject * output);
+
+qdb::jni::guard::local_ref<jobject>
+nativeToRange(qdb::jni::env & env, qdb_ts_range_t native);
+
 void filteredRangesToNative(qdb::jni::env & env, jobjectArray input, size_t count, qdb_ts_filtered_range_t * native);
 
 void columnsToNative(qdb::jni::env & env, jobjectArray columns, qdb_ts_column_info_t * native_columns, size_t column_count);
