@@ -12,7 +12,7 @@ Java_net_quasardb_qdb_jni_qdb_stream_1open(JNIEnv * jniEnv, jclass /*thisClass*/
   qdb::jni::env env(jniEnv);
 
   qdb_stream_t nativeStream;
-  qdb_error_t err = qdb_stream_open((qdb_handle_t)handle, qdb::jni::string::get_chars(env, alias),
+  qdb_error_t err = qdb_stream_open((qdb_handle_t)handle, qdb::jni::string::get_chars_utf8(env, alias),
                                     (qdb_stream_mode_t)mode, &nativeStream);
   setLong(env, stream, (jlong)nativeStream);
   return err;

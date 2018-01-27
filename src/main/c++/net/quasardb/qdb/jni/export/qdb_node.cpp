@@ -18,7 +18,7 @@ Java_net_quasardb_qdb_jni_qdb_node_1status(JNIEnv * jniEnv, jclass /*thisClass*/
 
   const char *nativeContent = NULL;
   qdb_size_t contentLength = 0;
-  qdb_error_t err = qdb_node_status((qdb_handle_t)handle, qdb::jni::string::get_chars(env, uri), &nativeContent,
+  qdb_error_t err = qdb_node_status((qdb_handle_t)handle, qdb::jni::string::get_chars_utf8(env, uri), &nativeContent,
                                     &contentLength);
   setString(env, content, nativeContent);
   return err;
@@ -36,7 +36,7 @@ Java_net_quasardb_qdb_jni_qdb_node_1config(JNIEnv * jniEnv, jclass /*thisClass*/
 
   const char *nativeContent = NULL;
   qdb_size_t contentLength = 0;
-  qdb_error_t err = qdb_node_config((qdb_handle_t)handle, qdb::jni::string::get_chars(env, uri), &nativeContent,
+  qdb_error_t err = qdb_node_config((qdb_handle_t)handle, qdb::jni::string::get_chars_utf8(env, uri), &nativeContent,
                                     &contentLength);
   setString(env, content, nativeContent);
   return err;
@@ -54,7 +54,7 @@ Java_net_quasardb_qdb_jni_qdb_node_1topology(JNIEnv * jniEnv, jclass /*thisClass
 
   const char *nativeContent = NULL;
   qdb_size_t contentLength = 0;
-  qdb_error_t err = qdb_node_topology((qdb_handle_t)handle, qdb::jni::string::get_chars(env, uri),
+  qdb_error_t err = qdb_node_topology((qdb_handle_t)handle, qdb::jni::string::get_chars_utf8(env, uri),
                                       &nativeContent, &contentLength);
   setString(env, content, nativeContent);
   return err;
@@ -69,7 +69,7 @@ JNIEXPORT jint JNICALL
 Java_net_quasardb_qdb_jni_qdb_node_1stop(JNIEnv * jniEnv, jclass /*thisClass*/, jlong handle, jstring uri,
                                          jstring reason) {
   qdb::jni::env env(jniEnv);
-  return qdb_node_stop((qdb_handle_t)handle, qdb::jni::string::get_chars(env, uri), qdb::jni::string::get_chars(env, reason));
+  return qdb_node_stop((qdb_handle_t)handle, qdb::jni::string::get_chars_utf8(env, uri), qdb::jni::string::get_chars_utf8(env, reason));
 }
 
 /*
@@ -84,7 +84,7 @@ Java_net_quasardb_qdb_jni_qdb_get_1location(JNIEnv * jniEnv, jclass /*thisClass*
   qdb::jni::env env(jniEnv);
 
   qdb_remote_node_t node;
-  qdb_error_t err = qdb_get_location((qdb_handle_t)handle, qdb::jni::string::get_chars(env, alias), &node);
+  qdb_error_t err = qdb_get_location((qdb_handle_t)handle, qdb::jni::string::get_chars_utf8(env, alias), &node);
   setString(env, address, node.address);
   setInteger(env, port, node.port);
   return err;

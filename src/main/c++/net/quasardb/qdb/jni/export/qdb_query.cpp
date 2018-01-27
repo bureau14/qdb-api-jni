@@ -42,7 +42,7 @@ nativeToColumns(qdb::jni::env & env, qdb_string_t const columns[], qdb_size_t co
 
     for (qdb_size_t i = 0; i < count; ++i) {
         env.instance().SetObjectArrayElement(outputColumns, i,
-                                             jni::string::create(env, columns[i].data));
+                                             jni::string::create_utf8(env, columns[i].data));
     }
 
     return outputColumns;
@@ -59,7 +59,7 @@ nativeToTable(qdb::jni::env & env, qdb_table_result_t const & input, jclass tabl
 
   env.instance().SetObjectField(table,
                                 qdb::jni::string::lookup_field(env, tableClass, "name"),
-                                qdb::jni::string::create(env, input.table_name.data));
+                                qdb::jni::string::create_utf8(env, input.table_name.data));
 
 
   jobjectArray output_columns = nativeToColumns(env, input.columns_names, input.columns_count);
@@ -124,7 +124,7 @@ Java_net_quasardb_qdb_jni_qdb_query_1execute(JNIEnv * jniEnv, jclass /*thisClass
   qdb_query_result_t * result;
 
   qdb_error_t err = qdb_exp_query((qdb_handle_t)(handle),
-                                  qdb::jni::string::get_chars(env, query),
+                                  qdb::jni::string::get_chars_utf8(env, query),
                                   &result);
 
   if (QDB_SUCCESS(err)) {

@@ -21,7 +21,7 @@ Java_net_quasardb_qdb_jni_qdb_blob_1compare_1and_1swap(JNIEnv * jniEnv, jclass /
   const void *originalContentPtr = NULL;
   qdb_size_t originalContentSize = 0;
   qdb_error_t err = qdb_blob_compare_and_swap(
-      (qdb_handle_t)handle, qdb::jni::string::get_chars(env, alias), newContentPtr, newContentSize, comparandPtr,
+      (qdb_handle_t)handle, qdb::jni::string::get_chars_utf8(env, alias), newContentPtr, newContentSize, comparandPtr,
       comparandSize, expiry, &originalContentPtr, &originalContentSize);
   setByteBuffer(env, originalContent, originalContentPtr, originalContentSize);
   return err;
@@ -35,7 +35,7 @@ Java_net_quasardb_qdb_jni_qdb_blob_1get(JNIEnv *jniEnv, jclass /*thisClass*/, jl
   const void *contentPtr = NULL;
   qdb_size_t contentSize = 0;
   qdb_error_t err =
-      qdb_blob_get((qdb_handle_t)handle, qdb::jni::string::get_chars(env, alias), &contentPtr, &contentSize);
+      qdb_blob_get((qdb_handle_t)handle, qdb::jni::string::get_chars_utf8(env, alias), &contentPtr, &contentSize);
   setByteBuffer(env, content, contentPtr, contentSize);
   return err;
 }
@@ -47,7 +47,7 @@ Java_net_quasardb_qdb_jni_qdb_blob_1get_1and_1remove(JNIEnv * jniEnv, jclass /*t
 
   const void *contentPtr = NULL;
   qdb_size_t contentSize = 0;
-  qdb_error_t err = qdb_blob_get_and_remove((qdb_handle_t)handle, qdb::jni::string::get_chars(env, alias),
+  qdb_error_t err = qdb_blob_get_and_remove((qdb_handle_t)handle, qdb::jni::string::get_chars_utf8(env, alias),
                                             &contentPtr, &contentSize);
   setByteBuffer(env, content, contentPtr, contentSize);
   return err;
@@ -64,7 +64,7 @@ Java_net_quasardb_qdb_jni_qdb_blob_1get_1and_1update(JNIEnv * jniEnv, jclass /*t
   const void *originalContentPtr = NULL;
   qdb_size_t originalContentSize = 0;
   qdb_error_t err =
-      qdb_blob_get_and_update((qdb_handle_t)handle, qdb::jni::string::get_chars(env, alias), newContentPtr,
+      qdb_blob_get_and_update((qdb_handle_t)handle, qdb::jni::string::get_chars_utf8(env, alias), newContentPtr,
                               newContentSize, expiry, &originalContentPtr, &originalContentSize);
   setByteBuffer(env, originalContent, originalContentPtr, originalContentSize);
   return err;
@@ -77,7 +77,7 @@ Java_net_quasardb_qdb_jni_qdb_blob_1put(JNIEnv * jniEnv, jclass /*thisClass*/, j
 
   const void *contentPtr = env.instance().GetDirectBufferAddress(content);
   qdb_size_t contentSize = (qdb_size_t)env.instance().GetDirectBufferCapacity(content);
-  return qdb_blob_put((qdb_handle_t)handle, qdb::jni::string::get_chars(env, alias), contentPtr, contentSize,
+  return qdb_blob_put((qdb_handle_t)handle, qdb::jni::string::get_chars_utf8(env, alias), contentPtr, contentSize,
                       expiry);
 }
 
@@ -88,7 +88,7 @@ Java_net_quasardb_qdb_jni_qdb_blob_1remove_1if(JNIEnv * jniEnv, jclass /*thisCla
 
   const void *comparandPtr = env.instance().GetDirectBufferAddress(comparand);
   qdb_size_t comparandSize = (qdb_size_t)env.instance().GetDirectBufferCapacity(comparand);
-  return qdb_blob_remove_if((qdb_handle_t)handle, qdb::jni::string::get_chars(env, alias), comparandPtr,
+  return qdb_blob_remove_if((qdb_handle_t)handle, qdb::jni::string::get_chars_utf8(env, alias), comparandPtr,
                             comparandSize);
 }
 
@@ -99,6 +99,6 @@ Java_net_quasardb_qdb_jni_qdb_blob_1update(JNIEnv * jniEnv, jclass /*thisClass*/
 
   const void *contentPtr = env.instance().GetDirectBufferAddress(content);
   qdb_size_t contentSize = (qdb_size_t)env.instance().GetDirectBufferCapacity(content);
-  return qdb_blob_update((qdb_handle_t)handle, qdb::jni::string::get_chars(env, alias), contentPtr, contentSize,
+  return qdb_blob_update((qdb_handle_t)handle, qdb::jni::string::get_chars_utf8(env, alias), contentPtr, contentSize,
                          expiry);
 }

@@ -3,7 +3,8 @@
 #include <jni.h>
 
 #include "guard/local_ref.h"
-#include "guard/string.h"
+#include "guard/string_utf8.h"
+#include "guard/string_critical.h"
 #include "introspect.h"
 
 namespace qdb {
@@ -12,17 +13,32 @@ namespace qdb {
         class env;
 
         /**
-         * Wraps around all JNI operations that relate to string management. We
-         * use the UTF-8 encoding for all string operations.
+         * Wraps around all JNI operations that relate to string management.
          */
         class string {
         public:
 
-            static jni::guard::string
-            get_chars(qdb::jni::env & env, jstring str);
+            /**
+             * Returns characters in modified UTF-8 encoding. This might create
+             * a copy of the underlying string.
+             */
+            static jni::guard::string_utf8
+            get_chars_utf8(qdb::jni::env & env, jstring str);
+
+            /**
+             * Returns a 'critical' reference to the jstring's characters. If
+             * possible, returns a copy-less raw pointer to the internal representation,
+             * but this comes with severe restrictions (i.e. GC is completely halted,
+             * and you cannot call JVM operations until the critical ref is released).
+             *
+             * However, whenever possible, try to see whether it's possible to
+             * use this function instead of the others.
+             */
+            static jni::guard::string_critical
+            get_chars_critical(qdb::jni::env & env, jstring str);
 
             static jni::guard::local_ref<jstring>
-            create(jni::env & env, char const * str);
+            create_utf8(jni::env & env, char const * str);
 
             /**
              * Wraps around introspect functions to look up the string class. Avoids

@@ -14,7 +14,7 @@ namespace qdb {
              * Helper class that wraps around a jstring's char *, so that they
              * can be released back to the JVM as soon as possible.
              */
-            class string {
+            class string_utf8 {
             private:
                 qdb::jni::env & _env;
                 jstring & _str;
@@ -26,13 +26,13 @@ namespace qdb {
                  * env->GetStringUTFChars, and will ensure the reference
                  * is released when necessary.
                  */
-                string(qdb::jni::env & env, jstring & str, char const * ptr) :
+                string_utf8(qdb::jni::env & env, jstring & str, char const * ptr) :
                     _env (env),
                     _str (str),
                     _ptr (ptr) {
                 }
 
-                string(string && o) noexcept
+                string_utf8(string_utf8 && o) noexcept
                     : _env(o._env),
                       _str(o._str),
                       _ptr(o._ptr) {
@@ -41,14 +41,14 @@ namespace qdb {
                     o._ptr = NULL;
                 }
 
-                ~string() {
+                ~string_utf8() {
                     if (_ptr != NULL) {
                         _env.instance().ReleaseStringUTFChars(_str, _ptr);
                     }
                 }
 
-                string(string const &) = delete;
-                string & operator=(string const &) = delete;
+                string_utf8(string_utf8 const &) = delete;
+                string_utf8 & operator=(string_utf8 const &) = delete;
 
                 /**
                  * Provide automatic casting to char const *, so that it can be

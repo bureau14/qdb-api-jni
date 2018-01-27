@@ -196,7 +196,7 @@ columnsToNative(qdb::jni::env & env, jobjectArray columns, qdb_ts_column_info_t 
 #endif
       // Is there a better way to do this? Because we're using strdup here, we
       // need a separate release function which is fragile.
-      native_columns[i].name = strdup(qdb::jni::string::get_chars(env, name));
+      native_columns[i].name = strdup(qdb::jni::string::get_chars_utf8(env, name));
 #ifdef _MSC_VER
 #pragma warning(pop)
 #endif
