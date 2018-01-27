@@ -54,12 +54,6 @@ nativeToTable(qdb::jni::env & env, qdb_table_result_t const & input, jclass tabl
   jclass valuesClass = qdb::jni::introspect::lookup_class(env, "[Lnet/quasardb/qdb/ts/Value;");
   jmethodID valueConstructor = qdb::jni::introspect::lookup_method(env, valueClass, "<init>", "()V");
 
-  printf("* NATIVE * converting result to table: %p\n", table);
-  printf("* NATIVE * converting result to table, table_name = %s\n", input.table_name);
-  printf("* NATIVE * converting result to table, columns_count = %d\n", input.columns_count);
-  printf("* NATIVE * converting result to table, rows_count = %d\n", input.rows_count);
-  fflush(stdout);
-
   jfieldID nameFieldId = qdb::jni::introspect::lookup_field(env, tableClass,
                                                             "name", "Ljava/lang/String;");
   jfieldID columnsFieldId = qdb::jni::introspect::lookup_field(env, tableClass,
