@@ -37,7 +37,10 @@ void nativeToDoublePoints(qdb::jni::env & env, qdb_ts_double_point * native, siz
 
 void blobPointToNative(qdb::jni::env & env, jobject input, qdb_ts_blob_point * native);
 void blobPointsToNative(qdb::jni::env & env, jobjectArray input, size_t count, qdb_ts_blob_point * native);
-void nativeToBlobPoint(qdb::jni::env & env, qdb_ts_blob_point native, jobject * output);
+
+qdb::jni::guard::local_ref<jobject>
+nativeToBlobPoint(qdb::jni::env & env, qdb_ts_blob_point native);
+
 void nativeToBlobPoints(qdb::jni::env & env, qdb_ts_blob_point * native, size_t count, jobjectArray * output);
 
 void doubleAggregateToNative(qdb::jni::env &env, jobject input, qdb_ts_double_aggregation_t * native);
@@ -47,7 +50,10 @@ void nativeToDoubleAggregates(qdb::jni::env & env, qdb_ts_double_aggregation_t *
 
 void blobAggregateToNative(qdb::jni::env &env, jobject input, qdb_ts_blob_aggregation_t * native);
 void blobAggregatesToNative(qdb::jni::env & env, jobjectArray input, size_t count, qdb_ts_blob_aggregation_t * native);
-void nativeToBlobAggregate(qdb::jni::env & env, qdb_ts_blob_aggregation_t native, jobject * output);
+
+qdb::jni::guard::local_ref<jobject>
+nativeToBlobAggregate(qdb::jni::env & env, qdb_ts_blob_aggregation_t native);
+
 void nativeToBlobAggregates(qdb::jni::env & env, qdb_ts_blob_aggregation_t * native, size_t count, jobjectArray * output);
 
 qdb_error_t
