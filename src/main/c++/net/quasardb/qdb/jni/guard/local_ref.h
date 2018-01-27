@@ -27,6 +27,7 @@ namespace qdb {
                 JNIType _ref;
 
             public:
+                explicit local_ref(jni::env & env) : _env(env), _ref(NULL) {}
                 explicit local_ref(jni::env & env, JNIType ref) : _env(env), _ref(ref) {}
 
                 local_ref(local_ref && o) noexcept
@@ -35,6 +36,16 @@ namespace qdb {
                     // By setting the other _ref to NULL, we're now effectively
                     // claiming ownership of the resource.
                     o._ref = NULL;
+                }
+
+                local_ref & operator=(local_ref && o) {
+                    _ref = o._ref;
+
+                    // By setting the other _ref to NULL, we're now effectively
+                    // claiming ownership of the resource.
+                    o._ref = NULL;
+
+                    return *this;
                 }
 
                 ~local_ref() {
@@ -46,13 +57,17 @@ namespace qdb {
                 local_ref(local_ref const &) = delete;
                 local_ref & operator=(local_ref const &) = delete;
 
+
+
                 operator JNIType() const & {
                     return _ref;
                 }
 
-                operator JNIType() const && = delete;
+                operator JNIType() const && {
+                    return _ref;
+                }
 
-                JNIType const & get() {
+                JNIType & get() {
                     return _ref;
                 }
             };
