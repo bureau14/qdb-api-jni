@@ -21,10 +21,27 @@ namespace qdb {
                 char const * _ptr;
 
             public:
+                /**
+                 * Constructor. Assumes `ptr` is acquired through
+                 * env->GetStringUTFChars, and will ensure the reference
+                 * is released when necessary.
+                 */
                 string(qdb::jni::env & env, jstring & str, char const * ptr) :
                     _env (env),
                     _str (str),
                     _ptr (ptr) {
+                }
+
+                /**
+                 * Empty string constructor. This does not actually release the
+                 * UTF chars, and can be used as a convenient replacement in case
+                 * we're dealing with NULL jstrings.
+                 */
+                string(qdb::jni::env & env, jstring & str) :
+                    _env (env),
+                    _str (str),
+                    _ptr (NULL) {
+                    assert(_str == NULL);
                 }
 
                 ~string() {

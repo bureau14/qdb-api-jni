@@ -116,7 +116,6 @@ JNIEXPORT jint JNICALL
 Java_net_quasardb_qdb_jni_qdb_get_1type(JNIEnv * jniEnv, jclass /*thisClass*/, jlong handle, jstring alias,
                                         jobject type) {
   qdb::jni::env env(jniEnv);
-
   qdb_entry_metadata_t metadata;
   qdb_error_t err = qdb_get_metadata((qdb_handle_t)handle, qdb::jni::string::get_chars(env, alias), &metadata);
   setInteger(env, type, metadata.type);

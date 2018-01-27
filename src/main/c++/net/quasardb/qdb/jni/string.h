@@ -5,20 +5,21 @@
 #include "guard/string.h"
 
 namespace qdb {
-  namespace jni {
+    namespace jni {
 
-    class env;
+        class env;
 
-    /**
-     * Wraps around all JNI operations that relate to string management. We
-     * use the UTF-8 encoding for all string operations.
-     */
-    class string {
-    public:
+        /**
+         * Wraps around all JNI operations that relate to string management. We
+         * use the UTF-8 encoding for all string operations.
+         */
+        class string {
+        public:
 
-      static jni::guard::string
-      get_chars(qdb::jni::env & env, jstring str);
+            static jni::guard::string
+            get_chars(qdb::jni::env & env, jstring str);
 
+
+        };
     };
-  };
 };
