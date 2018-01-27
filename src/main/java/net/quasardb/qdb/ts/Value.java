@@ -157,12 +157,6 @@ public class Value implements Serializable {
      * Updates value to take a certain blob value;
      */
     public void setBlob(ByteBuffer value) {
-        System.out.println("setBlob, value.hashCode() = " + value.hashCode());
-        byte[] buf = new byte[value.capacity()];
-        value.get(buf);
-        value.rewind();
-        System.out.println("setBlob, value hex = " + bytesToHex(buf));
-
         this.type = Type.BLOB;
         this.blobValue = value.duplicate();
     }
@@ -182,12 +176,6 @@ public class Value implements Serializable {
     }
 
     public static Value createSafeBlob(ByteBuffer value) {
-        System.out.println("createSafeBlob from ByteBuffer, value.hashCode() = " + value.hashCode());
-        byte[] buf = new byte[value.capacity()];
-        value.get(buf);
-        value.rewind();
-        System.out.println("createSafeBlob from ByteBuffer, value hex = " + bytesToHex(buf));
-
         Value val = new Value(Type.BLOB);
 
         int size = value.capacity();
@@ -348,13 +336,6 @@ public class Value implements Serializable {
         if (this.type != Type.BLOB) {
             throw new QdbIncompatibleTypeException();
         }
-
-        System.out.println("getBlob, value.hashCode() = " + this.blobValue.hashCode());
-        byte[] buf = new byte[this.blobValue.capacity()];
-        this.blobValue.get(buf);
-        this.blobValue.rewind();
-        System.out.println("getBlob, value hex = " + bytesToHex(buf));
-
 
         return this.blobValue.asReadOnlyBuffer();
     }

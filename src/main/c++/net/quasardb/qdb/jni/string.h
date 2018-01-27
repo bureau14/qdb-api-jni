@@ -19,7 +19,6 @@ namespace qdb {
             static jni::guard::string
             get_chars(qdb::jni::env & env, jstring str);
 
-
         };
     };
 };

@@ -32,18 +32,6 @@ namespace qdb {
                     _ptr (ptr) {
                 }
 
-                /**
-                 * Empty string constructor. This does not actually release the
-                 * UTF chars, and can be used as a convenient replacement in case
-                 * we're dealing with NULL jstrings.
-                 */
-                string(qdb::jni::env & env, jstring & str) :
-                    _env (env),
-                    _str (str),
-                    _ptr (NULL) {
-                    assert(_str == NULL);
-                }
-
                 ~string() {
                     if (_ptr != NULL) {
                         _env.instance().ReleaseStringUTFChars(_str, _ptr);
