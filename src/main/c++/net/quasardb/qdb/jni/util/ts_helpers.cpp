@@ -1,6 +1,7 @@
 #include "ts_helpers.h"
 
 #include "../debug.h"
+#include "../object.h"
 #include "../string.h"
 #include "../introspect.h"
 #include "../env.h"
@@ -9,6 +10,7 @@
 #include <cstring>
 #include <cstdlib>
 
+namespace jni = qdb::jni;
 
 qdb_ts_column_type_t
 columnTypeFromTypeEnum(qdb::jni::env & env, jobject typeObject) {
@@ -54,17 +56,14 @@ timespecToNative(qdb::jni::env & env, jobject input, qdb_timespec_t * output) {
   output->tv_nsec = env.instance().GetLongField(input, nsec_field);
 }
 
-void
-nativeToTimespec(qdb::jni::env & env, qdb_timespec_t input, jobject * output) {
-  jclass timespec_class = env.instance().FindClass("net/quasardb/qdb/ts/Timespec");
-  assert(timespec_class != NULL);
-  jmethodID constructor = env.instance().GetMethodID(timespec_class, "<init>", "(JJ)V");
-  assert(constructor != NULL);
-
-  *output = env.instance().NewObject(timespec_class,
-                           constructor,
-                           input.tv_sec,
-                           input.tv_nsec);
+jni::guard::local_ref<jobject>
+nativeToTimespec(qdb::jni::env & env, qdb_timespec_t input) {
+    return std::move(
+        jni::object::create(env,
+                            "net/quasardb/qdb/ts/Timespec",
+                            "(JJ)V",
+                            input.tv_sec,
+                            input.tv_nsec));
 }
 
 void
@@ -143,16 +142,10 @@ nativeToRange(qdb::jni::env & env, qdb_ts_range_t native, jobject * output) {
   jmethodID constructor = env.instance().GetMethodID(point_class, "<init>", "(Lnet/quasardb/qdb/ts/Timespec;Lnet/quasardb/qdb/ts/Timespec;)V");
   assert(constructor != NULL);
 
-  jobject begin;
-  jobject end;
-
-  nativeToTimespec(env, native.begin, &begin);
-  nativeToTimespec(env, native.end, &end);
-
   *output = env.instance().NewObject(point_class,
-                           constructor,
-                           begin,
-                           end);
+                                     constructor,
+                                     nativeToTimespec(env, native.begin).release(),
+                                     nativeToTimespec(env, native.end).release());
 }
 
 void
@@ -222,9 +215,9 @@ nativeToColumns(qdb::jni::env & env, qdb_ts_column_info_t * nativeColumns, size_
 
   for (size_t i = 0; i < column_count; i++) {
     env.instance().SetObjectArrayElement(*columns, (jsize)i, env.instance().NewObject(column_class,
-                                                                  constructor,
-                                                                  env.instance().NewStringUTF(nativeColumns[i].name),
-                                                                  nativeColumns[i].type));
+                                                                                      constructor,
+                                                                                      env.instance().NewStringUTF(nativeColumns[i].name),
+                                                                                      nativeColumns[i].type));
   }
 }
 
@@ -260,13 +253,10 @@ nativeToDoublePoint(qdb::jni::env & env, qdb_ts_double_point native, jobject * o
   jmethodID constructor = env.instance().GetMethodID(pointClass, "<init>", "(Lnet/quasardb/qdb/ts/Timespec;D)V");
   assert(constructor != NULL);
 
-  jobject timespec;
-  nativeToTimespec(env, native.timestamp, &timespec);
-
   *output = env.instance().NewObject(pointClass,
-                           constructor,
-                           timespec,
-                           native.value);
+                                     constructor,
+                                     nativeToTimespec(env, native.timestamp).release(),
+                                     native.value);
 }
 
 void
@@ -323,14 +313,12 @@ nativeToBlobPoint(qdb::jni::env & env, qdb_ts_blob_point native, jobject * outpu
   jmethodID constructor = env.instance().GetMethodID(pointClass, "<init>", "(Lnet/quasardb/qdb/ts/Timespec;Ljava/nio/ByteBuffer;)V");
   assert(constructor != NULL);
 
-  jobject timespec;
-  nativeToTimespec(env, native.timestamp, &timespec);
   jobject value = nativeToByteBuffer(env, native.content, native.content_length);
 
   *output = env.instance().NewObject(pointClass,
-                           constructor,
-                           timespec,
-                           value);
+                                     constructor,
+                                     nativeToTimespec(env, native.timestamp).release(),
+                                     value);
 }
 
 void
@@ -690,15 +678,11 @@ tableGetRowTimestampValue(qdb::jni::env & env, qdb_local_table_t localTable, qdb
   qdb_error_t err = qdb_ts_row_get_timestamp(localTable, index, &value);
 
   if (QDB_SUCCESS(err)) {
-    jobject timestampObject;
-    nativeToTimespec(env, value, &timestampObject);
-    assert(timestampObject != NULL);
-
     jclass objectClass = env.instance().GetObjectClass(output);
     jmethodID methodId = env.instance().GetMethodID(objectClass, "setTimestamp", "(Lnet/quasardb/qdb/ts/Timespec;)V");
     assert(methodId != NULL);
 
-    env.instance().CallVoidMethod(output, methodId, timestampObject);
+    env.instance().CallVoidMethod(output, methodId, nativeToTimespec(env, value).release());
   }
 
   return err;
@@ -802,14 +786,10 @@ tableGetRow(qdb::jni::env & env, qdb_local_table_t localTable, qdb_ts_column_inf
       jmethodID constructor = env.instance().GetMethodID(row_class, "<init>", "(Lnet/quasardb/qdb/ts/Timespec;[Lnet/quasardb/qdb/ts/Value;)V");
       assert(constructor != NULL);
 
-      jobject timespec;
-      nativeToTimespec(env, timestamp, &timespec);
-      assert(timespec != NULL);
-
       *output = env.instance().NewObject(row_class,
-                               constructor,
-                               timespec,
-                               values);
+                                         constructor,
+                                         nativeToTimespec(env, timestamp).release(),
+                                         values);
     }
   }
 

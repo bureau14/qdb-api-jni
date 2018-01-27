@@ -1,5 +1,7 @@
 #pragma once
 
+#include <assert.h>
+#include <stdio.h>
 #include <memory>
 #include <jni.h>
 
@@ -57,8 +59,6 @@ namespace qdb {
                 local_ref(local_ref const &) = delete;
                 local_ref & operator=(local_ref const &) = delete;
 
-
-
                 operator JNIType() const & {
                     return _ref;
                 }
@@ -69,6 +69,14 @@ namespace qdb {
 
                 JNIType & get() {
                     return _ref;
+                }
+
+                JNIType release() {
+                    assert(_ref != NULL);
+
+                    JNIType ref = _ref;
+                    _ref = NULL;
+                    return ref;
                 }
             };
         };

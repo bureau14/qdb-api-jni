@@ -1,5 +1,6 @@
 #pragma once
 
+#include <stdio.h>
 #include <jni.h>
 
 #include "guard/local_ref.h"
@@ -18,7 +19,7 @@ namespace qdb {
         public:
 
             /**
-             * Creates new object.
+             * Creates new object by its class and constructor.
              */
             static jni::guard::local_ref<jobject>
             create(jni::env & env, jclass objectClass, jmethodID constructor) {
@@ -29,7 +30,31 @@ namespace qdb {
             }
 
             /**
-             * Create a new object by its class name and constructor signature.
+             * Creates new object by its class and constructor.
+             */
+            template <typename A>
+            static jni::guard::local_ref<jobject>
+            create(jni::env & env, jclass objectClass, jmethodID constructor, A first) {
+                return std::move(
+                    jni::guard::local_ref<jobject>(
+                        env,
+                        env.instance().NewObject(objectClass, constructor, first)));
+            }
+
+            /**
+             * Creates new object by its class and constructor.
+             */
+            template <typename A, typename B>
+            static jni::guard::local_ref<jobject>
+            create(jni::env & env, jclass objectClass, jmethodID constructor, A first, B second) {
+                return std::move(
+                    jni::guard::local_ref<jobject>(
+                        env,
+                        env.instance().NewObject(objectClass, constructor, first, second)));
+            }
+
+            /**
+             * Create a new object by its class and constructor signature.
              *
              * \param objectClass The class of the object you're trying to create
              * \param signature   Signature of constructor to use, e.g. "(JJ)V" for a constructor
@@ -40,6 +65,39 @@ namespace qdb {
                 return create(env,
                               objectClass,
                               introspect::lookup_method(env, objectClass, "<init>", signature));
+            }
+
+            /**
+             * Create a new object by its class and constructor signature.
+             *
+             * \param objectClass The class of the object you're trying to create
+             * \param signature   Signature of constructor to use, e.g. "(JJ)V" for a constructor
+             *                    that accepts two long integers.
+             */
+            template <typename A>
+            static jni::guard::local_ref<jobject>
+            create(jni::env & env, jclass objectClass, char const * signature, A first) {
+                return create(env,
+                              objectClass,
+                              introspect::lookup_method(env, objectClass, "<init>", signature),
+                              first);
+            }
+
+            /**
+             * Create a new object by its class and constructor signature.
+             *
+             * \param objectClass The class of the object you're trying to create
+             * \param signature   Signature of constructor to use, e.g. "(JJ)V" for a constructor
+             *                    that accepts two long integers.
+             */
+            template <typename A, typename B>
+            static jni::guard::local_ref<jobject>
+            create(jni::env & env, jclass objectClass, char const * signature, A first, B second) {
+                return create(env,
+                              objectClass,
+                              introspect::lookup_method(env, objectClass, "<init>", signature),
+                              first,
+                              second);
             }
 
             /**
@@ -54,6 +112,39 @@ namespace qdb {
                 return create(env,
                               introspect::lookup_class(env, className),
                               signature);
+            }
+
+            /**
+             * Create a new object by its class name and constructor signature.
+             *
+             * \param className A fully qualified class name, such as "net/quasardb/qdb/ts/Result
+             * \param signature Signature of constructor to use, e.g. "(JJ)V" for a constructor
+             *                  that accepts two long integers.
+             */
+            template <typename A>
+            static jni::guard::local_ref<jobject>
+            create(jni::env & env, char const * className, char const * signature, A first) {
+                return create(env,
+                              introspect::lookup_class(env, className),
+                              signature,
+                              first);
+            }
+
+            /**
+             * Create a new object by its class name and constructor signature.
+             *
+             * \param className A fully qualified class name, such as "net/quasardb/qdb/ts/Result
+             * \param signature Signature of constructor to use, e.g. "(JJ)V" for a constructor
+             *                  that accepts two long integers.
+             */
+            template <typename A, typename B>
+            static jni::guard::local_ref<jobject>
+            create(jni::env & env, char const * className, char const * signature, A first, B second) {
+                return create(env,
+                              introspect::lookup_class(env, className),
+                              signature,
+                              first,
+                              second);
             }
         };
     };

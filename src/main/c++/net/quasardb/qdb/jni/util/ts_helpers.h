@@ -3,6 +3,7 @@
 #include <jni.h>
 #include <qdb/ts.h>
 
+#include "../guard/local_ref.h"
 #include "helpers.h"
 
 namespace qdb {
@@ -12,7 +13,10 @@ namespace qdb {
 };
 
 void timespecToNative(qdb::jni::env &, jobject, qdb_timespec_t *);
-void nativeToTimespec(qdb::jni::env &, qdb_timespec_t, jobject *);
+
+qdb::jni::guard::local_ref<jobject>
+nativeToTimespec(qdb::jni::env &, qdb_timespec_t);
+
 jobject nativeToByteBuffer(qdb::jni::env & env, void const * content, qdb_size_t content_length);
 void rangeToNative(qdb::jni::env &env, jobject input, qdb_ts_range_t * native);
 void rangesToNative(qdb::jni::env & env, jobjectArray input, size_t count, qdb_ts_range_t * native);

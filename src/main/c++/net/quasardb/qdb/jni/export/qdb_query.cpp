@@ -52,7 +52,6 @@ qdb_error_t
 nativeToTable(qdb::jni::env & env, qdb_table_result_t const & input, jclass tableClass, jobject table) {
   jclass valueClass = qdb::jni::introspect::lookup_class(env, "net/quasardb/qdb/ts/Value");
   jclass valuesClass = qdb::jni::introspect::lookup_class(env, "[Lnet/quasardb/qdb/ts/Value;");
-  jmethodID valueConstructor = qdb::jni::introspect::lookup_method(env, valueClass, "<init>", "()V");
 
   jfieldID columnsFieldId = qdb::jni::introspect::lookup_field(env, tableClass,
                                                                "columns", "[Ljava/lang/String;");
@@ -89,7 +88,6 @@ qdb_error_t
 nativeToResult(qdb::jni::env & env, qdb_query_result_t const & input, jclass resultClass, jobject result) {
 
   jclass tableClass = qdb::jni::introspect::lookup_class(env, "net/quasardb/qdb/ts/Result$Table");
-  jmethodID tableConstuctor = qdb::jni::introspect::lookup_method(env, tableClass, "<init>", "()V");
   jfieldID tablesFieldId = qdb::jni::introspect::lookup_field(env,
                                                               resultClass,
                                                               "tables",
@@ -100,15 +98,14 @@ nativeToResult(qdb::jni::env & env, qdb_query_result_t const & input, jclass res
 
   qdb_error_t err = qdb_e_ok;
   for (qdb_size_t i = 0; i < input.tables_count; ++i) {
-    jobject table = env.instance().NewObject(tableClass, tableConstuctor);
-    err = nativeToTable(env, input.tables[i], tableClass, table);
+      auto table = jni::object::create(env, tableClass, "()V");
+      err = nativeToTable(env, input.tables[i], tableClass, table);
 
-    if(QDB_FAILURE(err)) {
-      break;
-    }
+      if(QDB_FAILURE(err)) {
+          break;
+      }
 
-    env.instance().SetObjectArrayElement(tables, i, table);
-    env.instance().DeleteLocalRef(table);
+      env.instance().SetObjectArrayElement(tables, i, table);
   }
 
   env.instance().DeleteLocalRef(tables);

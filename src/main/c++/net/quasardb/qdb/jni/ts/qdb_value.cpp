@@ -69,10 +69,9 @@ qdb::value::_from_native_timestamp(qdb::jni::env & env, qdb_point_result_t const
                                                                      "createTimestamp",
                                                                      "(Lnet/quasardb/qdb/ts/Timespec;)Lnet/quasardb/qdb/ts/Value;");
 
-  jobject timestamp;
-  nativeToTimespec(env, input.payload.timestamp.value, &timestamp);
-
-  return env.instance().CallStaticObjectMethod(valueClass, constructor, timestamp);
+  return env.instance().CallStaticObjectMethod(valueClass,
+                                               constructor,
+                                               nativeToTimespec(env, input.payload.timestamp.value).release());
 }
 
 /* static */ jobject
