@@ -5,16 +5,16 @@
 #include "net_quasardb_qdb_jni_qdb.h"
 
 #include "../guard/local.h"
-#include "../ts/qdb_value.h"
 #include "../env.h"
+#include "../debug.h"
+#include "../introspect.h"
 #include "../util/helpers.h"
-#include "../util/qdb_jni.h"
-
+#include "../ts/qdb_value.h"
 
 jobjectArray
 nativeToRow(qdb::jni::env & env, qdb_point_result_t const values[], qdb_size_t count) {
 
-  jclass valueClass = qdb::jni::lookup_class(env, "net/quasardb/qdb/ts/Value");
+  jclass valueClass = qdb::jni::introspect::lookup_class(env, "net/quasardb/qdb/ts/Value");
   jobjectArray outputValues = env.instance().NewObjectArray(count, valueClass, NULL);
 
   printf("* NATIVE * iterating over %d columns!\n", count);
@@ -34,7 +34,7 @@ nativeToRow(qdb::jni::env & env, qdb_point_result_t const values[], qdb_size_t c
 jobjectArray
 nativeToColumns(qdb::jni::env & env, qdb_string_t const columns[], qdb_size_t count) {
 
-  jclass stringClass = qdb::jni::lookup_class(env, "java/lang/String");
+  jclass stringClass = qdb::jni::introspect::lookup_class(env, "java/lang/String");
   jobjectArray outputColumns = env.instance().NewObjectArray(count, stringClass, NULL);
   assert(outputColumns != NULL);
 
@@ -49,9 +49,9 @@ nativeToColumns(qdb::jni::env & env, qdb_string_t const columns[], qdb_size_t co
 
 qdb_error_t
 nativeToTable(qdb::jni::env & env, qdb_table_result_t const & input, jclass tableClass, jobject & table) {
-  jclass valueClass = qdb::jni::lookup_class(env, "net/quasardb/qdb/ts/Value");
-  jclass valuesClass = qdb::jni::lookup_class(env, "[Lnet/quasardb/qdb/ts/Value;");
-  jmethodID valueConstructor = qdb::jni::lookup_methodID(env, valueClass, "<init>", "()V");
+  jclass valueClass = qdb::jni::introspect::lookup_class(env, "net/quasardb/qdb/ts/Value");
+  jclass valuesClass = qdb::jni::introspect::lookup_class(env, "[Lnet/quasardb/qdb/ts/Value;");
+  jmethodID valueConstructor = qdb::jni::introspect::lookup_method(env, valueClass, "<init>", "()V");
 
   printf("* NATIVE * converting result to table: %p\n", table);
   printf("* NATIVE * converting result to table, table_name = %s\n", input.table_name);
@@ -59,10 +59,10 @@ nativeToTable(qdb::jni::env & env, qdb_table_result_t const & input, jclass tabl
   printf("* NATIVE * converting result to table, rows_count = %d\n", input.rows_count);
   fflush(stdout);
 
-  jfieldID nameFieldId = qdb::jni::lookup_fieldID(env, tableClass,
-                                                  "name", "Ljava/lang/String;");
-  jfieldID columnsFieldId = qdb::jni::lookup_fieldID(env, tableClass,
-                                                     "columns", "[Ljava/lang/String;");
+  jfieldID nameFieldId = qdb::jni::introspect::lookup_field(env, tableClass,
+                                                            "name", "Ljava/lang/String;");
+  jfieldID columnsFieldId = qdb::jni::introspect::lookup_field(env, tableClass,
+                                                               "columns", "[Ljava/lang/String;");
 
   jstring name = env.instance().NewStringUTF(input.table_name.data);
   env.instance().SetObjectField(table, nameFieldId, name);
@@ -83,8 +83,8 @@ nativeToTable(qdb::jni::env & env, qdb_table_result_t const & input, jclass tabl
     env.instance().DeleteLocalRef(output_row);
   }
 
-  jfieldID rowsFieldId = qdb::jni::lookup_fieldID(env, tableClass,
-                                                  "rows", "[[Lnet/quasardb/qdb/ts/Value;");
+  jfieldID rowsFieldId = qdb::jni::introspect::lookup_field(env, tableClass,
+                                                            "rows", "[[Lnet/quasardb/qdb/ts/Value;");
   env.instance().SetObjectField(table, rowsFieldId, output_rows);
   env.instance().DeleteLocalRef(output_rows);
 
@@ -94,12 +94,12 @@ nativeToTable(qdb::jni::env & env, qdb_table_result_t const & input, jclass tabl
 qdb_error_t
 nativeToResult(qdb::jni::env & env, qdb_query_result_t const & input, jclass resultClass, jobject & result) {
 
-  jclass tableClass = qdb::jni::lookup_class(env, "net/quasardb/qdb/ts/Result$Table");
-  jmethodID tableConstuctor = qdb::jni::lookup_methodID(env, tableClass, "<init>", "()V");
-  jfieldID tablesFieldId = qdb::jni::lookup_fieldID(env,
-                                                    resultClass,
-                                                    "tables",
-                                                    "[Lnet/quasardb/qdb/ts/Result$Table;");
+  jclass tableClass = qdb::jni::introspect::lookup_class(env, "net/quasardb/qdb/ts/Result$Table");
+  jmethodID tableConstuctor = qdb::jni::introspect::lookup_method(env, tableClass, "<init>", "()V");
+  jfieldID tablesFieldId = qdb::jni::introspect::lookup_field(env,
+                                                              resultClass,
+                                                              "tables",
+                                                              "[Lnet/quasardb/qdb/ts/Result$Table;");
 
   jobjectArray tables = env.instance().NewObjectArray(input.tables_count, tableClass, NULL);
   env.instance().SetObjectField(result, tablesFieldId, tables);
@@ -137,8 +137,8 @@ Java_net_quasardb_qdb_jni_qdb_query_1execute(JNIEnv * jniEnv, jclass /*thisClass
     assert(result != NULL);
 
     // :TODO: cache!
-    jclass outputClass = qdb::jni::lookup_class(env, "net/quasardb/qdb/ts/Result");
-    jmethodID constructor = qdb::jni::lookup_methodID(env, outputClass, "<init>", "()V");
+    jclass outputClass = qdb::jni::introspect::lookup_class(env, "net/quasardb/qdb/ts/Result");
+    jmethodID constructor = qdb::jni::introspect::lookup_method(env, outputClass, "<init>", "()V");
     output = env.instance().NewObject(outputClass, constructor);
     assert(output != NULL);
 
