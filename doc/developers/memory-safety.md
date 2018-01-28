@@ -16,9 +16,9 @@ The JVM, by default, only allocates a small register of local references that a 
 
 A pattern I'm seeing a lot myself is that these local references are "hierarchical":
 
- * you create a new array;
- * you create a lot of new objects and add these to the array;
- * you continue to work only with the array.
+* you create a new array;
+* you create a lot of new objects and add these to the array;
+* you continue to work only with the array.
  
 In this scenario, you should *not* delete the local reference for all these new, small objects: they would be cleaned up by the JVM, and your java code will segfault.
 
@@ -53,15 +53,22 @@ There appears to be a lot of conflicting information on what exactly is and is n
 
 I've been able to distill the information as follows:
 
- * the only invariant between all different docs is that the JVM guarantees the memory is stable;
- * using a non-compacting GC increases your chances of acquiring a direct pointer without copies.
+* the only invariant between all different docs is that the JVM guarantees the memory is stable;
+* using a non-compacting GC increases your chances of acquiring a direct pointer without copies.
  
 The restrictions while in critical mode are:
 
- * you cannot invoke any JVM function;
- * the GC is likely to be entirely shut down.
+* you cannot invoke any JVM function;
+* any compacting GC is likely to be entirely shut down (G1GC, ParallelG1GC).
  
 For most intents and purposes, you should treat code inside a critical region as if it has acquired a global lock on the JVM; blocking on anything is strongly discouraged, and you should leave this mode as soon as possible.
+
+
+### Recommendation
+
+We should probably benchmark the performance difference between `ByteBuffer` and `byte[]`, especially when they are backed by large arrays with different garbage collectors. 
+
+I am personally inclined to say that using NIO `ByteBuffer` appears to be the way to go, as long as they are backed with a direct buffer managed outside the JVM. But we need more benchmark data to know for sure, since just using `byte[]` provides more control and is simpler.
 
 ## Further reading
 
