@@ -9,7 +9,7 @@
 #include "../object.h"
 #include "qdb_value.h"
 
-/* static */ jobject
+/* static */ qdb::jni::guard::local_ref<jobject>
 qdb::jni::ts::value::from_native(qdb::jni::env & env, qdb_point_result_t const & input) {
     // :TODO: cache!
     jclass valueClass = qdb::jni::introspect::lookup_class(env, "net/quasardb/qdb/ts/Value");
@@ -20,23 +20,23 @@ qdb::jni::ts::value::from_native(qdb::jni::env & env, qdb_point_result_t const &
     switch (input.type) {
 
         case qdb_query_result_int64:
-            return _from_native_int64(env, input).release();
+            return _from_native_int64(env, input);
             break;
 
         case qdb_query_result_double:
-            return _from_native_double(env, input).release();
+            return _from_native_double(env, input);
             break;
 
         case qdb_query_result_timestamp:
-            return _from_native_timestamp(env, input).release();
+            return _from_native_timestamp(env, input);
             break;
 
         case qdb_query_result_blob:
-            return _from_native_blob(env, input).release();
+            return _from_native_blob(env, input);
             break;
 
         case qdb_query_result_none:
-            return _from_native_null(env).release();
+            return _from_native_null(env);
             break;
 
     };

@@ -18,7 +18,7 @@ namespace qdb {
             class value {
 
             public:
-                static jobject
+                static jni::guard::local_ref<jobject>
                 from_native(qdb::jni::env & env, qdb_point_result_t const & input);
 
 

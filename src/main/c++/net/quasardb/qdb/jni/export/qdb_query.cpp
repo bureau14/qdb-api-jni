@@ -17,17 +17,15 @@ namespace jni = qdb::jni;
 
 jni::guard::local_ref<jobjectArray>
 nativeToRow(qdb::jni::env & env, qdb_point_result_t const values[], qdb_size_t count) {
-
     jni::guard::local_ref<jobjectArray> output(
         jni::object::create_array(env,
                                   count,
                                   "net/quasardb/qdb/ts/Value"));
 
     for (qdb_size_t i = 0; i < count; ++i) {
-        jobject value =
-            qdb::jni::ts::value::from_native(env, values[i]);
-
-        env.instance().SetObjectArrayElement(output, i, value);
+        env.instance().SetObjectArrayElement(output,
+                                             i,
+                                             qdb::jni::ts::value::from_native(env, values[i]));
     }
 
     return std::move(output);
