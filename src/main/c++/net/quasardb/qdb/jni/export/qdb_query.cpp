@@ -4,6 +4,7 @@
 
 #include "net_quasardb_qdb_jni_qdb.h"
 
+#include "../local_frame.h"
 #include "../guard/local_ref.h"
 #include "../string.h"
 #include "../object.h"
@@ -17,6 +18,8 @@ namespace jni = qdb::jni;
 
 jni::guard::local_ref<jobjectArray>
 nativeToRow(qdb::jni::env & env, qdb_point_result_t const values[], qdb_size_t count) {
+    jni::local_frame lf = jni::local_frame::push(env, count);
+
     jni::guard::local_ref<jobjectArray> output(
         jni::object::create_array(env,
                                   count,
@@ -25,10 +28,11 @@ nativeToRow(qdb::jni::env & env, qdb_point_result_t const values[], qdb_size_t c
     for (qdb_size_t i = 0; i < count; ++i) {
         env.instance().SetObjectArrayElement(output,
                                              i,
-                                             qdb::jni::ts::value::from_native(env, values[i]));
+                                             qdb::jni::ts::value::from_native(env, values[i]).release());
     }
 
-    return std::move(output);
+
+    return std::move(lf.pop(output.release()));
 }
 
 jni::guard::local_ref<jobjectArray>
