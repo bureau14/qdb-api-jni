@@ -28,12 +28,18 @@ void filteredRangesToNative(qdb::jni::env & env, jobjectArray input, size_t coun
 
 void columnsToNative(qdb::jni::env & env, jobjectArray columns, qdb_ts_column_info_t * native_columns, size_t column_count);
 void releaseNative(qdb_ts_column_info_t * native_columns, size_t column_count);
-void nativeToColumns(qdb::jni::env & env, qdb_ts_column_info_t * nativeColumns, size_t column_count, jobjectArray * columns);
+
+qdb::jni::guard::local_ref<jobjectArray>
+nativeToColumns(qdb::jni::env & env, qdb_ts_column_info_t * nativeColumns, size_t column_count);
 
 void doublePointToNative(qdb::jni::env & env, jobject input, qdb_ts_double_point * native);
 void doublePointsToNative(qdb::jni::env & env, jobjectArray input, size_t count, qdb_ts_double_point * native);
-void nativeToDoublePoint(qdb::jni::env & env, qdb_ts_double_point native, jobject * output);
-void nativeToDoublePoints(qdb::jni::env & env, qdb_ts_double_point * native, size_t count, jobjectArray * output);
+
+qdb::jni::guard::local_ref<jobject>
+nativeToDoublePoint(qdb::jni::env & env, qdb_ts_double_point native);
+
+qdb::jni::guard::local_ref<jobjectArray>
+nativeToDoublePoints(qdb::jni::env & env, qdb_ts_double_point * native, size_t count);
 
 void blobPointToNative(qdb::jni::env & env, jobject input, qdb_ts_blob_point * native);
 void blobPointsToNative(qdb::jni::env & env, jobjectArray input, size_t count, qdb_ts_blob_point * native);

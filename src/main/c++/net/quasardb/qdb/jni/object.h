@@ -1,6 +1,6 @@
 #pragma once
 
-#include <stdio.h>
+#include <assert.h>
 #include <jni.h>
 
 #include "guard/local_ref.h"
@@ -24,6 +24,9 @@ namespace qdb {
             template <typename ...Params>
             static jni::guard::local_ref<jobject>
             create(jni::env & env, jclass objectClass, jmethodID constructor, Params... params) {
+                assert(objectClass != NULL);
+                assert(constructor != NULL);
+
                 return std::move(
                     jni::guard::local_ref<jobject>(
                         env,
@@ -40,6 +43,8 @@ namespace qdb {
             template <typename ...Params>
             static jni::guard::local_ref<jobject>
             create(jni::env & env, jclass objectClass, char const * signature,  Params... params) {
+                assert(objectClass != NULL);
+
                 return create(env,
                               objectClass,
                               introspect::lookup_method(env, objectClass, "<init>", signature),
@@ -60,6 +65,31 @@ namespace qdb {
                               introspect::lookup_class(env, className),
                               signature,
                               params...);
+            }
+
+            /**
+             * Create a new object array with a specific size and type.
+             */
+            static jni::guard::local_ref<jobjectArray>
+            create_array(jni::env & env, jsize size, jclass objectClass) {
+                assert(objectClass != NULL);
+
+                return std::move(
+                    jni::guard::local_ref<jobjectArray>(
+                        env,
+                        env.instance().NewObjectArray(size, objectClass, NULL)));
+            }
+
+            /**
+             * Create a new object array with a specific size and type. Automatically
+             * looks up className using introspection, will throw assertion error when
+             * not found.
+             */
+            static jni::guard::local_ref<jobjectArray>
+            create_array(jni::env & env, jsize size, char const * className) {
+                return create_array(env,
+                                    size,
+                                    introspect::lookup_class(env, className));
             }
         };
     };

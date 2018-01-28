@@ -189,22 +189,24 @@ releaseNative(qdb_ts_column_info_t * native_columns, size_t column_count) {
   }
 }
 
-void
-nativeToColumns(qdb::jni::env & env, qdb_ts_column_info_t * nativeColumns, size_t column_count, jobjectArray * columns) {
-  jclass column_class = env.instance().FindClass("net/quasardb/qdb/ts/Column");
-  assert(column_class != NULL);
-  jmethodID constructor = env.instance().GetMethodID(column_class, "<init>", "(Ljava/lang/String;I)V");
-  assert(constructor != NULL);
+jni::guard::local_ref<jobjectArray>
+nativeToColumns(qdb::jni::env & env, qdb_ts_column_info_t * nativeColumns, size_t column_count) {
+    jni::guard::local_ref<jobjectArray> columns = jni::object::create_array(env,
+                                                                            column_count,
+                                                                            "net/quasardb/qdb/ts/Column");
+    for (size_t i = 0; i < column_count; i++) {
+        env.instance().SetObjectArrayElement(
+            columns,
+            (jsize)i,
+            jni::object::create(env,
+                                "net/quasardb/qdb/ts/Column",
+                                "(Ljava/lang/String;I)V",
+                                jni::string::create_utf8(env,
+                                                         nativeColumns[i].name).get(),
+                                nativeColumns[i].type).release());
+    }
 
-  *columns = env.instance().NewObjectArray((jsize)column_count, column_class, NULL);
-  assert(*columns != NULL);
-
-  for (size_t i = 0; i < column_count; i++) {
-    env.instance().SetObjectArrayElement(*columns, (jsize)i, env.instance().NewObject(column_class,
-                                                                                      constructor,
-                                                                                      env.instance().NewStringUTF(nativeColumns[i].name),
-                                                                                      nativeColumns[i].type));
-  }
+    return std::move(columns);
 }
 
 void
@@ -232,31 +234,29 @@ doublePointsToNative(qdb::jni::env & env, jobjectArray input, size_t count, qdb_
   }
 }
 
-void
-nativeToDoublePoint(qdb::jni::env & env, qdb_ts_double_point native, jobject * output) {
-  jclass pointClass = env.instance().FindClass("net/quasardb/qdb/jni/qdb_ts_double_point");
-  assert(pointClass != NULL);
-  jmethodID constructor = env.instance().GetMethodID(pointClass, "<init>", "(Lnet/quasardb/qdb/ts/Timespec;D)V");
-  assert(constructor != NULL);
-
-  *output = env.instance().NewObject(pointClass,
-                                     constructor,
-                                     nativeToTimespec(env, native.timestamp).release(),
-                                     native.value);
+jni::guard::local_ref<jobject>
+nativeToDoublePoint(qdb::jni::env & env, qdb_ts_double_point native) {
+  return std::move(
+      jni::object::create(env,
+                          "net/quasardb/qdb/jni/qdb_ts_double_point",
+                          "(Lnet/quasardb/qdb/ts/Timespec;D)V",
+                          nativeToTimespec(env, native.timestamp).release(),
+                          native.value));
 }
 
-void
-nativeToDoublePoints(qdb::jni::env & env, qdb_ts_double_point * native, size_t count, jobjectArray * output) {
-  jclass pointClass = env.instance().FindClass("net/quasardb/qdb/jni/qdb_ts_double_point");
-  assert(pointClass != NULL);
-
-  *output = env.instance().NewObjectArray((jsize)count, pointClass, NULL);
+jni::guard::local_ref<jobjectArray>
+nativeToDoublePoints(qdb::jni::env & env, qdb_ts_double_point * native, size_t count) {
+    jni::guard::local_ref<jobjectArray> output(
+      jni::object::create_array(env,
+                                count,
+                                "net/quasardb/qdb/jni/qdb_ts_double_point"));
 
   for (size_t i = 0; i < count; i++) {
-    jobject point;
-    nativeToDoublePoint(env, native[i], &point);
-    env.instance().SetObjectArrayElement(*output, (jsize)i, point);
+    env.instance().SetObjectArrayElement(output, (jsize)i,
+                                         nativeToDoublePoint(env, native[i]).release());
   }
+
+  return std::move(output);
 }
 
 void
@@ -360,15 +360,13 @@ nativeToDoubleAggregate(qdb::jni::env & env, qdb_ts_double_aggregation_t native,
   jmethodID constructor = env.instance().GetMethodID(point_class, "<init>", "(Lnet/quasardb/qdb/ts/FilteredRange;JJLnet/quasardb/qdb/jni/qdb_ts_double_point;)V");
   assert(constructor != NULL);
 
-  jobject result;
-  nativeToDoublePoint(env, native.result, &result);
 
   jobject aggregate = env.instance().NewObject(point_class,
                                                constructor,
                                                nativeToFilteredRange(env, native.filtered_range).release(),
                                                (jlong)native.type,
                                                (jlong)native.count,
-                                               result);
+                                               nativeToDoublePoint(env, native.result).release());
 
   *output = aggregate;
 }
@@ -744,9 +742,9 @@ tableGetRow(qdb::jni::env & env, qdb_local_table_t localTable, qdb_ts_column_inf
   }
 
   if (QDB_SUCCESS(err)) {
-    jclass value_class = env.instance().FindClass("net/quasardb/qdb/ts/Value");
-    assert(value_class != NULL);
-    jobjectArray values = env.instance().NewObjectArray((jsize)columnCount, value_class, NULL);
+    jni::guard::local_ref<jobjectArray> values = jni::object::create_array(env,
+                                                                           columnCount,
+                                                                           "net/quasardb/qdb/ts/Value");
 
     err = tableGetRowValues(env, localTable, columns, columnCount, values);
 
@@ -756,7 +754,7 @@ tableGetRow(qdb::jni::env & env, qdb_local_table_t localTable, qdb_ts_column_inf
                                 "net/quasardb/qdb/ts/Row",
                                 "(Lnet/quasardb/qdb/ts/Timespec;[Lnet/quasardb/qdb/ts/Value;)V",
                                 nativeToTimespec(env, timestamp).release(),
-                                values).release();
+                                values.release()).release();
     }
   }
 

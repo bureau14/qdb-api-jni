@@ -9,6 +9,8 @@
 #include "../util/helpers.h"
 #include "../util/ts_helpers.h"
 
+namespace jni = qdb::jni;
+
 JNIEXPORT jint JNICALL
 Java_net_quasardb_qdb_jni_qdb_ts_1create(JNIEnv * jniEnv, jclass /*thisClass*/, jlong handle,
                                          jstring alias, jlong shard_size, jobjectArray columns) {
@@ -54,9 +56,9 @@ Java_net_quasardb_qdb_jni_qdb_ts_1list_1columns(JNIEnv * jniEnv, jclass /*thisCl
   qdb_error_t err = qdb_ts_list_columns((qdb_handle_t)handle, qdb::jni::string::get_chars_utf8(env, alias), &native_columns, &column_count);
 
   if (QDB_SUCCESS(err)) {
-    jobjectArray array;
-    nativeToColumns(env, native_columns, column_count, &array);
-    setReferenceValue(env, columns, array);
+      setReferenceValue(env,
+                        columns,
+                        nativeToColumns(env, native_columns, column_count));
   }
 
   qdb_release((qdb_handle_t)handle, native_columns);
@@ -196,9 +198,9 @@ Java_net_quasardb_qdb_jni_qdb_ts_1double_1get_1ranges(JNIEnv * jniEnv, jclass /*
 
 
   if (QDB_SUCCESS(err)) {
-    jobjectArray array;
-    nativeToDoublePoints(env, native_points, point_count, &array);
-    setReferenceValue(env, points, array);
+      setReferenceValue(env,
+                        points,
+                        nativeToDoublePoints(env, native_points, point_count).release());
   }
 
   qdb_release((qdb_handle_t)handle, native_points);
