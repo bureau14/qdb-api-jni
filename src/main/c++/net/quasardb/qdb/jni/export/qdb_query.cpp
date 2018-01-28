@@ -48,8 +48,14 @@ nativeToColumns(qdb::jni::env & env, qdb_string_t const columns[], qdb_size_t co
     return std::move(output);
 }
 
-qdb_error_t
-nativeToTable(qdb::jni::env & env, qdb_table_result_t const & input, jclass tableClass, jobject table) {
+jni::guard::local_ref<jobject>
+nativeToTable(qdb::jni::env & env, qdb_table_result_t const & input, jclass tableClass) {
+
+    jni::guard::local_ref<jobject> table(
+        jni::object::create(env,
+                            tableClass,
+                            "()V"));
+
     env.instance().SetObjectField(table,
                                   qdb::jni::string::lookup_field(env, tableClass, "name"),
                                   qdb::jni::string::create_utf8(env, input.table_name.data));
@@ -63,7 +69,6 @@ nativeToTable(qdb::jni::env & env, qdb_table_result_t const & input, jclass tabl
                                   input.rows_count,
                                   "[Lnet/quasardb/qdb/ts/Value;"));
 
-    qdb_error_t err = qdb_e_ok;
     for (qdb_size_t i = 0; i < input.rows_count; ++i) {
         qdb_point_result_t const * input_row = input.rows[i];
 
@@ -73,49 +78,44 @@ nativeToTable(qdb::jni::env & env, qdb_table_result_t const & input, jclass tabl
     }
 
     env.instance().SetObjectField(table,
-                                  qdb::jni::introspect::lookup_field(env, tableClass,
-                                                              "rows", "[[Lnet/quasardb/qdb/ts/Value;"),
+                                  qdb::jni::introspect::lookup_field(env,
+                                                                     tableClass,
+                                                                     "rows",
+                                                                     "[[Lnet/quasardb/qdb/ts/Value;"),
                                   rows);
 
-    return err;
+    return std::move(table);
 }
 
-qdb_error_t
-nativeToResult(qdb::jni::env & env, qdb_query_result_t const & input, jclass resultClass, jobject result) {
+jni::guard::local_ref<jobject>
+nativeToResult(qdb::jni::env & env, qdb_query_result_t const & input, jclass resultClass) {
 
     jclass tableClass = qdb::jni::introspect::lookup_class(env, "net/quasardb/qdb/ts/Result$Table");
-    jfieldID tablesFieldId = qdb::jni::introspect::lookup_field(env,
-                                                                resultClass,
-                                                                "tables",
-                                                                "[Lnet/quasardb/qdb/ts/Result$Table;");
 
-    jobjectArray tables = env.instance().NewObjectArray(input.tables_count, tableClass, NULL);
-    env.instance().SetObjectField(result, tablesFieldId, tables);
+    jni::guard::local_ref<jobjectArray> tables (
+        jni::object::create_array(env,
+                                  input.tables_count,
+                                  tableClass));
 
-    qdb_error_t err = qdb_e_ok;
     for (qdb_size_t i = 0; i < input.tables_count; ++i) {
-        auto table = jni::object::create(env, tableClass, "()V");
-        err = nativeToTable(env, input.tables[i], tableClass, table);
-
-        if(QDB_FAILURE(err)) {
-            break;
-        }
-
-        env.instance().SetObjectArrayElement(tables, i, table);
+        env.instance().SetObjectArrayElement(tables,
+                                             i,
+                                             nativeToTable(env, input.tables[i], tableClass).release());
     }
 
-    env.instance().DeleteLocalRef(tables);
-    return err;
+    return std::move(
+        jni::object::create(env,
+                            resultClass,
+                            "([Lnet/quasardb/qdb/ts/Result$Table;)V",
+                            tables.release()));
+
 }
 
 JNIEXPORT jint JNICALL
 Java_net_quasardb_qdb_jni_qdb_query_1execute(JNIEnv * jniEnv, jclass /*thisClass*/, jlong handle,
                                              jstring query, jobject outputReference) {
     qdb::jni::env env(jniEnv);
-
-    jni::guard::local_ref<jobject> output(env);
-    qdb_query_result_t * result;
-
+    qdb_query_result_t * result = NULL;
     qdb_error_t err = qdb_exp_query((qdb_handle_t)(handle),
                                     qdb::jni::string::get_chars_utf8(env, query),
                                     &result);
@@ -123,15 +123,12 @@ Java_net_quasardb_qdb_jni_qdb_query_1execute(JNIEnv * jniEnv, jclass /*thisClass
     if (QDB_SUCCESS(err)) {
         assert(result != NULL);
 
-        jclass outputClass = jni::introspect::lookup_class(env, "net/quasardb/qdb/ts/Result");
-        output = jni::object::create(env, outputClass, "()V");
-        err = nativeToResult(env, *result, outputClass, output);
-    }
-
-    if (QDB_SUCCESS(err)) {
-        assert(output != NULL);
-        setReferenceValue(env, outputReference, output);
-        env.instance().DeleteLocalRef(output);
+        setReferenceValue(env,
+                          outputReference,
+                          nativeToResult(env,
+                                         *result,
+                                         jni::introspect::lookup_class(env,
+                                                                       "net/quasardb/qdb/ts/Result")).release());
     }
 
     qdb_release((qdb_handle_t)handle, result);

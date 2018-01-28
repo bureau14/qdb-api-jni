@@ -22,6 +22,10 @@ public final class Result {
     public Result() {
     }
 
+    public Result(Table[] tables) {
+        this.tables = tables;
+    }
+
     public String toString() {
         return "Result (tables: " + Arrays.toString(this.tables) + ")";
     }
