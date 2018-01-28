@@ -91,6 +91,58 @@ namespace qdb {
                                     size,
                                     introspect::lookup_class(env, className));
             }
+
+            /**
+             * Sets the element of a jobjectArray at a specific location.
+             */
+
+
+            /**
+             * Calls static function that returns an object.
+             */
+            template <typename ...Params>
+            static jni::guard::local_ref<jobject>
+            call_static_method(jni::env & env, jclass objectClass, jmethodID method, Params... params) {
+                assert(objectClass != NULL);
+                assert(method != NULL);
+
+                return std::move(
+                    jni::guard::local_ref<jobject>(
+                        env,
+                        env.instance().CallStaticObjectMethod(objectClass,
+                                                              method,
+                                                              params...)));
+            }
+
+            /**
+             * Calls static function that returns an object.
+             */
+            template <typename ...Params>
+            static jni::guard::local_ref<jobject>
+            call_static_method(jni::env & env, jclass objectClass, char const * alias, char const * signature, Params... params) {
+                assert(objectClass != NULL);
+
+                return call_static_method(env,
+                                          objectClass,
+                                          introspect::lookup_static_method(env,
+                                                                           objectClass,
+                                                                           alias,
+                                                                           signature),
+                                          params...);
+            }
+
+            /**
+             * Calls static function that returns an object.
+             */
+            template <typename ...Params>
+            static jni::guard::local_ref<jobject>
+                    call_static_method(jni::env & env, char const * className, char const * alias, char const * signature, Params... params) {
+                return call_static_method(env,
+                                          introspect::lookup_class(env, className),
+                                          alias,
+                                          signature,
+                                          params...);
+            }
         };
     };
 };

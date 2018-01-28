@@ -23,13 +23,11 @@ nativeToRow(qdb::jni::env & env, qdb_point_result_t const values[], qdb_size_t c
                                   count,
                                   "net/quasardb/qdb/ts/Value"));
 
-
     for (qdb_size_t i = 0; i < count; ++i) {
         jobject value =
-            qdb::value::from_native(env, values[i]);
+            qdb::jni::ts::value::from_native(env, values[i]);
 
         env.instance().SetObjectArrayElement(output, i, value);
-        env.instance().DeleteLocalRef(value);
     }
 
     return std::move(output);
@@ -108,7 +106,6 @@ nativeToResult(qdb::jni::env & env, qdb_query_result_t const & input, jclass res
                             resultClass,
                             "([Lnet/quasardb/qdb/ts/Result$Table;)V",
                             tables.release()));
-
 }
 
 JNIEXPORT jint JNICALL
