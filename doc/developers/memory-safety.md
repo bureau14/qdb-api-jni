@@ -42,8 +42,7 @@ For this, the JVM employs memory pinning in several ways. Which one you should u
 * in addition to `byte[]`, you can also use the NIO `ByteBuffer` and the native functions the JVM provides
   * GetDirectBufferAddress, which provides direct access to the underlying byte array
 
-Using a `ByteBuffer` in java code is slower than just using a `byte[]` because a direct ByteBuffer's memory lives entirely outside the JVM. 
-
+Using a `ByteBuffer` in java code is slower than just using a `byte[]` because a direct ByteBuffer's memory lives entirely outside the JVM. I have [read claims](https://stackoverflow.com/a/28799276) that creating a single-byte ByteBuffer takes longer than copying 1000 individual bytes, but YMMV.
 
 ## Critical regions
 
@@ -62,7 +61,6 @@ The restrictions while in critical mode are:
 * any compacting GC is likely to be entirely shut down (G1GC, ParallelG1GC).
  
 For most intents and purposes, you should treat code inside a critical region as if it has acquired a global lock on the JVM; blocking on anything is strongly discouraged, and you should leave this mode as soon as possible.
-
 
 ### Recommendation
 
