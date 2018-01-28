@@ -30,16 +30,16 @@ So, these refgerences sounds good and make sense! However, if native code can ru
 
 For this, the JVM employs memory pinning in several ways. Which one you should use depends what you're trying to do:
 
- * for normal primitive types (integers, floating points, etc) the JVM just copies the values;
- * for strings, you can either use
+* for normal primitive types (integers, floating points, etc) the JVM just copies the values;
+* for strings, you can either use
   * GetStringChars or GetStringUTFChars, both of which might copy the underlying strings
   * GetStringRegion, which always copies into a buffer provided by you;
   * GetStringCritical, which never copies but imposes severe restrictions on the JVM until it is released with ReleaseStringCritical (See "Critical regions" below)
- * for byte arrays `byte[]`, you can either use
+* for byte arrays `byte[]`, you can either use
   * GetByteArrayElements, which may cause a copy, mostly depending upon the GC being used. Since this may be a copy, changes to the returned `void *` may not be reflected in the original array;
   * GetByteArrayRegion, which always copies into a buffer provided by you;
   * GetPrimitiveArrayCritical, which (almost) never copies but imposes severe restrictions on the JVM until it is released with ReleaseByteArrayCritical (See "Critical regions" below)
- * in addition to `byte[]`, you can also use the NIO `ByteBuffer` and the native functions the JVM provides
+* in addition to `byte[]`, you can also use the NIO `ByteBuffer` and the native functions the JVM provides
   * GetDirectBufferAddress, which provides direct access to the underlying byte array
 
 Using a `ByteBuffer` in java code is slower than just using a `byte[]` because a direct ByteBuffer's memory lives entirely outside the JVM. 
