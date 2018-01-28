@@ -58,6 +58,8 @@ namespace qdb {
             template <typename JNIType>
             jni::guard::local_ref<JNIType>
             pop(JNIType result) {
+                assert(_popped == false); // can't pop the same frame twice
+                _popped = true;
 
                 // Note how `result` is actually moved from the current frame to
                 // the previous frame here -- both `result` and the return value
