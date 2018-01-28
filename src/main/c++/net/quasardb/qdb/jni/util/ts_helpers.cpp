@@ -305,18 +305,20 @@ nativeToBlobPoint(qdb::jni::env & env, qdb_ts_blob_point native) {
                                                native.content_length)));
 }
 
-void
-nativeToBlobPoints(qdb::jni::env & env, qdb_ts_blob_point * native, size_t count, jobjectArray * output) {
-  jclass pointClass = env.instance().FindClass("net/quasardb/qdb/jni/qdb_ts_blob_point");
-  assert(pointClass != NULL);
-
-  *output = env.instance().NewObjectArray((jsize)count, pointClass, NULL);
+jni::guard::local_ref<jobjectArray>
+nativeToBlobPoints(qdb::jni::env & env, qdb_ts_blob_point * native, size_t count) {
+    jni::guard::local_ref<jobjectArray> array(
+        jni::object::create_array(env,
+                                  count,
+                                  "net/quasardb/qdb/jni/qdb_ts_blob_point"));
 
   for (size_t i = 0; i < count; i++) {
-    env.instance().SetObjectArrayElement(*output,
+    env.instance().SetObjectArrayElement(array,
                                          (jsize)i,
                                          nativeToBlobPoint(env, native[i]).release());
   }
+
+  return array;
 }
 
 void
@@ -353,37 +355,32 @@ doubleAggregatesToNative(qdb::jni::env & env, jobjectArray input, size_t count, 
   }
 }
 
-void
-nativeToDoubleAggregate(qdb::jni::env & env, qdb_ts_double_aggregation_t native, jobject * output) {
-  jclass point_class = env.instance().FindClass("net/quasardb/qdb/jni/qdb_ts_double_aggregation");
-  assert(point_class != NULL);
-  jmethodID constructor = env.instance().GetMethodID(point_class, "<init>", "(Lnet/quasardb/qdb/ts/FilteredRange;JJLnet/quasardb/qdb/jni/qdb_ts_double_point;)V");
-  assert(constructor != NULL);
-
-
-  jobject aggregate = env.instance().NewObject(point_class,
-                                               constructor,
-                                               nativeToFilteredRange(env, native.filtered_range).release(),
-                                               (jlong)native.type,
-                                               (jlong)native.count,
-                                               nativeToDoublePoint(env, native.result).release());
-
-  *output = aggregate;
+jni::guard::local_ref<jobject>
+nativeToDoubleAggregate(qdb::jni::env & env, qdb_ts_double_aggregation_t native) {
+    return std::move(
+        jni::object::create(env,
+                            "net/quasardb/qdb/jni/qdb_ts_double_aggregation",
+                            "(Lnet/quasardb/qdb/ts/FilteredRange;JJLnet/quasardb/qdb/jni/qdb_ts_double_point;)V",
+                            nativeToFilteredRange(env, native.filtered_range).release(),
+                            (jlong)native.type,
+                            (jlong)native.count,
+                            nativeToDoublePoint(env, native.result).release()));
 }
 
-void
-nativeToDoubleAggregates(qdb::jni::env & env, qdb_ts_double_aggregation_t * native, size_t count, jobjectArray * output) {
-  jclass aggregate_class = env.instance().FindClass("net/quasardb/qdb/jni/qdb_ts_double_aggregation");
-  assert(aggregate_class != NULL);
-
-  *output = env.instance().NewObjectArray((jsize)count, aggregate_class, NULL);
+jni::guard::local_ref<jobjectArray>
+nativeToDoubleAggregates(qdb::jni::env & env, qdb_ts_double_aggregation_t * native, size_t count) {
+  jni::guard::local_ref<jobjectArray> output (
+      jni::object::create_array(env,
+                                count,
+                                "net/quasardb/qdb/jni/qdb_ts_double_aggregation"));
 
   for (size_t i = 0; i < count; i++) {
-    jobject aggregate;
-
-    nativeToDoubleAggregate(env, native[i], &aggregate);
-    env.instance().SetObjectArrayElement(*output, (jsize)i, aggregate);
+    env.instance().SetObjectArrayElement(output,
+                                         (jsize)i,
+                                         nativeToDoubleAggregate(env, native[i]).release());
   }
+
+  return std::move(output);
 }
 
 void
@@ -432,18 +429,21 @@ nativeToBlobAggregate(qdb::jni::env & env, qdb_ts_blob_aggregation_t native) {
                             nativeToBlobPoint(env, native.result).release()));
 }
 
-void
-nativeToBlobAggregates(qdb::jni::env & env, qdb_ts_blob_aggregation_t * native, size_t count, jobjectArray * output) {
-    jclass aggregate_class = env.instance().FindClass("net/quasardb/qdb/jni/qdb_ts_blob_aggregation");
-    assert(aggregate_class != NULL);
+jni::guard::local_ref<jobjectArray>
+nativeToBlobAggregates(qdb::jni::env & env, qdb_ts_blob_aggregation_t * native, size_t count) {
 
-    *output = env.instance().NewObjectArray((jsize)count, aggregate_class, NULL);
+    jni::guard::local_ref<jobjectArray> output(
+        jni::object::create_array(env,
+                                  count,
+                                  "net/quasardb/qdb/jni/qdb_ts_blob_aggregation"));
 
     for (size_t i = 0; i < count; i++) {
-        env.instance().SetObjectArrayElement(*output,
+        env.instance().SetObjectArrayElement(output,
                                              (jsize)i,
                                              nativeToBlobAggregate(env, native[i]).release());
     }
+
+    return std::move(output);
 }
 
 void

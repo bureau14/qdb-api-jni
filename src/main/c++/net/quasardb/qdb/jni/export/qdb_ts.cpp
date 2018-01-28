@@ -227,10 +227,9 @@ Java_net_quasardb_qdb_jni_qdb_ts_1double_1aggregate(JNIEnv * jniEnv, jclass /*th
                                             count);
 
   if (QDB_SUCCESS(err)) {
-    jobjectArray array;
-
-    nativeToDoubleAggregates(env, aggregates, count, &array);
-    setReferenceValue(env, output, array);
+      setReferenceValue(env,
+                        output,
+                        nativeToDoubleAggregates(env, aggregates, count).release());
   }
 
   delete[] aggregates;
@@ -279,13 +278,12 @@ Java_net_quasardb_qdb_jni_qdb_ts_1blob_1get_1ranges(JNIEnv * jniEnv, jclass /*th
                                            &pointCount);
 
   if (QDB_SUCCESS(err)) {
-    jobjectArray array;
-
-    // Note that at this point, we're moving the `nativePoints` buffer to
-    // our java ecosystem, and will be picked up to be cleared by the JVM
-    // garbage collector. As such, we do NOT call `qdb_release` here
-    nativeToBlobPoints(env, nativePoints, pointCount, &array);
-    setReferenceValue(env, points, array);
+      // Note that at this point, we're moving the `nativePoints` buffer to
+      // our java ecosystem, and will be picked up to be cleared by the JVM
+      // garbage collector. As such, we do NOT call `qdb_release` here
+      setReferenceValue(env,
+                        points,
+                        nativeToBlobPoints(env, nativePoints, pointCount).release());
   }
 
   delete[] nativeFilteredRanges;
@@ -309,9 +307,9 @@ Java_net_quasardb_qdb_jni_qdb_ts_1blob_1aggregate(JNIEnv * jniEnv, jclass /*this
                                             count);
 
   if (QDB_SUCCESS(err)) {
-    jobjectArray array;
-    nativeToBlobAggregates(env, aggregates, count, &array);
-    setReferenceValue(env, output, array);
+    setReferenceValue(env,
+                      output,
+                      nativeToBlobAggregates(env, aggregates, count).release());
   }
 
   delete[] aggregates;

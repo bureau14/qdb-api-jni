@@ -41,6 +41,13 @@ namespace qdb {
             create_utf8(jni::env & env, char const * str);
 
             /**
+             * Create new array of Strings with certain size.
+             */
+            static jni::guard::local_ref<jobjectArray>
+            create_array(jni::env & env,
+                         jsize size);
+
+            /**
              * Wraps around introspect functions to look up the string class. Avoids
              * some boilerplate for object signatures.
              */
