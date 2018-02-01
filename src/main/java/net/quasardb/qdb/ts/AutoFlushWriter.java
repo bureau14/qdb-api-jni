@@ -10,7 +10,7 @@ import net.quasardb.qdb.*;
 import net.quasardb.qdb.jni.*;
 
 /**
- * Represents a timeseries table that automatically flushes the local cache when
+ * An implementation of a Writer that automatically flushes the local cache when
  * a certain threshold has been reached.
  */
 public final class AutoFlushWriter extends Writer {
