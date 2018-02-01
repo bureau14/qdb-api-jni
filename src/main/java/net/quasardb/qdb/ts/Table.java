@@ -129,7 +129,7 @@ public class Table implements Serializable {
      * column starts with 0.
      *
      * @param id String identifier of the column.
-     * @returns The index of the column inside the timeseries table definition.
+     * @return The index of the column inside the timeseries table definition.
      */
     public int columnIndexById (String id) {
         Integer offset = this.columnOffsets.get(id);
