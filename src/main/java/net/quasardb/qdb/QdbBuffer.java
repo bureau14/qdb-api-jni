@@ -13,6 +13,14 @@ public final class QdbBuffer implements AutoCloseable {
         this.buffer = buffer;
     }
 
+    static public QdbBuffer wrap(QdbSession session, ByteBuffer buffer) {
+        return buffer != null ? new QdbBuffer(session, buffer) : null;
+    }
+
+    static public QdbBuffer wrap(QdbSession session, Reference<ByteBuffer> ref) {
+        return wrap(session, ref.value);
+    }
+
     @Override
     protected void finalize() throws Throwable {
         close();

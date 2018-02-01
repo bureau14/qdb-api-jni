@@ -87,12 +87,4 @@ public class QdbSession {
     public long handle() {
         return handle;
     }
-
-    public QdbBuffer wrapBuffer(Reference<ByteBuffer> ref) {
-        return wrapBuffer(ref.value);
-    }
-
-    private QdbBuffer wrapBuffer(ByteBuffer buffer) {
-        return buffer != null ? new QdbBuffer(this, buffer) : null;
-    }
 }
