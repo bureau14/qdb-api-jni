@@ -15,12 +15,12 @@ import net.quasardb.qdb.jni.*;
  * Represents a timeseries table.
  */
 public class Reader implements AutoCloseable, Iterator<Row> {
-    QdbSession session;
+    Session session;
     Table table;
     Long localTable;
     Reference<Row> next;
 
-    public Reader(QdbSession session, Table table, FilteredRange[] ranges) {
+    public Reader(Session session, Table table, FilteredRange[] ranges) {
         if (ranges.length <= 0) {
             throw new QdbInvalidArgumentException("Reader requires at least one FilteredRange to read");
         }

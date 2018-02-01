@@ -6,9 +6,12 @@ import net.quasardb.qdb.jni.*;
 import java.nio.ByteBuffer;
 
 /**
- * Defines an easy-to-use interface to the quasardb cluster.
+ * Represents a connection with the QuasarDB cluster. This class is backed
+ * by a connection pool, and is thread-safe. You are encouraged to reuse
+ * this object as much as possible, ideally only creating a single session
+ * for the lifetime of your process.
  */
-public class QdbSession {
+public class Session {
     private transient long handle;
     private qdb_cluster_security_options securityOptions;
 
@@ -33,18 +36,18 @@ public class QdbSession {
     }
 
     /**
-     * Initialize a new QdbSession without security settings. Connections to the
+     * Initialize a new Session without security settings. Connections to the
      * QuasarDB cluster will be insecure and unauthenticated.
      */
-    public QdbSession() {
+    public Session() {
         handle = qdb.open_tcp();
     }
 
     /**
-     * Initialize a new QdbSession with security settings. Connections to the
+     * Initialize a new Session with security settings. Connections to the
      * QuasarDB will use a secure connection and will be authenticated.
      */
-    public QdbSession(SecurityOptions securityOptions) {
+    public Session(SecurityOptions securityOptions) {
         this.securityOptions = SecurityOptions.toNative(securityOptions);
         handle = qdb.open_tcp();
     }

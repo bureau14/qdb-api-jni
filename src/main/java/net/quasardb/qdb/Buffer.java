@@ -4,20 +4,20 @@ import java.nio.ByteBuffer;
 import java.lang.AutoCloseable;
 import net.quasardb.qdb.jni.*;
 
-public final class QdbBuffer implements AutoCloseable {
-    final QdbSession session;
+public final class Buffer implements AutoCloseable {
+    final Session session;
     ByteBuffer buffer;
 
-    protected QdbBuffer(QdbSession session, ByteBuffer buffer) {
+    protected Buffer(Session session, ByteBuffer buffer) {
         this.session = session;
         this.buffer = buffer;
     }
 
-    static public QdbBuffer wrap(QdbSession session, ByteBuffer buffer) {
-        return buffer != null ? new QdbBuffer(session, buffer) : null;
+    static public Buffer wrap(Session session, ByteBuffer buffer) {
+        return buffer != null ? new Buffer(session, buffer) : null;
     }
 
-    static public QdbBuffer wrap(QdbSession session, Reference<ByteBuffer> ref) {
+    static public Buffer wrap(Session session, Reference<ByteBuffer> ref) {
         return wrap(session, ref.value);
     }
 
@@ -50,7 +50,8 @@ public final class QdbBuffer implements AutoCloseable {
     }
 
     private void throwIfClosed() {
-        if (buffer == null)
+        if (buffer == null) {
             throw new QdbBufferClosedException();
+        }
     }
 }

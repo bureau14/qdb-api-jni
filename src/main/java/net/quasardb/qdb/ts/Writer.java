@@ -16,11 +16,11 @@ import net.quasardb.qdb.jni.*;
  * High-performance bulk writer for a QuasarDB timeseries table.
  */
 public class Writer implements AutoCloseable, Flushable {
-    QdbSession session;
+    Session session;
     Table table;
     Long localTable;
 
-    public Writer(QdbSession session, Table table) {
+    public Writer(Session session, Table table) {
         this.session = session;
         this.table = table;
 

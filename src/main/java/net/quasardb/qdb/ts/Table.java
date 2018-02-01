@@ -27,7 +27,7 @@ public class Table implements Serializable {
      * @param session Active connection with the QdbCluster
      * @param name Timeseries name. Must already exist.
      */
-    Table(QdbSession session, String name) {
+    Table(Session session, String name) {
         this.name = name;
 
         Reference<Column[]> columns =
@@ -50,7 +50,7 @@ public class Table implements Serializable {
      * @param session Active connection with the QdbCluster
      * @param name Timeseries table name. Must already exist.
      */
-    public static Writer writer(QdbSession session, String name) {
+    public static Writer writer(Session session, String name) {
         return new Writer(session,
                           new Table(session, name));
     }
@@ -62,7 +62,7 @@ public class Table implements Serializable {
      * @param session Active connection with the QdbCluster
      * @param name Timeseries table name. Must already exist.
      */
-    public static AutoFlushWriter autoFlushWriter(QdbSession session, String name) {
+    public static AutoFlushWriter autoFlushWriter(Session session, String name) {
         return new AutoFlushWriter(session,
                                    new Table(session, name));
     }
@@ -75,7 +75,7 @@ public class Table implements Serializable {
      * @param name Timeseries table name. Must already exist.
      * @param threshold The amount of rows to keep in local buffer before automatic flushing occurs.
      */
-    public static AutoFlushWriter autoFlushWriter(QdbSession session, String name, long threshold) {
+    public static AutoFlushWriter autoFlushWriter(Session session, String name, long threshold) {
         return new AutoFlushWriter(session,
                                    new Table(session, name),
                                    threshold);
@@ -88,7 +88,7 @@ public class Table implements Serializable {
      * @param name    Timeseries table name. Must already exist.
      * @param ranges  Filtered time ranges to look for.
      */
-    public static Reader reader(QdbSession session, String name, FilteredRange[] ranges) {
+    public static Reader reader(Session session, String name, FilteredRange[] ranges) {
         return new Reader (session,
                            new Table(session, name),
                            ranges);
@@ -101,7 +101,7 @@ public class Table implements Serializable {
      * @param name    Timeseries table name. Must already exist.
      * @param ranges  Time ranges to look for.
      */
-    public static Reader reader(QdbSession session, String name, TimeRange[] ranges) {
+    public static Reader reader(Session session, String name, TimeRange[] ranges) {
         return reader(session, name,
                       Arrays
                       .stream(ranges)

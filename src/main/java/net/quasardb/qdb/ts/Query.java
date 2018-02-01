@@ -5,7 +5,7 @@ import java.util.Optional;
 import net.quasardb.qdb.jni.qdb;
 import net.quasardb.qdb.jni.Reference;
 import net.quasardb.qdb.QdbInputException;
-import net.quasardb.qdb.QdbSession;
+import net.quasardb.qdb.Session;
 import net.quasardb.qdb.QdbExceptionFactory;
 
 /**
@@ -39,7 +39,7 @@ public final class Query {
         return new Query(query);
     }
 
-    public Result execute(QdbSession session) {
+    public Result execute(Session session) {
         if (this.query == null) {
             throw new QdbInputException("Cannot execute an empty query");
         }
