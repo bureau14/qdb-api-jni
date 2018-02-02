@@ -16,7 +16,8 @@ import net.quasardb.qdb.*;
 import net.quasardb.qdb.jni.*;
 
 /**
- * Represents a timeseries table.
+ * High-performance bulk reader for a QuasarDB timeseries table. This class follows the
+ * general Iterator pattern, and allows you to scan entire timeseries tables in bulk.
  */
 public class Reader implements AutoCloseable, Iterator<Row> {
     Session session;
@@ -44,7 +45,7 @@ public class Reader implements AutoCloseable, Iterator<Row> {
     }
 
     /**
-     * Returns the underlying table that is being written to.
+     * @return The underlying table that is being written to.
      */
     public Table getTable() {
         return this.table;
@@ -88,6 +89,12 @@ public class Reader implements AutoCloseable, Iterator<Row> {
         this.localTable = null;
     }
 
+    /**
+     * Check whether there is another row available for reading or not. When this
+     * function returns true, it is safe to call {@link #next}.
+     *
+     * @return Returns true when another row is available for reading.
+     */
     public boolean hasNext() {
         this.maybeReadNext();
 
@@ -95,7 +102,12 @@ public class Reader implements AutoCloseable, Iterator<Row> {
     }
 
     /**
-     * Modifies internal state to move forward to the next row.
+     * Modifies internal state to move forward to the next row. Make sure to check
+     * whether it is safe to read the next row using {@link #hasNext}.
+     *
+     * @throws InvalidIteratorException Thrown when the iterator has reached the end
+     *                                  and no next row is available.
+     * @return The next row.
      */
     public Row next() {
         this.maybeReadNext();

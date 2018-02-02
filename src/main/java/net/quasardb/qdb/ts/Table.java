@@ -16,7 +16,9 @@ import net.quasardb.qdb.exception.InvalidArgumentException;
 import net.quasardb.qdb.jni.*;
 
 /**
- * Represents a timeseries table.
+ * Represents a timeseries Table. Typically you do not have to initialise this
+ * class directly, but instead initialise another component that operates on top
+ * of this table using {@link #writer}, {@link #autoFlushWriter} or {@link #reader}.
  */
 public class Table implements Serializable {
     String name;
