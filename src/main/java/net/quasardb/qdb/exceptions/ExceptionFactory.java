@@ -11,7 +11,7 @@ public class ExceptionFactory {
         throw exception;
     }
 
-    static Exception createException(int err) {
+    public static Exception createException(int err) {
         switch (err) {
         case qdb_error.connection_refused:
             return new ConnectionRefusedException();
