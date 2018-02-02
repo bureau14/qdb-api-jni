@@ -15,6 +15,9 @@ import net.quasardb.qdb.jni.*;
 
 /**
  * High-performance bulk writer for a QuasarDB timeseries table.
+ *
+ * Do not construct this class directly, but rather using
+ * {@link Table#writer}.
  */
 public class Writer implements AutoCloseable, Flushable {
     Session session;
@@ -71,7 +74,10 @@ public class Writer implements AutoCloseable, Flushable {
     }
 
     /**
-     * Append a new row to the local table cache.
+     * Append a new row to the local table cache. Should be periodically flushed,
+     * unless an {@link AutoFlushWriter} is used.
+     * @see #flush
+     * @see Table#autoFlushWriter
      */
     public void append(Row row) throws IOException {
         int err = qdb.ts_table_row_append(this.localTable, row.getTimestamp(), row.getValues());
@@ -79,21 +85,30 @@ public class Writer implements AutoCloseable, Flushable {
     }
 
     /**
-     * Append a new row to the local table cache.
+     * Append a new row to the local table cache. Should be periodically flushed,
+     * unless an {@link AutoFlushWriter} is used.
+     * @see #flush
+     * @see Table#autoFlushWriter
      */
     public void append(Timespec timestamp, Value[] value) throws IOException {
         this.append(new Row(timestamp, value));
     }
 
     /**
-     * Append a new row to the local table cache.
+     * Append a new row to the local table cache. Should be periodically flushed,
+     * unless an {@link AutoFlushWriter} is used.
+     * @see #flush
+     * @see Table#autoFlushWriter
      */
     public void append(LocalDateTime timestamp, Value[] value) throws IOException {
         this.append(new Row(timestamp, value));
     }
 
     /**
-     * Append a new row to the local table cache.
+     * Append a new row to the local table cache. Should be periodically flushed,
+     * unless an {@link AutoFlushWriter} is used.
+     * @see #flush
+     * @see Table#autoFlushWriter
      */
     public void append(Timestamp timestamp, Value[] value) throws IOException {
         this.append(new Row(timestamp, value));

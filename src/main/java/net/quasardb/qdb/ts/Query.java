@@ -10,6 +10,12 @@ import net.quasardb.qdb.exception.InputException;
 
 /**
  * Represents a timeseries query.
+ *
+ * Use this class directly if you're planning on writing complex, custom
+ * queries. If your queries are relatively simple, consider using the
+ * {@link QueryBuilder} instead.
+ *
+ * @see QueryBuilder
  */
 public final class Query {
 
