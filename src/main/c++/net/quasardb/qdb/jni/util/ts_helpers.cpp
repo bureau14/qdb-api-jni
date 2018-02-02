@@ -5,6 +5,7 @@
 #include "../string.h"
 #include "../introspect.h"
 #include "../env.h"
+#include "../local_frame.h"
 
 #include <cassert>
 #include <cstring>
@@ -122,14 +123,17 @@ filteredRangeToNative(qdb::jni::env & env, jobject input, qdb_ts_filtered_range_
 
 void
 filteredRangesToNative(qdb::jni::env & env, jobjectArray input, size_t count, qdb_ts_filtered_range_t * native) {
-  qdb_ts_filtered_range_t * cur = native;
+    jni::local_frame lf =
+        jni::local_frame::push(env, count);
 
-  for (size_t i = 0; i < count; ++i) {
-      jobject point =
-          (jobject)(env.instance().GetObjectArrayElement(input, static_cast<jsize>(i)));
+    qdb_ts_filtered_range_t * cur = native;
 
-      filteredRangeToNative(env, point, cur++);
-  }
+    for (size_t i = 0; i < count; ++i) {
+        jobject point =
+            (jobject)(env.instance().GetObjectArrayElement(input, static_cast<jsize>(i)));
+
+        filteredRangeToNative(env, point, cur++);
+    }
 }
 
 jni::guard::local_ref<jobject>
@@ -567,20 +571,27 @@ tableRowSetColumnValue(qdb::jni::env & env, qdb_local_table_t localTable, size_t
 
 qdb_error_t
 tableRowAppend(qdb::jni::env & env, qdb_local_table_t localTable, jobject time, jobjectArray values, size_t count, qdb_size_t * rowIndex) {
-  qdb_timespec_t nativeTime;
-  timespecToNative(env, time, &nativeTime);
 
-  for (size_t i = 0; i < count; i++) {
-    jobject value =
-      (jobject)(env.instance().GetObjectArrayElement(values, static_cast<jsize>(i)));
-    qdb_error_t err = tableRowSetColumnValue(env, localTable, i, value);
+    jni::local_frame lf = jni::local_frame::push(env,
+                                                 // We need at least 2 * count local frame registers
+                                                 // from the JVM, because some tableRowSetColumnValue
+                                                 // requires additional object references.
+                                                 (2 * count));
 
-    if (!QDB_SUCCESS(err)) {
-      return err;
+    qdb_timespec_t nativeTime;
+    timespecToNative(env, time, &nativeTime);
+
+    for (size_t i = 0; i < count; i++) {
+        jobject value =
+            (jobject)(env.instance().GetObjectArrayElement(values, static_cast<jsize>(i)));
+        qdb_error_t err = tableRowSetColumnValue(env, localTable, i, value);
+
+        if (!QDB_SUCCESS(err)) {
+            return err;
+        }
     }
-  }
 
-  return qdb_ts_table_row_append(localTable, &nativeTime, rowIndex);
+    return qdb_ts_table_row_append(localTable, &nativeTime, rowIndex);
 }
 
 

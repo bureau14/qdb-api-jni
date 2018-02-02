@@ -11,7 +11,6 @@
 
 /* static */ qdb::jni::guard::local_ref<jobject>
 qdb::jni::ts::value::from_native(qdb::jni::env & env, qdb_point_result_t const & input) {
-    // :TODO: cache!
     jclass valueClass = qdb::jni::introspect::lookup_class(env, "net/quasardb/qdb/ts/Value");
     jmethodID constructor = qdb::jni::introspect::lookup_static_method(env, valueClass,
                                                                        "createNull",
