@@ -1,11 +1,11 @@
-package net.quasardb.qdb;
+package net.quasardb.qdb.exception;
 
 /**
  * Exception thrown when modifying a batch that has already been run.
  */
-public final class QdbBatchAlreadyRunException extends QdbOperationException {
+public final class BatchAlreadyRunException extends OperationException {
 
-    public QdbBatchAlreadyRunException() {
+    public BatchAlreadyRunException() {
         super("Cannot modify a batch that has already been run");
     }
 }

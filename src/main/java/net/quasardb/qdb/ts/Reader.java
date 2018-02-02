@@ -8,6 +8,10 @@ import java.time.LocalDateTime;
 import java.nio.channels.SeekableByteChannel;
 import java.util.*;
 
+import net.quasardb.qdb.exception.ExceptionFactory;
+import net.quasardb.qdb.exception.InvalidArgumentException;
+import net.quasardb.qdb.exception.InvalidIteratorException;
+
 import net.quasardb.qdb.*;
 import net.quasardb.qdb.jni.*;
 
@@ -22,7 +26,7 @@ public class Reader implements AutoCloseable, Iterator<Row> {
 
     public Reader(Session session, Table table, FilteredRange[] ranges) {
         if (ranges.length <= 0) {
-            throw new QdbInvalidArgumentException("Reader requires at least one FilteredRange to read");
+            throw new InvalidArgumentException("Reader requires at least one FilteredRange to read");
         }
 
         this.session = session;
@@ -31,12 +35,12 @@ public class Reader implements AutoCloseable, Iterator<Row> {
 
         Reference<Long> theLocalTable = new Reference<Long>();
         int err = qdb.ts_local_table_init(this.session.handle(), table.getName(), table.getColumnInfo(), theLocalTable);
-        QdbExceptionFactory.throwIfError(err);
+        ExceptionFactory.throwIfError(err);
 
         this.localTable = theLocalTable.get();
 
         err = qdb.ts_table_get_ranges(this.localTable, ranges);
-        QdbExceptionFactory.throwIfError(err);
+        ExceptionFactory.throwIfError(err);
     }
 
     /**
@@ -64,7 +68,7 @@ public class Reader implements AutoCloseable, Iterator<Row> {
      */
     private void readNext() {
         int err = qdb.ts_table_next_row(this.localTable, this.table.getColumnInfo(), this.next);
-        QdbExceptionFactory.throwIfError(err);
+        ExceptionFactory.throwIfError(err);
     }
 
     /**
@@ -97,7 +101,7 @@ public class Reader implements AutoCloseable, Iterator<Row> {
         this.maybeReadNext();
 
         if (this.hasNext() == false) {
-            throw new QdbInvalidIteratorException();
+            throw new InvalidIteratorException();
         }
 
         return this.next.pop();

@@ -1,11 +1,11 @@
-package net.quasardb.qdb;
+package net.quasardb.qdb.exception;
 
 /**
  * Exception thrown when an operation cannot be performed because the entry is locked.
  */
-public final class QdbResourceLockedException extends QdbOperationException {
+public final class ResourceLockedException extends OperationException {
 
-    public QdbResourceLockedException() {
+    public ResourceLockedException() {
         super("The entry is currently locked by another client.");
     }
 }

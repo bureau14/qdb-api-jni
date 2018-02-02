@@ -1,11 +1,11 @@
-package net.quasardb.qdb;
+package net.quasardb.qdb.exception;
 
 /**
  * Exception thrown when an entry cannot be found in the database
  */
-public final class QdbAliasNotFoundException extends QdbOperationException {
+public final class AliasNotFoundException extends OperationException {
 
-    public QdbAliasNotFoundException() {
+    public AliasNotFoundException() {
         super("An entry matching the provided alias cannot be found.");
     }
 }

@@ -10,6 +10,7 @@ import java.nio.channels.SeekableByteChannel;
 import java.util.*;
 
 import net.quasardb.qdb.*;
+import net.quasardb.qdb.exception.ExceptionFactory;
 import net.quasardb.qdb.jni.*;
 
 /**
@@ -26,7 +27,7 @@ public class Writer implements AutoCloseable, Flushable {
 
         Reference<Long> theLocalTable = new Reference<Long>();
         int err = qdb.ts_local_table_init(this.session.handle(), table.getName(), table.getColumnInfo(), theLocalTable);
-        QdbExceptionFactory.throwIfError(err);
+        ExceptionFactory.throwIfError(err);
 
         this.localTable = theLocalTable.value;
     }
@@ -66,7 +67,7 @@ public class Writer implements AutoCloseable, Flushable {
      */
     public void flush() throws IOException {
         int err = qdb.ts_push(this.localTable);
-        QdbExceptionFactory.throwIfError(err);
+        ExceptionFactory.throwIfError(err);
     }
 
     /**
@@ -74,7 +75,7 @@ public class Writer implements AutoCloseable, Flushable {
      */
     public void append(Row row) throws IOException {
         int err = qdb.ts_table_row_append(this.localTable, row.getTimestamp(), row.getValues());
-        QdbExceptionFactory.throwIfError(err);
+        ExceptionFactory.throwIfError(err);
     }
 
     /**

@@ -1,9 +1,13 @@
 package net.quasardb.qdb;
 
 import java.io.Serializable;
+import java.nio.ByteBuffer;
+
 import net.quasardb.qdb.*;
 import net.quasardb.qdb.jni.*;
-import java.nio.ByteBuffer;
+import net.quasardb.qdb.exception.ExceptionFactory;
+import net.quasardb.qdb.exception.ClusterClosedException;
+
 
 /**
  * Represents a connection with the QuasarDB cluster. This class is backed
@@ -58,10 +62,10 @@ public class Session {
     public void connect(String uri) {
         if (this.securityOptions == null) {
             int err = qdb.connect(this.handle, uri);
-            QdbExceptionFactory.throwIfError(err);
+            ExceptionFactory.throwIfError(err);
         } else {
             int err = qdb.secure_connect(this.handle, uri, securityOptions);
-            QdbExceptionFactory.throwIfError(err);
+            ExceptionFactory.throwIfError(err);
         }
     }
 
@@ -78,7 +82,7 @@ public class Session {
 
     public void throwIfClosed() {
         if (handle == 0)
-            throw new QdbClusterClosedException();
+            throw new ClusterClosedException();
     }
 
     @Override

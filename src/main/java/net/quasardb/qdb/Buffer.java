@@ -2,6 +2,8 @@ package net.quasardb.qdb;
 
 import java.nio.ByteBuffer;
 import java.lang.AutoCloseable;
+
+import net.quasardb.qdb.exception.BufferClosedException;
 import net.quasardb.qdb.jni.*;
 
 public final class Buffer implements AutoCloseable {
@@ -51,7 +53,7 @@ public final class Buffer implements AutoCloseable {
 
     private void throwIfClosed() {
         if (buffer == null) {
-            throw new QdbBufferClosedException();
+            throw new BufferClosedException();
         }
     }
 }

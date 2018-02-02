@@ -11,6 +11,8 @@ import java.nio.channels.SeekableByteChannel;
 import java.util.*;
 
 import net.quasardb.qdb.*;
+import net.quasardb.qdb.exception.ExceptionFactory;
+import net.quasardb.qdb.exception.InvalidArgumentException;
 import net.quasardb.qdb.jni.*;
 
 /**
@@ -33,7 +35,7 @@ public class Table implements Serializable {
         Reference<Column[]> columns =
             new Reference<Column[]>();
         int err = qdb.ts_list_columns(session.handle(), this.name, columns);
-        QdbExceptionFactory.throwIfError(err);
+        ExceptionFactory.throwIfError(err);
         this.columns = columns.value;
 
         // Keep track of the columns that are part of this table, so
@@ -134,7 +136,7 @@ public class Table implements Serializable {
     public int columnIndexById (String id) {
         Integer offset = this.columnOffsets.get(id);
         if (offset == null) {
-            throw new QdbInvalidArgumentException();
+            throw new InvalidArgumentException();
         }
 
         return offset.intValue();

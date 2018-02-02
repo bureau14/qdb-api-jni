@@ -2,11 +2,11 @@ package net.quasardb.qdb.ts;
 
 import java.util.Optional;
 
+import net.quasardb.qdb.Session;
 import net.quasardb.qdb.jni.qdb;
 import net.quasardb.qdb.jni.Reference;
-import net.quasardb.qdb.QdbInputException;
-import net.quasardb.qdb.Session;
-import net.quasardb.qdb.QdbExceptionFactory;
+import net.quasardb.qdb.exception.ExceptionFactory;
+import net.quasardb.qdb.exception.InputException;
 
 /**
  * Represents a timeseries query.
@@ -41,13 +41,13 @@ public final class Query {
 
     public Result execute(Session session) {
         if (this.query == null) {
-            throw new QdbInputException("Cannot execute an empty query");
+            throw new InputException("Cannot execute an empty query");
         }
 
         Reference<Result> result = new Reference<Result>();
 
         int err = qdb.query_execute(session.handle(), this.query, result);
-        QdbExceptionFactory.throwIfError(err);
+        ExceptionFactory.throwIfError(err);
 
         return result.value;
     }

@@ -1,11 +1,11 @@
-package net.quasardb.qdb;
+package net.quasardb.qdb.exception;
 
 /**
  * Exception thrown when the specified alias is reserved for quasardb intenal use.
  */
-public final class QdbReservedAliasException extends QdbInputException {
+public final class ReservedAliasException extends InputException {
 
-    public QdbReservedAliasException() {
+    public ReservedAliasException() {
         super("The alias name or prefix is reserved.");
     }
 }

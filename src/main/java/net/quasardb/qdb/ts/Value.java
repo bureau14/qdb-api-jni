@@ -5,6 +5,8 @@ import java.nio.ByteBuffer;
 
 import net.quasardb.qdb.*;
 import net.quasardb.qdb.jni.*;
+import net.quasardb.qdb.exception.ExceptionFactory;
+import net.quasardb.qdb.exception.IncompatibleTypeException;
 
 /**
  * Represents a timeseries table.
@@ -303,14 +305,13 @@ public class Value implements Serializable {
         return bb.duplicate();
     }
 
-
     public Type getType() {
         return this.type;
     }
 
     public long getInt64() {
         if (this.type != Type.INT64) {
-            throw new QdbIncompatibleTypeException();
+            throw new IncompatibleTypeException();
         }
 
         return this.int64Value;
@@ -318,7 +319,7 @@ public class Value implements Serializable {
 
     public double getDouble() {
         if (this.type != Type.DOUBLE) {
-            throw new QdbIncompatibleTypeException();
+            throw new IncompatibleTypeException();
         }
 
         return this.doubleValue;
@@ -326,7 +327,7 @@ public class Value implements Serializable {
 
     public Timespec getTimestamp() {
         if (this.type != Type.TIMESTAMP) {
-            throw new QdbIncompatibleTypeException();
+            throw new IncompatibleTypeException();
         }
 
         return this.timestampValue;
@@ -334,7 +335,7 @@ public class Value implements Serializable {
 
     public ByteBuffer getBlob() {
         if (this.type != Type.BLOB) {
-            throw new QdbIncompatibleTypeException();
+            throw new IncompatibleTypeException();
         }
 
         return this.blobValue.asReadOnlyBuffer();

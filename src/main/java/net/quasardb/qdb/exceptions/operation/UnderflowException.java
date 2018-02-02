@@ -1,11 +1,11 @@
-package net.quasardb.qdb;
+package net.quasardb.qdb.exception;
 
 /**
  * Exception thrown when the operation cannot be performed because the 64-bit integer would underflow
  */
-public final class QdbUnderflowException extends QdbOperationException {
+public final class UnderflowException extends OperationException {
 
-    public QdbUnderflowException() {
+    public UnderflowException() {
         super("The operation provokes underflow.");
     }
 }
