@@ -21,7 +21,7 @@ public class Writer implements AutoCloseable, Flushable {
     Table table;
     Long localTable;
 
-    public Writer(Session session, Table table) {
+    protected Writer(Session session, Table table) {
         this.session = session;
         this.table = table;
 
