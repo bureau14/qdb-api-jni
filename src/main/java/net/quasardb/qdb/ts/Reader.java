@@ -25,7 +25,7 @@ public class Reader implements AutoCloseable, Iterator<Row> {
     Long localTable;
     Reference<Row> next;
 
-    public Reader(Session session, Table table, FilteredRange[] ranges) {
+    protected Reader(Session session, Table table, FilteredRange[] ranges) {
         if (ranges.length <= 0) {
             throw new InvalidArgumentException("Reader requires at least one FilteredRange to read");
         }
