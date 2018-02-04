@@ -49,9 +49,31 @@ public class Table implements Serializable {
     }
 
     /**
+     * Create new timeseries table.
+     *
+     * @param session Active session with the QuasarDB cluster.
+     * @param name Unique identifier for this timeseries table.
+     * @param columns Column definitions of this table. The ordering of the array will persist
+     *                through the table definition and cannot be changed after creation.
+     * @param shardSize The size of the shards in ms.
+     * @return Reference to the newly created timeseries table.
+     */
+    static public Table create(Session session, String name, Column[] columns, long shardSize) {
+        int err = qdb.ts_create(session.handle(),
+                                name,
+                                shardSize,
+                                columns);
+
+        ExceptionFactory.throwIfError(err);
+
+        return new Table(session, name);
+    }
+
+
+    /**
      * Initializes new writer for a timeseries table.
      *
-     * @param session Active connection with the QdbCluster
+     * @param session Active session with the QuasarDB cluster.
      * @param name Timeseries table name. Must already exist.
      */
     public static Writer writer(Session session, String name) {
@@ -63,7 +85,7 @@ public class Table implements Serializable {
      * Initializes new writer for a timeseries table that periodically flushes
      * its local cache.
      *
-     * @param session Active connection with the QdbCluster
+     * @param session Active session with the QuasarDB cluster.
      * @param name Timeseries table name. Must already exist.
      */
     public static AutoFlushWriter autoFlushWriter(Session session, String name) {
@@ -75,7 +97,7 @@ public class Table implements Serializable {
      * Initializes new writer for a timeseries table that periodically flushes
      * its local cache.
      *
-     * @param session Active connection with the QdbCluster
+     * @param session Active session with the QuasarDB cluster.
      * @param name Timeseries table name. Must already exist.
      * @param threshold The amount of rows to keep in local buffer before automatic flushing occurs.
      */
@@ -88,7 +110,7 @@ public class Table implements Serializable {
     /**
      * Initializes new reader for a timeseries table.
      *
-     * @param session Active connection with the QdbCluster
+     * @param session Active session with the QuasarDB cluster.
      * @param name    Timeseries table name. Must already exist.
      * @param ranges  Filtered time ranges to look for.
      */
@@ -101,7 +123,7 @@ public class Table implements Serializable {
     /**
      * Initializes new reader for a timeseries table.
      *
-     * @param session Active connection with the QdbCluster
+     * @param session Active session with the QuasarDB cluster.
      * @param name    Timeseries table name. Must already exist.
      * @param ranges  Time ranges to look for.
      */
