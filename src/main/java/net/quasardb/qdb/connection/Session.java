@@ -58,15 +58,31 @@ public class Session {
 
     /**
      * Establishes a connection
+     *
+     * @param uri Fully qualified quasardb cluster uri, e.g. qdb://127.0.0.1:2836
+     * @return A QuasarDB session
      */
-    public void connect(String uri) {
-        if (this.securityOptions == null) {
-            int err = qdb.connect(this.handle, uri);
-            ExceptionFactory.throwIfError(err);
-        } else {
-            int err = qdb.secure_connect(this.handle, uri, securityOptions);
-            ExceptionFactory.throwIfError(err);
-        }
+    static public Session connect(String uri) {
+        Session s = new Session();
+        int err = qdb.connect(s.handle, uri);
+        ExceptionFactory.throwIfError(err);
+
+        return s;
+    }
+
+    /**
+     * Establishes a secure connection
+     *
+     * @param options Security options for authenticating with cluster
+     * @param uri Fully qualified quasardb cluster uri, e.g. qdb://127.0.0.1:2836
+     * @return A secure QuasarDB session
+     */
+    static public Session connect(SecurityOptions options, String uri) {
+        Session s = new Session();
+        int err = qdb.secure_connect(s.handle, uri, SecurityOptions.toNative(options));
+        ExceptionFactory.throwIfError(err);
+
+        return s;
     }
 
     public void close() {
