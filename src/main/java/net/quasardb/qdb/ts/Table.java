@@ -179,4 +179,8 @@ public class Table implements Serializable {
 
         return offset.intValue();
     }
+
+    public String toString() {
+        return "Table (name: " + this.name + ", columns: " + Arrays.toString(this.columns) + ")";
+    }
 }
