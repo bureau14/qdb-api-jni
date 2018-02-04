@@ -4,8 +4,9 @@ import net.quasardb.qdb.jni.*;
 
 /**
  * Represents a time range with additional filters applied.
- *
- * Currently serves as a placeholder class, as no filters are supported yet.
+ * <p>
+ *  <b>Warning:</b> Currently serves as a placeholder class, as no filters are supported yet.
+ * </p>
  */
 public final class FilteredRange {
     TimeRange range;

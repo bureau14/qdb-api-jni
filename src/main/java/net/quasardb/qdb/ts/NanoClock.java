@@ -4,6 +4,12 @@ import java.time.ZoneId;
 import java.time.Instant;
 import java.time.Clock;
 
+/**
+ * Nanosecond precision clock implementation. Used by {@link Timespec} as its
+ * default Clock backend.
+ *
+ * @see Timespec#now()
+ */
 public class NanoClock extends Clock
 {
     private final Clock clock;
