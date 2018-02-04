@@ -29,7 +29,7 @@ public class Writer implements AutoCloseable, Flushable {
         this.table = table;
 
         Reference<Long> theLocalTable = new Reference<Long>();
-        int err = qdb.ts_local_table_init(this.session.handle(), table.getName(), table.getColumnInfo(), theLocalTable);
+        int err = qdb.ts_local_table_init(this.session.handle(), table.getName(), table.getColumns(), theLocalTable);
         ExceptionFactory.throwIfError(err);
 
         this.localTable = theLocalTable.value;

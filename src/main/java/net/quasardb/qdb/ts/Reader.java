@@ -35,7 +35,7 @@ public class Reader implements AutoCloseable, Iterator<Row> {
         this.next = new Reference<Row>();
 
         Reference<Long> theLocalTable = new Reference<Long>();
-        int err = qdb.ts_local_table_init(this.session.handle(), table.getName(), table.getColumnInfo(), theLocalTable);
+        int err = qdb.ts_local_table_init(this.session.handle(), table.getName(), table.getColumns(), theLocalTable);
         ExceptionFactory.throwIfError(err);
 
         this.localTable = theLocalTable.get();
@@ -68,7 +68,7 @@ public class Reader implements AutoCloseable, Iterator<Row> {
      * reference to the internal row.
      */
     private void readNext() {
-        int err = qdb.ts_table_next_row(this.localTable, this.table.getColumnInfo(), this.next);
+        int err = qdb.ts_table_next_row(this.localTable, this.table.getColumns(), this.next);
         ExceptionFactory.throwIfError(err);
     }
 

@@ -158,10 +158,9 @@ public class Table implements Serializable {
     }
 
     /**
-     * Returns internal representation of columns, for internal use
-     * only.
+     * Returns column representation of this table.
      */
-    public Column[] getColumnInfo() {
+    public Column[] getColumns() {
         return this.columns;
     }
 
