@@ -21,6 +21,8 @@ import net.quasardb.qdb.jni.*;
  * of this table using {@link #writer}, {@link #autoFlushWriter} or {@link #reader}.
  */
 public class Table implements Serializable {
+    final static long DEFAULT_SHARD_SIZE = 86400000;
+
     String name;
     Column[] columns;
     Map <String, Integer> columnOffsets;
@@ -46,6 +48,19 @@ public class Table implements Serializable {
         for (int i = 0; i < this.columns.length; ++i) {
             this.columnOffsets.put(this.columns[i].name, i);
         }
+    }
+
+    /**
+     * Create new timeseries table with a default shard size.
+     *
+     * @param session Active session with the QuasarDB cluster.
+     * @param name Unique identifier for this timeseries table.
+     * @param columns Column definitions of this table. The ordering of the array will persist
+     *                through the table definition and cannot be changed after creation.
+     * @return Reference to the newly created timeseries table.
+     */
+    static public Table create(Session session, String name, Column[] columns) {
+        return create(session, name, columns, DEFAULT_SHARD_SIZE);
     }
 
     /**
