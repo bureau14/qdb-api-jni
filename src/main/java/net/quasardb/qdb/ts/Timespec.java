@@ -91,6 +91,23 @@ public class Timespec implements Serializable {
     }
 
     /**
+     * Returns copy of this instance with the specified duration in seconds deducted.
+     */
+    public Timespec minusSeconds(long secondsToDeduct) {
+        return new Timespec(this.sec - secondsToDeduct,
+                            this.nsec);
+    }
+
+    /**
+     * Returns copy of this instance with the specified duration in nanoseconds deducted.
+     */
+    public Timespec minusNanos(long nanosToDeduct) {
+        return new Timespec(this.sec,
+                            this.nsec - nanosToDeduct);
+    }
+
+
+    /**
      * Converts this Timespec into an {@link Instant}.
      */
     public Instant asInstant() {
