@@ -92,8 +92,17 @@ public class Table implements Serializable {
      * @param name Timeseries table name. Must already exist.
      */
     public static Writer writer(Session session, String name) {
-        return new Writer(session,
-                          new Table(session, name));
+        return writer(session, new Table(session, name));
+    }
+
+    /**
+     * Initializes new writer for a timeseries table.
+     *
+     * @param session Active session with the QuasarDB cluster.
+     * @param table Timeseries table.
+     */
+    public static Writer writer(Session session, Table table) {
+        return new Writer(session, table);
     }
 
     /**
@@ -104,8 +113,18 @@ public class Table implements Serializable {
      * @param name Timeseries table name. Must already exist.
      */
     public static AutoFlushWriter autoFlushWriter(Session session, String name) {
-        return new AutoFlushWriter(session,
-                                   new Table(session, name));
+        return autoFlushWriter(session, new Table(session, name));
+    }
+
+    /**
+     * Initializes new writer for a timeseries table that periodically flushes
+     * its local cache.
+     *
+     * @param session Active session with the QuasarDB cluster.
+     * @param table Timeseries table.
+     */
+    public static AutoFlushWriter autoFlushWriter(Session session, Table table) {
+        return new AutoFlushWriter(session, table);
     }
 
     /**
@@ -117,8 +136,22 @@ public class Table implements Serializable {
      * @param threshold The amount of rows to keep in local buffer before automatic flushing occurs.
      */
     public static AutoFlushWriter autoFlushWriter(Session session, String name, long threshold) {
+        return autoFlushWriter(session,
+                               new Table(session, name),
+                               threshold);
+    }
+
+    /**
+     * Initializes new writer for a timeseries table that periodically flushes
+     * its local cache.
+     *
+     * @param session Active session with the QuasarDB cluster.
+     * @param table Timeseries table.
+     * @param threshold The amount of rows to keep in local buffer before automatic flushing occurs.
+     */
+    public static AutoFlushWriter autoFlushWriter(Session session, Table table, long threshold) {
         return new AutoFlushWriter(session,
-                                   new Table(session, name),
+                                   table,
                                    threshold);
     }
 
