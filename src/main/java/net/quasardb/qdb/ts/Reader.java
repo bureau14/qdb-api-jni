@@ -6,7 +6,9 @@ import java.sql.Timestamp;
 import java.time.LocalDateTime;
 
 import java.nio.channels.SeekableByteChannel;
+import java.util.Spliterator;
 import java.util.*;
+import java.util.stream.*;
 
 import net.quasardb.qdb.exception.ExceptionFactory;
 import net.quasardb.qdb.exception.InvalidArgumentException;
@@ -95,6 +97,7 @@ public class Reader implements AutoCloseable, Iterator<Row> {
      *
      * @return Returns true when another row is available for reading.
      */
+    @Override
     public boolean hasNext() {
         this.maybeReadNext();
 
@@ -109,6 +112,7 @@ public class Reader implements AutoCloseable, Iterator<Row> {
      *                                  and no next row is available.
      * @return The next row.
      */
+    @Override
     public Row next() {
         this.maybeReadNext();
 
@@ -117,5 +121,13 @@ public class Reader implements AutoCloseable, Iterator<Row> {
         }
 
         return this.next.pop();
+    }
+
+    /**
+     * Provides stream-based access.
+     */
+    public Stream<Row> stream() {
+        return StreamSupport.stream(
+            Spliterators.spliteratorUnknownSize(this, Spliterator.IMMUTABLE), false);
     }
 }
