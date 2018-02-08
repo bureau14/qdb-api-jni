@@ -9,15 +9,14 @@ include(compile_options.cmake)
 
 file(GLOB QDB_JAVA_SOURCES
   "tools/*.java"
-  "src/main/java/net/quasardb/qdb/exceptions/connection/*.java"
-  "src/main/java/net/quasardb/qdb/exceptions/input/*.java"
-  "src/main/java/net/quasardb/qdb/exceptions/operation/*.java"
-  "src/main/java/net/quasardb/qdb/exceptions/protocol/*.java"
-  "src/main/java/net/quasardb/qdb/exceptions/system/*.java"
-  "src/main/java/net/quasardb/qdb/exceptions/system/remote/*.java"
-  "src/main/java/net/quasardb/qdb/exceptions/system/local/*.java"
-  "src/main/java/net/quasardb/qdb/exceptions/*.java"
-  "src/main/java/net/quasardb/qdb/connection/*.java"
+  "src/main/java/net/quasardb/qdb/exception/connection/*.java"
+  "src/main/java/net/quasardb/qdb/exception/input/*.java"
+  "src/main/java/net/quasardb/qdb/exception/operation/*.java"
+  "src/main/java/net/quasardb/qdb/exception/protocol/*.java"
+  "src/main/java/net/quasardb/qdb/exception/system/*.java"
+  "src/main/java/net/quasardb/qdb/exception/system/remote/*.java"
+  "src/main/java/net/quasardb/qdb/exception/system/local/*.java"
+  "src/main/java/net/quasardb/qdb/exception/*.java"
   "src/main/java/net/quasardb/qdb/jni/*.java"
   "src/main/java/net/quasardb/qdb/ts/*.java"
   "src/main/java/net/quasardb/qdb/*.java")
@@ -86,3 +85,4 @@ target_link_libraries(qdb_api_jni
 
 include(native_jar.cmake)
 include(sources_jar.cmake)
+include(sources_javadoc.cmake)
