@@ -113,7 +113,7 @@ public class Reader implements AutoCloseable, Iterator<Row> {
      * @return The next row.
      */
     @Override
-    public Row next() {
+    public Row next() throws InvalidIteratorException {
         this.maybeReadNext();
 
         if (this.hasNext() == false) {
