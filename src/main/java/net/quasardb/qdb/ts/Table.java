@@ -196,7 +196,7 @@ public class Table implements Serializable {
      * Initializes new reader for a timeseries table.
      *
      * @param session Active session with the QuasarDB cluster.
-     * @param name    Timeseries table.
+     * @param table   Timeseries table.
      * @param ranges  Time ranges to look for.
      */
     public static Reader reader(Session session, Table table, TimeRange[] ranges) {
