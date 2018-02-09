@@ -19,11 +19,19 @@ public class Session {
     private transient long handle;
     private qdb_cluster_security_options securityOptions;
 
+    /**
+     * Optional configuration for establishing a secure connection.
+     */
     public static class SecurityOptions implements Serializable {
         protected String userName;
         protected String userPrivateKey;
         protected String clusterPublicKey;
 
+        /**
+         * @param userName Username to use when authenticating to the cluster.
+         * @param userPrivateKey Private key of the user.
+         * @param clusterPublicKey Public key of the cluster.
+         */
         public SecurityOptions (String userName,
                                 String userPrivateKey,
                                 String clusterPublicKey) {
