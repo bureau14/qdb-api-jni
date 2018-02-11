@@ -42,6 +42,7 @@ public final class Query {
      *              for the full query syntax.
      */
     public static Query of(String query) {
+        System.out.println("executing query: " + query);
         return new Query(query);
     }
 
