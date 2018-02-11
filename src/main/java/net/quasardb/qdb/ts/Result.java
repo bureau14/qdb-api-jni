@@ -1,6 +1,7 @@
 package net.quasardb.qdb.ts;
 
 import java.util.Arrays;
+import java.util.stream.Stream;
 
 /**
  * The result of a Query
@@ -13,9 +14,23 @@ public final class Result {
      **/
     public Table[] tables;
 
+    /**
+     * Represents a Table that is part of the Query result.
+     */
     public static class Table {
+        /**
+         * The name of this table.
+         */
         public String name;
+
+        /**
+         * The columns identifiers of this Table.
+         */
         public String[] columns;
+
+        /**
+         * A array of all rows. Contains exactly one value per column.
+         */
         public Value[][] rows;
 
         public String toString() {
@@ -43,5 +58,12 @@ public final class Result {
      */
     public String toString() {
         return "Result (tables: " + Arrays.toString(this.tables) + ")";
+    }
+
+    /**
+     * Provides stream-based access.
+     */
+    public Stream<Table> stream() {
+        return Arrays.stream(this.tables);
     }
 }
