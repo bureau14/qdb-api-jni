@@ -82,10 +82,6 @@ public final class qdb {
   public static native int deque_front(long handle, String alias, Reference<ByteBuffer> content);
   public static native int deque_back(long handle, String alias, Reference<ByteBuffer> content);
 
-  public static native int hset_insert(long handle, String alias, ByteBuffer content);
-  public static native int hset_erase(long handle, String alias, ByteBuffer content);
-  public static native int hset_contains(long handle, String alias, ByteBuffer content);
-
   public static native int stream_open(long handle, String alias, int mode, Reference<Long> stream);
   public static native int stream_close(long stream);
   public static native int stream_read(long stream, ByteBuffer content, Reference<Long> bytesRead);
