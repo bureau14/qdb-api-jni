@@ -89,7 +89,7 @@ timeRangesToNative(qdb::jni::env & env, jobjectArray input, size_t count, qdb_ts
       jobject point =
           (jobject)(env.instance().GetObjectArrayElement(input, static_cast<jsize>(i)));
 
-      rangeToNative(env, point, cur++);
+      timeRangeToNative(env, point, cur++);
   }
 }
 
