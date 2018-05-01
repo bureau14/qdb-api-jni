@@ -181,9 +181,9 @@ Java_net_quasardb_qdb_jni_qdb_ts_1double_1get_1ranges(JNIEnv * jniEnv, jclass /*
   qdb::jni::env env(jniEnv);
 
   qdb_size_t rangeCount = env.instance().GetArrayLength(ranges);
-  qdb_ts_range_t * nativeRanges = (qdb_ts_range_t *)(malloc(rangeCount * sizeof(qdb_ts_range_t)));
+  qdb_ts_range_t * nativeTimeRanges = (qdb_ts_range_t *)(malloc(rangeCount * sizeof(qdb_ts_range_t)));
 
-  rangesToNative(env, ranges, rangeCount, nativeRanges);
+  timeRangesToNative(env, ranges, rangeCount, nativeTimeRanges);
 
   qdb_ts_double_point * native_points;
   qdb_size_t point_count;
@@ -191,7 +191,7 @@ Java_net_quasardb_qdb_jni_qdb_ts_1double_1get_1ranges(JNIEnv * jniEnv, jclass /*
   qdb_error_t err = qdb_ts_double_get_ranges((qdb_handle_t)handle,
                                              qdb::jni::string::get_chars_utf8(env, alias),
                                              qdb::jni::string::get_chars_utf8(env, column),
-                                             nativeRanges,
+                                             nativeTimeRanges,
                                              rangeCount,
                                              &native_points,
                                              &point_count);
@@ -205,7 +205,7 @@ Java_net_quasardb_qdb_jni_qdb_ts_1double_1get_1ranges(JNIEnv * jniEnv, jclass /*
 
   qdb_release((qdb_handle_t)handle, native_points);
 
-  free(nativeRanges);
+  free(nativeTimeRanges);
   return err;
 }
 
@@ -263,8 +263,8 @@ Java_net_quasardb_qdb_jni_qdb_ts_1blob_1get_1ranges(JNIEnv * jniEnv, jclass /*th
   qdb::jni::env env(jniEnv);
 
   qdb_size_t rangeCount = env.instance().GetArrayLength(ranges);
-  qdb_ts_range_t * nativeRanges = new qdb_ts_range_t[rangeCount];
-  rangesToNative(env, ranges, rangeCount, nativeRanges);
+  qdb_ts_range_t * nativeTimeRanges = new qdb_ts_range_t[rangeCount];
+  timeRangesToNative(env, ranges, rangeCount, nativeTimeRanges);
 
   qdb_ts_blob_point * nativePoints;
   qdb_size_t pointCount;
@@ -272,7 +272,7 @@ Java_net_quasardb_qdb_jni_qdb_ts_1blob_1get_1ranges(JNIEnv * jniEnv, jclass /*th
   qdb_error_t err = qdb_ts_blob_get_ranges((qdb_handle_t)handle,
                                            qdb::jni::string::get_chars_utf8(env, alias),
                                            qdb::jni::string::get_chars_utf8(env, column),
-                                           nativeRanges,
+                                           nativeTimeRanges,
                                            rangeCount,
                                            &nativePoints,
                                            &pointCount);
@@ -286,7 +286,7 @@ Java_net_quasardb_qdb_jni_qdb_ts_1blob_1get_1ranges(JNIEnv * jniEnv, jclass /*th
                         nativeToBlobPoints(env, nativePoints, pointCount).release());
   }
 
-  delete[] nativeRanges;
+  delete[] nativeTimeRanges;
   return err;
 }
 

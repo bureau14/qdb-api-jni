@@ -547,7 +547,7 @@ tableGetRanges(qdb::jni::env & env, qdb_local_table_t localTable, jobjectArray r
   qdb_ts_range_t * nativeRanges =
     (qdb_ts_range_t *)(malloc(rangesCount * sizeof(qdb_ts_range_t)));
 
-  rangesToNative(env, ranges, rangesCount, nativeRanges);
+  timeRangesToNative(env, ranges, rangesCount, nativeRanges);
 
   qdb_error_t err = qdb_ts_table_get_ranges(localTable, nativeRanges, rangesCount);
 
