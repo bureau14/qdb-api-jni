@@ -160,9 +160,9 @@ public class Table implements Serializable {
      *
      * @param session Active session with the QuasarDB cluster.
      * @param name    Timeseries table name. Must already exist.
-     * @param ranges  Filtered time ranges to look for.
+     * @param ranges  Time ranges to look for.
      */
-    public static Reader reader(Session session, String name, FilteredRange[] ranges) {
+    public static Reader reader(Session session, String name, TimeRange[] ranges) {
         return reader(session,
                       new Table(session, name),
                       ranges);
@@ -173,38 +173,12 @@ public class Table implements Serializable {
      *
      * @param session Active session with the QuasarDB cluster.
      * @param table   Timeseries table.
-     * @param ranges  Filtered time ranges to look for.
+     * @param ranges  Time time ranges to look for.
      */
-    public static Reader reader(Session session, Table table, FilteredRange[] ranges) {
+    public static Reader reader(Session session, Table table, TimeRange[] ranges) {
         return new Reader (session,
                            table,
                            ranges);
-    }
-
-    /**
-     * Initializes new reader for a timeseries table.
-     *
-     * @param session Active session with the QuasarDB cluster.
-     * @param name    Timeseries table name. Must already exist.
-     * @param ranges  Time ranges to look for.
-     */
-    public static Reader reader(Session session, String name, TimeRange[] ranges) {
-        return reader(session, new Table(session, name), ranges);
-    }
-
-    /**
-     * Initializes new reader for a timeseries table.
-     *
-     * @param session Active session with the QuasarDB cluster.
-     * @param table   Timeseries table.
-     * @param ranges  Time ranges to look for.
-     */
-    public static Reader reader(Session session, Table table, TimeRange[] ranges) {
-        return reader(session, table,
-                      Arrays
-                      .stream(ranges)
-                      .map(FilteredRange::new)
-                      .toArray(FilteredRange[]::new));
     }
 
     /**

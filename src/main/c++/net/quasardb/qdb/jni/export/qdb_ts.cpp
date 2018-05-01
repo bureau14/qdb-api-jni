@@ -177,13 +177,13 @@ Java_net_quasardb_qdb_jni_qdb_ts_1double_1insert(JNIEnv * jniEnv, jclass /*thisC
 
 JNIEXPORT jint JNICALL
 Java_net_quasardb_qdb_jni_qdb_ts_1double_1get_1ranges(JNIEnv * jniEnv, jclass /*thisClass*/, jlong handle,
-                                                      jstring alias, jstring column, jobjectArray filteredRanges, jobject points) {
+                                                      jstring alias, jstring column, jobjectArray ranges, jobject points) {
   qdb::jni::env env(jniEnv);
 
-  qdb_size_t filteredRangeCount = env.instance().GetArrayLength(filteredRanges);
-  qdb_ts_filtered_range_t * nativeFilteredRanges = (qdb_ts_filtered_range_t *)(malloc(filteredRangeCount * sizeof(qdb_ts_filtered_range_t)));
+  qdb_size_t rangeCount = env.instance().GetArrayLength(ranges);
+  qdb_ts_range_t * nativeRanges = (qdb_ts_range_t *)(malloc(rangeCount * sizeof(qdb_ts_range_t)));
 
-  filteredRangesToNative(env, filteredRanges, filteredRangeCount, nativeFilteredRanges);
+  rangesToNative(env, ranges, rangeCount, nativeRanges);
 
   qdb_ts_double_point * native_points;
   qdb_size_t point_count;
@@ -191,8 +191,8 @@ Java_net_quasardb_qdb_jni_qdb_ts_1double_1get_1ranges(JNIEnv * jniEnv, jclass /*
   qdb_error_t err = qdb_ts_double_get_ranges((qdb_handle_t)handle,
                                              qdb::jni::string::get_chars_utf8(env, alias),
                                              qdb::jni::string::get_chars_utf8(env, column),
-                                             nativeFilteredRanges,
-                                             filteredRangeCount,
+                                             nativeRanges,
+                                             rangeCount,
                                              &native_points,
                                              &point_count);
 
@@ -205,7 +205,7 @@ Java_net_quasardb_qdb_jni_qdb_ts_1double_1get_1ranges(JNIEnv * jniEnv, jclass /*
 
   qdb_release((qdb_handle_t)handle, native_points);
 
-  free(nativeFilteredRanges);
+  free(nativeRanges);
   return err;
 }
 
@@ -259,12 +259,12 @@ Java_net_quasardb_qdb_jni_qdb_ts_1blob_1insert(JNIEnv * jniEnv, jclass /*thisCla
 
 JNIEXPORT jint JNICALL
 Java_net_quasardb_qdb_jni_qdb_ts_1blob_1get_1ranges(JNIEnv * jniEnv, jclass /*thisClass*/, jlong handle,
-                                                    jstring alias, jstring column, jobjectArray filteredRanges, jobject points) {
+                                                    jstring alias, jstring column, jobjectArray ranges, jobject points) {
   qdb::jni::env env(jniEnv);
 
-  qdb_size_t filteredRangeCount = env.instance().GetArrayLength(filteredRanges);
-  qdb_ts_filtered_range_t * nativeFilteredRanges = new qdb_ts_filtered_range_t[filteredRangeCount];
-  filteredRangesToNative(env, filteredRanges, filteredRangeCount, nativeFilteredRanges);
+  qdb_size_t rangeCount = env.instance().GetArrayLength(ranges);
+  qdb_ts_range_t * nativeRanges = new qdb_ts_range_t[rangeCount];
+  rangesToNative(env, ranges, rangeCount, nativeRanges);
 
   qdb_ts_blob_point * nativePoints;
   qdb_size_t pointCount;
@@ -272,8 +272,8 @@ Java_net_quasardb_qdb_jni_qdb_ts_1blob_1get_1ranges(JNIEnv * jniEnv, jclass /*th
   qdb_error_t err = qdb_ts_blob_get_ranges((qdb_handle_t)handle,
                                            qdb::jni::string::get_chars_utf8(env, alias),
                                            qdb::jni::string::get_chars_utf8(env, column),
-                                           nativeFilteredRanges,
-                                           filteredRangeCount,
+                                           nativeRanges,
+                                           rangeCount,
                                            &nativePoints,
                                            &pointCount);
 
@@ -286,7 +286,7 @@ Java_net_quasardb_qdb_jni_qdb_ts_1blob_1get_1ranges(JNIEnv * jniEnv, jclass /*th
                         nativeToBlobPoints(env, nativePoints, pointCount).release());
   }
 
-  delete[] nativeFilteredRanges;
+  delete[] nativeRanges;
   return err;
 }
 

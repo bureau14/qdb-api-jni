@@ -27,9 +27,9 @@ public class Reader implements AutoCloseable, Iterator<Row> {
     Long localTable;
     Reference<Row> next;
 
-    protected Reader(Session session, Table table, FilteredRange[] ranges) {
+    protected Reader(Session session, Table table, TimeRange[] ranges) {
         if (ranges.length <= 0) {
-            throw new InvalidArgumentException("Reader requires at least one FilteredRange to read");
+            throw new InvalidArgumentException("Reader requires at least one TimeRange to read");
         }
 
         this.session = session;

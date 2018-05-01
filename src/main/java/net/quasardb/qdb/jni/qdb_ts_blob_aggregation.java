@@ -1,29 +1,29 @@
 package net.quasardb.qdb.jni;
 
-import net.quasardb.qdb.ts.FilteredRange;
+import net.quasardb.qdb.ts.TimeRange;
 
 public final class qdb_ts_blob_aggregation {
   protected long aggregation_type;
-  protected FilteredRange filtered_range;
+  protected TimeRange time_range;
 
   protected long count;
   protected qdb_ts_blob_point result;
 
-  public qdb_ts_blob_aggregation(FilteredRange filtered_range, long aggregation_type) {
-    this.filtered_range = filtered_range;
+  public qdb_ts_blob_aggregation(TimeRange time_range, long aggregation_type) {
+    this.time_range = time_range;
     this.aggregation_type = aggregation_type;
     this.count = -1;
   }
 
-  public qdb_ts_blob_aggregation(FilteredRange filtered_range, long aggregation_type, long count, qdb_ts_blob_point result) {
-    this.filtered_range = filtered_range;
+  public qdb_ts_blob_aggregation(TimeRange time_range, long aggregation_type, long count, qdb_ts_blob_point result) {
+    this.time_range = time_range;
     this.aggregation_type = aggregation_type;
     this.count = count;
     this.result = result;
   }
 
-  public FilteredRange getFilteredRange() {
-    return this.filtered_range;
+  public TimeRange getTimeRange() {
+    return this.time_range;
   }
 
   public long getAggregationType() {

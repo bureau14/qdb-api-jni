@@ -92,50 +92,6 @@ rangesToNative(qdb::jni::env & env, jobjectArray input, size_t count, qdb_ts_ran
   }
 }
 
-void
-filterToNative(qdb::jni::env & /*env*/, jobject /*input*/, qdb_ts_filter_t * native) {
-  native->type = qdb_ts_filter_none;
-}
-
-jni::guard::local_ref<jobject>
-nativeToFilter(qdb::jni::env & env, qdb_ts_filter_t input) {
-  assert(input.type == qdb_ts_filter_none);
-
-  return std::move(
-      jni::object::create(env,
-                          "net/quasardb/qdb/jni/qdb_ts_no_filter",
-                          "()V"));
-}
-
-void
-filteredRangeToNative(qdb::jni::env & env, jobject input, qdb_ts_filtered_range_t * native) {
-  jfieldID rangeField, filterField;
-  jclass objectClass;
-
-  objectClass = env.instance().GetObjectClass(input);
-
-  rangeField = env.instance().GetFieldID(objectClass, "range", "Lnet/quasardb/qdb/ts/TimeRange;");
-  filterField = env.instance().GetFieldID(objectClass, "filter", "Lnet/quasardb/qdb/jni/qdb_ts_filter;");
-
-  rangeToNative(env, env.instance().GetObjectField(input, rangeField), &(native->range));
-  filterToNative(env, env.instance().GetObjectField(input, filterField), &(native->filter));
-}
-
-void
-filteredRangesToNative(qdb::jni::env & env, jobjectArray input, size_t count, qdb_ts_filtered_range_t * native) {
-    jni::local_frame lf =
-        jni::local_frame::push(env, count);
-
-    qdb_ts_filtered_range_t * cur = native;
-
-    for (size_t i = 0; i < count; ++i) {
-        jobject point =
-            (jobject)(env.instance().GetObjectArrayElement(input, static_cast<jsize>(i)));
-
-        filteredRangeToNative(env, point, cur++);
-    }
-}
-
 jni::guard::local_ref<jobject>
 nativeToRange(qdb::jni::env & env, qdb_ts_range_t native) {
   return std::move(
@@ -144,16 +100,6 @@ nativeToRange(qdb::jni::env & env, qdb_ts_range_t native) {
                           "(Lnet/quasardb/qdb/ts/Timespec;Lnet/quasardb/qdb/ts/Timespec;)V",
                           nativeToTimespec(env, native.begin).release(),
                           nativeToTimespec(env, native.end).release()));
-}
-
-jni::guard::local_ref<jobject>
-nativeToFilteredRange(qdb::jni::env & env, qdb_ts_filtered_range_t native) {
-  return std::move(
-      jni::object::create(env,
-                          "net/quasardb/qdb/ts/FilteredRange",
-                          "(Lnet/quasardb/qdb/ts/TimeRange;Lnet/quasardb/qdb/jni/qdb_ts_filter;)V",
-                          nativeToRange(env, native.range).release(),
-                          nativeToFilter(env, native.filter).release()));
 }
 
 void
@@ -329,16 +275,16 @@ void
 doubleAggregateToNative(qdb::jni::env & env, jobject input, qdb_ts_double_aggregation_t * native) {
   assert(input != NULL);
 
-  jfieldID typeField, filteredRangeField, countField, resultField;
+  jfieldID typeField, rangeField, countField, resultField;
   jclass objectClass;
 
   objectClass = env.instance().GetObjectClass(input);
   typeField = env.instance().GetFieldID(objectClass, "aggregation_type", "J");
-  filteredRangeField = env.instance().GetFieldID(objectClass, "filtered_range", "Lnet/quasardb/qdb/ts/FilteredRange;");
+  rangeField = env.instance().GetFieldID(objectClass, "range", "Lnet/quasardb/qdb/ts/Range;");
   countField = env.instance().GetFieldID(objectClass, "count", "J");
   resultField = env.instance().GetFieldID(objectClass, "result", "Lnet/quasardb/qdb/jni/qdb_ts_double_point;");
 
-  filteredRangeToNative(env, env.instance().GetObjectField(input, filteredRangeField), &(native->filtered_range));
+  rangeToNative(env, env.instance().GetObjectField(input, rangeField), &(native->range));
   doublePointToNative(env, env.instance().GetObjectField(input, resultField), &(native->result));
 
   native->type = static_cast<qdb_ts_aggregation_type_t>(
@@ -364,8 +310,8 @@ nativeToDoubleAggregate(qdb::jni::env & env, qdb_ts_double_aggregation_t native)
     return std::move(
         jni::object::create(env,
                             "net/quasardb/qdb/jni/qdb_ts_double_aggregation",
-                            "(Lnet/quasardb/qdb/ts/FilteredRange;JJLnet/quasardb/qdb/jni/qdb_ts_double_point;)V",
-                            nativeToFilteredRange(env, native.filtered_range).release(),
+                            "(Lnet/quasardb/qdb/ts/Range;JJLnet/quasardb/qdb/jni/qdb_ts_double_point;)V",
+                            nativeToRange(env, native.range).release(),
                             (jlong)native.type,
                             (jlong)native.count,
                             nativeToDoublePoint(env, native.result).release()));
@@ -391,16 +337,16 @@ void
 blobAggregateToNative(qdb::jni::env & env, jobject input, qdb_ts_blob_aggregation_t * native) {
   assert(input != NULL);
 
-  jfieldID typeField, filteredRangeField, countField, resultField;
+  jfieldID typeField, rangeField, countField, resultField;
   jclass objectClass;
 
   objectClass = env.instance().GetObjectClass(input);
   typeField = env.instance().GetFieldID(objectClass, "aggregation_type", "J");
-  filteredRangeField = env.instance().GetFieldID(objectClass, "filtered_range", "Lnet/quasardb/qdb/ts/FilteredRange;");
+  rangeField = env.instance().GetFieldID(objectClass, "range", "Lnet/quasardb/qdb/ts/Range;");
   countField = env.instance().GetFieldID(objectClass, "count", "J");
   resultField = env.instance().GetFieldID(objectClass, "result", "Lnet/quasardb/qdb/jni/qdb_ts_blob_point;");
 
-  filteredRangeToNative(env, env.instance().GetObjectField(input, filteredRangeField), &(native->filtered_range));
+  rangeToNative(env, env.instance().GetObjectField(input, rangeField), &(native->range));
   blobPointToNative(env, env.instance().GetObjectField(input, resultField), &(native->result));
 
   native->type = static_cast<qdb_ts_aggregation_type_t>(
@@ -426,8 +372,8 @@ nativeToBlobAggregate(qdb::jni::env & env, qdb_ts_blob_aggregation_t native) {
     return std::move(
         jni::object::create(env,
                             "net/quasardb/qdb/jni/qdb_ts_blob_aggregation",
-                            "(Lnet/quasardb/qdb/ts/FilteredRange;JJLnet/quasardb/qdb/jni/qdb_ts_blob_point;)V",
-                            nativeToFilteredRange(env, native.filtered_range).release(),
+                            "(Lnet/quasardb/qdb/ts/ange;JJLnet/quasardb/qdb/jni/qdb_ts_blob_point;)V",
+                            nativeToRange(env, native.range).release(),
                             (jlong)native.type,
                             (jlong)native.count,
                             nativeToBlobPoint(env, native.result).release()));
@@ -568,7 +514,6 @@ tableRowSetColumnValue(qdb::jni::env & env, qdb_local_table_t localTable, size_t
   }
 }
 
-
 qdb_error_t
 tableRowAppend(qdb::jni::env & env, qdb_local_table_t localTable, jobject time, jobjectArray values, size_t count, qdb_size_t * rowIndex) {
 
@@ -598,10 +543,10 @@ tableRowAppend(qdb::jni::env & env, qdb_local_table_t localTable, jobject time, 
 qdb_error_t
 tableGetRanges(qdb::jni::env & env, qdb_local_table_t localTable, jobjectArray ranges) {
   qdb_size_t rangesCount = env.instance().GetArrayLength(ranges);
-  qdb_ts_filtered_range_t * nativeRanges =
-    (qdb_ts_filtered_range_t *)(malloc(rangesCount * sizeof(qdb_ts_filtered_range_t)));
+  qdb_ts_range_t * nativeRanges =
+    (qdb_ts_range_t *)(malloc(rangesCount * sizeof(qdb_ts_range_t)));
 
-  filteredRangesToNative(env, ranges, rangesCount, nativeRanges);
+  rangesToNative(env, ranges, rangesCount, nativeRanges);
 
   qdb_error_t err = qdb_ts_table_get_ranges(localTable, nativeRanges, rangesCount);
 

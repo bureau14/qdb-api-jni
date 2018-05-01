@@ -4,7 +4,7 @@ import java.nio.ByteBuffer;
 
 import net.quasardb.qdb.*;
 import net.quasardb.qdb.ts.Timespec;
-import net.quasardb.qdb.ts.FilteredRange;
+import net.quasardb.qdb.ts.TimeRange;
 import net.quasardb.qdb.ts.Row;
 import net.quasardb.qdb.ts.Value;
 import net.quasardb.qdb.ts.Result;
@@ -108,16 +108,16 @@ public final class qdb {
   public static native void ts_local_table_release(long handle, long localTable);
   public static native int ts_table_row_append(long localTable, Timespec time, Value[] values);
   public static native int ts_push(long localTable);
-  public static native int ts_table_get_ranges(long localTable, FilteredRange[] ranges);
+  public static native int ts_table_get_ranges(long localTable, TimeRange[] ranges);
   public static native int ts_table_next_row(long localTable, Column[] columns, Reference<Row> output);
 
   public static native int ts_double_insert(long handle, String alias, String column, qdb_ts_double_point[] points);
-  public static native int ts_double_get_ranges(long handle, String alias, String column, FilteredRange[] ranges,
+  public static native int ts_double_get_ranges(long handle, String alias, String column, TimeRange[] ranges,
                                                 Reference<qdb_ts_double_point[]> points);
   public static native int ts_double_aggregate(long handle, String alias, String column, qdb_ts_double_aggregation[] input,
                                                Reference<qdb_ts_double_aggregation[]> aggregations);
   public static native int ts_blob_insert(long handle, String alias, String column, qdb_ts_blob_point[] points);
-  public static native int ts_blob_get_ranges(long handle, String alias, String column, FilteredRange[] ranges,
+  public static native int ts_blob_get_ranges(long handle, String alias, String column, TimeRange[] ranges,
                                               Reference<qdb_ts_blob_point[]> points);
   public static native int ts_blob_aggregate(long handle, String alias, String column, qdb_ts_blob_aggregation[] input,
                                              Reference<qdb_ts_blob_aggregation[]> aggregations);
