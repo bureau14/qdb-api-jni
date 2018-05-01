@@ -68,7 +68,7 @@ nativeToTimespec(qdb::jni::env & env, qdb_timespec_t input) {
 }
 
 void
-rangeToNative(qdb::jni::env & env, jobject input, qdb_ts_range_t * native) {
+timeRangeToNative(qdb::jni::env & env, jobject input, qdb_ts_range_t * native) {
   jfieldID beginField, endField;
   jclass objectClass;
 
@@ -82,7 +82,8 @@ rangeToNative(qdb::jni::env & env, jobject input, qdb_ts_range_t * native) {
 }
 
 void
-rangesToNative(qdb::jni::env & env, jobjectArray input, size_t count, qdb_ts_range_t * native) {
+timeRangesToNative(qdb::jni::env & env, jobjectArray input, size_t count, qdb_ts_range_t * native) {
+
   qdb_ts_range_t * cur = native;
   for (size_t i = 0; i < count; ++i) {
       jobject point =
@@ -93,7 +94,7 @@ rangesToNative(qdb::jni::env & env, jobjectArray input, size_t count, qdb_ts_ran
 }
 
 jni::guard::local_ref<jobject>
-nativeToRange(qdb::jni::env & env, qdb_ts_range_t native) {
+nativeToTimeRange(qdb::jni::env & env, qdb_ts_range_t native) {
   return std::move(
       jni::object::create(env,
                           "net/quasardb/qdb/ts/TimeRange",
@@ -275,16 +276,16 @@ void
 doubleAggregateToNative(qdb::jni::env & env, jobject input, qdb_ts_double_aggregation_t * native) {
   assert(input != NULL);
 
-  jfieldID typeField, rangeField, countField, resultField;
+  jfieldID typeField, timeRangeField, countField, resultField;
   jclass objectClass;
 
   objectClass = env.instance().GetObjectClass(input);
   typeField = env.instance().GetFieldID(objectClass, "aggregation_type", "J");
-  rangeField = env.instance().GetFieldID(objectClass, "range", "Lnet/quasardb/qdb/ts/Range;");
+  timeRangeField = env.instance().GetFieldID(objectClass, "time_range", "Lnet/quasardb/qdb/ts/TimeRange;");
   countField = env.instance().GetFieldID(objectClass, "count", "J");
   resultField = env.instance().GetFieldID(objectClass, "result", "Lnet/quasardb/qdb/jni/qdb_ts_double_point;");
 
-  rangeToNative(env, env.instance().GetObjectField(input, rangeField), &(native->range));
+  timeRangeToNative(env, env.instance().GetObjectField(input, timeRangeField), &(native->range));
   doublePointToNative(env, env.instance().GetObjectField(input, resultField), &(native->result));
 
   native->type = static_cast<qdb_ts_aggregation_type_t>(
@@ -310,8 +311,8 @@ nativeToDoubleAggregate(qdb::jni::env & env, qdb_ts_double_aggregation_t native)
     return std::move(
         jni::object::create(env,
                             "net/quasardb/qdb/jni/qdb_ts_double_aggregation",
-                            "(Lnet/quasardb/qdb/ts/Range;JJLnet/quasardb/qdb/jni/qdb_ts_double_point;)V",
-                            nativeToRange(env, native.range).release(),
+                            "(Lnet/quasardb/qdb/ts/TimeRange;JJLnet/quasardb/qdb/jni/qdb_ts_double_point;)V",
+                            nativeToTimeRange(env, native.range).release(),
                             (jlong)native.type,
                             (jlong)native.count,
                             nativeToDoublePoint(env, native.result).release()));
@@ -337,16 +338,16 @@ void
 blobAggregateToNative(qdb::jni::env & env, jobject input, qdb_ts_blob_aggregation_t * native) {
   assert(input != NULL);
 
-  jfieldID typeField, rangeField, countField, resultField;
+  jfieldID typeField, timeRangeField, countField, resultField;
   jclass objectClass;
 
   objectClass = env.instance().GetObjectClass(input);
   typeField = env.instance().GetFieldID(objectClass, "aggregation_type", "J");
-  rangeField = env.instance().GetFieldID(objectClass, "range", "Lnet/quasardb/qdb/ts/Range;");
+  timeRangeField = env.instance().GetFieldID(objectClass, "time_range", "Lnet/quasardb/qdb/ts/TimeRange;");
   countField = env.instance().GetFieldID(objectClass, "count", "J");
   resultField = env.instance().GetFieldID(objectClass, "result", "Lnet/quasardb/qdb/jni/qdb_ts_blob_point;");
 
-  rangeToNative(env, env.instance().GetObjectField(input, rangeField), &(native->range));
+  timeRangeToNative(env, env.instance().GetObjectField(input, timeRangeField), &(native->range));
   blobPointToNative(env, env.instance().GetObjectField(input, resultField), &(native->result));
 
   native->type = static_cast<qdb_ts_aggregation_type_t>(
@@ -373,7 +374,7 @@ nativeToBlobAggregate(qdb::jni::env & env, qdb_ts_blob_aggregation_t native) {
         jni::object::create(env,
                             "net/quasardb/qdb/jni/qdb_ts_blob_aggregation",
                             "(Lnet/quasardb/qdb/ts/ange;JJLnet/quasardb/qdb/jni/qdb_ts_blob_point;)V",
-                            nativeToRange(env, native.range).release(),
+                            nativeToTimeRange(env, native.range).release(),
                             (jlong)native.type,
                             (jlong)native.count,
                             nativeToBlobPoint(env, native.result).release()));
@@ -382,15 +383,15 @@ nativeToBlobAggregate(qdb::jni::env & env, qdb_ts_blob_aggregation_t native) {
 jni::guard::local_ref<jobjectArray>
 nativeToBlobAggregates(qdb::jni::env & env, qdb_ts_blob_aggregation_t * native, size_t count) {
 
-    jni::guard::local_ref<jobjectArray> output(
-        jni::object::create_array(env,
-                                  count,
-                                  "net/quasardb/qdb/jni/qdb_ts_blob_aggregation"));
+  jni::guard::local_ref<jobjectArray>
+    output(jni::object::create_array(env,
+                                     count,
+                                     "net/quasardb/qdb/jni/qdb_ts_blob_aggregation"));
 
     for (size_t i = 0; i < count; i++) {
-        env.instance().SetObjectArrayElement(output,
-                                             (jsize)i,
-                                             nativeToBlobAggregate(env, native[i]).release());
+      env.instance().SetObjectArrayElement(output,
+                                           (jsize)i,
+                                           nativeToBlobAggregate(env, native[i]).release());
     }
 
     return std::move(output);

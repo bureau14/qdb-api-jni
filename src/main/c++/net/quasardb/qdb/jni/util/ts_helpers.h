@@ -22,7 +22,7 @@ void rangeToNative(qdb::jni::env &env, jobject input, qdb_ts_range_t * native);
 void rangesToNative(qdb::jni::env & env, jobjectArray input, size_t count, qdb_ts_range_t * native);
 
 qdb::jni::guard::local_ref<jobject>
-nativeToRange(qdb::jni::env & env, qdb_ts_range_t native);
+nativeToTimeRange(qdb::jni::env & env, qdb_ts_range_t native);
 
 void columnsToNative(qdb::jni::env & env, jobjectArray columns, qdb_ts_column_info_t * native_columns, size_t column_count);
 void releaseNative(qdb_ts_column_info_t * native_columns, size_t column_count);
