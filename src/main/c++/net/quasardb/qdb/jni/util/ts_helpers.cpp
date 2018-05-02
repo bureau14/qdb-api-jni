@@ -373,7 +373,7 @@ nativeToBlobAggregate(qdb::jni::env & env, qdb_ts_blob_aggregation_t native) {
     return std::move(
         jni::object::create(env,
                             "net/quasardb/qdb/jni/qdb_ts_blob_aggregation",
-                            "(Lnet/quasardb/qdb/ts/ange;JJLnet/quasardb/qdb/jni/qdb_ts_blob_point;)V",
+                            "(Lnet/quasardb/qdb/ts/TimeRange;JJLnet/quasardb/qdb/jni/qdb_ts_blob_point;)V",
                             nativeToTimeRange(env, native.range).release(),
                             (jlong)native.type,
                             (jlong)native.count,
@@ -482,11 +482,6 @@ tableRowSetBlobColumnValue(qdb::jni::env & env, qdb_local_table_t localTable, si
 
 qdb_error_t
 tableRowSetColumnValue(qdb::jni::env & env, qdb_local_table_t localTable, size_t columnIndex, jobject value) {
-  // jclass objectClass;
-  // jobject typeObject;
-  // jfieldID typeField;
-  // jmethodID methodId;
-
   qdb_ts_column_type_t type = columnTypeFromColumnValue(env, value);
 
   switch(type) {
