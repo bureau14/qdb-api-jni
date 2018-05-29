@@ -1,13 +1,13 @@
 set(CLASS_JAR_FILE "${CMAKE_BINARY_DIR}/jni.jar")
 
 if(CMAKE_SIZEOF_VOID_P EQUAL 8)
-    set(ARCH "x64")
+    set(ARCH "x86_64")
 else()
-    set(ARCH "x86")
+    set(ARCH "x86_32")
 endif()
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-    set(SYSTEM "macosx")
+    set(SYSTEM "osx")
 else()
     string(TOLOWER "${CMAKE_SYSTEM_NAME}" SYSTEM)
 endif()
@@ -21,7 +21,7 @@ else()
     set(QDB_API_DLL "${CMAKE_SOURCE_DIR}/qdb/lib/libqdb_api${CMAKE_SHARED_LIBRARY_SUFFIX}")
 endif()
 
-# JAR: qdb_jni.dll -> windows-x86.jar
+# JAR: qdb_jni.dll -> windows-x86_64.jar
 add_custom_command(
     OUTPUT ${NATIVE_JAR_FILE}
     DEPENDS qdb_api_jni
