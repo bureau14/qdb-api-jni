@@ -1,5 +1,3 @@
-set(CLASS_JAR_FILE "${CMAKE_BINARY_DIR}/jni-${QDB_API_VERSION}.jar")
-
 if(CMAKE_SIZEOF_VOID_P EQUAL 8)
     set(ARCH "x86_64")
 else()
