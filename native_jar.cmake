@@ -1,4 +1,4 @@
-set(CLASS_JAR_FILE "${CMAKE_BINARY_DIR}/jni.jar")
+set(CLASS_JAR_FILE "${CMAKE_BINARY_DIR}/jni-${QDB_API_VERSION}.jar")
 
 if(CMAKE_SIZEOF_VOID_P EQUAL 8)
     set(ARCH "x86_64")
@@ -12,7 +12,7 @@ else()
     string(TOLOWER "${CMAKE_SYSTEM_NAME}" SYSTEM)
 endif()
 
-set(NATIVE_JAR_FILE "${CMAKE_BINARY_DIR}/jni-${SYSTEM}-${ARCH}.jar")
+set(NATIVE_JAR_FILE "${CMAKE_BINARY_DIR}/jni-${QDB_API_VERSION}-${SYSTEM}-${ARCH}.jar")
 
 # Quasardb C API
 if (WIN32)

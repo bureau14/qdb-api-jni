@@ -1,4 +1,4 @@
-set(SOURCE_JAR_FILE "${CMAKE_BINARY_DIR}/jni-sources.jar")
+set(SOURCE_JAR_FILE "${CMAKE_BINARY_DIR}/jni-${QDB_API_VERSION}-sources.jar")
 
 # JAR: source.jar
 add_custom_command(
