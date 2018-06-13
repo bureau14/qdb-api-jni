@@ -7,8 +7,6 @@ find_package(JNI REQUIRED)
 include(UseJava)
 include(compile_options.cmake)
 
-set(QDB_API_VERSION "2.7.0-SNAPSHOT")
-
 file(GLOB QDB_JAVA_SOURCES
   "tools/*.java"
   "src/main/java/net/quasardb/qdb/exception/connection/*.java"
@@ -50,7 +48,8 @@ set(QDB_JNI_SOURCES
 )
 
 add_jar(jni
-  SOURCES ${QDB_JAVA_SOURCES})
+  SOURCES ${QDB_JAVA_SOURCES}
+  OUTPUT_NAME jni-${QDB_API_VERSION}.jar)
 
 create_javah(TARGET qdb_api_jni_headers
     CLASSES ${QDB_JNI_CLASSES}
