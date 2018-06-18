@@ -1,0 +1,201 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>net.quasardb</groupId>
+  <artifactId>jni</artifactId>
+  <packaging>jar</packaging>
+  <version>${qdb.api.version}</version>
+  <name>quasardb</name>
+
+  <description>
+    API for the JNI components of the QuasarDB API for Java. Should not be included directly.
+  </description>
+
+  <url>http://www.quasardb.net/</url>
+  <licenses>
+    <license>
+      <name>3-Clause BSD License</name>
+      <url>https://opensource.org/licenses/BSD-3-Clause</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+
+  <properties>
+    <groupId>net.quasardb</groupId>
+    <artifactId>jni</artifactId>
+    <version>${qdb.api.version}</version>
+    <packaging>jar</packaging>
+    <file>target/jni-${qdb.api.version}.jar</file>
+  </properties>
+
+  <scm>
+    <url>https://github.com/bureau14/qdb-api-jni</url>
+    <connection>scm:git:git://github.com/bureau14/qdb-api-jni.git</connection>
+    <developerConnection>scm:git:git@github.com:bureau14/qdb-api-jni.git</developerConnection>
+  </scm>
+  <developers>
+    <developer>
+      <email>leon@quasardb.net</email>
+      <name>Leon Mergen</name>
+      <url>https://github.com/solatis</url>
+      <id>solatis</id>
+    </developer>
+  </developers>
+
+  <distributionManagement>
+    <snapshotRepository>
+      <id>ossrh</id>
+      <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+    </snapshotRepository>
+  </distributionManagement>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.sonatype.plugins</groupId>
+        <artifactId>nexus-staging-maven-plugin</artifactId>
+        <version>1.6.7</version>
+        <extensions>true</extensions>
+        <configuration>
+          <serverId>ossrh</serverId>
+          <nexusUrl>https://oss.sonatype.org/</nexusUrl>
+          <autoReleaseAfterClose>true</autoReleaseAfterClose>
+        </configuration>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
+        <version>3.1.0</version>
+        <configuration>
+          <skipIfEmpty>true</skipIfEmpty>
+        </configuration>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.7.0</version>
+        <configuration>
+          <source>1.8</source>
+          <target>1.8</target>
+        </configuration>
+      </plugin>
+
+      <plugin>
+	<groupId>org.apache.maven.plugins</groupId>
+	<artifactId>maven-source-plugin</artifactId>
+	<version>2.2.1</version>
+	<executions>
+	  <execution>
+	    <id>package-sources</id>
+	    <phase>package</phase>
+	    <goals>
+	      <goal>jar-no-fork</goal>
+	      <goal>test-jar</goal>
+	    </goals>
+	  </execution>
+	</executions>
+      </plugin>
+
+      <plugin>
+	<groupId>org.apache.maven.plugins</groupId>
+	<artifactId>maven-javadoc-plugin</artifactId>
+	<version>2.9.1</version>
+	<executions>
+	  <execution>
+	    <id>package-javadocs</id>
+	    <phase>package</phase>
+	    <goals>
+	      <goal>jar</goal>
+	      <goal>test-jar</goal>
+	    </goals>
+	  </execution>
+	</executions>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-install-plugin</artifactId>
+        <executions>
+          <execution>
+            <phase>install</phase>
+            <goals>
+              <goal>install-file</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-gpg-plugin</artifactId>
+        <version>1.5</version>
+        <executions>
+          <execution>
+            <id>sign-artifacts</id>
+            <phase>verify</phase>
+            <goals>
+              <goal>sign</goal>
+            </goals>
+            <configuration>
+              <keyname>0C2BFAEE6F2D7CCCFB2CA6CC0A33FB160E187974</keyname>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-deploy-plugin</artifactId>
+      </plugin>
+
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>build-helper-maven-plugin</artifactId>
+        <version>3.0.0</version>
+        <executions>
+          <execution>
+            <id>attach-artifacts</id>
+            <phase>package</phase>
+            <goals>
+              <goal>attach-artifact</goal>
+            </goals>
+            <configuration>
+              <artifacts>
+                <artifact>
+                  <file>${project.basedir}/target/jni-${qdb.api.version}-linux-x86_64.jar</file>
+                  <type>jar</type>
+                  <classifier>linux-x86_64</classifier>
+                </artifact>
+                <artifact>
+                  <file>${project.basedir}/target/jni-${qdb.api.version}-osx-x86_64.jar</file>
+                  <type>jar</type>
+                  <classifier>osx-x86_64</classifier>
+                </artifact>
+                <artifact>
+                  <file>${project.basedir}/target/jni-${qdb.api.version}-freebsd-x86_64.jar</file>
+                  <type>jar</type>
+                  <classifier>freebsd-x86_64</classifier>
+                </artifact>
+                <artifact>
+                  <file>${project.basedir}/target/jni-${qdb.api.version}-windows-x86_64.jar</file>
+                  <type>jar</type>
+                  <classifier>windows-x86_64</classifier>
+                </artifact>
+                <artifact>
+                  <file>${project.basedir}/target/jni-${qdb.api.version}-windows-x86_32.jar</file>
+                  <type>jar</type>
+                  <classifier>windows-x86_32</classifier>
+                </artifact>
+              </artifacts>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+    </plugins>
+  </build>
+
+</project>
