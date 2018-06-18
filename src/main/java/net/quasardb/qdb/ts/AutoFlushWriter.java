@@ -22,7 +22,7 @@ public final class AutoFlushWriter extends Writer {
      * Initialize a new auto-flushing timeseries table with a default threshold of 50000 rows.
      *
      * @param session Active connection with the QdbCluster
-     * @param name Timeseries name. Must already exist.
+     * @param table Timeseries table we're writing to.
      */
     protected AutoFlushWriter(Session session, Table table) {
         this(session, table, 50000);
@@ -32,7 +32,7 @@ public final class AutoFlushWriter extends Writer {
      * Initialize a new auto-flushing timeseries table.
      *
      * @param session Active connection with the QdbCluster
-     * @param name Timeseries name. Must already exist.
+     * @param table Timeseries table we're writing to.
      * @param threshold The amount of rows to keep in local buffer before automatic flushing occurs.
      */
     protected AutoFlushWriter(Session session, Table table, long threshold) {
