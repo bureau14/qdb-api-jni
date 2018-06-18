@@ -84,5 +84,3 @@ target_link_libraries(qdb_api_jni
 )
 
 include(native_jar.cmake)
-include(sources_jar.cmake)
-include(sources_javadoc.cmake)
