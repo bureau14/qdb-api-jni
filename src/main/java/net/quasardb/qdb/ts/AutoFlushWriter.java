@@ -24,8 +24,8 @@ public final class AutoFlushWriter extends Writer {
      * @param session Active connection with the QdbCluster
      * @param table Timeseries table we're writing to.
      */
-    protected AutoFlushWriter(Session session, Table table) {
-        this(session, table, 50000);
+    protected AutoFlushWriter(Session session, Table[] tables) {
+        this(session, tables, 50000);
     }
 
     /**
@@ -35,8 +35,8 @@ public final class AutoFlushWriter extends Writer {
      * @param table Timeseries table we're writing to.
      * @param threshold The amount of rows to keep in local buffer before automatic flushing occurs.
      */
-    protected AutoFlushWriter(Session session, Table table, long threshold) {
-        super(session, table);
+    protected AutoFlushWriter(Session session, Table[] tables, long threshold) {
+        super(session, tables);
 
         this.counter = 0;
         this.threshold = threshold;

@@ -9,6 +9,8 @@ import net.quasardb.qdb.ts.Row;
 import net.quasardb.qdb.ts.Value;
 import net.quasardb.qdb.ts.Result;
 import net.quasardb.qdb.ts.Column;
+import net.quasardb.qdb.ts.Table;
+import net.quasardb.qdb.ts.Writer;
 
 public final class qdb {
   static {
@@ -105,6 +107,7 @@ public final class qdb {
   public static native int ts_insert_columns(long handle, String alias, Column[] columns);
   public static native int ts_list_columns(long handle, String alias, Reference<Column[]> columns);
   public static native int ts_local_table_init(long handle, String alias, Column[] columns, Reference<Long> localTable);
+  public static native int ts_batch_table_init(long handle, Writer.TableColumn[] columns, Reference<Long> localTable);
   public static native void ts_local_table_release(long handle, long localTable);
   public static native int ts_table_row_append(long localTable, Timespec time, Value[] values);
   public static native int ts_push(long localTable);

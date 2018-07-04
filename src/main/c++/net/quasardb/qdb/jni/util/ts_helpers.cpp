@@ -103,6 +103,116 @@ nativeToTimeRange(qdb::jni::env & env, qdb_ts_range_t native) {
                           nativeToTimespec(env, native.end).release()));
 }
 
+
+size_t
+batchColumnInfoCount(qdb::jni::env & env, jobjectArray tables) {
+  size_t count = 0;
+
+  jclass tableClass = NULL;
+  jfieldID columnsField = NULL;
+
+  for (size_t i = 0; i < env.instance().GetArrayLength(tables); ++i) {
+    jni::guard::local_ref<jobject> table (env,
+                                          env.instance().GetObjectArrayElement(tables, static_cast<jsize>(i)));
+
+    if (tableClass == NULL) {
+      tableClass = env.instance().GetObjectClass(table.get());
+      assert (tableClass != NULL);
+    }
+
+    if (columnsField == NULL) {
+      columnsField = env.instance().GetFieldID(tableClass, "columns",
+                                               "[Lnet/quasardb/qdb/ts/Column;");
+      assert (columnsField != NULL);
+    }
+
+    jni::guard::local_ref<jobjectArray> columns (env,
+                                                 reinterpret_cast<jobjectArray>(env.instance().GetObjectField(table.get(),
+                                                                                                              columnsField)));
+
+    count += env.instance().GetArrayLength(columns.get());
+  }
+
+  return count;
+}
+
+void
+batchColumnInfo(qdb::jni::env & env,
+                jobjectArray tables,
+                qdb_ts_batch_column_info_t * column_info,
+                size_t column_info_count) {
+
+  jclass tableClass = NULL;
+  jfieldID tableNameField = NULL;
+  jfieldID columnsField = NULL;
+  jclass columnClass = NULL;
+  jfieldID columnNameField = NULL;
+
+  size_t offset = 0;
+
+  for (size_t i = 0; i < env.instance().GetArrayLength(tables); ++i) {
+    jni::guard::local_ref<jobject> table (env,
+                                          env.instance().GetObjectArrayElement(tables, static_cast<jsize>(i)));
+
+    if (tableClass == NULL) {
+      tableClass = env.instance().GetObjectClass(table.get());
+      assert (tableClass != NULL);
+    }
+
+    if (tableNameField == NULL) {
+      tableNameField = env.instance().GetFieldID(tableClass,
+                                                 "name",
+                                                 "Ljava/lang/String;");
+      assert(tableNameField != NULL);
+    }
+
+    if (columnsField == NULL) {
+      columnsField = env.instance().GetFieldID(tableClass,
+                                               "columns",
+                                               "[Lnet/quasardb/qdb/ts/Column;");
+      assert (columnsField != NULL);
+    }
+
+    jni::guard::local_ref<jstring> tableName (env,
+                                              reinterpret_cast<jstring>(env.instance().GetObjectField(table.get(),
+                                                                                                      tableNameField)));
+    jni::guard::local_ref<jobjectArray> columns (env,
+                                                 reinterpret_cast<jobjectArray>(env.instance().GetObjectField(table.get(),
+                                                                                                              columnsField)));
+
+    for (size_t j = 0; j < env.instance().GetArrayLength(columns.get()); ++j) {
+      jni::guard::local_ref<jobject> column (env,
+                                             env.instance().GetObjectArrayElement(columns.get(), static_cast<jsize>(j)));
+
+      if (columnClass == NULL) {
+        columnClass = env.instance().GetObjectClass(column.get());
+        assert (columnClass != NULL);
+      }
+
+      if (columnNameField == NULL) {
+        columnNameField = env.instance().GetFieldID(columnClass,
+                                                    "name",
+                                                    "Ljava/lang/String;");
+        assert(columnNameField != NULL);
+      }
+
+      jni::guard::local_ref<jstring> columnName (env,
+                                                 reinterpret_cast<jstring>(env.instance().GetObjectField(column.get(),
+                                                                                                         columnNameField)));
+
+      assert(offset < column_info_count);
+      column_info[offset].timeseries =
+        qdb::jni::string::get_chars_utf8(env,
+                                         tableName.get());
+      column_info[offset].column =
+        qdb::jni::string::get_chars_utf8(env,
+                                         columnName.get());
+      column_info[offset].elements_count_hint = 1;
+      ++offset;
+    }
+  }
+}
+
 void
 columnsToNative(qdb::jni::env & env, jobjectArray columns, qdb_ts_column_info_t * native_columns, size_t column_count) {
   jfieldID nameField, typeField;
