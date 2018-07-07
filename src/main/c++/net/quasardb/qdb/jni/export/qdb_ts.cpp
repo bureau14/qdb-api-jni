@@ -70,18 +70,12 @@ JNIEXPORT jint JNICALL
 Java_net_quasardb_qdb_jni_qdb_ts_1batch_1table_1init(JNIEnv * jniEnv,
                                                      jclass /*thisClass*/,
                                                      jlong handle,
-                                                     jobjectArray tables,
+                                                     jobjectArray tableColumns,
                                                      jobject batchTable) {
   qdb::jni::env env(jniEnv);
 
-  size_t columnInfoCount = batchColumnInfoCount(env, tables);
-
-  printf("columnInfoCount: %d\n", columnInfoCount);
-  fflush(stdout);
-
-  qdb_ts_batch_column_info_t * columnInfo = new qdb_ts_batch_column_info_t[columnInfoCount];
-
-  batchColumnInfo(env, tables, columnInfo, columnInfoCount);
+  size_t columnInfoCount = env.instance().GetArrayLength(tableColumns);
+  qdb_ts_batch_column_info_t * columnInfo = batchColumnInfo(env, tableColumns);
 
   qdb_batch_table_t nativeBatchTable;
 
@@ -89,6 +83,9 @@ Java_net_quasardb_qdb_jni_qdb_ts_1batch_1table_1init(JNIEnv * jniEnv,
                                             columnInfo,
                                             columnInfoCount,
                                             &nativeBatchTable);
+
+  batchColumnRelease(columnInfo, columnInfoCount);
+
   if (QDB_SUCCESS(err)) {
     setLong(env, batchTable, reinterpret_cast<long>(nativeBatchTable));
   }
@@ -96,13 +93,28 @@ Java_net_quasardb_qdb_jni_qdb_ts_1batch_1table_1init(JNIEnv * jniEnv,
   return err;
 }
 
+JNIEXPORT void JNICALL
+Java_net_quasardb_qdb_jni_qdb_ts_1batch_1table_1release(JNIEnv * /*env*/, jclass /*thisClass*/, jlong handle,
+                                                        jlong batchTable) {
+  qdb_release((qdb_handle_t)handle,
+              (qdb_batch_table_t)batchTable);
+}
+
 JNIEXPORT jint JNICALL
-Java_net_quasardb_qdb_jni_qdb_ts_1table_1row_1append(JNIEnv * jniEnv, jclass /*thisClass*/, jlong batchTable, jobject time, jobjectArray values) {
+Java_net_quasardb_qdb_jni_qdb_ts_1batch_1table_1row_1append(JNIEnv * jniEnv, jclass
+                                                            /*thisClass*/,
+                                                            jlong batchTable,
+                                                            jlong columnIndex,
+                                                            jobject time,
+                                                            jobjectArray values) {
   qdb::jni::env env(jniEnv);
 
-  qdb_size_t rowIndex;
-
-  qdb_error_t err = tableRowAppend(env, (qdb_local_table_t)localTable, time, values, env.instance().GetArrayLength(values), &rowIndex);
+  qdb_error_t err = tableRowAppend(env,
+                                   (qdb_batch_table_t)batchTable,
+                                   columnIndex,
+                                   time,
+                                   values,
+                                   env.instance().GetArrayLength(values));
 
   if (QDB_SUCCESS(err)) {
     // NOOP ?
@@ -110,6 +122,12 @@ Java_net_quasardb_qdb_jni_qdb_ts_1table_1row_1append(JNIEnv * jniEnv, jclass /*t
 
   return err;
 }
+
+JNIEXPORT jint JNICALL
+Java_net_quasardb_qdb_jni_qdb_ts_1batch_1push(JNIEnv * /*env*/, jclass /*thisClass*/, jlong batchTable) {
+  return qdb_ts_batch_push((qdb_batch_table_t)batchTable);
+}
+
 
 
 JNIEXPORT jint JNICALL
@@ -141,11 +159,6 @@ Java_net_quasardb_qdb_jni_qdb_ts_1local_1table_1release(JNIEnv * /*env*/, jclass
                                                         jlong localTable) {
   qdb_release((qdb_handle_t)handle,
               (qdb_local_table_t)localTable);
-}
-
-JNIEXPORT jint JNICALL
-Java_net_quasardb_qdb_jni_qdb_ts_1push(JNIEnv * /*env*/, jclass /*thisClass*/, jlong localTable) {
-  return qdb_ts_push((qdb_local_table_t)localTable);
 }
 
 JNIEXPORT jint JNICALL
