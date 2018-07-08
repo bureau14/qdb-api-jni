@@ -28,7 +28,7 @@ public class Writer implements AutoCloseable, Flushable {
     Map<String, Integer> tableOffsets;
 
     /**
-     * Helper class to represent a pair of table <-> columns, which we
+     * Helper class to represent a table and column pair, which we
      * need because we need to lay out all columns as flat array.
      */
     public static class TableColumn {
