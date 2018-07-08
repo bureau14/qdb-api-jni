@@ -74,7 +74,17 @@ public class Tables implements Serializable {
      * @param tables Timeseries tables.
      */
     public static Writer writer (Session session, Tables tables) {
-        return new Writer (session, tables.getTables());
+        return writer(session, tables.getTables());
+    }
+
+    /**
+     * Initializes new writer for timeseries table.
+     *
+     * @param session Active session with the QuasarDB cluster.
+     * @param tables Timeseries tables.
+     */
+    public static Writer writer (Session session, Table[] tables) {
+        return new Writer (session, tables);
     }
 
     /**
