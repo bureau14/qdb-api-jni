@@ -16,9 +16,10 @@ import net.quasardb.qdb.exception.InvalidArgumentException;
 import net.quasardb.qdb.jni.*;
 
 /**
- * Represents a timeseries Table. Typically you do not have to initialise this
- * class directly, but instead initialise another component that operates on top
- * of this table using {@link #writer}, {@link #autoFlushWriter} or {@link #reader}.
+ * Represents a timeseries Table. Upon construction, actively resolves metadata
+ * such as the associated Columns.
+ *
+ * Can also be used to construct new QuasarDB timeseries tables.
  */
 public class Table implements Serializable {
     final static long DEFAULT_SHARD_SIZE = 86400000;
