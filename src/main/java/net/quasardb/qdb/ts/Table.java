@@ -135,18 +135,7 @@ public class Table implements Serializable {
      * @param table Timeseries table.
      */
     public static AutoFlushWriter autoFlushWriter(Session session, Table table) {
-        return autoFlushWriter(session, new Table[] {table});
-    }
-
-    /**
-     * Initializes new writer for timeseries tables that periodically flushes
-     * its local cache.
-     *
-     * @param session Active session with the QuasarDB cluster.
-     * @param tables Timeseries tables.
-     */
-    public static AutoFlushWriter autoFlushWriter(Session session, Table[] tables) {
-        return new AutoFlushWriter(session, tables);
+        return Tables.autoFlushWriter(session, new Table[] {table});
     }
 
     /**
@@ -172,24 +161,9 @@ public class Table implements Serializable {
      * @param threshold The amount of rows to keep in local buffer before automatic flushing occurs.
      */
     public static AutoFlushWriter autoFlushWriter(Session session, Table table, long threshold) {
-        return autoFlushWriter(session,
-                               new Table[] {table},
-                               threshold);
-    }
-
-
-    /**
-     * Initializes new writer for a timeseries table that periodically flushes
-     * its local cache.
-     *
-     * @param session Active session with the QuasarDB cluster.
-     * @param tables Timeseries table.
-     * @param threshold The amount of rows to keep in local buffer before automatic flushing occurs.
-     */
-    public static AutoFlushWriter autoFlushWriter(Session session, Table[] tables, long threshold) {
-        return new AutoFlushWriter(session,
-                                   tables,
-                                   threshold);
+        return Tables.autoFlushWriter(session,
+                                      new Table[] {table},
+                                      threshold);
     }
 
     /**

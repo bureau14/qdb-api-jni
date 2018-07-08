@@ -139,6 +139,29 @@ public class Writer implements AutoCloseable, Flushable {
      * Append a new row to the local table cache. Should be periodically flushed,
      * unless an {@link AutoFlushWriter} is used.
      *
+     * This function automatically looks up a table's offset by its name. For performance
+     * reason, you are encouraged to manually invoke and cache the value of #tableIndexByName
+     * whenever possible.
+     *
+     * @param tableName Name of the table to insert to.
+     * @param timestamp Timestamp of the row
+     * @param values Values being inserted, mapped to columns by their relative offset.
+     *
+     * @see #tableIndexByName
+     * @see #flush
+     * @see Table#autoFlushWriter
+     */
+    public void append(String tableName, Timespec timestamp, Value[] values) throws IOException {
+        this.append(this.tableIndexByName(tableName),
+                    timestamp,
+                    values);
+    }
+
+
+    /**
+     * Append a new row to the local table cache. Should be periodically flushed,
+     * unless an {@link AutoFlushWriter} is used.
+     *
      * This is a convenience function that assumes only one table is being inserted
      * to and should not be used when inserts to multiple tables are being batched.
      *
