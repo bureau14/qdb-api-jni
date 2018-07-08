@@ -43,8 +43,8 @@ public final class AutoFlushWriter extends Writer {
     }
 
     @Override
-    public void append(Row row) throws IOException {
-        super.append(row);
+    public void append(Integer offset, Timespec timestamp, Value[] values) throws IOException {
+        super.append(offset, timestamp, values);
 
         if (++counter >= threshold) {
             try {

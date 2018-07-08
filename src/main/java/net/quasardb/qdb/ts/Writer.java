@@ -19,7 +19,7 @@ import net.quasardb.qdb.jni.*;
  */
 public class Writer implements AutoCloseable, Flushable {
     Session session;
-    Long localTable;
+    Long batchTable;
 
     /**
      * Maintains a cache of table offsets so we can easily look them up
@@ -39,12 +39,18 @@ public class Writer implements AutoCloseable, Flushable {
             this.table = table;
             this.column = column;
         }
+
+        public String toString() {
+            return "TableColumn (table: " + this.table + ", column: " + this.column + ")";
+        }
     }
 
     protected Writer(Session session, Table[] tables) {
         this.session = session;
+        this.tableOffsets = new HashMap<String, Integer>();
 
         List<TableColumn> columns = new ArrayList<TableColumn>();
+
         for (Table table : tables) {
             this.tableOffsets.put(table.name, columns.size());
 
@@ -53,13 +59,14 @@ public class Writer implements AutoCloseable, Flushable {
             }
         }
 
-        Reference<Long> theLocalTable = new Reference<Long>();
+        TableColumn[] tableColumns = columns.toArray(new TableColumn[columns.size()]);
+        Reference<Long> theBatchTable = new Reference<Long>();
         int err = qdb.ts_batch_table_init(this.session.handle(),
-                                          columns.toArray(new TableColumn[columns.size()]),
-                                          theLocalTable);
+                                          tableColumns,
+                                          theBatchTable);
         ExceptionFactory.throwIfError(err);
 
-        this.localTable = theLocalTable.value;
+        this.batchTable = theBatchTable.value;
     }
 
     /**
@@ -80,12 +87,12 @@ public class Writer implements AutoCloseable, Flushable {
     }
 
     /**
-     * Cleans up the internal representation of the local table.
+     * Cleans up the internal representation of the batch table.
      */
     @Override
     protected void finalize() throws Throwable {
         try {
-            qdb.ts_local_table_release(this.session.handle(), this.localTable);
+            qdb.ts_batch_table_release(this.session.handle(), this.batchTable);
         } finally {
             super.finalize();
         }
@@ -97,57 +104,241 @@ public class Writer implements AutoCloseable, Flushable {
      */
     public void close() throws IOException {
         this.flush();
-        qdb.ts_local_table_release(this.session.handle(), this.localTable);
+        qdb.ts_batch_table_release(this.session.handle(), this.batchTable);
 
-        this.localTable = null;
+        this.batchTable = null;
     }
 
     /**
      * Flush current local cache to server.
      */
     public void flush() throws IOException {
-        int err = qdb.ts_push(this.localTable);
+        int err = qdb.ts_batch_push(this.batchTable);
         ExceptionFactory.throwIfError(err);
     }
 
     /**
      * Append a new row to the local table cache. Should be periodically flushed,
      * unless an {@link AutoFlushWriter} is used.
+     *
+     * @param offset Relative offset of the table inside the batch. Use #tableIndexByName
+     *               to determine the appropriate value.
+     * @param timestamp Timestamp of the row
+     * @param values Values being inserted, mapped to columns by their relative offset.
+     *
+     * @see #tableIndexByName
+     * @see #flush
+     * @see Table#autoFlushWriter
+     */
+    public void append(Integer offset, Timespec timestamp, Value[] values) throws IOException {
+        int err = qdb.ts_batch_table_row_append(this.batchTable, offset, timestamp, values);
+        ExceptionFactory.throwIfError(err);
+    }
+
+    /**
+     * Append a new row to the local table cache. Should be periodically flushed,
+     * unless an {@link AutoFlushWriter} is used.
+     *
+     * This function automatically looks up a table's offset by its name. For performance
+     * reason, you are encouraged to manually invoke and cache the value of #tableIndexByName
+     * whenever possible.
+     *
+     * @param tableName Name of the table to insert to.
+     * @param timestamp Timestamp of the row
+     * @param values Values being inserted, mapped to columns by their relative offset.
+     *
+     * @see #tableIndexByName
+     * @see #flush
+     * @see Table#autoFlushWriter
+     */
+    public void append(String tableName, Timespec timestamp, Value[] values) throws IOException {
+        this.append(this.tableIndexByName(tableName),
+                    timestamp,
+                    values);
+    }
+
+
+    /**
+     * Append a new row to the local table cache. Should be periodically flushed,
+     * unless an {@link AutoFlushWriter} is used.
+     *
+     * This is a convenience function that assumes only one table is being inserted
+     * to and should not be used when inserts to multiple tables are being batched.
+     *
+     * @param timestamp Timestamp of the row
+     * @param values Values being inserted, mapped to columns by their relative offset.
+     *
+     * @see #tableIndexByName
+     * @see #flush
+     * @see Table#autoFlushWriter
+     */
+    public void append(Timespec timestamp, Value[] values) throws IOException {
+        this.append(0, timestamp, values);
+    }
+
+    /**
+     * Append a new row to the local table cache. Should be periodically flushed,
+     * unless an {@link AutoFlushWriter} is used.
+     *
+     * @param offset Relative offset of the table inside the batch. Use #tableIndexByName
+     *               to determine the appropriate value.
+     * @param row Row being inserted.
+     *
+     * @see #tableIndexByName
+     * @see #flush
+     * @see Table#autoFlushWriter
+     */
+    public void append(Integer offset, Row row) throws IOException {
+        this.append(offset,
+                    row.getTimestamp(),
+                    row.getValues());
+    }
+
+    /**
+     * Append a new row to the local table cache. Should be periodically flushed,
+     * unless an {@link AutoFlushWriter} is used.
+     *
+     * This function automatically looks up a table's offset by its name. For performance
+     * reason, you are encouraged to manually invoke and cache the value of #tableIndexByName
+     * whenever possible.
+     *
+     * @param tableName Name of the table to insert to.
+     * @param row Row being inserted.
+     *
+     * @see #tableIndexByName
+     * @see #flush
+     * @see Table#autoFlushWriter
+     */
+    public void append(String tableName, Row row) throws IOException {
+        this.append(this.tableIndexByName(tableName), row);
+    }
+
+    /**
+     * Append a new row to the local table cache. Should be periodically flushed,
+     * unless an {@link AutoFlushWriter} is used.
+     *
+     * This is a convenience function that assumes only one table is being inserted
+     * to and should not be used when inserts to multiple tables are being batched.
+     *
+     * @param row Row being inserted.
+     *
+     * @see #tableIndexByName
      * @see #flush
      * @see Table#autoFlushWriter
      */
     public void append(Row row) throws IOException {
-        int err = qdb.ts_table_row_append(this.localTable, row.getTimestamp(), row.getValues());
-        ExceptionFactory.throwIfError(err);
+        this.append(0, row);
+    }
+
+
+    /**
+     * Append a new row to the local table cache. Should be periodically flushed,
+     * unless an {@link AutoFlushWriter} is used.
+     *
+     * @param offset Relative offset of the table inside the batch. Use #tableIndexByName
+     *               to determine the appropriate value.
+     * @param timestamp Timestamp of the row
+     * @param values Values being inserted, mapped to columns by their relative offset.
+     *
+     * @see #tableIndexByName
+     * @see #flush
+     * @see Table#autoFlushWriter
+     */
+    public void append(Integer offset, LocalDateTime timestamp, Value[] values) throws IOException {
+        this.append(offset, new Timespec(timestamp), values);
     }
 
     /**
      * Append a new row to the local table cache. Should be periodically flushed,
      * unless an {@link AutoFlushWriter} is used.
+     *
+     * This function automatically looks up a table's offset by its name. For performance
+     * reason, you are encouraged to manually invoke and cache the value of #tableIndexByName
+     * whenever possible.
+     *
+     * @param tableName Name of the table to insert to.
+     * @param timestamp Timestamp of the row
+     * @param values Values being inserted, mapped to columns by their relative offset.
+     *
+     * @see #tableIndexByName
      * @see #flush
      * @see Table#autoFlushWriter
      */
-    public void append(Timespec timestamp, Value[] value) throws IOException {
-        this.append(new Row(timestamp, value));
+    public void append(String tableName, LocalDateTime timestamp, Value[] values) throws IOException {
+        this.append(this.tableIndexByName(tableName), timestamp, values);
+    }
+
+
+    /**
+     * Append a new row to the local table cache. Should be periodically flushed,
+     * unless an {@link AutoFlushWriter} is used.
+     *
+     * This is a convenience function that assumes only one table is being inserted
+     * to and should not be used when inserts to multiple tables are being batched.
+     *
+     * @param timestamp Timestamp of the row
+     * @param values Values being inserted, mapped to columns by their relative offset.
+     *
+     * @see #tableIndexByName
+     * @see #flush
+     * @see Table#autoFlushWriter
+     */
+    public void append(LocalDateTime timestamp, Value[] values) throws IOException {
+        this.append(0, timestamp, values);
     }
 
     /**
      * Append a new row to the local table cache. Should be periodically flushed,
      * unless an {@link AutoFlushWriter} is used.
+     *
+     * @param offset Relative offset of the table inside the batch. Use #tableIndexByName
+     *               to determine the appropriate value.
+     * @param timestamp Timestamp of the row
+     * @param values Values being inserted, mapped to columns by their relative offset.
+     *
+     * @see #tableIndexByName
      * @see #flush
      * @see Table#autoFlushWriter
      */
-    public void append(LocalDateTime timestamp, Value[] value) throws IOException {
-        this.append(new Row(timestamp, value));
+    public void append(Integer offset, Timestamp timestamp, Value[] values) throws IOException {
+        this.append(offset, new Timespec(timestamp), values);
     }
 
     /**
      * Append a new row to the local table cache. Should be periodically flushed,
      * unless an {@link AutoFlushWriter} is used.
+     *
+     * This function automatically looks up a table's offset by its name. For performance
+     * reason, you are encouraged to manually invoke and cache the value of #tableIndexByName
+     * whenever possible.
+     *
+     * @param tableName Name of the table to insert to.
+     * @param timestamp Timestamp of the row
+     * @param values Values being inserted, mapped to columns by their relative offset.
+     *
+     * @see #tableIndexByName
      * @see #flush
      * @see Table#autoFlushWriter
      */
-    public void append(Timestamp timestamp, Value[] value) throws IOException {
-        this.append(new Row(timestamp, value));
+    public void append(String tableName, Timestamp timestamp, Value[] values) throws IOException {
+        this.append(this.tableIndexByName(tableName), timestamp, values);
+    }
+
+    /**
+     * Append a new row to the local table cache. Should be periodically flushed,
+     * unless an {@link AutoFlushWriter} is used.
+     *
+     * This is a convenience function that assumes only one table is being inserted
+     * to and should not be used when inserts to multiple tables are being batched.
+     *
+     * @param timestamp Timestamp of the row
+     * @param values Values being inserted, mapped to columns by their relative offset.
+     *
+     * @see #tableIndexByName
+     * @see #flush
+     * @see Table#autoFlushWriter
+     */
+    public void append(Timestamp timestamp, Value[] values) throws IOException {
+        this.append(0, timestamp, values);
     }
 }

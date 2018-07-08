@@ -104,113 +104,88 @@ nativeToTimeRange(qdb::jni::env & env, qdb_ts_range_t native) {
 }
 
 
-size_t
-batchColumnInfoCount(qdb::jni::env & env, jobjectArray tables) {
-  size_t count = 0;
-
-  jclass tableClass = NULL;
-  jfieldID columnsField = NULL;
-
-  for (size_t i = 0; i < env.instance().GetArrayLength(tables); ++i) {
-    jni::guard::local_ref<jobject> table (env,
-                                          env.instance().GetObjectArrayElement(tables, static_cast<jsize>(i)));
-
-    if (tableClass == NULL) {
-      tableClass = env.instance().GetObjectClass(table.get());
-      assert (tableClass != NULL);
-    }
-
-    if (columnsField == NULL) {
-      columnsField = env.instance().GetFieldID(tableClass, "columns",
-                                               "[Lnet/quasardb/qdb/ts/Column;");
-      assert (columnsField != NULL);
-    }
-
-    jni::guard::local_ref<jobjectArray> columns (env,
-                                                 reinterpret_cast<jobjectArray>(env.instance().GetObjectField(table.get(),
-                                                                                                              columnsField)));
-
-    count += env.instance().GetArrayLength(columns.get());
-  }
-
-  return count;
-}
-
-void
+qdb_ts_batch_column_info_t *
 batchColumnInfo(qdb::jni::env & env,
-                jobjectArray tables,
-                qdb_ts_batch_column_info_t * column_info,
-                size_t column_info_count) {
+                jobjectArray tableColumns) {
 
-  jclass tableClass = NULL;
+  jclass tableColumnClass = NULL;
   jfieldID tableNameField = NULL;
-  jfieldID columnsField = NULL;
-  jclass columnClass = NULL;
   jfieldID columnNameField = NULL;
 
+  size_t columnInfoCount = env.instance().GetArrayLength(tableColumns);
+  qdb_ts_batch_column_info_t * columnInfo = new qdb_ts_batch_column_info_t[columnInfoCount];
   size_t offset = 0;
 
-  for (size_t i = 0; i < env.instance().GetArrayLength(tables); ++i) {
-    jni::guard::local_ref<jobject> table (env,
-                                          env.instance().GetObjectArrayElement(tables, static_cast<jsize>(i)));
-
-    if (tableClass == NULL) {
-      tableClass = env.instance().GetObjectClass(table.get());
-      assert (tableClass != NULL);
+  for (size_t i = 0; i < columnInfoCount; ++i) {
+    jni::guard::local_ref<jobject> tableColumn (env,
+                                                env.instance().GetObjectArrayElement(tableColumns,
+                                                                                     static_cast<jsize>(i)));
+    if (tableColumnClass == NULL) {
+      tableColumnClass = env.instance().GetObjectClass(tableColumn.get());
+      assert (tableColumnClass != NULL);
     }
 
     if (tableNameField == NULL) {
-      tableNameField = env.instance().GetFieldID(tableClass,
-                                                 "name",
-                                                 "Ljava/lang/String;");
+      tableNameField = jni::string::lookup_field(env,
+                                                 tableColumnClass,
+                                                 "table");
       assert(tableNameField != NULL);
     }
 
-    if (columnsField == NULL) {
-      columnsField = env.instance().GetFieldID(tableClass,
-                                               "columns",
-                                               "[Lnet/quasardb/qdb/ts/Column;");
-      assert (columnsField != NULL);
+    if (columnNameField == NULL) {
+      columnNameField = jni::string::lookup_field(env,
+                                                  tableColumnClass,
+                                                  "column");
+      assert (columnNameField != NULL);
     }
 
     jni::guard::local_ref<jstring> tableName (env,
-                                              reinterpret_cast<jstring>(env.instance().GetObjectField(table.get(),
+                                              reinterpret_cast<jstring>(env.instance().GetObjectField(tableColumn.get(),
                                                                                                       tableNameField)));
-    jni::guard::local_ref<jobjectArray> columns (env,
-                                                 reinterpret_cast<jobjectArray>(env.instance().GetObjectField(table.get(),
-                                                                                                              columnsField)));
 
-    for (size_t j = 0; j < env.instance().GetArrayLength(columns.get()); ++j) {
-      jni::guard::local_ref<jobject> column (env,
-                                             env.instance().GetObjectArrayElement(columns.get(), static_cast<jsize>(j)));
+    jni::guard::local_ref<jstring> columnName (env,
+                                              reinterpret_cast<jstring>(env.instance().GetObjectField(tableColumn.get(),
+                                                                                                      columnNameField)));
 
-      if (columnClass == NULL) {
-        columnClass = env.instance().GetObjectClass(column.get());
-        assert (columnClass != NULL);
-      }
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(disable: 4996) // 'strdup': The POSIX name for this item is deprecated. Instead, use the ISO C and C++ conformant name: _strdup.
+#endif
 
-      if (columnNameField == NULL) {
-        columnNameField = env.instance().GetFieldID(columnClass,
-                                                    "name",
-                                                    "Ljava/lang/String;");
-        assert(columnNameField != NULL);
-      }
 
-      jni::guard::local_ref<jstring> columnName (env,
-                                                 reinterpret_cast<jstring>(env.instance().GetObjectField(column.get(),
-                                                                                                         columnNameField)));
+    // We use strdup() here, make sure to call batchColumnRelease()!
+    columnInfo[offset].timeseries =
+      strdup(qdb::jni::string::get_chars_utf8(env,
+                                              tableName.get()));
+    columnInfo[offset].column =
+      strdup(qdb::jni::string::get_chars_utf8(env,
+                                              columnName.get()));
+    columnInfo[offset].elements_count_hint = 1;
 
-      assert(offset < column_info_count);
-      column_info[offset].timeseries =
-        qdb::jni::string::get_chars_utf8(env,
-                                         tableName.get());
-      column_info[offset].column =
-        qdb::jni::string::get_chars_utf8(env,
-                                         columnName.get());
-      column_info[offset].elements_count_hint = 1;
-      ++offset;
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
+
+    ++offset;
+  }
+
+  return columnInfo;
+}
+
+void
+batchColumnRelease(qdb_ts_batch_column_info_t * column_info,
+                   qdb_size_t column_info_count) {
+  for (qdb_size_t i = 0; i < column_info_count; ++i) {
+    qdb_ts_batch_column_info_t const & info = column_info[i];
+    if (info.timeseries) {
+      free(const_cast<char *>(info.timeseries));
+    }
+    if (info.column) {
+      free(const_cast<char *>(info.column));
     }
   }
+
+  delete[] column_info;
 }
 
 void
@@ -535,27 +510,37 @@ printObjectClass(qdb::jni::env & env, jobject value) {
 }
 
 qdb_error_t
-tableRowSetInt64ColumnValue(qdb::jni::env & env, qdb_local_table_t localTable, size_t columnIndex, jobject value) {
+tableRowSetInt64ColumnValue(qdb::jni::env & env,
+                            qdb_batch_table_t batchTable,
+                            jobject value) {
   jclass objectClass = env.instance().GetObjectClass(value);
   jmethodID methodId = env.instance().GetMethodID(objectClass, "getInt64", "()J");
   assert(methodId != NULL);
 
-  return qdb_ts_row_set_int64(localTable, columnIndex, env.instance().CallLongMethod(value, methodId));
+  return qdb_ts_batch_row_set_int64(batchTable,
+                                    env.instance().CallLongMethod(value, methodId));
 }
 
 qdb_error_t
-tableRowSetDoubleColumnValue(qdb::jni::env & env, qdb_local_table_t localTable, size_t columnIndex, jobject value) {
+tableRowSetDoubleColumnValue(qdb::jni::env & env,
+                             qdb_batch_table_t batchTable,
+                             jobject value) {
   jclass objectClass = env.instance().GetObjectClass(value);
   jmethodID methodId = env.instance().GetMethodID(objectClass, "getDouble", "()D");
   assert(methodId != NULL);
 
-  return qdb_ts_row_set_double(localTable, columnIndex, env.instance().CallDoubleMethod(value, methodId));
+  return qdb_ts_batch_row_set_double(batchTable,
+                                     env.instance().CallDoubleMethod(value, methodId));
 }
 
 qdb_error_t
-tableRowSetTimestampColumnValue(qdb::jni::env & env, qdb_local_table_t localTable, size_t columnIndex, jobject value) {
+tableRowSetTimestampColumnValue(qdb::jni::env & env,
+                                qdb_batch_table_t batchTable,
+                                jobject value) {
   jclass objectClass = env.instance().GetObjectClass(value);
-  jmethodID methodId = env.instance().GetMethodID(objectClass, "getTimestamp", "()Lnet/quasardb/qdb/ts/Timespec;");
+  jmethodID methodId = env.instance().GetMethodID(objectClass,
+                                                  "getTimestamp",
+                                                  "()Lnet/quasardb/qdb/ts/Timespec;");
   assert(methodId != NULL);
 
   jobject timestampObject = env.instance().CallObjectMethod(value, methodId);
@@ -564,13 +549,16 @@ tableRowSetTimestampColumnValue(qdb::jni::env & env, qdb_local_table_t localTabl
   qdb_timespec_t timestamp;
   timespecToNative(env, timestampObject, &timestamp);
 
-  qdb_error_t err = qdb_ts_row_set_timestamp(localTable, columnIndex, &timestamp);
+  qdb_error_t err = qdb_ts_batch_row_set_timestamp(batchTable,
+                                                   &timestamp);
   env.instance().DeleteLocalRef(timestampObject);
   return err;
 }
 
 qdb_error_t
-tableRowSetBlobColumnValue(qdb::jni::env & env, qdb_local_table_t localTable, size_t columnIndex, jobject value) {
+tableRowSetBlobColumnValue(qdb::jni::env & env,
+                           qdb_batch_table_t batchTable,
+                           jobject value) {
   jclass objectClass = env.instance().GetObjectClass(value);
   jmethodID methodId = env.instance().GetMethodID(objectClass, "getBlob", "()Ljava/nio/ByteBuffer;");
   assert(methodId != NULL);
@@ -580,10 +568,9 @@ tableRowSetBlobColumnValue(qdb::jni::env & env, qdb_local_table_t localTable, si
   void * blob_addr = env.instance().GetDirectBufferAddress(blobValue);
   qdb_size_t blob_size = (qdb_size_t)(env.instance().GetDirectBufferCapacity(blobValue));
 
-  qdb_error_t err =  qdb_ts_row_set_blob(localTable,
-                                         columnIndex,
-                                         blob_addr,
-                                         blob_size);
+  qdb_error_t err =  qdb_ts_batch_row_set_blob(batchTable,
+                                               blob_addr,
+                                               blob_size);
   env.instance().DeleteLocalRef(blobValue);
   return err;
 }
@@ -591,24 +578,26 @@ tableRowSetBlobColumnValue(qdb::jni::env & env, qdb_local_table_t localTable, si
 
 
 qdb_error_t
-tableRowSetColumnValue(qdb::jni::env & env, qdb_local_table_t localTable, size_t columnIndex, jobject value) {
+tableRowSetColumnValue(qdb::jni::env & env,
+                       qdb_batch_table_t batchTable,
+                       jobject value) {
   qdb_ts_column_type_t type = columnTypeFromColumnValue(env, value);
 
   switch(type) {
   case qdb_ts_column_int64:
-    return tableRowSetInt64ColumnValue(env, localTable, columnIndex, value);
+    return tableRowSetInt64ColumnValue(env, batchTable, value);
     break;
 
   case qdb_ts_column_double:
-    return tableRowSetDoubleColumnValue(env, localTable, columnIndex, value);
+    return tableRowSetDoubleColumnValue(env, batchTable, value);
     break;
 
   case qdb_ts_column_timestamp:
-    return tableRowSetTimestampColumnValue(env, localTable, columnIndex, value);
+    return tableRowSetTimestampColumnValue(env, batchTable, value);
     break;
 
   case qdb_ts_column_blob:
-    return tableRowSetBlobColumnValue(env, localTable, columnIndex, value);
+    return tableRowSetBlobColumnValue(env, batchTable, value);
     break;
 
   case qdb_ts_column_uninitialized:
@@ -621,28 +610,38 @@ tableRowSetColumnValue(qdb::jni::env & env, qdb_local_table_t localTable, size_t
 }
 
 qdb_error_t
-tableRowAppend(qdb::jni::env & env, qdb_local_table_t localTable, jobject time, jobjectArray values, size_t count, qdb_size_t * rowIndex) {
+tableRowAppend(qdb::jni::env & env,
+               qdb_batch_table_t batchTable,
+               jlong index,
+               jobject time,
+               jobjectArray values,
+               size_t count) {
 
-    jni::local_frame lf = jni::local_frame::push(env,
-                                                 // We need at least 2 * count local frame registers
-                                                 // from the JVM, because some tableRowSetColumnValue
-                                                 // requires additional object references.
-                                                 (2 * count));
+  jni::local_frame lf = jni::local_frame::push(env,
+                                               // We need at least 2 * count local frame registers
+                                               // from the JVM, because some tableRowSetColumnValue
+                                               // requires additional object references.
+                                               (2 * count));
 
-    qdb_timespec_t nativeTime;
-    timespecToNative(env, time, &nativeTime);
+  // Temporary: Vianney's loop of sorrow
+  for (jlong i = 0; i < index; ++i) {
+    qdb_ts_batch_row_skip_column(batchTable);
+  }
 
-    for (size_t i = 0; i < count; i++) {
-        jobject value =
-            (jobject)(env.instance().GetObjectArrayElement(values, static_cast<jsize>(i)));
-        qdb_error_t err = tableRowSetColumnValue(env, localTable, i, value);
+  qdb_timespec_t nativeTime;
+  timespecToNative(env, time, &nativeTime);
 
-        if (!QDB_SUCCESS(err)) {
-            return err;
-        }
+  for (size_t i = 0; i < count; i++) {
+    jobject value =
+      (jobject)(env.instance().GetObjectArrayElement(values, static_cast<jsize>(i)));
+    qdb_error_t err = tableRowSetColumnValue(env, batchTable, value);
+
+    if (!QDB_SUCCESS(err)) {
+      return err;
     }
+  }
 
-    return qdb_ts_table_row_append(localTable, &nativeTime, rowIndex);
+  return qdb_ts_batch_row_finalize(batchTable, &nativeTime);
 }
 
 

@@ -24,14 +24,14 @@ void timeRangesToNative(qdb::jni::env & env, jobjectArray input, size_t count, q
 qdb::jni::guard::local_ref<jobject>
 nativeToTimeRange(qdb::jni::env & env, qdb_ts_range_t native);
 
-size_t
-batchColumnInfoCount(qdb::jni::env & env, jobjectArray tables);
+qdb_ts_batch_column_info_t *
+batchColumnInfo(qdb::jni::env & env,
+                jobjectArray tableColumns);
+
 
 void
-batchColumnInfo(qdb::jni::env & env,
-                jobjectArray tables,
-                qdb_ts_batch_column_info_t * column_info,
-                size_t column_info_count);
+batchColumnRelease(qdb_ts_batch_column_info_t * column_info,
+                   qdb_size_t column_info_count);
 
 void columnsToNative(qdb::jni::env & env, jobjectArray columns, qdb_ts_column_info_t * native_columns, size_t column_count);
 void releaseNative(qdb_ts_column_info_t * native_columns, size_t column_count);
@@ -75,11 +75,8 @@ nativeToBlobAggregate(qdb::jni::env & env, qdb_ts_blob_aggregation_t native);
 qdb::jni::guard::local_ref<jobjectArray>
 nativeToBlobAggregates(qdb::jni::env & env, qdb_ts_blob_aggregation_t * native, size_t count);
 
-
 qdb_error_t
-tableRowAppend(qdb::jni::env &env, qdb_batch_table_t batchTable, jobject time, jobjectArray values, size_t count, qdb_size_t * rowIndex);
-qdb_error_t
-tableRowSetColumnValue(qdb::jni::env & env, qdb_local_table_t localTable, size_t columnIndex, jobject value);
+tableRowAppend(qdb::jni::env &env, qdb_batch_table_t batchTable, jlong columnIndex, jobject time, jobjectArray values, size_t count);
 qdb_error_t
 tableGetRanges(qdb::jni::env &env, qdb_local_table_t localTable, jobjectArray ranges);
 
