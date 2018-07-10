@@ -138,4 +138,8 @@ public class Tables implements Serializable {
                                    tables,
                                    threshold);
     }
+
+    public String toString() {
+        return "Tables (tables: " + this.tables.toString() + ")";
+    }
 }
