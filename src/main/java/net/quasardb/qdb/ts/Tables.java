@@ -60,7 +60,7 @@ public class Tables implements Serializable {
     /**
      * Returns a copy of this collection with the new table added.
      *
-     * @param session Active session wit hthe QuasarDB cluster.
+     * @param session Active session wit the QuasarDB cluster.
      * @param name
      */
     public Tables add (Session session, String name) {
