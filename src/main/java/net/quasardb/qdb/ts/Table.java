@@ -34,7 +34,7 @@ public class Table implements Serializable {
      * @param session Active connection with the QdbCluster
      * @param name Timeseries name. Must already exist.
      */
-    Table(Session session, String name) {
+    public Table(Session session, String name) {
         this.name = name;
 
         Reference<Column[]> columns =
