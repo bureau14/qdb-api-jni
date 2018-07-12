@@ -30,6 +30,14 @@ public class Timespec implements Serializable {
         this.nsec = -1;
     }
 
+    /**
+     * Construct a new timespec from milliseconds.
+     */
+    public Timespec(long msec) {
+        this.sec = msec / 1000;
+        this.nsec = msec * 1000000;
+    }
+
     public Timespec(long sec, long nsec){
         this.sec = sec;
         this.nsec = nsec;
@@ -151,5 +159,12 @@ public class Timespec implements Serializable {
 
     public String toString() {
         return "Timespec (sec: " + this.sec + ", nsec: " + this.nsec + ")";
+    }
+
+    /**
+     * Converts this timespec to the number of milliseconds from the epoch of 1970-01-01
+     */
+    public long toEpochMillis() {
+        return (long)(this.sec * 1000) + (long)(this.nsec / 1000000);
     }
 }
