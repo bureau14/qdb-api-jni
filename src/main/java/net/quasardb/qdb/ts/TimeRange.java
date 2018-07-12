@@ -2,6 +2,7 @@ package net.quasardb.qdb.ts;
 
 import java.io.Serializable;
 
+import net.quasardb.qdb.exception.InvalidArgumentException;
 import net.quasardb.qdb.jni.*;
 
 public class TimeRange implements Serializable {
@@ -10,6 +11,10 @@ public class TimeRange implements Serializable {
     protected Timespec end;
 
     public TimeRange (Timespec begin, Timespec end) {
+        if (end.isBefore(begin)) {
+            throw new InvalidArgumentException("Timerange must satisfy requirement begin <= end, but got begin(" + begin.toString() + ") and end(" + end.toString() + ") instead");
+        }
+
         this.begin = begin;
         this.end = end;
     }

@@ -57,6 +57,17 @@ public class Timespec implements Serializable {
         return this.nsec;
     }
 
+    public boolean isBefore(Timespec rhs) {
+        if (this.sec < rhs.sec) {
+            return true;
+        } else if (this.sec == rhs.sec &&
+            this.nsec < rhs.nsec) {
+            return true;
+        }
+
+        return false;
+    }
+
     /**
      * Construct a new Timespec based on a {@link NanoClock} that provides nanosecond
      * precision.
