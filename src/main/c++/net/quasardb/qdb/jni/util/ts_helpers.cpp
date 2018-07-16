@@ -635,7 +635,7 @@ tableRowAppend(qdb::jni::env & env,
   qdb_timespec_t nativeTime;
   timespecToNative(env, time, &nativeTime);
 
-  qdb_error_t err = qdb_ts_batch_next_row(batchTable, &nativeTime);
+  qdb_error_t err = qdb_ts_batch_start_row(batchTable, &nativeTime);
   if (!QDB_SUCCESS(err)) {
     return err;
   }
