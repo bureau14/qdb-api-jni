@@ -512,30 +512,35 @@ printObjectClass(qdb::jni::env & env, jobject value) {
 qdb_error_t
 tableRowSetInt64ColumnValue(qdb::jni::env & env,
                             qdb_batch_table_t batchTable,
+                            qdb_size_t index,
                             jobject value) {
   jclass objectClass = env.instance().GetObjectClass(value);
   jmethodID methodId = env.instance().GetMethodID(objectClass, "getInt64", "()J");
   assert(methodId != NULL);
 
   return qdb_ts_batch_row_set_int64(batchTable,
+                                    index,
                                     env.instance().CallLongMethod(value, methodId));
 }
 
 qdb_error_t
 tableRowSetDoubleColumnValue(qdb::jni::env & env,
                              qdb_batch_table_t batchTable,
+                             qdb_size_t index,
                              jobject value) {
   jclass objectClass = env.instance().GetObjectClass(value);
   jmethodID methodId = env.instance().GetMethodID(objectClass, "getDouble", "()D");
   assert(methodId != NULL);
 
   return qdb_ts_batch_row_set_double(batchTable,
+                                     index,
                                      env.instance().CallDoubleMethod(value, methodId));
 }
 
 qdb_error_t
 tableRowSetTimestampColumnValue(qdb::jni::env & env,
                                 qdb_batch_table_t batchTable,
+                                qdb_size_t index,
                                 jobject value) {
   jclass objectClass = env.instance().GetObjectClass(value);
   jmethodID methodId = env.instance().GetMethodID(objectClass,
@@ -550,6 +555,7 @@ tableRowSetTimestampColumnValue(qdb::jni::env & env,
   timespecToNative(env, timestampObject, &timestamp);
 
   qdb_error_t err = qdb_ts_batch_row_set_timestamp(batchTable,
+                                                   index,
                                                    &timestamp);
   env.instance().DeleteLocalRef(timestampObject);
   return err;
@@ -558,6 +564,7 @@ tableRowSetTimestampColumnValue(qdb::jni::env & env,
 qdb_error_t
 tableRowSetBlobColumnValue(qdb::jni::env & env,
                            qdb_batch_table_t batchTable,
+                           qdb_size_t index,
                            jobject value) {
   jclass objectClass = env.instance().GetObjectClass(value);
   jmethodID methodId = env.instance().GetMethodID(objectClass, "getBlob", "()Ljava/nio/ByteBuffer;");
@@ -569,6 +576,7 @@ tableRowSetBlobColumnValue(qdb::jni::env & env,
   qdb_size_t blob_size = (qdb_size_t)(env.instance().GetDirectBufferCapacity(blobValue));
 
   qdb_error_t err =  qdb_ts_batch_row_set_blob(batchTable,
+                                               index,
                                                blob_addr,
                                                blob_size);
   env.instance().DeleteLocalRef(blobValue);
@@ -580,24 +588,25 @@ tableRowSetBlobColumnValue(qdb::jni::env & env,
 qdb_error_t
 tableRowSetColumnValue(qdb::jni::env & env,
                        qdb_batch_table_t batchTable,
+                       qdb_size_t index,
                        jobject value) {
   qdb_ts_column_type_t type = columnTypeFromColumnValue(env, value);
 
   switch(type) {
   case qdb_ts_column_int64:
-    return tableRowSetInt64ColumnValue(env, batchTable, value);
+    return tableRowSetInt64ColumnValue(env, batchTable, index, value);
     break;
 
   case qdb_ts_column_double:
-    return tableRowSetDoubleColumnValue(env, batchTable, value);
+    return tableRowSetDoubleColumnValue(env, batchTable, index, value);
     break;
 
   case qdb_ts_column_timestamp:
-    return tableRowSetTimestampColumnValue(env, batchTable, value);
+    return tableRowSetTimestampColumnValue(env, batchTable, index, value);
     break;
 
   case qdb_ts_column_blob:
-    return tableRowSetBlobColumnValue(env, batchTable, value);
+    return tableRowSetBlobColumnValue(env, batchTable, index, value);
     break;
 
   case qdb_ts_column_uninitialized:
@@ -623,25 +632,25 @@ tableRowAppend(qdb::jni::env & env,
                                                // requires additional object references.
                                                (2 * count));
 
-  // Temporary: Vianney's loop of sorrow
-  for (jlong i = 0; i < index; ++i) {
-    qdb_ts_batch_row_skip_column(batchTable);
-  }
-
   qdb_timespec_t nativeTime;
   timespecToNative(env, time, &nativeTime);
+
+  qdb_error_t err = qdb_ts_batch_next_row(batchTable, &nativeTime);
+  if (!QDB_SUCCESS(err)) {
+    return err;
+  }
 
   for (size_t i = 0; i < count; i++) {
     jobject value =
       (jobject)(env.instance().GetObjectArrayElement(values, static_cast<jsize>(i)));
-    qdb_error_t err = tableRowSetColumnValue(env, batchTable, value);
+    err = tableRowSetColumnValue(env, batchTable, (index + i), value);
 
     if (!QDB_SUCCESS(err)) {
       return err;
     }
   }
 
-  return qdb_ts_batch_row_finalize(batchTable, &nativeTime);
+  return qdb_e_ok;
 }
 
 
