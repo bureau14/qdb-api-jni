@@ -49,7 +49,8 @@ set(QDB_JNI_SOURCES
 
 add_jar(jni
   SOURCES ${QDB_JAVA_SOURCES}
-  OUTPUT_NAME jni-2.8.0-SNAPSHOT)
+  OUTPUT_NAME jni-3.0.0-SNAPSHOT
+)
 
 create_javah(TARGET qdb_api_jni_headers
     CLASSES ${QDB_JNI_CLASSES}

@@ -5,7 +5,7 @@ xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <groupId>net.quasardb</groupId>
   <artifactId>jni</artifactId>
   <packaging>jar</packaging>
-  <version>2.8.0-SNAPSHOT</version>
+  <version>3.0.0-SNAPSHOT</version>
   <name>quasardb</name>
 
   <description>
@@ -24,9 +24,9 @@ xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <properties>
     <groupId>net.quasardb</groupId>
     <artifactId>jni</artifactId>
-    <version>2.8.0-SNAPSHOT</version>
+    <version>3.0.0-SNAPSHOT</version>
     <packaging>jar</packaging>
-    <file>target/jni-2.8.0-SNAPSHOT.jar</file>
+    <file>target/jni-3.0.0-SNAPSHOT.jar</file>
   </properties>
 
   <scm>
@@ -165,27 +165,27 @@ xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
             <configuration>
               <artifacts>
                 <artifact>
-                  <file>${project.basedir}/target/jni-2.8.0-SNAPSHOT-linux-x86_64.jar</file>
+                  <file>${project.basedir}/target/jni-3.0.0-SNAPSHOT-linux-x86_64.jar</file>
                   <type>jar</type>
                   <classifier>linux-x86_64</classifier>
                 </artifact>
                 <artifact>
-                  <file>${project.basedir}/target/jni-2.8.0-SNAPSHOT-osx-x86_64.jar</file>
+                  <file>${project.basedir}/target/jni-3.0.0-SNAPSHOT-osx-x86_64.jar</file>
                   <type>jar</type>
                   <classifier>osx-x86_64</classifier>
                 </artifact>
                 <artifact>
-                  <file>${project.basedir}/target/jni-2.8.0-SNAPSHOT-freebsd-x86_64.jar</file>
+                  <file>${project.basedir}/target/jni-3.0.0-SNAPSHOT-freebsd-x86_64.jar</file>
                   <type>jar</type>
                   <classifier>freebsd-x86_64</classifier>
                 </artifact>
                 <artifact>
-                  <file>${project.basedir}/target/jni-2.8.0-SNAPSHOT-windows-x86_64.jar</file>
+                  <file>${project.basedir}/target/jni-3.0.0-SNAPSHOT-windows-x86_64.jar</file>
                   <type>jar</type>
                   <classifier>windows-x86_64</classifier>
                 </artifact>
                 <artifact>
-                  <file>${project.basedir}/target/jni-2.8.0-SNAPSHOT-windows-x86_32.jar</file>
+                  <file>${project.basedir}/target/jni-3.0.0-SNAPSHOT-windows-x86_32.jar</file>
                   <type>jar</type>
                   <classifier>windows-x86_32</classifier>
                 </artifact>
