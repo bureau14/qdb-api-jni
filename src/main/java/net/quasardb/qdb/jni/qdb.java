@@ -74,16 +74,6 @@ public final class qdb {
   public static native int int_get(long handle, String alias, Reference<Long> value);
   public static native int int_add(long handle, String alias, long addend, Reference<Long> result);
 
-  public static native int deque_size(long handle, String alias, Reference<Long> size);
-  public static native int deque_get_at(long handle, String alias, long index, Reference<ByteBuffer> content);
-  public static native int deque_set_at(long handle, String alias, long index, ByteBuffer content);
-  public static native int deque_push_front(long handle, String alias, ByteBuffer content);
-  public static native int deque_push_back(long handle, String alias, ByteBuffer content);
-  public static native int deque_pop_front(long handle, String alias, Reference<ByteBuffer> content);
-  public static native int deque_pop_back(long handle, String alias, Reference<ByteBuffer> content);
-  public static native int deque_front(long handle, String alias, Reference<ByteBuffer> content);
-  public static native int deque_back(long handle, String alias, Reference<ByteBuffer> content);
-
   public static native int stream_open(long handle, String alias, int mode, Reference<Long> stream);
   public static native int stream_close(long stream);
   public static native int stream_read(long stream, ByteBuffer content, Reference<Long> bytesRead);
