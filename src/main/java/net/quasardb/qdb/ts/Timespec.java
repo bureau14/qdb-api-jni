@@ -35,7 +35,7 @@ public class Timespec implements Serializable {
      */
     public Timespec(long msec) {
         this.sec = msec / 1000;
-        this.nsec = msec * 1000000;
+        this.nsec = (msec % 1000) * 1000000;
     }
 
     public Timespec(long sec, long nsec){
