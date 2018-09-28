@@ -29,6 +29,14 @@ Java_net_quasardb_qdb_jni_qdb_ts_1create(JNIEnv * jniEnv, jclass /*thisClass*/, 
 }
 
 JNIEXPORT jint JNICALL
+Java_net_quasardb_qdb_jni_qdb_ts_1remove(JNIEnv * jniEnv, jclass /*thisClass*/, jlong handle,
+                                         jstring alias) {
+  qdb::jni::env env(jniEnv);
+
+  return qdb_remove((qdb_handle_t)handle, qdb::jni::string::get_chars_utf8(env, alias));
+}
+
+JNIEXPORT jint JNICALL
 Java_net_quasardb_qdb_jni_qdb_ts_1insert_1columns(JNIEnv * jniEnv, jclass /*thisClass*/, jlong handle,
                                                   jstring alias, jobjectArray columns) {
   qdb::jni::env env(jniEnv);

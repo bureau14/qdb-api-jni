@@ -94,6 +94,7 @@ public final class qdb {
   public static native int tag_iterator_type(long iterator);
 
   public static native int ts_create(long handle, String alias, long shard_size, Column[] columns);
+  public static native int ts_remove(long handle, String alias);
   public static native int ts_insert_columns(long handle, String alias, Column[] columns);
   public static native int ts_list_columns(long handle, String alias, Reference<Column[]> columns);
   public static native int ts_local_table_init(long handle, String alias, Column[] columns, Reference<Long> localTable);
