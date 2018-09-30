@@ -88,7 +88,7 @@ public class Table implements Serializable {
     /**
      * Remove existing timeseries table.
      *
-     * @param sessuib Active session with the QuasarDB cluster
+     * @param session Active session with the QuasarDB cluster
      * @param name Unique identifier for this timeseries table.
      */
     public static void remove(Session session, String name) {
