@@ -2,6 +2,7 @@ package net.quasardb.qdb.ts;
 
 import java.io.*;
 import java.nio.ByteBuffer;
+import java.nio.charset.Charset;
 
 import net.quasardb.qdb.*;
 import net.quasardb.qdb.jni.*;
@@ -112,7 +113,7 @@ public class Value implements Serializable {
     }
 
     /**
-     * Represents a long integer
+     * Represents a timestamp
      */
     public static Value createTimestamp(Timespec value) {
         Value val = new Value(Type.TIMESTAMP);
@@ -121,7 +122,7 @@ public class Value implements Serializable {
     }
 
     /**
-     * Updates value to take a certain long integer value;
+     * Updates value to take a certain timestamp;
      */
     public void setTimestamp(Timespec value) {
         this.type = Type.TIMESTAMP;
@@ -138,6 +139,10 @@ public class Value implements Serializable {
         return val;
     }
 
+    /**
+     * Represents blob value. Warning: assumes bytebuffer will stay in memory for as
+     * long as this object lives.
+     */
     public static Value createBlob(ByteBuffer value) {
         Value val = new Value(Type.BLOB);
         val.blobValue = value.duplicate();
@@ -175,6 +180,9 @@ public class Value implements Serializable {
         return val;
     }
 
+    /**
+     * Creates a copy of a ByteBuffer into this Value.
+     */
     public static Value createSafeBlob(ByteBuffer value) {
         Value val = new Value(Type.BLOB);
 
@@ -186,6 +194,27 @@ public class Value implements Serializable {
         value.rewind();
 
         return val;
+    }
+
+    /**
+     * Convenience function that coerces a String to a blob value. Creates
+     * copy of string. Assumes default character encoding type.
+     *
+     * @param value String representation of value.
+     */
+    public static Value createSafeString(String value) {
+        return createSafeBlob(value.getBytes());
+    }
+
+    /**
+     * Convenience function that coerces a String to a blob value. Creates
+     * copy of string, and interprets bytes using specific charset.
+     *
+     * @param value String representation of value.
+     * @param charset Character set to map string characters to bytes.
+     */
+    public static Value createSafeString(String value, Charset charset) {
+        return createSafeBlob(value.getBytes(charset));
     }
 
     @Override
