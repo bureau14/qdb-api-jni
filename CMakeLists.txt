@@ -90,3 +90,6 @@ install(TARGETS qdb_api_jni
 
 install_jar(jni
             DESTINATION lib)
+
+install(FILES ${NATIVE_JAR_FILE}
+        DESTINATION lib)
