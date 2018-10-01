@@ -84,3 +84,9 @@ target_link_libraries(qdb_api_jni
 )
 
 include(native_jar.cmake)
+
+install(TARGETS qdb_api_jni
+        LIBRARY DESTINATION lib)
+
+install_jar(jni
+            DESTINATION lib)
