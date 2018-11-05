@@ -10,10 +10,10 @@ import net.quasardb.qdb.exception.ClusterClosedException;
 
 
 /**
- * Represents a connection with the QuasarDB cluster. This class is backed
- * by a connection pool, and is thread-safe. You are encouraged to reuse
- * this object as much as possible, ideally only creating a single session
- * for the lifetime of your process.
+ * Represents a connection with the QuasarDB cluster. This class is not
+ * thread-safe. As instantiations of this class are expensive (especially
+ * when secure connections are used), you are encouraged to pool instances
+ * of this class are you would do with any other connection pool.
  */
 public class Session {
     private transient long handle;

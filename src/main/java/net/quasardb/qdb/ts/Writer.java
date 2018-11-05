@@ -16,6 +16,9 @@ import net.quasardb.qdb.jni.*;
 
 /**
  * High-performance bulk writer for a QuasarDB timeseries table.
+ *
+ * Usage of instances of this class is not thread-safe. Use a Writer
+ * instance per Thread in multi-threaded situations.
  */
 public class Writer implements AutoCloseable, Flushable {
     Session session;

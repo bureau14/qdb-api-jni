@@ -12,6 +12,9 @@ import net.quasardb.qdb.jni.*;
 /**
  * An implementation of a Writer that automatically flushes the local cache when
  * a certain threshold has been reached.
+ *
+ * As with Writer, usage of instances of this class is not thread-safe. Use an
+ * AutFlushWriter instance per Thread in multi-threaded situations.
  */
 public final class AutoFlushWriter extends Writer {
 
