@@ -49,12 +49,7 @@ set(QDB_JNI_SOURCES
 add_jar(jni
   SOURCES ${QDB_JAVA_SOURCES}
   OUTPUT_NAME jni-3.0.0-SNAPSHOT
-)
-
-create_javah(TARGET qdb_api_jni_headers
-    CLASSES ${QDB_JNI_CLASSES}
-    DEPENDS jni
-    CLASSPATH jni
+  GENERATE_NATIVE_HEADERS ${QDB_JNI_CLASSES}
 )
 
 add_library(qdb_api_jni SHARED
@@ -62,13 +57,14 @@ add_library(qdb_api_jni SHARED
 )
 
 add_dependencies(qdb_api_jni
-    qdb_api_jni_headers
+    jni
 )
 
 target_include_directories(qdb_api_jni
     PRIVATE
     qdb/include
     ${JNI_INCLUDE_DIRS}
+    native_headers/
     ${CMAKE_BINARY_DIR}
 )
 
