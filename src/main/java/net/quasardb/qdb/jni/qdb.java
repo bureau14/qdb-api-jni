@@ -99,6 +99,7 @@ public final class qdb {
   public static native int ts_list_columns(long handle, String alias, Reference<Column[]> columns);
   public static native int ts_local_table_init(long handle, String alias, Column[] columns, Reference<Long> localTable);
   public static native int ts_batch_table_init(long handle, Writer.TableColumn[] columns, Reference<Long> batchTable);
+  public static native int ts_batch_table_extra_columns(long batchTable,  Writer.TableColumn[] columns);
   public static native void ts_batch_table_release(long handle, long batchTable);
   public static native int ts_batch_table_row_append(long batchTable, long offset, Timespec time, Value[] values);
   public static native int ts_batch_push(long batchTable);

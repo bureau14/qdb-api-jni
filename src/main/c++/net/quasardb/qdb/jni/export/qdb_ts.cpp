@@ -101,6 +101,26 @@ Java_net_quasardb_qdb_jni_qdb_ts_1batch_1table_1init(JNIEnv * jniEnv,
   return err;
 }
 
+
+JNIEXPORT jint JNICALL
+Java_net_quasardb_qdb_jni_qdb_ts_1batch_1table_1extra_1columns(JNIEnv * jniEnv,
+                                                               jclass /*thisClass*/,
+                                                               jlong batchTable,
+                                                               jobjectArray tableColumns) {
+  qdb::jni::env env(jniEnv);
+
+  size_t columnInfoCount = env.instance().GetArrayLength(tableColumns);
+  qdb_ts_batch_column_info_t * columnInfo = batchColumnInfo(env, tableColumns);
+
+  qdb_error_t err = qdb_ts_batch_table_extra_columns((qdb_batch_table_t)batchTable,
+                                                     columnInfo,
+                                                     columnInfoCount);
+
+  batchColumnRelease(columnInfo, columnInfoCount);
+
+  return err;
+}
+
 JNIEXPORT void JNICALL
 Java_net_quasardb_qdb_jni_qdb_ts_1batch_1table_1release(JNIEnv * /*env*/, jclass /*thisClass*/, jlong handle,
                                                         jlong batchTable) {

@@ -23,6 +23,7 @@ import net.quasardb.qdb.jni.*;
 public class Writer implements AutoCloseable, Flushable {
     Session session;
     Long batchTable;
+    List<TableColumn> columns;
 
     /**
      * Maintains a cache of table offsets so we can easily look them up
@@ -51,18 +52,17 @@ public class Writer implements AutoCloseable, Flushable {
     protected Writer(Session session, Table[] tables) {
         this.session = session;
         this.tableOffsets = new HashMap<String, Integer>();
-
-        List<TableColumn> columns = new ArrayList<TableColumn>();
+        this.columns = new ArrayList<TableColumn>();
 
         for (Table table : tables) {
-            this.tableOffsets.put(table.name, columns.size());
+            this.tableOffsets.put(table.name, this.columns.size());
 
             for (Column column : table.columns) {
-                columns.add(new TableColumn(table.name, column.name));
+                this.columns.add(new TableColumn(table.name, column.name));
             }
         }
 
-        TableColumn[] tableColumns = columns.toArray(new TableColumn[columns.size()]);
+        TableColumn[] tableColumns = this.columns.toArray(new TableColumn[columns.size()]);
         Reference<Long> theBatchTable = new Reference<Long>();
         int err = qdb.ts_batch_table_init(this.session.handle(),
                                           tableColumns,
@@ -70,6 +70,34 @@ public class Writer implements AutoCloseable, Flushable {
         ExceptionFactory.throwIfError(err);
 
         this.batchTable = theBatchTable.value;
+    }
+
+    /**
+     * After a writer is already initialized, this function allows extra tables to
+     * be added to the internal state. Blocking function that needs to communicate with
+     * the QuasarDB daemon to retrieve metadata.
+     */
+    public void extraTables(Table[] tables) {
+        List<TableColumn> columns = new ArrayList<TableColumn>();
+
+        for (Table table : tables) {
+            this.tableOffsets.put(table.name, this.columns.size());
+
+            for (Column column : table.columns) {
+                this.columns.add(new TableColumn(table.name, column.name));
+                columns.add(new TableColumn(table.name, column.name));
+            }
+        }
+
+        TableColumn[] tableColumns = columns.toArray(new TableColumn[columns.size()]);
+        int err = qdb.ts_batch_table_extra_columns(this.batchTable,
+                                                   tableColumns);
+        ExceptionFactory.throwIfError(err);
+
+    }
+
+    public void extraTables(Table table) {
+        extraTables(new Table[] { table });
     }
 
     /**
