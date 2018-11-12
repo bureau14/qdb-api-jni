@@ -52,6 +52,32 @@ public class Table implements Serializable {
     }
 
     /**
+     * Create new timeseries table by copying a 'skeleton' table's schema and using
+     * the default shard size.
+     *
+     * @param session Active session with the QuasarDB cluster.
+     * @param name Unique identifier for this timeseries table.
+     * @param skeleton Skeleton table's schema to be copied.
+     * @return Reference to the newly created timeseries table.
+     */
+    static public Table create(Session session, String name, Table table) {
+        return create(session, name, table, DEFAULT_SHARD_SIZE);
+    }
+
+    /**
+     * Create new timeseries table by copying a 'skeleton' table's schema.
+     *
+     * @param session Active session with the QuasarDB cluster.
+     * @param name Unique identifier for this timeseries table.
+     * @param skeleton Skeleton table's schema to be copied.
+     * @param shardSize The size of the shards in ms.
+     * @return Reference to the newly created timeseries table.
+     */
+    static public Table create(Session session, String name, Table table, long shardSize) {
+        return create(session, name, table.columns, shardSize);
+    }
+
+    /**
      * Create new timeseries table with a default shard size.
      *
      * @param session Active session with the QuasarDB cluster.
