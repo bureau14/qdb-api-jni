@@ -157,6 +157,10 @@ Java_net_quasardb_qdb_jni_qdb_ts_1batch_1push(JNIEnv * /*env*/, jclass /*thisCla
 }
 
 
+JNIEXPORT jint JNICALL
+Java_net_quasardb_qdb_jni_qdb_ts_1batch_1push_1async(JNIEnv * /*env*/, jclass /*thisClass*/, jlong batchTable) {
+  return qdb_ts_batch_push_async((qdb_batch_table_t)batchTable);
+}
 
 JNIEXPORT jint JNICALL
 Java_net_quasardb_qdb_jni_qdb_ts_1local_1table_1init(JNIEnv * jniEnv, jclass /*thisClass*/, jlong handle,

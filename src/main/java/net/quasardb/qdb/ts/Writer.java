@@ -21,6 +21,7 @@ import net.quasardb.qdb.jni.*;
  * instance per Thread in multi-threaded situations.
  */
 public class Writer implements AutoCloseable, Flushable {
+    boolean async;
     Session session;
     Long batchTable;
     List<TableColumn> columns;
@@ -50,6 +51,11 @@ public class Writer implements AutoCloseable, Flushable {
     }
 
     protected Writer(Session session, Table[] tables) {
+        this(session, tables, false);
+    }
+
+    protected Writer(Session session, Table[] tables, boolean async) {
+        this.async = async;
         this.session = session;
         this.tableOffsets = new HashMap<String, Integer>();
         this.columns = new ArrayList<TableColumn>();
@@ -144,7 +150,12 @@ public class Writer implements AutoCloseable, Flushable {
      * Flush current local cache to server.
      */
     public void flush() throws IOException {
-        int err = qdb.ts_batch_push(this.batchTable);
+        int err;
+        if (this.async == true) {
+            err = qdb.ts_batch_push_async(this.batchTable);
+        } else {
+            err = qdb.ts_batch_push(this.batchTable);
+        }
         ExceptionFactory.throwIfError(err);
     }
 
