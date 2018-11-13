@@ -60,8 +60,8 @@ public class Table implements Serializable {
      * @param skeleton Skeleton table's schema to be copied.
      * @return Reference to the newly created timeseries table.
      */
-    static public Table create(Session session, String name, Table table) {
-        return create(session, name, table, DEFAULT_SHARD_SIZE);
+    static public Table create(Session session, String name, Table skeleton) {
+        return create(session, name, skeleton, DEFAULT_SHARD_SIZE);
     }
 
     /**
@@ -73,8 +73,8 @@ public class Table implements Serializable {
      * @param shardSize The size of the shards in ms.
      * @return Reference to the newly created timeseries table.
      */
-    static public Table create(Session session, String name, Table table, long shardSize) {
-        return create(session, name, table.columns, shardSize);
+    static public Table create(Session session, String name, Table skeleton, long shardSize) {
+        return create(session, name, skeleton.columns, shardSize);
     }
 
     /**
