@@ -292,6 +292,53 @@ public class Table implements Serializable {
     }
 
     /**
+     * Attaches a tag to an existing table.
+     *
+     * @param session Active session with the QuasarDB cluster
+     * @param table   Timeseries table
+     * @param tag     Tag to attach
+     */
+    public static void attachTag(Session session, Table table, String tag) {
+        attachTag(session, table.getName(), tag);
+    }
+
+    /**
+     * Attaches a tag to an existing table.
+     *
+     * @param session   Active session with the QuasarDB cluster
+     * @param tableName Name of the timeseries table
+     * @param tag       Tag to attach
+     */
+    public static void attachTag(Session session, String tableName, String tag) {
+        attachTags(session, tableName, Arrays.asList(tag));
+    }
+
+    /**
+     * Attaches tags to an existing table.
+     *
+     * @param session Active session with the QuasarDB cluster
+     * @param table   Timeseries table
+     * @param tags    Tags to attach
+     */
+    public static void attachTags(Session session, Table table, List<String> tags) {
+        attachTags(session, table.getName(), tags);
+    }
+
+    /**
+     * Attaches tags to an existing table.
+     *
+     * @param session   Active session with the QuasarDB cluster
+     * @param tableName Name of the timeseries table
+     * @param tags      Tags to attach
+     */
+    public static void attachTags(Session session, String tableName, List<String> tags) {
+        for (String tag : tags) {
+            int err = qdb.attach_tag(session.handle(), tableName, tag);
+            ExceptionFactory.throwIfError(err);
+        }
+    }
+
+    /**
      * Returns the timeseries table name.
      */
     public String getName() {

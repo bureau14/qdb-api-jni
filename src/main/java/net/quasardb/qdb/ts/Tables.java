@@ -13,6 +13,7 @@ import java.util.*;
 import net.quasardb.qdb.*;
 import net.quasardb.qdb.exception.ExceptionFactory;
 import net.quasardb.qdb.exception.InvalidArgumentException;
+import net.quasardb.qdb.exception.IncompatibleTypeException;
 import net.quasardb.qdb.jni.*;
 
 /**
@@ -41,6 +42,32 @@ public class Tables implements Serializable {
     }
 
     /**
+     * Returns the number of tables in this collection.
+     *
+     * @returns The number of tables in this collection.
+     */
+    public int size() {
+        return this.tables.size();
+    }
+
+    /**
+     * Returns true when the collection contains a table with a certain name.
+     * This operation has O(N) complexity.
+     *
+     * @param tableName The tablename to search for.
+     * @returns True when the collection contains a table with the name.
+     */
+    public boolean hasTableWithName(String tableName) {
+        for (Table t : this.tables) {
+            if (t.getName().equals(tableName)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
      * Provides access to the internal #Table collection.
      */
     protected Table[] getTables() {
@@ -65,6 +92,34 @@ public class Tables implements Serializable {
      */
     public Tables add (Session session, String name) {
         return add(new Table(session, name));
+    }
+
+    public static Tables ofTag (Session session, String tag) {
+        Reference<Long> iterator = new Reference<Long>();
+        int err = qdb.tag_iterator_begin(session.handle(), tag, iterator);
+        ExceptionFactory.throwIfError(err);
+
+        Tables tables = new Tables();
+
+        boolean hasNext = err == qdb_error.ok;
+        final long handle = iterator.value;
+
+        while (hasNext == true) {
+            int type = qdb.tag_iterator_type(handle);
+            String alias = qdb.tag_iterator_alias(handle);
+
+            if (type != qdb_entry_type.timeseries) {
+                throw new IncompatibleTypeException("Not a timeseries: " + alias);
+            }
+
+            tables = tables.add(session, alias);
+
+            err = qdb.tag_iterator_next(handle);
+            hasNext = err == qdb_error.ok;
+            ExceptionFactory.throwIfError(err);
+        }
+
+        return tables;
     }
 
     /**
