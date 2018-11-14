@@ -44,7 +44,7 @@ public class Tables implements Serializable {
     /**
      * Returns the number of tables in this collection.
      *
-     * @returns The number of tables in this collection.
+     * @return The number of tables in this collection.
      */
     public int size() {
         return this.tables.size();
@@ -55,7 +55,7 @@ public class Tables implements Serializable {
      * This operation has O(N) complexity.
      *
      * @param tableName The tablename to search for.
-     * @returns True when the collection contains a table with the name.
+     * @return True when the collection contains a table with the name.
      */
     public boolean hasTableWithName(String tableName) {
         for (Table t : this.tables) {
