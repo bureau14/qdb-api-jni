@@ -115,9 +115,9 @@ Java_net_quasardb_qdb_jni_qdb_query_1execute(JNIEnv * jniEnv, jclass /*thisClass
                                              jstring query, jobject outputReference) {
     qdb::jni::env env(jniEnv);
     qdb_query_result_t * result = NULL;
-    qdb_error_t err = qdb_exp_query((qdb_handle_t)(handle),
-                                    qdb::jni::string::get_chars_utf8(env, query),
-                                    &result);
+    qdb_error_t err =
+        qdb_query((qdb_handle_t)(handle),
+                  qdb::jni::string::get_chars_utf8(env, query), &result);
 
     if (QDB_SUCCESS(err)) {
         assert(result != NULL);
