@@ -3,5 +3,5 @@ if exist build (
 )
 mkdir build
 pushd build
-cmake -G "Visual Studio 12" .. && cmake --build .
+cmake -G "Visual Studio 15" .. && cmake --build .
 popd
