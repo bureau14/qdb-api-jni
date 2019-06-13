@@ -71,7 +71,7 @@ static std::string make_log_str(const unsigned long * date,
     const char * message_buffer,
     size_t message_size)
 {
-    constexpr prefix_size = 30;
+    constexpr size_t prefix_size = 30;
 
     size_t msg_size = prefix_size + message_size;
     std::string msg;
