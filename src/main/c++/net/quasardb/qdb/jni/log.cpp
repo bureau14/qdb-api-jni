@@ -71,12 +71,13 @@ static std::string make_log_str(const unsigned long * date,
     const char * message_buffer,
     size_t message_size)
 {
-    constexpr prefix_size = 36;
+    constexpr prefix_size = 30;
 
     size_t msg_size = prefix_size + message_size;
     std::string msg;
     msg.resize(msg_size);
-    sprintf(msg.c_str(), msg_size, "%02lu/%02lu/%04lu-%02lu:%02lu:%02lu %8s (%5lu:%5lu): %.*s\n", date[1], date[2], date[0], date[3], date[4], date[5],
-        get_log_level_as_string(log_level), pid, tid, (int)message_size, message_buffer);
+
+    auto count = snprintf(msg.c_str(), msg_size, "%02lu/%02lu/%04lu-%02lu:%02lu:%02lu (%5lu:%5lu): %.*s\n", date[1], date[2], date[0], date[3], date[4], date[5], pid, tid, (int)message_size, message_buffer);
+    msg.resize(count);
     return msg;
 }
