@@ -30,16 +30,17 @@ void qdb::jni::log_callback(qdb_log_level_t log_level,
 
     if (!logger)
     {
-        logger = introspect::lookup_class(env, "net/quasardb/qdb/QdbCallbackLogger");
-        debugID = introspect::lookup_method(env, logger, "debug", "(Ljava/lang/String;)V");
-        errorID = introspect::lookup_method(env, logger, "error", "(Ljava/lang/String;)V");
-        fatalID = introspect::lookup_method(env, logger, "fatal", "(Ljava/lang/String;)V");
-        infoID = introspect::lookup_method(env, logger, "info", "(Ljava/lang/String;)V");
-        warnID = introspect::lookup_method(env, logger, "warn", "(Ljava/lang/String;)V");
+        logger = introspect::lookup_class(env, "net/quasardb/qdb/QdbCallbackLogger/Log");
+        debugID = introspect::lookup_method(env, *logger, "debug", "(Ljava/lang/String;)V");
+        errorID = introspect::lookup_method(env, *logger, "error", "(Ljava/lang/String;)V");
+        fatalID = introspect::lookup_method(env, *logger, "fatal", "(Ljava/lang/String;)V");
+        infoID = introspect::lookup_method(env, *logger, "info", "(Ljava/lang/String;)V");
+        warnID = introspect::lookup_method(env, *logger, "warn", "(Ljava/lang/String;)V");
     }
 
     auto to_log = make_log_str(date, pid, tid, message_buffer, message_size);
-    auto msg = qdb::jni::string::create_utf8(env, to_log.c_str());
+    // auto msg = qdb::jni::string::create_utf8(env, to_log.c_str());
+    auto msg = to_log.c_str();
 
     switch (log_level)
     {
@@ -77,7 +78,7 @@ static std::string make_log_str(const unsigned long * date,
     std::string msg;
     msg.resize(msg_size);
 
-    auto count = snprintf(msg.c_str(), msg_size, "%02lu/%02lu/%04lu-%02lu:%02lu:%02lu (%5lu:%5lu): %.*s\n", date[1], date[2], date[0], date[3], date[4], date[5], pid, tid, (int)message_size, message_buffer);
+    auto count = snprintf(msg.data(), msg.size(), "%02lu/%02lu/%04lu-%02lu:%02lu:%02lu (%5lu:%5lu): %.*s\n", date[1], date[2], date[0], date[3], date[4], date[5], pid, tid, (int)message_size, message_buffer);
     msg.resize(count);
     return msg;
 }

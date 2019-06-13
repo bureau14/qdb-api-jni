@@ -2,13 +2,15 @@
 
 #include "net_quasardb_qdb_jni_qdb.h"
 
+#include "../log.h"
 #include "../env.h"
 #include "../string.h"
 #include "../util/helpers.h"
 
 JNIEXPORT jint JNICALL
 Java_net_quasardb_qdb_jni_qdb_add_log_callback(JNIEnv * /*env */, jclass /*thisClass*/) {
-  return qdb_e_ok;
+  size_t callback_id;
+  return qdb_log_add_callback(qdb::jni::log_callback, &callback_id);
 }
 
 JNIEXPORT jstring JNICALL
