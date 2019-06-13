@@ -3,7 +3,7 @@
 #include "string.h"
 #include "object.h"
 #include <optional>
-#include <sstream>
+#include <string>
 #include <string_view>
 
 static std::string make_log_str(const unsigned long * date,
