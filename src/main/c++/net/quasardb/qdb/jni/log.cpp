@@ -5,6 +5,7 @@
 #include <optional>
 #include <string>
 #include <string_view>
+#include <iostream>
 
 static std::string make_log_str(const unsigned long * date,
     unsigned long pid,
@@ -26,11 +27,50 @@ void qdb::jni::log_callback(qdb_log_level_t log_level,
     static std::optional<jmethodID> infoID = {};
     static std::optional<jmethodID> warnID = {};
 
-    auto env = qdb::jni::env();
+    JavaVMOption jvmopt[1];
+    jvmopt[0].optionString = "-Djava.class.path=.";
 
+    JavaVMInitArgs vmArgs;
+    vmArgs.version = JNI_VERSION_1_2;
+    vmArgs.nOptions = 1;
+    vmArgs.options = jvmopt;
+    vmArgs.ignoreUnrecognized = JNI_TRUE;
+
+    JavaVM *javaVM;
+    JNIEnv *jniEnv;
+    long flag = JNI_CreateJavaVM(&javaVM, (void**)&jniEnv, &vmArgs);
+    if (flag == JNI_ERR)
+    {
+        std::cerr << "Error creating VM. Exiting...\n";
+        return ;
+    }
+
+
+    // this works
+    jclass jcls = jniEnv->FindClass("net/quasardb/qdb/ts/Result$Table");
+    if (jcls == NULL)
+    {
+        jniEnv->ExceptionDescribe();
+        javaVM->DestroyJavaVM();
+        return ;
+    }
+    // this did not because vm is null for this env
+    // qdb::jni::env env{jniEnv};
+
+    // neither did this but it's not obvious why
+    // qdb::jni::env env{*javaVM};
+
+    // you guessed it, it also does not work
+    // jclass tableClass = qdb::jni::introspect::lookup_class(env, "net/quasardb/qdb/ts/Result$Table");
+
+    // this crashes
+    // javaVM->DestroyJavaVM();
+
+#if 0
+    qdb::jni::env env{};
     if (!logger)
     {
-        logger = introspect::lookup_class(env, "net/quasardb/qdb/QdbCallbackLogger/Log");
+        logger.emplace(qdb::jni::introspect::lookup_class(env, "net/quasardb/qdb/Logger"));
         debugID = introspect::lookup_method(env, *logger, "debug", "(Ljava/lang/String;)V");
         errorID = introspect::lookup_method(env, *logger, "error", "(Ljava/lang/String;)V");
         fatalID = introspect::lookup_method(env, *logger, "fatal", "(Ljava/lang/String;)V");
@@ -46,24 +86,25 @@ void qdb::jni::log_callback(qdb_log_level_t log_level,
     {
     case qdb_log_detailed:
         // TODO(vianney): create a custom logger for this?
-        qdb::jni::object::call_static_method(env, *logger, *debugID, msg);
+        qdb::jni::object::call_static_method(env, *logger, *errorID, msg);
         break;
     case qdb_log_debug:
-        qdb::jni::object::call_static_method(env, *logger, *debugID, msg);
+        qdb::jni::object::call_static_method(env, *logger, *errorID, msg);
         break;
     case qdb_log_info:
-        qdb::jni::object::call_static_method(env, *logger, *infoID, msg);
+        qdb::jni::object::call_static_method(env, *logger, *errorID, msg);
         break;
     case qdb_log_warning:
-        qdb::jni::object::call_static_method(env, *logger, *warnID, msg);
+        qdb::jni::object::call_static_method(env, *logger, *errorID, msg);
         break;
     case qdb_log_error:
         qdb::jni::object::call_static_method(env, *logger, *errorID, msg);
         break;
     case qdb_log_panic:
-        qdb::jni::object::call_static_method(env, *logger, *fatalID, msg);
+        qdb::jni::object::call_static_method(env, *logger, *errorID, msg);
         break;
     }
+#endif
 }
 
 static std::string make_log_str(const unsigned long * date,
