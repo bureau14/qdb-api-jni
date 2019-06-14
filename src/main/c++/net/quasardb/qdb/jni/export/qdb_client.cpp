@@ -8,7 +8,7 @@
 #include "../util/helpers.h"
 
 JNIEXPORT jint JNICALL
-Java_net_quasardb_qdb_jni_qdb_add_log_callback(JNIEnv * /*env */, jclass /*thisClass*/) {
+Java_net_quasardb_qdb_jni_qdb_add_1log_1callback(JNIEnv * /*env */, jclass /*thisClass*/) {
   size_t callback_id;
   return qdb_log_add_callback(qdb::jni::log_callback, &callback_id);
 }
