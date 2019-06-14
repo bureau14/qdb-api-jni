@@ -49,8 +49,17 @@ set(QDB_JNI_SOURCES
   src/main/c++/net/quasardb/qdb/jni/export/qdb_query.cpp
 )
 
+
+# set(LOG4JCORE_PATH "/home/vianney/.m2/repository/org/apache/logging/log4j/log4j-core/2.11.2")
+# set(LOG4JCORE "${LOG4JCORE_PATH}/log4j-core-2.11.2.jar")
+
+file(GLOB LOG4J_JARS
+  "/home/vianney/Downloads/apache-log4j-2.11.2-bin/*.jar"
+)
+
 add_jar(jni
   SOURCES ${QDB_JAVA_SOURCES}
+  INCLUDE_JARS "${LOG4J_JARS}"
   OUTPUT_NAME jni-3.4.0-SNAPSHOT
   GENERATE_NATIVE_HEADERS ${QDB_JNI_CLASSES} DESTINATION qdb_native/
 )
