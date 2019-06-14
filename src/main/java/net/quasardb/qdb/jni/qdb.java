@@ -50,6 +50,7 @@ public final class qdb
         {
             throw new RuntimeException("Unsupported operating system: " + os);
         }
+        add_log_callback();
     }
 
     public static native int add_log_callback();
