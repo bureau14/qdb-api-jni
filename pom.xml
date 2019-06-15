@@ -35,6 +35,19 @@ xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
     </developer>
   </developers>
 
+  <dependencies>
+    <dependency>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-api</artifactId>
+      <version>2.11.2</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-core</artifactId>
+      <version>2.11.2</version>
+    </dependency>
+  </dependencies>
+
   <distributionManagement>
     <snapshotRepository>
       <id>ossrh</id>
