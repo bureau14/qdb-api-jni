@@ -1,0 +1,14 @@
+<project name="java" default="compile" basedir=".">
+  <property name="source.path"     value="${basedir}/src/main/java" />
+  <property name="tests.path"      value="${basedir}/test/src" />
+  <property name="jni.path  "      value="${basedir}/target" />
+
+  <target name="classpath" description="Sets the classpath">
+    <path id="classpath">
+      <fileset dir="${jni.path}">
+        <include name="*.jar"/>
+      </fileset>
+    </path>
+  </target>
+
+</project>
