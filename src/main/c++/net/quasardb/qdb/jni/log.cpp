@@ -3,123 +3,92 @@
 #include "string.h"
 #include "object.h"
 #include <optional>
-#include <string>
 #include <string_view>
 #include <iostream>
+#include <vector>
+#include <shared_mutex>
+#include <algorithm>
 
-static std::string make_log_str(const unsigned long * date,
-    unsigned long pid,
-    unsigned long tid,
-    const char * message_buffer,
-    size_t message_size);
+static std::vector<qdb::jni::log::message_t> buffer;
+static std::shared_mutex buffer_lock;
+thread_local qdb_log_callback_id local_callback_id = 0;
 
-void qdb::jni::log_callback(qdb_log_level_t log_level,
-    const unsigned long * date,
-    unsigned long pid,
-    unsigned long tid,
-    const char * message_buffer,
-    size_t message_size)
-{
-    static std::optional<jclass> logger = {};
-    static std::optional<jmethodID> debugID = {};
-    static std::optional<jmethodID> errorID = {};
-    static std::optional<jmethodID> fatalID = {};
-    static std::optional<jmethodID> infoID = {};
-    static std::optional<jmethodID> warnID = {};
+qdb::jni::log::wrapper::wrapper() {
+  if (local_callback_id == 0) {
+    printf("registering callback!\n");
+    fflush(stdout);
+    qdb_error_t error = qdb_log_add_callback(_callback, &local_callback_id);
 
-    JavaVMOption jvmopt[1];
-    jvmopt[0].optionString = "-Djava.class.path=.";
-
-    JavaVMInitArgs vmArgs;
-    vmArgs.version = JNI_VERSION_1_2;
-    vmArgs.nOptions = 1;
-    vmArgs.options = jvmopt;
-    vmArgs.ignoreUnrecognized = JNI_TRUE;
-
-    JavaVM *javaVM;
-    JNIEnv *jniEnv;
-    long flag = JNI_CreateJavaVM(&javaVM, (void**)&jniEnv, &vmArgs);
-    if (flag == JNI_ERR)
-    {
-        std::cerr << "Error creating VM. Exiting...\n";
-        return ;
+    if (error) {
+      fprintf(stderr, "a fatal error occured while registering QuasarDB logging engine: %s (%#x)\n", qdb_error(error), error);
+      fflush(stderr);
+      abort();
     }
-
-
-    // this works
-    jclass jcls = jniEnv->FindClass("net/quasardb/qdb/ts/Result$Table");
-    if (jcls == NULL)
-    {
-        jniEnv->ExceptionDescribe();
-        javaVM->DestroyJavaVM();
-        return ;
-    }
-    // this did not because vm is null for this env
-    // qdb::jni::env env{jniEnv};
-
-    // neither did this but it's not obvious why
-    // qdb::jni::env env{*javaVM};
-
-    // you guessed it, it also does not work
-    // jclass tableClass = qdb::jni::introspect::lookup_class(env, "net/quasardb/qdb/ts/Result$Table");
-
-    // this crashes
-    // javaVM->DestroyJavaVM();
-
-#if 0
-    qdb::jni::env env{};
-    if (!logger)
-    {
-        logger.emplace(qdb::jni::introspect::lookup_class(env, "net/quasardb/qdb/Logger"));
-        debugID = introspect::lookup_method(env, *logger, "debug", "(Ljava/lang/String;)V");
-        errorID = introspect::lookup_method(env, *logger, "error", "(Ljava/lang/String;)V");
-        fatalID = introspect::lookup_method(env, *logger, "fatal", "(Ljava/lang/String;)V");
-        infoID = introspect::lookup_method(env, *logger, "info", "(Ljava/lang/String;)V");
-        warnID = introspect::lookup_method(env, *logger, "warn", "(Ljava/lang/String;)V");
-    }
-
-    auto to_log = make_log_str(date, pid, tid, message_buffer, message_size);
-    // auto msg = qdb::jni::string::create_utf8(env, to_log.c_str());
-    auto msg = to_log.c_str();
-
-    switch (log_level)
-    {
-    case qdb_log_detailed:
-        // TODO(vianney): create a custom logger for this?
-        qdb::jni::object::call_static_method(env, *logger, *errorID, msg);
-        break;
-    case qdb_log_debug:
-        qdb::jni::object::call_static_method(env, *logger, *errorID, msg);
-        break;
-    case qdb_log_info:
-        qdb::jni::object::call_static_method(env, *logger, *errorID, msg);
-        break;
-    case qdb_log_warning:
-        qdb::jni::object::call_static_method(env, *logger, *errorID, msg);
-        break;
-    case qdb_log_error:
-        qdb::jni::object::call_static_method(env, *logger, *errorID, msg);
-        break;
-    case qdb_log_panic:
-        qdb::jni::object::call_static_method(env, *logger, *errorID, msg);
-        break;
-    }
-#endif
+  }
 }
 
-static std::string make_log_str(const unsigned long * date,
-    unsigned long pid,
-    unsigned long tid,
-    const char * message_buffer,
-    size_t message_size)
+/* static */ void qdb::jni::log::wrapper::_callback(qdb_log_level_t log_level,
+                                                    const unsigned long * /* date */,
+                                                    unsigned long pid,
+                                                    unsigned long tid,
+                                                    const char * message_buffer,
+                                                    size_t /* message_size */)
 {
-    constexpr size_t prefix_size = 30;
+    message_t x { log_level, pid, tid, std::string(message_buffer) };
+    std::unique_lock guard(buffer_lock);
 
-    size_t msg_size = prefix_size + message_size;
-    std::string msg;
-    msg.resize(msg_size);
+    buffer.push_back(x);
+}
 
-    auto count = snprintf(msg.data(), msg.size(), "%02lu/%02lu/%04lu-%02lu:%02lu:%02lu (%5lu:%5lu): %.*s\n", date[1], date[2], date[0], date[3], date[4], date[5], pid, tid, (int)message_size, message_buffer);
-    msg.resize(count);
-    return msg;
+/* static */ void
+qdb::jni::log::wrapper::flush(qdb::jni::env & env) {
+
+  // Since this function is invoked a lot, and typically the buffer will be empty,
+  // we first get a read lock, and then if (and only if) there is actually more than
+  // one log available, we flush the log.
+  //
+  // There is still a chance of a race condition where multiple threads attempt to
+  // acquire the exclusive lock when the buffer is non-empty, but we're optimizing
+  // for the 'default' case of an empty buffer here.
+  std::shared_lock shared_guard(buffer_lock);
+
+  if (!buffer.empty()) {
+    // Non-atomic upgrade to unique lock, for some reason it seems like the STL
+    // does not have a mechanism to upgrade?
+    shared_guard.unlock();
+    std::unique_lock unique_guard(buffer_lock);
+    wrapper::_do_flush(env);
+  }
+}
+
+/* static */ void
+qdb::jni::log::wrapper::_do_flush(qdb::jni::env & env) {
+  std::for_each(buffer.begin(), buffer.end(), [& env] (message_t const & m) {
+                                                _do_flush_message(env, m);
+                                              });
+
+  buffer.clear();
+
+}
+
+/* static */ void
+qdb::jni::log::wrapper::_do_flush_message(qdb::jni::env & env, qdb::jni::log::message_t const & m) {
+  static std::optional<jclass> qdbLogger = {};
+  static std::optional<jfieldID> loggerField = {};
+  static std::optional<jmethodID> logID = {};
+
+  if (!qdbLogger) {
+    qdbLogger.emplace(qdb::jni::introspect::lookup_class(env, "net/quasardb/qdb/Logger"));
+    loggerField.emplace(qdb::jni::introspect::lookup_static_field(env, *qdbLogger, "logger", "Lorg/apache/logging/log4j/Logger;"));
+    logID = introspect::lookup_static_method(env, *qdbLogger, "log", "(IJJLjava/lang/String;)V");
+  }
+
+  // Call error
+  env.instance().CallStaticVoidMethod(*qdbLogger,
+                                      *logID,
+                                      m.level,
+                                      m.pid,
+                                      m.tid,
+                                      env.instance().NewStringUTF(m.message.c_str()));
+
 }

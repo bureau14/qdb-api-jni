@@ -50,12 +50,11 @@ public final class qdb
         {
             throw new RuntimeException("Unsupported operating system: " + os);
         }
-        add_log_callback();
+
+
         // should configure the logger somewhere more appropriate
         // Logger.configure("/path/to/log4j.xml");
     }
-
-    public static native int add_log_callback();
 
     public static native String build();
     public static native String version();

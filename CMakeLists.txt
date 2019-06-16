@@ -21,6 +21,7 @@ set(QDB_JNI_SOURCES
   src/main/c++/net/quasardb/qdb/jni/string.cpp
   src/main/c++/net/quasardb/qdb/jni/vm.cpp
   src/main/c++/net/quasardb/qdb/jni/log.cpp
+  src/main/c++/net/quasardb/qdb/jni/load.cpp
   src/main/c++/net/quasardb/qdb/jni/ts/qdb_value.cpp
   src/main/c++/net/quasardb/qdb/jni/util/helpers.cpp
   src/main/c++/net/quasardb/qdb/jni/util/ts_helpers.cpp

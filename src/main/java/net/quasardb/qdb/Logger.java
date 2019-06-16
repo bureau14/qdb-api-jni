@@ -1,32 +1,38 @@
 package net.quasardb.qdb;
 
+import net.quasardb.qdb.jni.*;
 import java.io.File;
+import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.ThreadContext;
-// import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.core.LoggerContext;
+import org.apache.logging.log4j.message.Message;
+import org.apache.logging.log4j.message.SimpleMessage;
+import org.apache.logging.log4j.message.TimestampMessage;
 
 public class Logger
 {
-    public static final org.apache.logging.log4j.Logger logger = LogManager.getLogger(Logger.class);
+    public static final org.apache.logging.log4j.Logger logger = LogManager.getLogger("QuasarDB");
 
-    /**
-     * Configure
-     *
-     * @param configFile The file you wish to log into.
-     */
-    public static void configure(String configFile)
-    {
-        // this works, but the config seems off you should see the following message at the start of the tests if you
-        // call this function:
-        //
-        // ERROR StatusLogger No Log4j 2 configuration file found.
-        // Using default configuration (logging only errors to the console),
-        // or user programmatically provided configurations.
-        // Set system property 'log4j2.debug' to show Log4j 2 internal initialization logging.
-        // See https://logging.apache.org/log4j/2.x/manual/configuration.html for instructions on how to configure Log4j
-        // 2
-        ThreadContext.put("fileName", configFile);
-        logger.error("Here's some info!");
+    public static Level levelFromNative(int level) {
+        switch (level) {
+        case qdb_log_level.detailed:
+            return Level.TRACE;
+        case qdb_log_level.debug:
+            return Level.DEBUG;
+        case qdb_log_level.info:
+            return Level.INFO;
+        case qdb_log_level.warning:
+            return Level.WARN;
+        case qdb_log_level.error:
+            return Level.ERROR;
+        case qdb_log_level.panic:
+            return Level.FATAL;
+        };
+
+        return Level.OFF;
+    }
+
+    public static void log(int level, long pid, long tid, String msg)  {
+        Level l = levelFromNative(level);
+        logger.log(l, "({}:{}): {}", pid, tid, msg);
     }
 }

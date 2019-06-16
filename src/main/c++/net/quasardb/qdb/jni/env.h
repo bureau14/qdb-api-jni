@@ -3,6 +3,7 @@
 #include <utility>
 #include <cassert>
 #include <jni.h>
+#include "log.h"
 
 namespace qdb {
   namespace jni {
@@ -28,6 +29,7 @@ namespace qdb {
     class env {
     private:
       JNIEnv * _env;
+      log::wrapper _log;
 
     public:
       /**
@@ -46,16 +48,16 @@ namespace qdb {
       env(JavaVM & vm);
 
       /**
-       * Initialise an env from the global JavaVM singleton. For this method to
-       * work, this requires an earlier invocation of this class using either
-       * a env(JavaVM &) constructor or env(JNIEnv *) constructor so that the
-       * JavaVM singleton is properly initialised.
+       * Initialise an env from a global JavaVM.
        */
-      env();
 
       JNIEnv & instance() {
         assert(_env != NULL);
         return *_env;
+      }
+
+      ~env() {
+        log::wrapper::flush(*this);
       }
 
     protected:

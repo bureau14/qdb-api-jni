@@ -136,12 +136,26 @@ namespace qdb {
              */
             template <typename ...Params>
             static jni::guard::local_ref<jobject>
-                    call_static_method(jni::env & env, char const * className, char const * alias, char const * signature, Params... params) {
+            call_static_method(jni::env & env, char const * className, char const * alias, char const * signature, Params... params) {
                 return call_static_method(env,
                                           introspect::lookup_class(env, className),
                                           alias,
                                           signature,
                                           params...);
+            }
+
+            /**
+             * Acquires an object from a static object field.
+             */
+            static jni::guard::local_ref <jobject>
+            from_static_field(jni::env & env, jclass objectClass, jfieldID field) {
+              assert (objectClass != NULL);
+              assert (field != NULL);
+
+              return std::move(
+                  jni::guard::local_ref<jobject>(
+                      env,
+                      env.instance().GetStaticObjectField(objectClass, field)));
             }
         };
     };

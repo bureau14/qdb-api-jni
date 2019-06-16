@@ -8,37 +8,25 @@ namespace qdb {
   namespace jni {
 
     /**
-     * Singleton wrapper around a JavaVM pointer.
+     * Wrapper around a JavaVM pointer.
+     *
+     * TODO(leon): Subject to removal?
      */
     class vm {
     private:
-      static JavaVM * _vm;
+      JavaVM * _vm;
 
     public:
 
-      static bool has_instance() {
-        return _vm != NULL;
+      vm(JavaVM * p) {
+        _vm = p;
       }
 
-      static JavaVM & instance() {
-        assert(_vm != NULL);
-        return *_vm;
+      vm(JavaVM & p) : vm(&p) {
       }
 
-      static JavaVM & instance(JavaVM * vm) {
-        _vm = vm;
-        return instance();
-      }
+      vm(JNIEnv * env);
 
-      static JavaVM & instance(JavaVM & vm) {
-        return instance(&vm);
-      }
-
-      static JavaVM & instance(JNIEnv * env);
-
-      static JavaVM & instance(JNIEnv & env) {
-        return instance(&env);
-      }
     };
   };
 };
