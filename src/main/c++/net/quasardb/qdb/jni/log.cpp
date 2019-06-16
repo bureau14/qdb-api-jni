@@ -34,7 +34,10 @@ qdb::jni::log::wrapper::wrapper() {
                                                     const char * message_buffer,
                                                     size_t /* message_size */)
 {
-    message_t x { log_level, pid, tid, std::string(message_buffer) };
+    message_t x { log_level,
+                  static_cast<long>(pid),
+                  static_cast<long>(tid),
+                  std::string(message_buffer) };
     std::unique_lock guard(buffer_lock);
 
     buffer.push_back(x);
