@@ -79,6 +79,9 @@ qdb::jni::log::flush(qdb::jni::env & env) {
 
 /* static */ void
 qdb::jni::log::_do_flush(qdb::jni::env & env) {
+  fprintf(stdout, "flushing %d messages..\n", buffer.size());
+  fflush(stdout);
+
   std::for_each(buffer.begin(), buffer.end(), [& env] (message_t const & m) {
                                                 _do_flush_message(env, m);
                                               });
@@ -98,6 +101,9 @@ qdb::jni::log::_do_flush_message(qdb::jni::env & env, qdb::jni::log::message_t c
     loggerField.emplace(qdb::jni::introspect::lookup_static_field(env, *qdbLogger, "logger", "Lorg/apache/logging/log4j/Logger;"));
     logID = introspect::lookup_static_method(env, *qdbLogger, "log", "(IIIIIIIJJLjava/lang/String;)V");
   }
+
+  fprintf(stdout, "calling log4j, message is %s\n", m.message.c_str());
+  fflush(stdout);
 
   // Call error
   env.instance().CallStaticVoidMethod(*qdbLogger,
