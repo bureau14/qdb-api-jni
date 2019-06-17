@@ -38,7 +38,7 @@ qdb::jni::log::_callback(qdb_log_level_t log_level,
                          const char * message_buffer,
                          size_t /* message_size */)
 {
-    fprintf(stodut, "_callback message: %s\n", message_buffer);
+    fprintf(stdout, "_callback message: %s\n", message_buffer);
     fflush(stdout);
 
     message_t x { log_level,
