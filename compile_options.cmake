@@ -51,7 +51,7 @@ endif()
 if(CMAKE_CXX_COMPILER_ID MATCHES "(GNU|Clang)")
     add_compile_options(
         -fPIC
-        -std=c++11
+        -std=c++17
         -Wno-strict-aliasing
         -Wno-sign-compare
     )
