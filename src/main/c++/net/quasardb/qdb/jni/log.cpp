@@ -12,7 +12,7 @@
 
 static std::vector<qdb::jni::log::message_t> buffer;
 static std::shared_mutex buffer_lock;
-static qdb_log_callback_id local_callback_id = 0;
+thread_local qdb_log_callback_id local_callback_id = 0;
 
 /* static */ void
 qdb::jni::log::ensure_callback(qdb::jni::env & env) {
