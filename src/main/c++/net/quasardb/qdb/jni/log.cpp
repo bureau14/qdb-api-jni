@@ -92,7 +92,7 @@ qdb::jni::log::_do_flush(qdb::jni::env & env) {
       introspect::lookup_static_method(env,
                                        qdbLogger,
                                        "log",
-                                       "(IIILjava/lang/String;)V");
+                                       "(IIIIIIIIILjava/lang/String;)V");
 
     printf("flushing, level: %d, year: %d, month: %d, day: %d, hour: %d, minute: %d, second: %d, pid: %d, tid: %d, message: %s\n",
            m.level,
@@ -113,6 +113,14 @@ qdb::jni::log::_do_flush(qdb::jni::env & env) {
                                         logID,
 
                                         m.level,
+
+                                        m.timestamp.year,
+                                        m.timestamp.mon,
+                                        m.timestamp.day,
+                                        m.timestamp.hour,
+                                        m.timestamp.min,
+                                        m.timestamp.sec,
+
                                         m.pid,
                                         m.tid,
                                         s);
