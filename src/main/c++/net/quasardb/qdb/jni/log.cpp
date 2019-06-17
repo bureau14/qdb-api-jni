@@ -94,9 +94,14 @@ qdb::jni::log::_do_flush(qdb::jni::env & env) {
                                        "log",
                                        "(IIIIIIIJJLjava/lang/String;)V");
 
-    printf("flushing, level: %d, year: %d, pid: %d, tid: %d, message: %s\n",
+    printf("flushing, level: %d, year: %d, month: %d, day: %d, hour: %d, minute: %d, second: %d, pid: %d, tid: %d, message: %s\n",
            m.level,
            m.timestamp.year,
+           m.timestamp.mon,
+           m.timestamp.day,
+           m.timestamp.hour,
+           m.timestamp.min,
+           m.timestamp.sec,
            m.pid,
            m.tid,
            m.message.c_str());
@@ -106,6 +111,7 @@ qdb::jni::log::_do_flush(qdb::jni::env & env) {
 
     env.instance().CallStaticVoidMethod(qdbLogger,
                                         logID,
+
                                         m.level,
                                         m.timestamp.year,
                                         m.timestamp.mon,
@@ -116,6 +122,9 @@ qdb::jni::log::_do_flush(qdb::jni::env & env) {
                                         m.pid,
                                         m.tid,
                                         s);
+
+    printf("flushed!\n");
+    fflush(stdout);
   }
 
 
