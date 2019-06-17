@@ -10,7 +10,7 @@ import org.apache.logging.log4j.message.TimestampMessage;
 
 public class Logger
 {
-    public static final org.apache.logging.log4j.Logger logger = LogManager.getLogger("QuasarDB");
+    public static final org.apache.logging.log4j.Logger logger = LogManager.getLogger("QdbNative");
 
     public static Level levelFromNative(int level) {
         switch (level) {
