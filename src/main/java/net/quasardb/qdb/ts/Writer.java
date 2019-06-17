@@ -25,6 +25,7 @@ import net.quasardb.qdb.jni.*;
  */
 public class Writer implements AutoCloseable, Flushable {
     private static final Logger logger = LogManager.getLogger(Writer.class);
+    long pointsSinceFlush = 0;
     boolean async;
     Session session;
     Long batchTable;
@@ -156,13 +157,15 @@ public class Writer implements AutoCloseable, Flushable {
     public void flush() throws IOException {
         int err;
         if (this.async == true) {
-            logger.info("Flushing batch writer async");
+            logger.info("Flushing batch writer async, points since last flush: {}", pointsSinceFlush);
             err = qdb.ts_batch_push_async(this.batchTable);
         } else {
-            logger.info("Flushing batch writer synchronously");
+            logger.info("Flushing batch writer sync, points since last flush: {}", pointsSinceFlush);
             err = qdb.ts_batch_push(this.batchTable);
         }
         ExceptionFactory.throwIfError(err);
+
+        pointsSinceFlush = 0;
     }
 
     /**
@@ -181,6 +184,8 @@ public class Writer implements AutoCloseable, Flushable {
     public void append(Integer offset, Timespec timestamp, Value[] values) throws IOException {
         int err = qdb.ts_batch_table_row_append(this.batchTable, offset, timestamp, values);
         ExceptionFactory.throwIfError(err);
+
+        this.pointsSinceFlush += values.length;
     }
 
     /**
