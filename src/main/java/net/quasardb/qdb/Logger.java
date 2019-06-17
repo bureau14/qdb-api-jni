@@ -87,7 +87,7 @@ public class Logger
                            long pid, long tid,
                            String msg)  {
 
-        System.out.println("got message: " + msg);
+        System.out.println("got pid: " + pid ", tid: " + tid + ", message: " + msg);
         Level l = levelFromNative(level);
         logger.log(l, new QdbMessage(LocalDateTime.now().toInstant(ZoneOffset.UTC),
                                      pid, tid, msg));
