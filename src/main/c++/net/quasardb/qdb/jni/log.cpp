@@ -50,6 +50,9 @@ qdb::jni::log::_callback(qdb_log_level_t log_level,
                   std::string(message_buffer, message_size) };
     std::unique_lock guard(buffer_lock);
 
+    printf("acquired lock, pushing into buffer\n");
+    fflush(stdout);
+
     buffer.push_back(x);
 }
 
@@ -113,7 +116,8 @@ qdb::jni::log::_do_flush(qdb::jni::env & env) {
                 });
 
 
-
+  printf("clearing all buffers\n");
+  fflush(stdout);
   buffer.clear();
 
 }
