@@ -23,8 +23,8 @@ namespace qdb {
           qdb_log_level_t level;
           message_time_t timestamp;
 
-          long pid;
-          long tid;
+          int pid;
+          int tid;
           std::string message;
 
         } message_t;

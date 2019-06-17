@@ -45,8 +45,8 @@ qdb::jni::log::_callback(qdb_log_level_t log_level,
                     static_cast<int>(date[3]),
                     static_cast<int>(date[4]),
                     static_cast<int>(date[5]) },
-                  static_cast<long>(pid),
-                  static_cast<long>(tid),
+                  static_cast<int>(pid),
+                  static_cast<int>(tid),
                   std::string(message_buffer, message_size) };
     std::unique_lock guard(buffer_lock);
 
@@ -92,7 +92,7 @@ qdb::jni::log::_do_flush(qdb::jni::env & env) {
       introspect::lookup_static_method(env,
                                        qdbLogger,
                                        "log",
-                                       "(IJJLjava/lang/String;)V");
+                                       "(IIILjava/lang/String;)V");
 
     printf("flushing, level: %d, year: %d, month: %d, day: %d, hour: %d, minute: %d, second: %d, pid: %d, tid: %d, message: %s\n",
            m.level,

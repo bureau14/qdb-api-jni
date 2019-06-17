@@ -84,7 +84,7 @@ public class Logger
     public static void log(int level,
                            //int year, int month, int day,
                            //int hour, int min, int sec,
-                           long pid, long tid,
+                           int pid, int tid,
                            String msg)  {
 
         System.out.println("got level: " + level + ", pid: " + pid + ", tid: " + tid);
