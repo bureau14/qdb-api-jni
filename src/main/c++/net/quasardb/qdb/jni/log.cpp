@@ -19,6 +19,9 @@ qdb::jni::log::ensure_callback(qdb::jni::env & env) {
   if (local_callback_id == 0) {
     qdb_error_t error = qdb_log_add_callback(_callback, &local_callback_id);
 
+    printf("callback id = %d\n", local_callback_id);
+    fflush(stdout);
+
     if (error) {
       fprintf(stderr, "a fatal error occured while registering QuasarDB logging engine: %s (%#x)\n", qdb_error(error), error);
       fflush(stderr);
@@ -73,6 +76,10 @@ qdb::jni::log::flush(qdb::jni::env & env) {
 
 /* static */ void
 qdb::jni::log::_do_flush(qdb::jni::env & env) {
+
+  fprintf(stdout, "flushing %d messages..\n", buffer.size());
+  fflush(stdout);
+
   std::for_each(buffer.begin(), buffer.end(),
                 [& env]
                 (message_t const & m) {
@@ -84,6 +91,9 @@ qdb::jni::log::_do_flush(qdb::jni::env & env) {
                                                      qdbLogger,
                                                      "log",
                                                      "(IIIIIIIJJLjava/lang/String;)V");
+
+                  printf("flushing message: %s\n", m.message.c_str());
+                  fflush(stdout);
 
                   env.instance().CallStaticVoidMethod(qdbLogger,
                                                       logID,
