@@ -113,7 +113,7 @@ qdb::jni::log::_do_flush(qdb::jni::env & env) {
                                                       m.timestamp.sec,
                                                       m.pid,
                                                       m.tid,
-                                                      env.instance().NewStringUTF(m.message.c_str()));
+                                                      jni::string::create_utf(m.message.c_str()));
 
 
 
