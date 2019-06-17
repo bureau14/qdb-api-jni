@@ -72,14 +72,28 @@ qdb::jni::log::flush(qdb::jni::env & env) {
 
 /* static */ void
 qdb::jni::log::_do_flush(qdb::jni::env & env) {
-  jclass qdbLogger =
-    qdb::jni::introspect::lookup_class(env,
-                                       "net/quasardb/qdb/Logger");
-  jmethodID logID =
-    introspect::lookup_static_method(env,
-                                     qdbLogger,
-                                     "log",
-                                     "(IIIIIIIIILjava/lang/String;)V");
+
+  // This is safe because it's guaranteed to be single-threaded as we already
+  // have a unique_lock on the buffer.
+  static std::optional<jclass> qdbLogger = {};
+  static std::optional<jmethodID> logID = {};
+
+  if (!qdbLogger) {
+    assert(!logID);
+
+    qdbLogger.emplace(qdb::jni::introspect::lookup_class(env,
+                                                         "net/quasardb/qdb/Logger"));
+
+    logID.emplace(introspect::lookup_static_method(env,
+                                                   *qdbLogger,
+                                                   "log",
+                                                   "(IIIIIIIIILjava/lang/String;)V"));
+
+  }
+
+
+  // TODO(leon): fold loop into a single function call to reduce java <-> jni context
+  //             switching.
 
   for (auto i = buffer.begin(); i != buffer.end(); ++i) {
     message_t const & m = *i;
@@ -99,8 +113,8 @@ qdb::jni::log::_do_flush(qdb::jni::env & env) {
 
     jstring s = env.instance().NewStringUTF(m.message.c_str());
 
-    env.instance().CallStaticVoidMethod(qdbLogger,
-                                        logID,
+    env.instance().CallStaticVoidMethod(*qdbLogger,
+                                        *logID,
 
                                         m.level,
 
