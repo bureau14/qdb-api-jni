@@ -41,6 +41,9 @@ qdb::jni::log::_callback(qdb_log_level_t log_level,
     fprintf(stdout, "_callback message: %s\n", message_buffer);
     fflush(stdout);
 
+    char * message_copy = static_cast<char *>(malloc(sizeof(char) * message_size));
+    strncpy(message_copy, message_buffer, message_size);
+
     message_t x { log_level,
                   { static_cast<int>(date[0]),
                     static_cast<int>(date[1]),
@@ -50,7 +53,7 @@ qdb::jni::log::_callback(qdb_log_level_t log_level,
                     static_cast<int>(date[5]) },
                   static_cast<long>(pid),
                   static_cast<long>(tid),
-                  strndup(message_buffer, message_size) };
+                  message_copy };
     std::unique_lock guard(buffer_lock);
 
     buffer.push_back(x);
