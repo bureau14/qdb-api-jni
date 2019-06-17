@@ -54,37 +54,29 @@ namespace qdb {
          * Until we figure out a better solution, we will stick with the second solution, however,
          * since managing a completely standalone JavaVM process will cause a lot of overhead.
          */
-        class wrapper {
-        public:
-          wrapper();
-          wrapper(const wrapper &) = delete;
-          wrapper & operator=(const wrapper &) = delete;
+        void
+        ensure_callback(qdb::jni::env & env);
 
-          ~wrapper() {
-          }
+        void
+        flush(qdb::jni::env & env);
 
-          static void
-          flush(qdb::jni::env & env);
+        void _callback( //
+                       qdb_log_level_t log_level,    // qdb log level
+                       const unsigned long * date,   // [years, months, day, hours, minute, seconds] (valid only in the context of the callback)
+                       unsigned long pid,            // process id
+                       unsigned long tid,            // thread id
+                       const char * message_buffer,  // message buffer (valid only in the context of the callback)
+                       size_t message_size);         // message buffer size
 
-        private:
-          static void _callback( //
-                                qdb_log_level_t log_level,    // qdb log level
-                                const unsigned long * date,   // [years, months, day, hours, minute, seconds] (valid only in the context of the callback)
-                                unsigned long pid,            // process id
-                                unsigned long tid,            // thread id
-                                const char * message_buffer,  // message buffer (valid only in the context of the callback)
-                                size_t message_size);         // message buffer size
+        /**
+         * Implementation function of flush(), which assumes that locks have been
+         * acquired and buffer actually contains logs.
+         */
+        void _do_flush(qdb::jni::env & env);
 
-          /**
-           * Implementation function of flush(), which assumes that locks have been
-           * acquired and buffer actually contains logs.
-           */
-          static void _do_flush(qdb::jni::env & env);
+        void _do_flush_message(qdb::jni::env & env,
+                               message_t const & m);
 
-          static void _do_flush_message(qdb::jni::env & env,
-                                        message_t const & m);
-
-        };
       }
     }
 }

@@ -12,11 +12,15 @@
 
 static std::vector<qdb::jni::log::message_t> buffer;
 static std::shared_mutex buffer_lock;
-thread_local qdb_log_callback_id local_callback_id = 0;
+static qdb_log_callback_id local_callback_id = 0;
 
-qdb::jni::log::wrapper::wrapper() {
+/* static */ void
+qdb::jni::log::ensure_callback(qdb::jni::env & env) {
   if (local_callback_id == 0) {
     qdb_error_t error = qdb_log_add_callback(_callback, &local_callback_id);
+
+    printf("callback id = %d\n", local_callback_id);
+    fflush(stdout);
 
     if (error) {
       fprintf(stderr, "a fatal error occured while registering QuasarDB logging engine: %s (%#x)\n", qdb_error(error), error);
@@ -26,12 +30,13 @@ qdb::jni::log::wrapper::wrapper() {
   }
 }
 
-/* static */ void qdb::jni::log::wrapper::_callback(qdb_log_level_t log_level,
-                                                    const unsigned long * date,
-                                                    unsigned long pid,
-                                                    unsigned long tid,
-                                                    const char * message_buffer,
-                                                    size_t /* message_size */)
+/* static */ void
+qdb::jni::log::_callback(qdb_log_level_t log_level,
+                         const unsigned long * date,
+                         unsigned long pid,
+                         unsigned long tid,
+                         const char * message_buffer,
+                         size_t /* message_size */)
 {
     message_t x { log_level,
                   { static_cast<int>(date[0]),
@@ -49,7 +54,7 @@ qdb::jni::log::wrapper::wrapper() {
 }
 
 /* static */ void
-qdb::jni::log::wrapper::flush(qdb::jni::env & env) {
+qdb::jni::log::flush(qdb::jni::env & env) {
 
   // Since this function is invoked a lot, and typically the buffer will be empty,
   // we first get a read lock, and then if (and only if) there is actually more than
@@ -65,12 +70,12 @@ qdb::jni::log::wrapper::flush(qdb::jni::env & env) {
     // does not have a mechanism to upgrade?
     shared_guard.unlock();
     std::unique_lock unique_guard(buffer_lock);
-    wrapper::_do_flush(env);
+    log::_do_flush(env);
   }
 }
 
 /* static */ void
-qdb::jni::log::wrapper::_do_flush(qdb::jni::env & env) {
+qdb::jni::log::_do_flush(qdb::jni::env & env) {
   std::for_each(buffer.begin(), buffer.end(), [& env] (message_t const & m) {
                                                 _do_flush_message(env, m);
                                               });
@@ -80,7 +85,7 @@ qdb::jni::log::wrapper::_do_flush(qdb::jni::env & env) {
 }
 
 /* static */ void
-qdb::jni::log::wrapper::_do_flush_message(qdb::jni::env & env, qdb::jni::log::message_t const & m) {
+qdb::jni::log::_do_flush_message(qdb::jni::env & env, qdb::jni::log::message_t const & m) {
   static std::optional<jclass> qdbLogger = {};
   static std::optional<jfieldID> loggerField = {};
   static std::optional<jmethodID> logID = {};

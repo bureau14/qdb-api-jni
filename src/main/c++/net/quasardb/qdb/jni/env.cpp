@@ -1,10 +1,6 @@
 #include "vm.h"
 #include "env.h"
 
-qdb::jni::env::env(JNIEnv * e) :
-  _env(e) {
-};
-
 qdb::jni::env::env(JavaVM & vm) {
   void * e = NULL;
 

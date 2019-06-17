@@ -29,14 +29,15 @@ namespace qdb {
     class env {
     private:
       JNIEnv * _env;
-      log::wrapper _log;
 
     public:
       /**
        * Initialise an env from a JNIEnv *. This is the most commonly used
        * method of initialisation, and will ensure qdb::jni::vm is initialised.
        */
-      env(JNIEnv * e);
+      env(JNIEnv * e) : _env(e) {
+        log::ensure_callback(*this);
+      }
 
       /**
        * Initialise an env from a JavaVM &. This can be used in cases where
@@ -57,7 +58,7 @@ namespace qdb {
       }
 
       ~env() {
-        log::wrapper::flush(*this);
+        log::flush(*this);
       }
 
     protected:
