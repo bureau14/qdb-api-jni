@@ -86,11 +86,9 @@ public class Logger
                            int hour, int min, int sec,
                            int pid, int tid,
                            String msg)  {
-        System.out.println("got level: " + level + ", year = " + year + ", month = " + month + ", day = " + day + ", hour = " + hour + ", minute = " + min + ", second = " + sec + ", pid = " + pid + ", tid = " + tid);
-        System.out.println("got message: " + msg);
-        Level l = levelFromNative(level);
-        logger.log(l, new QdbMessage(LocalDateTime.of(year, month, day,
-                                                      hour, min, sec).toInstant(ZoneOffset.UTC),
-                                     pid, tid, msg));
+        logger.log(levelFromNative(level),
+                   new QdbMessage(LocalDateTime.of(year, month, day,
+                                                   hour, min, sec).toInstant(ZoneOffset.UTC),
+                                  pid, tid, msg));
     }
 }
