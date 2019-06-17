@@ -10,6 +10,9 @@ import java.time.LocalDateTime;
 import java.nio.channels.SeekableByteChannel;
 import java.util.*;
 
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+
 import net.quasardb.qdb.*;
 import net.quasardb.qdb.exception.ExceptionFactory;
 import net.quasardb.qdb.exception.InvalidArgumentException;
@@ -22,6 +25,7 @@ import net.quasardb.qdb.jni.*;
  * Can also be used to construct new QuasarDB timeseries tables.
  */
 public class Table implements Serializable {
+    private static final Logger logger = LogManager.getLogger(Tables.class);
     final static long DEFAULT_SHARD_SIZE = 86400000;
 
     protected String name;
@@ -101,6 +105,7 @@ public class Table implements Serializable {
      * @return Reference to the newly created timeseries table.
      */
     static public Table create(Session session, String name, Column[] columns, long shardSize) {
+        logger.info("Creating new table {} with shard size: {}", name, shardSize);
         int err = qdb.ts_create(session.handle(),
                                 name,
                                 shardSize,
@@ -118,6 +123,7 @@ public class Table implements Serializable {
      * @param name Unique identifier for this timeseries table.
      */
     public static void remove(Session session, String name) {
+        logger.info("Dropping table {}", name);
         int err = qdb.ts_remove(session.handle(), name);
         ExceptionFactory.throwIfError(err);
     }

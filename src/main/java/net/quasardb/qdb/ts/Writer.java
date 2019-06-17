@@ -9,6 +9,9 @@ import java.time.LocalDateTime;
 import java.nio.channels.SeekableByteChannel;
 import java.util.*;
 
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+
 import net.quasardb.qdb.*;
 import net.quasardb.qdb.exception.ExceptionFactory;
 import net.quasardb.qdb.exception.InvalidArgumentException;
@@ -21,6 +24,7 @@ import net.quasardb.qdb.jni.*;
  * instance per Thread in multi-threaded situations.
  */
 public class Writer implements AutoCloseable, Flushable {
+    private static final Logger logger = LogManager.getLogger(Writer.class);
     boolean async;
     Session session;
     Long batchTable;
@@ -152,8 +156,10 @@ public class Writer implements AutoCloseable, Flushable {
     public void flush() throws IOException {
         int err;
         if (this.async == true) {
+            logger.info("Flushing batch writer async");
             err = qdb.ts_batch_push_async(this.batchTable);
         } else {
+            logger.info("Flushing batch writer synchronously");
             err = qdb.ts_batch_push(this.batchTable);
         }
         ExceptionFactory.throwIfError(err);
