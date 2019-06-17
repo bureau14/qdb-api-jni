@@ -87,7 +87,6 @@ public class Logger
                            long pid, long tid,
                            String msg)  {
         Level l = levelFromNative(level);
-        //logger.log(l, "({}:{}): {}", pid, tid, msg);
         logger.log(l, new QdbMessage(LocalDateTime.of(year, month, day,
                                                       hour, min, sec).toInstant(ZoneOffset.UTC),
                                      pid, tid, msg));
