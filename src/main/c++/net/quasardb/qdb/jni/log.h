@@ -1,5 +1,6 @@
 #pragma once
 
+#include <time.h>
 #include <string>
 #include <qdb/log.h>
 
@@ -9,8 +10,19 @@ namespace qdb {
 
       namespace log {
 
+        typedef struct  {
+          int year;
+          int mon;
+          int day;
+          int hour;
+          int min;
+          int sec;
+        } message_time_t;
+
         typedef struct {
           qdb_log_level_t level;
+          message_time_t timestamp;
+
           long pid;
           long tid;
           std::string message;

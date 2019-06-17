@@ -8,6 +8,7 @@
 #include <vector>
 #include <shared_mutex>
 #include <algorithm>
+#include <time.h>
 
 static std::vector<qdb::jni::log::message_t> buffer;
 static std::shared_mutex buffer_lock;
@@ -26,13 +27,19 @@ qdb::jni::log::wrapper::wrapper() {
 }
 
 /* static */ void qdb::jni::log::wrapper::_callback(qdb_log_level_t log_level,
-                                                    const unsigned long * /* date */,
+                                                    const unsigned long * date,
                                                     unsigned long pid,
                                                     unsigned long tid,
                                                     const char * message_buffer,
                                                     size_t /* message_size */)
 {
     message_t x { log_level,
+                  { static_cast<int>(date[0]),
+                    static_cast<int>(date[1]),
+                    static_cast<int>(date[2]),
+                    static_cast<int>(date[3]),
+                    static_cast<int>(date[4]),
+                    static_cast<int>(date[5]) },
                   static_cast<long>(pid),
                   static_cast<long>(tid),
                   std::string(message_buffer) };
@@ -81,13 +88,19 @@ qdb::jni::log::wrapper::_do_flush_message(qdb::jni::env & env, qdb::jni::log::me
   if (!qdbLogger) {
     qdbLogger.emplace(qdb::jni::introspect::lookup_class(env, "net/quasardb/qdb/Logger"));
     loggerField.emplace(qdb::jni::introspect::lookup_static_field(env, *qdbLogger, "logger", "Lorg/apache/logging/log4j/Logger;"));
-    logID = introspect::lookup_static_method(env, *qdbLogger, "log", "(IJJLjava/lang/String;)V");
+    logID = introspect::lookup_static_method(env, *qdbLogger, "log", "(IIIIIIIJJLjava/lang/String;)V");
   }
 
   // Call error
   env.instance().CallStaticVoidMethod(*qdbLogger,
                                       *logID,
                                       m.level,
+                                      m.timestamp.year,
+                                      m.timestamp.mon,
+                                      m.timestamp.day,
+                                      m.timestamp.hour,
+                                      m.timestamp.min,
+                                      m.timestamp.sec,
                                       m.pid,
                                       m.tid,
                                       env.instance().NewStringUTF(m.message.c_str()));
