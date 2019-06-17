@@ -19,9 +19,6 @@ qdb::jni::log::ensure_callback(qdb::jni::env & env) {
   if (local_callback_id == 0) {
     qdb_error_t error = qdb_log_add_callback(_callback, &local_callback_id);
 
-    printf("callback id = %d\n", local_callback_id);
-    fflush(stdout);
-
     if (error) {
       fprintf(stderr, "a fatal error occured while registering QuasarDB logging engine: %s (%#x)\n", qdb_error(error), error);
       fflush(stderr);
@@ -49,10 +46,6 @@ qdb::jni::log::_callback(qdb_log_level_t log_level,
                   static_cast<int>(tid),
                   std::string(message_buffer, message_size) };
     std::unique_lock guard(buffer_lock);
-
-    printf("acquired lock, pushing into buffer\n");
-    fflush(stdout);
-
     buffer.push_back(x);
 }
 
@@ -79,20 +72,17 @@ qdb::jni::log::flush(qdb::jni::env & env) {
 
 /* static */ void
 qdb::jni::log::_do_flush(qdb::jni::env & env) {
-
-  fprintf(stdout, "flushing %d messages..\n", buffer.size());
-  fflush(stdout);
+  jclass qdbLogger =
+    qdb::jni::introspect::lookup_class(env,
+                                       "net/quasardb/qdb/Logger");
+  jmethodID logID =
+    introspect::lookup_static_method(env,
+                                     qdbLogger,
+                                     "log",
+                                     "(IIIIIIIIILjava/lang/String;)V");
 
   for (auto i = buffer.begin(); i != buffer.end(); ++i) {
     message_t const & m = *i;
-    jclass qdbLogger =
-      qdb::jni::introspect::lookup_class(env,
-                                         "net/quasardb/qdb/Logger");
-    jmethodID logID =
-      introspect::lookup_static_method(env,
-                                       qdbLogger,
-                                       "log",
-                                       "(IIIIIIIIILjava/lang/String;)V");
 
     printf("flushing, level: %d, year: %d, month: %d, day: %d, hour: %d, minute: %d, second: %d, pid: %d, tid: %d, message: %s\n",
            m.level,
