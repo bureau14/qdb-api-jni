@@ -3,12 +3,12 @@
 #include "string.h"
 #include "object.h"
 #include <optional>
-#include <string_view>
 #include <iostream>
 #include <vector>
 #include <shared_mutex>
 #include <algorithm>
 #include <time.h>
+#include <string.h>
 
 static std::vector<qdb::jni::log::message_t> buffer;
 static std::shared_mutex buffer_lock;
@@ -36,7 +36,7 @@ qdb::jni::log::_callback(qdb_log_level_t log_level,
                          unsigned long pid,
                          unsigned long tid,
                          const char * message_buffer,
-                         size_t /* message_size */)
+                         size_t message_size)
 {
     fprintf(stdout, "_callback message: %s\n", message_buffer);
     fflush(stdout);
@@ -50,7 +50,7 @@ qdb::jni::log::_callback(qdb_log_level_t log_level,
                     static_cast<int>(date[5]) },
                   static_cast<long>(pid),
                   static_cast<long>(tid),
-                  std::string(message_buffer) };
+                  strndup(message_buffer, message_size) };
     std::unique_lock guard(buffer_lock);
 
     buffer.push_back(x);
@@ -102,7 +102,7 @@ qdb::jni::log::_do_flush_message(qdb::jni::env & env, qdb::jni::log::message_t c
     logID = introspect::lookup_static_method(env, *qdbLogger, "log", "(IIIIIIIJJLjava/lang/String;)V");
   }
 
-  fprintf(stdout, "calling log4j, message is %s\n", m.message.c_str());
+  fprintf(stdout, "calling log4j, message is %s\n", m.message);
   fflush(stdout);
 
   // Call error
@@ -117,6 +117,9 @@ qdb::jni::log::_do_flush_message(qdb::jni::env & env, qdb::jni::log::message_t c
                                       m.timestamp.sec,
                                       m.pid,
                                       m.tid,
-                                      env.instance().NewStringUTF(m.message.c_str()));
+                                      env.instance().NewStringUTF(m.message));
+
+  // Important: free copied message
+  free((void *)(m.message));
 
 }

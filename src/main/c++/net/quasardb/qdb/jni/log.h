@@ -25,7 +25,7 @@ namespace qdb {
 
           long pid;
           long tid;
-          std::string message;
+          char const * message;
 
         } message_t;
 
