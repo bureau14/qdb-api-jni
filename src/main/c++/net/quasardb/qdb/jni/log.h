@@ -25,7 +25,7 @@ namespace qdb {
 
           long pid;
           long tid;
-          char const * message;
+          std::string message;
 
         } message_t;
 
@@ -73,9 +73,6 @@ namespace qdb {
          * acquired and buffer actually contains logs.
          */
         void _do_flush(qdb::jni::env & env);
-
-        void _do_flush_message(qdb::jni::env & env,
-                               message_t const & m);
 
       }
     }

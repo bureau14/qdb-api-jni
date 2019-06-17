@@ -36,14 +36,8 @@ qdb::jni::log::_callback(qdb_log_level_t log_level,
                          unsigned long pid,
                          unsigned long tid,
                          const char * message_buffer,
-                         size_t message_size)
+                         size_t message_size )
 {
-    fprintf(stdout, "_callback message: %s\n", message_buffer);
-    fflush(stdout);
-
-    char * message_copy = static_cast<char *>(malloc(sizeof(char) * message_size));
-    strncpy(message_copy, message_buffer, message_size);
-
     message_t x { log_level,
                   { static_cast<int>(date[0]),
                     static_cast<int>(date[1]),
@@ -53,7 +47,7 @@ qdb::jni::log::_callback(qdb_log_level_t log_level,
                     static_cast<int>(date[5]) },
                   static_cast<long>(pid),
                   static_cast<long>(tid),
-                  message_copy };
+                  std::string(message_buffer, message_size) };
     std::unique_lock guard(buffer_lock);
 
     buffer.push_back(x);
@@ -82,47 +76,44 @@ qdb::jni::log::flush(qdb::jni::env & env) {
 
 /* static */ void
 qdb::jni::log::_do_flush(qdb::jni::env & env) {
+
   fprintf(stdout, "flushing %d messages..\n", buffer.size());
   fflush(stdout);
 
-  std::for_each(buffer.begin(), buffer.end(), [& env] (message_t const & m) {
-                                                _do_flush_message(env, m);
-                                              });
+  std::for_each(buffer.begin(), buffer.end(),
+                [& env]
+                (message_t const & m) {
+                  jclass qdbLogger =
+                    qdb::jni::introspect::lookup_class(env,
+                                                       "net/quasardb/qdb/Logger");
+                  jmethodID logID =
+                    introspect::lookup_static_method(env,
+                                                     qdbLogger,
+                                                     "log",
+                                                     "(IIIIIIIJJLjava/lang/String;)V");
+
+                  printf("flushing message: %s\n", m.message.c_str());
+                  fflush(stdout);
+
+                  env.instance().CallStaticVoidMethod(qdbLogger,
+                                                      logID,
+                                                      m.level,
+                                                      m.timestamp.year,
+                                                      m.timestamp.mon,
+                                                      m.timestamp.day,
+                                                      m.timestamp.hour,
+                                                      m.timestamp.min,
+                                                      m.timestamp.sec,
+                                                      m.pid,
+                                                      m.tid,
+                                                      jni::string::create_utf8(env, m.message.c_str()).release());
+
+
+
+                });
+
+
 
   buffer.clear();
-
-}
-
-/* static */ void
-qdb::jni::log::_do_flush_message(qdb::jni::env & env, qdb::jni::log::message_t const & m) {
-  static std::optional<jclass> qdbLogger = {};
-  static std::optional<jfieldID> loggerField = {};
-  static std::optional<jmethodID> logID = {};
-
-  if (!qdbLogger) {
-    qdbLogger.emplace(qdb::jni::introspect::lookup_class(env, "net/quasardb/qdb/Logger"));
-    loggerField.emplace(qdb::jni::introspect::lookup_static_field(env, *qdbLogger, "logger", "Lorg/apache/logging/log4j/Logger;"));
-    logID = introspect::lookup_static_method(env, *qdbLogger, "log", "(IIIIIIIJJLjava/lang/String;)V");
-  }
-
-  fprintf(stdout, "calling log4j, message is %s\n", m.message);
-  fflush(stdout);
-
-  // Call error
-  env.instance().CallStaticVoidMethod(*qdbLogger,
-                                      *logID,
-                                      m.level,
-                                      m.timestamp.year,
-                                      m.timestamp.mon,
-                                      m.timestamp.day,
-                                      m.timestamp.hour,
-                                      m.timestamp.min,
-                                      m.timestamp.sec,
-                                      m.pid,
-                                      m.tid,
-                                      env.instance().NewStringUTF(m.message));
-
-  // Important: free copied message
-  free((void *)(m.message));
 
 }
