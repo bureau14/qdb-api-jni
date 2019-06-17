@@ -15,8 +15,6 @@ thread_local qdb_log_callback_id local_callback_id = 0;
 
 qdb::jni::log::wrapper::wrapper() {
   if (local_callback_id == 0) {
-    printf("registering callback!\n");
-    fflush(stdout);
     qdb_error_t error = qdb_log_add_callback(_callback, &local_callback_id);
 
     if (error) {
