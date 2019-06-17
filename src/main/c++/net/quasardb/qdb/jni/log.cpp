@@ -102,6 +102,8 @@ qdb::jni::log::_do_flush(qdb::jni::env & env) {
                          m.message.c_str());
                   fflush(stdout);
 
+                  jstring s = env.instance().NewStringUTF(m.message.c_str());
+
                   env.instance().CallStaticVoidMethod(qdbLogger,
                                                       logID,
                                                       m.level,
@@ -113,7 +115,7 @@ qdb::jni::log::_do_flush(qdb::jni::env & env) {
                                                       m.timestamp.sec,
                                                       m.pid,
                                                       m.tid,
-                                                      jni::string::create_utf(m.message.c_str()));
+                                                      s);
 
 
 

@@ -37,6 +37,10 @@ namespace qdb {
             static jni::guard::string_critical
             get_chars_critical(qdb::jni::env & env, jstring str);
 
+
+            static jni::guard::local_ref<jstring>
+            create(jni::env & env, char const * str, jsize len);
+
             static jni::guard::local_ref<jstring>
             create_utf8(jni::env & env, char const * str);
 
