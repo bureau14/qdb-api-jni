@@ -83,43 +83,40 @@ qdb::jni::log::_do_flush(qdb::jni::env & env) {
   fprintf(stdout, "flushing %d messages..\n", buffer.size());
   fflush(stdout);
 
-  std::for_each(buffer.begin(), buffer.end(),
-                [& env]
-                (message_t const & m) {
-                  jclass qdbLogger =
-                    qdb::jni::introspect::lookup_class(env,
-                                                       "net/quasardb/qdb/Logger");
-                  jmethodID logID =
-                    introspect::lookup_static_method(env,
-                                                     qdbLogger,
-                                                     "log",
-                                                     "(IIIIIIIJJLjava/lang/String;)V");
+  for (auto i = buffer.begin(); i != buffer.end(); ++i) {
+    message_t const & m = *i;
+    jclass qdbLogger =
+      qdb::jni::introspect::lookup_class(env,
+                                         "net/quasardb/qdb/Logger");
+    jmethodID logID =
+      introspect::lookup_static_method(env,
+                                       qdbLogger,
+                                       "log",
+                                       "(IIIIIIIJJLjava/lang/String;)V");
 
-                  printf("flushing, level: %d, pid: %d, tid: %d, message: %s\n",
-                         m.level,
-                         m.pid,
-                         m.tid,
-                         m.message.c_str());
-                  fflush(stdout);
+    printf("flushing, level: %d, year: %d, pid: %d, tid: %d, message: %s\n",
+           m.level,
+           m.timestamp.year,
+           m.pid,
+           m.tid,
+           m.message.c_str());
+    fflush(stdout);
 
-                  jstring s = env.instance().NewStringUTF(m.message.c_str());
+    jstring s = env.instance().NewStringUTF(m.message.c_str());
 
-                  env.instance().CallStaticVoidMethod(qdbLogger,
-                                                      logID,
-                                                      m.level,
-                                                      m.timestamp.year,
-                                                      m.timestamp.mon,
-                                                      m.timestamp.day,
-                                                      m.timestamp.hour,
-                                                      m.timestamp.min,
-                                                      m.timestamp.sec,
-                                                      m.pid,
-                                                      m.tid,
-                                                      s);
-
-
-
-                });
+    env.instance().CallStaticVoidMethod(qdbLogger,
+                                        logID,
+                                        m.level,
+                                        m.timestamp.year,
+                                        m.timestamp.mon,
+                                        m.timestamp.day,
+                                        m.timestamp.hour,
+                                        m.timestamp.min,
+                                        m.timestamp.sec,
+                                        m.pid,
+                                        m.tid,
+                                        s);
+  }
 
 
   printf("clearing all buffers\n");
