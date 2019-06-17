@@ -95,7 +95,11 @@ qdb::jni::log::_do_flush(qdb::jni::env & env) {
                                                      "log",
                                                      "(IIIIIIIJJLjava/lang/String;)V");
 
-                  printf("flushing message: %s\n", m.message.c_str());
+                  printf("flushing, level: %d, pid: %d, tid: %d, message: %s\n",
+                         m.level,
+                         m.pid,
+                         m.tid,
+                         m.message.c_str());
                   fflush(stdout);
 
                   env.instance().CallStaticVoidMethod(qdbLogger,
