@@ -106,7 +106,7 @@ qdb::jni::log::_do_flush(qdb::jni::env & env) {
                                                       m.timestamp.sec,
                                                       m.pid,
                                                       m.tid,
-                                                      jni::string::create_utf8(env, m.message.c_str()).release());
+                                                      jni::string::create_utf8(env, "foobar").release());
 
 
 
