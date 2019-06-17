@@ -13,6 +13,13 @@ qdb::jni::string::get_chars_utf8(qdb::jni::env & env, jstring str) {
 }
 
 /* static */ qdb::jni::guard::local_ref<jstring>
+qdb::jni::string::create(jni::env & env, char const * str, jsize len)  {
+    return std::move(
+        qdb::jni::guard::local_ref<jstring>(env,
+                                            env.instance().NewString((const jchar *)str, len)));
+}
+
+/* static */ qdb::jni::guard::local_ref<jstring>
 qdb::jni::string::create_utf8(jni::env & env, char const * str)  {
     return std::move(
         qdb::jni::guard::local_ref<jstring>(env,

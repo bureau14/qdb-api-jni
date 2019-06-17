@@ -1,18 +1,7 @@
 #include "vm.h"
 #include "env.h"
 
-qdb::jni::env::env(JNIEnv * e) :
-  _env(e) {
-  // We don't use the return value, but this ensures that our global singleton
-  // for the JavaVM is set.
-  qdb::jni::vm::instance(*e);
-};
-
 qdb::jni::env::env(JavaVM & vm) {
-  // We don't use the return value, but this ensures that our global singleton
-  // for the JavaVM is set.
-  qdb::jni::vm::instance(vm);
-
   void * e = NULL;
 
   // If the current thread is not attached to the VM (e.g. background, native
@@ -25,5 +14,3 @@ qdb::jni::env::env(JavaVM & vm) {
 
   env((JNIEnv *)(e));
 }
-
-qdb::jni::env::env() : env(qdb::jni::vm::instance()) {}

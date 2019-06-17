@@ -10,6 +10,9 @@ import java.time.LocalDateTime;
 import java.nio.channels.SeekableByteChannel;
 import java.util.*;
 
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+
 import net.quasardb.qdb.*;
 import net.quasardb.qdb.exception.ExceptionFactory;
 import net.quasardb.qdb.exception.InvalidArgumentException;
@@ -23,6 +26,7 @@ import net.quasardb.qdb.jni.*;
  * It maintains its own internal array of tables and can be serialized.
  */
 public class Tables implements Serializable {
+    private static final Logger logger = LogManager.getLogger(Tables.class);
     protected List<Table> tables;
 
     /**
@@ -91,10 +95,12 @@ public class Tables implements Serializable {
      * @param name Name of the table to add
      */
     public Tables add (Session session, String name) {
+        logger.debug("Adding table to collection: {}", name);
         return add(new Table(session, name));
     }
 
     public static Tables ofTag (Session session, String tag) {
+        logger.debug("Looking up all tables by tag: {}", tag);
         Reference<Long> iterator = new Reference<Long>();
         int err = qdb.tag_iterator_begin(session.handle(), tag, iterator);
         ExceptionFactory.throwIfError(err);

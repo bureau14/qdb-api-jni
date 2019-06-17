@@ -27,6 +27,9 @@ namespace qdb {
                 _from_native_int64(qdb::jni::env & env, qdb_point_result_t const & input);
 
                 static jni::guard::local_ref<jobject>
+                _from_native_count(qdb::jni::env & env, qdb_point_result_t const & input);
+
+                static jni::guard::local_ref<jobject>
                 _from_native_double(qdb::jni::env & env, qdb_point_result_t const & input);
 
                 static jni::guard::local_ref<jobject>

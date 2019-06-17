@@ -34,6 +34,10 @@ qdb::jni::ts::value::from_native(qdb::jni::env & env, qdb_point_result_t const &
             return _from_native_blob(env, input);
             break;
 
+        case qdb_query_result_count:
+            return _from_native_count(env, input);
+            break;
+
         case qdb_query_result_none:
             return _from_native_null(env);
             break;
@@ -51,6 +55,16 @@ qdb::jni::ts::value::_from_native_int64(qdb::jni::env & env, qdb_point_result_t 
                                         "createInt64",
                                         "(J)Lnet/quasardb/qdb/ts/Value;",
                                         input.payload.int64_.value));
+}
+
+/* static */ qdb::jni::guard::local_ref<jobject>
+qdb::jni::ts::value::_from_native_count(qdb::jni::env & env, qdb_point_result_t const & input) {
+    return std::move(
+        jni::object::call_static_method(env,
+                                        "net/quasardb/qdb/ts/Value",
+                                        "createInt64",
+                                        "(J)Lnet/quasardb/qdb/ts/Value;",
+                                        input.payload.count.value));
 }
 
 /* static */ qdb::jni::guard::local_ref<jobject>

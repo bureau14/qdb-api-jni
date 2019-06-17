@@ -3,6 +3,7 @@
 #include <utility>
 #include <cassert>
 #include <jni.h>
+#include "log.h"
 
 namespace qdb {
   namespace jni {
@@ -34,7 +35,9 @@ namespace qdb {
        * Initialise an env from a JNIEnv *. This is the most commonly used
        * method of initialisation, and will ensure qdb::jni::vm is initialised.
        */
-      env(JNIEnv * e);
+      env(JNIEnv * e) : _env(e) {
+        log::ensure_callback(*this);
+      }
 
       /**
        * Initialise an env from a JavaVM &. This can be used in cases where
@@ -46,16 +49,16 @@ namespace qdb {
       env(JavaVM & vm);
 
       /**
-       * Initialise an env from the global JavaVM singleton. For this method to
-       * work, this requires an earlier invocation of this class using either
-       * a env(JavaVM &) constructor or env(JNIEnv *) constructor so that the
-       * JavaVM singleton is properly initialised.
+       * Initialise an env from a global JavaVM.
        */
-      env();
 
       JNIEnv & instance() {
         assert(_env != NULL);
         return *_env;
+      }
+
+      ~env() {
+        log::flush(*this);
       }
 
     protected:

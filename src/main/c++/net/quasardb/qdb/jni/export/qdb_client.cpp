@@ -2,6 +2,7 @@
 
 #include "net_quasardb_qdb_jni_qdb.h"
 
+#include "../log.h"
 #include "../env.h"
 #include "../string.h"
 #include "../util/helpers.h"
