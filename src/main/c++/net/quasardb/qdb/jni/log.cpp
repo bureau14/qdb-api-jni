@@ -46,8 +46,8 @@ qdb::jni::log::_callback(qdb_log_level_t log_level,
                   static_cast<int>(tid),
                   std::string(message_buffer, message_size) };
 
-    printf("log_message: %s\n");
-    fflush(stdout);
+    fprintf(stderr, "log_message: %s\n");
+    fflush(stderr);
 
     std::unique_lock guard(buffer_lock);
     buffer.push_back(x);
