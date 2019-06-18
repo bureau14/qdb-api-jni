@@ -41,6 +41,8 @@ public class Table implements Serializable {
     public Table(Session session, String name) {
         this.name = name;
 
+        logger.debug("Instantiating table {}", name);
+
         Reference<Column[]> columns =
             new Reference<Column[]>();
         int err = qdb.ts_list_columns(session.handle(), this.name, columns);
@@ -339,6 +341,7 @@ public class Table implements Serializable {
      */
     public static void attachTags(Session session, String tableName, List<String> tags) {
         for (String tag : tags) {
+            logger.debug("Attaching tag {} to table {}", tag, tableName);
             int err = qdb.attach_tag(session.handle(), tableName, tag);
             ExceptionFactory.throwIfError(err);
         }

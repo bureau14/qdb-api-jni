@@ -10,6 +10,9 @@ import java.util.Spliterator;
 import java.util.*;
 import java.util.stream.*;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import net.quasardb.qdb.exception.ExceptionFactory;
 import net.quasardb.qdb.exception.InvalidArgumentException;
 import net.quasardb.qdb.exception.InvalidIteratorException;
@@ -22,12 +25,14 @@ import net.quasardb.qdb.jni.*;
  * general Iterator pattern, and allows you to scan entire timeseries tables in bulk.
  */
 public class Reader implements AutoCloseable, Iterator<Row> {
+    private static final Logger logger = LoggerFactory.getLogger(Writer.class);
     Session session;
     Table table;
     Long localTable;
     Reference<Row> next;
 
     protected Reader(Session session, Table table, TimeRange[] ranges) {
+        logger.info("Initializing bulk reader for table {}", table.name);
         if (ranges.length <= 0) {
             throw new InvalidArgumentException("Reader requires at least one TimeRange to read");
         }
