@@ -9,14 +9,15 @@
 #include <algorithm>
 #include <time.h>
 #include <string.h>
+#include <atomic>
 
 static std::vector<qdb::jni::log::message_t> buffer;
 static std::shared_mutex buffer_lock;
-static std::optional<qdb_log_callback_id> * local_callback_id = new std::optional<qdb_log_callback_id> ();
+static std::atomic<qdb_log_callback_id> local_callback_id (-1);
 
 /* static */ void
 qdb::jni::log::check_callback(qdb::jni::env & env) {
-  if (!local_callback_id->has_value()) {
+  if (local_callback_id.load() == -1) {
     qdb_log_callback_id callback_id;
     qdb_error_t error = qdb_log_add_callback(_callback, &callback_id);
 
@@ -26,7 +27,7 @@ qdb::jni::log::check_callback(qdb::jni::env & env) {
       abort();
     }
 
-    local_callback_id->emplace(callback_id);
+    local_callback_id.store(callback_id);
   }
 }
 
@@ -41,8 +42,10 @@ qdb::jni::log::ensure_callback(qdb::jni::env & env) {
     abort();
   }
 
-  if (local_callback_id->has_value() == true &&
-      callback_id > local_callback_id->value()) {
+  qdb_log_callback_id lci = local_callback_id.load();
+
+  // Race condition, not too important right now
+  if (lci != -1 && callback_id > lci) {
     error = qdb_log_remove_callback(callback_id);
     if (error) {
       fprintf(stderr, "a fatal error occured while registering QuasarDB logging engine: %s (%#x)\n", qdb_error(error), error);
@@ -50,7 +53,7 @@ qdb::jni::log::ensure_callback(qdb::jni::env & env) {
       abort();
     }
   } else {
-    local_callback_id->emplace(callback_id);
+    local_callback_id.store(callback_id);
   }
 }
 
