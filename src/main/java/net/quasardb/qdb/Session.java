@@ -3,8 +3,8 @@ package net.quasardb.qdb;
 import java.io.Serializable;
 import java.nio.ByteBuffer;
 
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import net.quasardb.qdb.*;
 import net.quasardb.qdb.jni.*;
@@ -19,7 +19,7 @@ import net.quasardb.qdb.exception.ClusterClosedException;
  * of this class are you would do with any other connection pool.
  */
 public class Session {
-    private static final Logger logger = LogManager.getLogger(Session.class);
+    private static final Logger logger = LoggerFactory.getLogger(Session.class);
 
     private transient long handle;
     private qdb_cluster_security_options securityOptions;

@@ -10,8 +10,8 @@ import java.time.LocalDateTime;
 import java.nio.channels.SeekableByteChannel;
 import java.util.*;
 
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import net.quasardb.qdb.*;
 import net.quasardb.qdb.exception.ExceptionFactory;
@@ -26,7 +26,7 @@ import net.quasardb.qdb.jni.*;
  * It maintains its own internal array of tables and can be serialized.
  */
 public class Tables implements Serializable {
-    private static final Logger logger = LogManager.getLogger(Tables.class);
+    private static final Logger logger = LoggerFactory.getLogger(Tables.class);
     protected List<Table> tables;
 
     /**

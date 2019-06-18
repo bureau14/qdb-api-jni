@@ -10,8 +10,8 @@ import java.time.LocalDateTime;
 import java.nio.channels.SeekableByteChannel;
 import java.util.*;
 
-import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.LogManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import net.quasardb.qdb.*;
 import net.quasardb.qdb.exception.ExceptionFactory;
@@ -25,7 +25,7 @@ import net.quasardb.qdb.jni.*;
  * Can also be used to construct new QuasarDB timeseries tables.
  */
 public class Table implements Serializable {
-    private static final Logger logger = LogManager.getLogger(Tables.class);
+    private static final Logger logger = LoggerFactory.getLogger(Table.class);
     final static long DEFAULT_SHARD_SIZE = 86400000;
 
     protected String name;
