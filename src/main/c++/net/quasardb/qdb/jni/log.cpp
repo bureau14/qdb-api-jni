@@ -13,47 +13,23 @@
 
 static std::vector<qdb::jni::log::message_t> buffer;
 static std::shared_mutex buffer_lock;
-static std::atomic<qdb_log_callback_id> local_callback_id (-1);
+static qdb_log_callback_id * local_callback_id = new qdb_log_callback_id();
 
 /* static */ void
-qdb::jni::log::check_callback(qdb::jni::env & env) {
-  if (local_callback_id.load() == -1) {
-    qdb_log_callback_id callback_id;
-    qdb_error_t error = qdb_log_add_callback(_callback, &callback_id);
+qdb::jni::log::swap_callback() {
+  // TODO(leon): race condition, add locks
+  qdb_error_t error;
 
-    if (error) {
-      fprintf(stderr, "a fatal error occured while registering QuasarDB logging engine: %s (%#x)\n", qdb_error(error), error);
-      fflush(stderr);
-      abort();
-    }
-
-    local_callback_id.store(callback_id);
-  }
-}
-
-void
-qdb::jni::log::ensure_callback(qdb::jni::env & env) {
-  qdb_log_callback_id callback_id = 0;
-
-  qdb_error_t error =   qdb_log_add_callback(_callback, &callback_id);
+  error = qdb_log_remove_callback(*local_callback_id);
   if (error) {
-    fprintf(stderr, "a fatal error occured while registering QuasarDB logging engine: %s (%#x)\n", qdb_error(error), error);
-    fflush(stderr);
-    abort();
+      fprintf(stderr, "unable to remove previous callback: %s (%#x)\n", qdb_error(error), error);
+      fflush(stderr);
   }
 
-  qdb_log_callback_id lci = local_callback_id.load();
-
-  // Race condition, not too important right now
-  if (lci != -1 && callback_id > lci) {
-    error = qdb_log_remove_callback(callback_id);
-    if (error) {
-      fprintf(stderr, "a fatal error occured while registering QuasarDB logging engine: %s (%#x)\n", qdb_error(error), error);
+  error = qdb_log_add_callback(_callback, local_callback_id);
+  if (error) {
+      fprintf(stderr, "unable to add new callback: %s (%#x)\n", qdb_error(error), error);
       fflush(stderr);
-      abort();
-    }
-  } else {
-    local_callback_id.store(callback_id);
   }
 }
 

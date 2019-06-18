@@ -55,16 +55,7 @@ namespace qdb {
          * since managing a completely standalone JavaVM process will cause a lot of overhead.
          */
         void
-        check_callback(qdb::jni::env & env);
-
-        /**
-         * Forces a hook of a callback, ugly hack to work around QuasarDB's logging api losing
-         * our handlers after all handles are closed.
-         *
-         * This function is more computationally expensive than ensure_callback().
-         */
-        void
-        ensure_callback(qdb::jni::env & env);
+        swap_callback();
 
         void
         flush(qdb::jni::env & env);

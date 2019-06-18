@@ -37,7 +37,7 @@ JNIEXPORT jint JNICALL
 Java_net_quasardb_qdb_jni_qdb_connect(JNIEnv * jniEnv, jclass /*thisClass*/, jlong handle, jstring uri) {
   qdb::jni::env env(jniEnv);
 
-  qdb::jni::log::ensure_callback(env);
+  qdb::jni::log::swap_callback();
 
   return qdb_connect((qdb_handle_t)handle,
                      qdb::jni::string::get_chars_utf8(env, uri));
@@ -47,7 +47,7 @@ JNIEXPORT jint JNICALL
 Java_net_quasardb_qdb_jni_qdb_secure_1connect(JNIEnv * jniEnv, jclass /*thisClass*/, jlong handle, jstring uri, jobject securityOptions) {
   qdb::jni::env env(jniEnv);
 
-  qdb::jni::log::ensure_callback(env);
+  qdb::jni::log::swap_callback();
 
   qdb_error_t err;
   jclass objectClass;
