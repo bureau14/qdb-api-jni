@@ -26,7 +26,7 @@ public class Logger
      * Ugly hack, but we need to keep alive at least one session handle, otherwise the native logger
      * service might be destroyed when no handles are left.
      */
-    private static Session session = new Session();
+    private static Session _keepAlive = new Session();
 
     protected static class QdbEvent implements LoggingEvent {
         private final Instant ts;
