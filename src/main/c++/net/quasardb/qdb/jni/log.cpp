@@ -13,20 +13,20 @@
 
 static std::vector<qdb::jni::log::message_t> buffer;
 static std::shared_mutex buffer_lock;
-static qdb_log_callback_id * local_callback_id = new qdb_log_callback_id();
+static qdb_log_callback_id local_callback_id;
 
 /* static */ void
 qdb::jni::log::swap_callback() {
   // TODO(leon): race condition, add locks
   qdb_error_t error;
 
-  error = qdb_log_remove_callback(*local_callback_id);
+  error = qdb_log_remove_callback(local_callback_id);
   if (error) {
       fprintf(stderr, "unable to remove previous callback: %s (%#x)\n", qdb_error(error), error);
       fflush(stderr);
   }
 
-  error = qdb_log_add_callback(_callback, local_callback_id);
+  error = qdb_log_add_callback(_callback, &local_callback_id);
   if (error) {
       fprintf(stderr, "unable to add new callback: %s (%#x)\n", qdb_error(error), error);
       fflush(stderr);
