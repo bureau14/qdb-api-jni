@@ -15,6 +15,12 @@ public class Logger
 {
     public static final org.apache.logging.log4j.Logger logger = LogManager.getLogger("QdbNative");
 
+    /**
+     * Ugly hack, but we need to keep alive at least one session handle, otherwise the native logger
+     * service might be destroyed when no handles are left.
+     */
+    private static Session session = new Session();
+
     protected static class QdbMessage implements Message, TimestampMessage {
         private final Instant ts;
         private final long pid;
