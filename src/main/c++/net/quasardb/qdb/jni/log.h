@@ -64,8 +64,7 @@ namespace qdb {
          * This function is more computationally expensive than ensure_callback().
          */
         void
-        ensure_callback(qdb::jni::env & env) {
-        }
+        ensure_callback(qdb::jni::env & env);
 
         void
         flush(qdb::jni::env & env);
