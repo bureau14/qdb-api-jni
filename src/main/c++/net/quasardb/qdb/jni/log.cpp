@@ -15,7 +15,7 @@ static std::shared_mutex buffer_lock;
 static qdb_log_callback_id local_callback_id = 0;
 
 /* static */ void
-qdb::jni::log::ensure_callback(qdb::jni::env & env) {
+qdb::jni::log::check_callback(qdb::jni::env & env) {
   if (local_callback_id == 0) {
     qdb_error_t error = qdb_log_add_callback(_callback, &local_callback_id);
 
@@ -28,19 +28,15 @@ qdb::jni::log::ensure_callback(qdb::jni::env & env) {
 }
 
 void
-qdb::jni::log::check_callback(qdb::jni::env & env) {
+qdb::jni::log::ensure_callback(qdb::jni::env & env) {
   qdb_log_callback_id callback_id = 0;
 
   qdb_error_t error =   qdb_log_add_callback(_callback, &local_callback_id);
   if (callback_id > local_callback_id) {
-    printf("callback_id %d > local %d\n", callback_id, local_callback_id);
     error = qdb_log_remove_callback(callback_id);
   } else {
-    printf("new callback_id %d\n", callback_id);
     local_callback_id = callback_id;
   }
-
-  fflush(stdout);
 }
 
 /* static */ void

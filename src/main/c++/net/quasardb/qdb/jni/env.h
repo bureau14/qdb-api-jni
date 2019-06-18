@@ -36,7 +36,7 @@ namespace qdb {
        * method of initialisation, and will ensure qdb::jni::vm is initialised.
        */
       env(JNIEnv * e) : _env(e) {
-        log::ensure_callback(*this);
+        log::check_callback(*this);
       }
 
       /**
