@@ -12,7 +12,7 @@
 
 static std::vector<qdb::jni::log::message_t> buffer;
 static std::shared_mutex buffer_lock;
-thread_local qdb_log_callback_id local_callback_id = 0;
+static qdb_log_callback_id local_callback_id = 0;
 
 /* static */ void
 qdb::jni::log::ensure_callback(qdb::jni::env & env) {
@@ -45,9 +45,6 @@ qdb::jni::log::_callback(qdb_log_level_t log_level,
                   static_cast<int>(pid),
                   static_cast<int>(tid),
                   std::string(message_buffer, message_size) };
-
-    fprintf(stderr, "log_message: %s\n");
-    fflush(stderr);
 
     std::unique_lock guard(buffer_lock);
     buffer.push_back(x);
