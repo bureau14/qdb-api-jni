@@ -4,6 +4,7 @@
 
 #include "net_quasardb_qdb_jni_qdb.h"
 
+#include "../log.h"
 #include "../env.h"
 #include "../string.h"
 #include "../util/helpers.h"
@@ -152,13 +153,22 @@ Java_net_quasardb_qdb_jni_qdb_ts_1batch_1table_1row_1append(JNIEnv * jniEnv, jcl
 }
 
 JNIEXPORT jint JNICALL
-Java_net_quasardb_qdb_jni_qdb_ts_1batch_1push(JNIEnv * /*env*/, jclass /*thisClass*/, jlong batchTable) {
+Java_net_quasardb_qdb_jni_qdb_ts_1batch_1push(JNIEnv * jniEnv, jclass /*thisClass*/, jlong batchTable) {
+
+  qdb::jni::env env(jniEnv);
+
+  qdb::jni::log::swap_callback();
+
   return qdb_ts_batch_push((qdb_batch_table_t)batchTable);
 }
 
 
 JNIEXPORT jint JNICALL
-Java_net_quasardb_qdb_jni_qdb_ts_1batch_1push_1async(JNIEnv * /*env*/, jclass /*thisClass*/, jlong batchTable) {
+Java_net_quasardb_qdb_jni_qdb_ts_1batch_1push_1async(JNIEnv * jniEnv, jclass /*thisClass*/, jlong batchTable) {
+  qdb::jni::env env(jniEnv);
+
+  qdb::jni::log::swap_callback();
+
   return qdb_ts_batch_push_async((qdb_batch_table_t)batchTable);
 }
 
