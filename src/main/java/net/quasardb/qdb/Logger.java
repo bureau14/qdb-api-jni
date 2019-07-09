@@ -135,7 +135,7 @@ public class Logger
                                                                 hour, min, sec).toInstant(ZoneOffset.UTC),
                                                pid, tid, msg));
         } catch (Exception e) {
-            _delegate.error("Internal error: unable to access log4j logging method\n");
+            _delegate.error("Internal error: unable to access slf4j logging method\n");
         }
     }
 }
