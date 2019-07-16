@@ -5,7 +5,7 @@ xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <groupId>net.quasardb</groupId>
   <artifactId>jni</artifactId>
   <packaging>jar</packaging>
-  <version>3.4.0-SNAPSHOT</version>
+  <version>3.4.0</version>
   <name>quasardb</name>
 
   <description>
@@ -39,7 +39,7 @@ xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-api</artifactId>
-      <version>1.7.26</version>
+      <version>3.4.0</version>
     </dependency>
     <dependency>
       <groupId>org.slf4j</groupId>
@@ -167,27 +167,27 @@ xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
             <configuration>
               <artifacts>
                 <artifact>
-                  <file>${project.basedir}/target/jni-3.4.0-SNAPSHOT-linux-x86_64.jar</file>
+                  <file>${project.basedir}/target/jni-3.4.0-linux-x86_64.jar</file>
                   <type>jar</type>
                   <classifier>linux-x86_64</classifier>
                 </artifact>
                 <artifact>
-                  <file>${project.basedir}/target/jni-3.4.0-SNAPSHOT-osx-x86_64.jar</file>
+                  <file>${project.basedir}/target/jni-3.4.0-osx-x86_64.jar</file>
                   <type>jar</type>
                   <classifier>osx-x86_64</classifier>
                 </artifact>
                 <artifact>
-                  <file>${project.basedir}/target/jni-3.4.0-SNAPSHOT-freebsd-x86_64.jar</file>
+                  <file>${project.basedir}/target/jni-3.4.0-freebsd-x86_64.jar</file>
                   <type>jar</type>
                   <classifier>freebsd-x86_64</classifier>
                 </artifact>
                 <artifact>
-                  <file>${project.basedir}/target/jni-3.4.0-SNAPSHOT-windows-x86_64.jar</file>
+                  <file>${project.basedir}/target/jni-3.4.0-windows-x86_64.jar</file>
                   <type>jar</type>
                   <classifier>windows-x86_64</classifier>
                 </artifact>
                 <artifact>
-                  <file>${project.basedir}/target/jni-3.4.0-SNAPSHOT-windows-x86_32.jar</file>
+                  <file>${project.basedir}/target/jni-3.4.0-windows-x86_32.jar</file>
                   <type>jar</type>
                   <classifier>windows-x86_32</classifier>
                 </artifact>
