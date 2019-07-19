@@ -43,8 +43,7 @@ cd ${PWD}/../..
 #   <file>${project.basedir}/target/jni-2.8.0-SNAPSHOT-linux-x86_64.jar</file>
 # </artifact>
 
-sed -i -e '/<groupId>net.quasardb<\/groupId>/,/<\/\(properties\|dependency\)>/ s/<version>[0-9.]\+[0-9]\(-SNAPSHOT\)\?<\/version>/<version>'"${XYZ_VERSION}${TAGS_VERSION}"'<\/version>/' pom.xml
-sed -i -e '/<groupId>net.quasardb<\/groupId>/,/<\/properties>/ s/<file>\([-.${}a-zA-Z_/]*\)[0-9.]\+[0-9]\(-SNAPSHOT\)\?\([-.${}a-zA-Z_]*\)<\/file>/<file>\1'"${XYZ_VERSION}${TAGS_VERSION}"'\3<\/file>/' pom.xml
+sed -i -e '/<groupId>net.quasardb<\/groupId>/,/<dependencies>/ s/<version>[0-9.]\+[0-9]\(-SNAPSHOT\)\?<\/version>/<version>'"${XYZ_VERSION}${TAGS_VERSION}"'<\/version>/' pom.xml
 sed -i -e '/<artifact>/,/<\/artifact>/ s/<file>\([-.${}a-zA-Z_/]*\)[0-9.]\+[0-9]\(-SNAPSHOT\)\?\([-.${}a-zA-Z_0-9]*\)<\/file>/<file>\1'"${XYZ_VERSION}${TAGS_VERSION}"'\3<\/file>/' pom.xml
 
 # set(NATIVE_JAR_FILE "${CMAKE_BINARY_DIR}/jni-2.8.0-SNAPSHOT-${SYSTEM}-${ARCH}.jar")
