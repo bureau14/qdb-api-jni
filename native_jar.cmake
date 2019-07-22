@@ -14,19 +14,42 @@ set(NATIVE_JAR_FILE "${CMAKE_SOURCE_DIR}/target/jni-3.5.0-SNAPSHOT-${SYSTEM}-${A
 
 # Quasardb C API
 if (WIN32)
-    set(QDB_API_DLL "${CMAKE_SOURCE_DIR}/qdb/bin/qdb_api.dll")
+    set(QDB_API_DLL "${CMAKE_SOURCE_DIR}/qdb/bin/${CMAKE_SHARED_LIBRARY_PREFIX}qdb_api${CMAKE_SHARED_LIBRARY_SUFFIX}")
 else()
-    set(QDB_API_DLL "${CMAKE_SOURCE_DIR}/qdb/lib/libqdb_api${CMAKE_SHARED_LIBRARY_SUFFIX}")
+    set(QDB_API_DLL "${CMAKE_SOURCE_DIR}/qdb/lib/${CMAKE_SHARED_LIBRARY_PREFIX}qdb_api${CMAKE_SHARED_LIBRARY_SUFFIX}")
 endif()
+
+# Copy libc++ dependencies from C API into JNI .jar file.
+find_library(LIBCPP NAMES c++.1 PATHS qdb/lib NO_DEFAULT_PATH)
+message(STATUS "libc++: ${LIBCPP}")
+
+find_library(LIBCPPABI NAMES c++abi.1 PATHS qdb/lib NO_DEFAULT_PATH)
+message(STATUS "libc++abi: ${LIBCPPABI}")
+
+set(NATIVE_DIR "${CMAKE_BINARY_DIR}/native/net/quasardb/qdb/jni/${SYSTEM}/${ARCH}")
 
 # JAR: qdb_jni.dll -> windows-x86_64.jar
 add_custom_command(
-    OUTPUT ${NATIVE_JAR_FILE}
+    OUTPUT  ${NATIVE_JAR_FILE}
     DEPENDS qdb_api_jni
-    COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/native/net/quasardb/qdb/jni/${SYSTEM}/${ARCH}
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_FILE:qdb_api_jni> ${CMAKE_BINARY_DIR}/native/net/quasardb/qdb/jni/${SYSTEM}/${ARCH}
-    COMMAND ${CMAKE_COMMAND} -E copy_if_different ${QDB_API_DLL} ${CMAKE_BINARY_DIR}/native/net/quasardb/qdb/jni/${SYSTEM}/${ARCH}
+    COMMAND ${CMAKE_COMMAND} -E make_directory    ${NATIVE_DIR}
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_FILE:qdb_api_jni> ${NATIVE_DIR}
+    COMMAND ${CMAKE_COMMAND} -E copy_if_different ${QDB_API_DLL}             ${NATIVE_DIR}
+)
+
+if(LIBCPP)
+    add_custom_command(
+        OUTPUT  ${NATIVE_JAR_FILE}
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different ${LIBCPP}    ${NATIVE_DIR}
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different ${LIBCPPABI} ${NATIVE_DIR}
+        APPEND
+    )
+endif()
+
+add_custom_command(
+    OUTPUT  ${NATIVE_JAR_FILE}
     COMMAND jar cvf ${NATIVE_JAR_FILE} -C ${CMAKE_BINARY_DIR}/native/ .
+    APPEND
 )
 
 add_custom_target(jni-native
