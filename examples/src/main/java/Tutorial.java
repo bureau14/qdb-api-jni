@@ -1,4 +1,4 @@
-import java.util.Date;
+import java.time.Instant;
 import java.io.IOException;
 
 // import-start
@@ -15,6 +15,8 @@ public class Tutorial {
         Session c = Tutorial.connect();
         Table t = Tutorial.createTable(c);
         Tutorial.batchInsert(c);
+        Tutorial.bulkRead(c);
+        Tutorial.dropTable(c);
     }
 
     private void secureConnect() {
@@ -79,7 +81,7 @@ public class Tutorial {
         // Insert the first row: to start a new row, we must provide it with a mandatory
         // timestamp that all values for this row will share. QuasarDB will use this timestamp
         // as its primary index.
-        w.append(new Timespec(new Date(2019, 02, 01).toInstant()), // Converts local time to UTC!
+        w.append(new Timespec(Instant.ofEpochSecond(1548979200)),
                  new Value[] {
                      Value.createDouble(3.40),
                      Value.createDouble(3.50),
@@ -87,7 +89,7 @@ public class Tutorial {
                  });
 
         // Inserting the next row is a matter of just calling append.
-        w.append(new Timespec(new Date(2019, 02, 02).toInstant()),  // Converts local time to UTC!
+        w.append(new Timespec(Instant.ofEpochSecond(1549065600)),
                  new Value[] {
                      Value.createDouble(3.50),
                      Value.createDouble(3.55),
@@ -101,5 +103,50 @@ public class Tutorial {
         w.flush();
 
         // batch-insert-end
+    }
+
+    private static void bulkRead(Session c) throws IOException {
+        // bulk-read-start
+
+        // We first initialize the TimeRange we are looking for. Providing a timerange
+        // to a bulk reader is mandatory.
+        TimeRange[] ranges = new TimeRange[] { new TimeRange(new Timespec(Instant.ofEpochSecond(1548979200)),
+                                                             new Timespec(Instant.ofEpochSecond(1549065600))) };
+
+        // In this example, we initialize a bulk reader by simply providing a session,
+        // table name and timerange we're interested in. For alternative ways to initialize
+        // a bulk reader, please refer to the javadoc of the Table class.
+        Reader r = Table.reader(c, "stocks", ranges);
+
+        // The reader implements an Iterator interface which allows us to traverse the rows:
+        while (r.hasNext()) {
+
+            Row row = r.next();
+
+            // Each row has a timestamp which you can access as a Timespec:
+            System.out.println("row timestamp: " + row.getTimestamp().toString());
+
+            // Note that the offsets of the values array align with the offsets we used
+            // when creating the table, i.e. 0 means "open", 1 means "close" and 2 means
+            // "volume":
+            Value[] values = row.getValues();
+
+            Value openValue = values[0];
+            Value closealue = values[1];
+            Value volumeValue = values[2];
+        }
+
+        // bulk-read-end
+    }
+
+
+    private static void dropTable(Session c) throws IOException {
+        // drop-table-start
+
+        // We can simply remove a table by its name.
+
+        Table.remove(c, "stocks");
+
+        // drop-table-end
     }
 }
