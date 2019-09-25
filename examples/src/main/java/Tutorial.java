@@ -70,6 +70,15 @@ public class Tutorial {
 
         // create-table-end
 
+        // tags-start
+
+        // You can also attach a tag by only providing the table string. See the
+        // javadocs for other ways to call this function.
+
+        Table.attachTag(c, t, "nasdaq");
+
+        // tags-end
+
         return t;
     }
 
