@@ -1,5 +1,6 @@
 import java.time.Instant;
 import java.io.IOException;
+import java.util.stream.Stream;
 
 // import-start
 import net.quasardb.qdb.*;
@@ -16,6 +17,8 @@ public class Tutorial {
         Table t = Tutorial.createTable(c);
         Tutorial.batchInsert(c);
         Tutorial.bulkRead(c);
+        Tutorial.query(c);
+
         Tutorial.dropTable(c);
     }
 
@@ -139,6 +142,48 @@ public class Tutorial {
         // bulk-read-end
     }
 
+
+    private static void query(Session c) throws IOException {
+        // query-start
+
+        // We can either construct a query from a raw string like this
+        Query q1 = Query.of("SELECT SUM(volume) FROM stocks");
+
+        // Or we can use the QueryBuilder for more flexible query building, especially
+        // useful for providing e.g. ranges.
+        String colName = "volume";
+        String tableName = "stocks";
+
+        Query q2 = new QueryBuilder()
+            .add("SELECT SUM(")
+            .add(colName)
+            .add(") FROM")
+            .add(tableName)
+            .asQuery();
+
+        // Execute the query
+        Result r = q1.execute(c);
+
+        // We can either access the stock result class directly like this
+        Result.Table stocksResult = r.tables[0];
+
+        // In this case, columns[0] matches to result rows[0] and are
+        // our timestamps.
+        String[] columns = stocksResult.columns;
+        Value[][] rows = stocksResult.rows;
+
+        // If you would prefer to access the query results in a row-oriented
+        // way, you can flatten the result into Rows.
+        Result.Row[] flattened = stocksResult.flatten();
+
+        // Last but not least, the Query results API also implements native Java
+        // streams.
+        Stream<Result.Row> s = r.stream();
+
+        System.out.println("total row count: " + s.count());
+
+        // query-end
+    }
 
     private static void dropTable(Session c) throws IOException {
         // drop-table-start
