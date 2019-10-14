@@ -6,7 +6,7 @@
   <groupId>net.quasardb</groupId>
   <artifactId>jni</artifactId>
   <packaging>jar</packaging>
-  <version>3.4.2</version>
+  <version>3.4.3</version>
   <name>quasardb</name>
 
   <description>
@@ -168,27 +168,27 @@
             <configuration>
               <artifacts>
                 <artifact>
-                  <file>${project.basedir}/target/jni-3.4.2-linux-x86_64.jar</file>
+                  <file>${project.basedir}/target/jni-3.4.3-linux-x86_64.jar</file>
                   <type>jar</type>
                   <classifier>linux-x86_64</classifier>
                 </artifact>
                 <artifact>
-                  <file>${project.basedir}/target/jni-3.4.2-osx-x86_64.jar</file>
+                  <file>${project.basedir}/target/jni-3.4.3-osx-x86_64.jar</file>
                   <type>jar</type>
                   <classifier>osx-x86_64</classifier>
                 </artifact>
                 <artifact>
-                  <file>${project.basedir}/target/jni-3.4.2-freebsd-x86_64.jar</file>
+                  <file>${project.basedir}/target/jni-3.4.3-freebsd-x86_64.jar</file>
                   <type>jar</type>
                   <classifier>freebsd-x86_64</classifier>
                 </artifact>
                 <artifact>
-                  <file>${project.basedir}/target/jni-3.4.2-windows-x86_64.jar</file>
+                  <file>${project.basedir}/target/jni-3.4.3-windows-x86_64.jar</file>
                   <type>jar</type>
                   <classifier>windows-x86_64</classifier>
                 </artifact>
                 <artifact>
-                  <file>${project.basedir}/target/jni-3.4.2-windows-x86_32.jar</file>
+                  <file>${project.basedir}/target/jni-3.4.3-windows-x86_32.jar</file>
                   <type>jar</type>
                   <classifier>windows-x86_32</classifier>
                 </artifact>
