@@ -31,7 +31,7 @@ public class Tutorial {
                                                             "SL8sm9dM5xhPE6VNhfYY4ib4qk3vmAFDXCZ2FDi8AuJ4=",
                                                             // Cluster public key
                                                             "PZMBhqk43w+HNr9lLGe+RYq+qWZPrksFWMF1k1UG/vwc="),
-                                "qdb://127.0.0.1:28361");
+                                "qdb://127.0.0.1:28362");
         } catch (ConnectionRefusedException ex) {
             System.err.println("Failed to connect to cluster, make sure server is running!");
             System.exit(1);
