@@ -133,7 +133,7 @@ public class Tutorial {
         // The reader implements an Iterator interface which allows us to traverse the rows:
         while (r.hasNext()) {
 
-            Row row = r.next();
+            WritableRow row = r.next();
 
             // Each row has a timestamp which you can access as a Timespec:
             System.out.println("row timestamp: " + row.getTimestamp().toString());
@@ -173,21 +173,14 @@ public class Tutorial {
         // Execute the query
         Result r = q1.execute(c);
 
-        // We can either access the stock result class directly like this
-        Result.Table stocksResult = r.tables[0];
-
         // In this case, columns[0] matches to result rows[0] and are
         // our timestamps.
-        String[] columns = stocksResult.columns;
-        Value[][] rows = stocksResult.rows;
-
-        // If you would prefer to access the query results in a row-oriented
-        // way, you can flatten the result into Rows.
-        Result.Row[] flattened = stocksResult.flatten();
+        String[] columns = r.columns;
+        Row[] rows = r.rows;
 
         // Last but not least, the Query results API also implements native Java
         // streams.
-        Stream<Result.Row> s = r.stream();
+        Stream<Row> s = r.stream();
 
         System.out.println("total row count: " + s.count());
 
