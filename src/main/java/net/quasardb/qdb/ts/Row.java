@@ -30,7 +30,7 @@ public class Row implements Serializable {
     }
 
     /**
-     * @brief Access to the underlying values of this row.
+     * Access to the underlying values of this row.
      */
     public Value[] getValues() {
         return this.values;
