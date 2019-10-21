@@ -821,7 +821,7 @@ tableGetRow(qdb::jni::env & env, qdb_local_table_t localTable, qdb_ts_column_inf
     if (QDB_SUCCESS(err)) {
         *output =
             jni::object::create(env,
-                                "net/quasardb/qdb/ts/Row",
+                                "net/quasardb/qdb/ts/WritableRow",
                                 "(Lnet/quasardb/qdb/ts/Timespec;[Lnet/quasardb/qdb/ts/Value;)V",
                                 nativeToTimespec(env, timestamp).release(),
                                 values.release()).release();

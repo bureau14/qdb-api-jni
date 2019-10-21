@@ -4,7 +4,7 @@ import java.nio.ByteBuffer;
 import net.quasardb.qdb.*;
 import net.quasardb.qdb.ts.Column;
 import net.quasardb.qdb.ts.Result;
-import net.quasardb.qdb.ts.Row;
+import net.quasardb.qdb.ts.WritableRow;
 import net.quasardb.qdb.ts.Table;
 import net.quasardb.qdb.ts.TimeRange;
 import net.quasardb.qdb.ts.Timespec;
@@ -129,7 +129,7 @@ public final class qdb
 
     public static native void ts_local_table_release(long handle, long localTable);
     public static native int ts_table_get_ranges(long localTable, TimeRange[] ranges);
-    public static native int ts_table_next_row(long localTable, Column[] columns, Reference<Row> output);
+    public static native int ts_table_next_row(long localTable, Column[] columns, Reference<WritableRow> output);
 
     public static native int ts_double_insert(long handle, String alias, String column, qdb_ts_double_point[] points);
     public static native int ts_double_get_ranges(

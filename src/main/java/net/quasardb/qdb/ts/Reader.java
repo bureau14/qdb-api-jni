@@ -24,12 +24,12 @@ import net.quasardb.qdb.jni.*;
  * High-performance bulk reader for a QuasarDB timeseries table. This class follows the
  * general Iterator pattern, and allows you to scan entire timeseries tables in bulk.
  */
-public class Reader implements AutoCloseable, Iterator<Row> {
+public class Reader implements AutoCloseable, Iterator<WritableRow> {
     private static final Logger logger = LoggerFactory.getLogger(Writer.class);
     Session session;
     Table table;
     Long localTable;
-    Reference<Row> next;
+    Reference<WritableRow> next;
 
     protected Reader(Session session, Table table, TimeRange[] ranges) {
         logger.info("Initializing bulk reader for table {}", table.name);
@@ -39,7 +39,7 @@ public class Reader implements AutoCloseable, Iterator<Row> {
 
         this.session = session;
         this.table = table;
-        this.next = new Reference<Row>();
+        this.next = new Reference<WritableRow>();
 
         Reference<Long> theLocalTable = new Reference<Long>();
         int err = qdb.ts_local_table_init(this.session.handle(), table.getName(), table.getColumns(), theLocalTable);
@@ -118,7 +118,7 @@ public class Reader implements AutoCloseable, Iterator<Row> {
      * @return The next row.
      */
     @Override
-    public Row next() throws InvalidIteratorException {
+    public WritableRow next() throws InvalidIteratorException {
         this.maybeReadNext();
 
         if (this.hasNext() == false) {
@@ -131,7 +131,7 @@ public class Reader implements AutoCloseable, Iterator<Row> {
     /**
      * Provides stream-based access.
      */
-    public Stream<Row> stream() {
+    public Stream<WritableRow> stream() {
         return StreamSupport.stream(
             Spliterators.spliteratorUnknownSize(this, Spliterator.IMMUTABLE), false);
     }

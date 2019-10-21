@@ -246,7 +246,7 @@ public class Writer implements AutoCloseable, Flushable {
      * @see #flush
      * @see Table#autoFlushWriter
      */
-    public void append(Integer offset, Row row) throws IOException {
+    public void append(Integer offset, WritableRow row) throws IOException {
         this.append(offset,
                     row.getTimestamp(),
                     row.getValues());
@@ -267,7 +267,7 @@ public class Writer implements AutoCloseable, Flushable {
      * @see #flush
      * @see Table#autoFlushWriter
      */
-    public void append(String tableName, Row row) throws IOException {
+    public void append(String tableName, WritableRow row) throws IOException {
         this.append(this.tableIndexByName(tableName), row);
     }
 
@@ -284,7 +284,7 @@ public class Writer implements AutoCloseable, Flushable {
      * @see #flush
      * @see Table#autoFlushWriter
      */
-    public void append(Row row) throws IOException {
+    public void append(WritableRow row) throws IOException {
         this.append(0, row);
     }
 

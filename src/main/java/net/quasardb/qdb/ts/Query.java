@@ -2,11 +2,15 @@ package net.quasardb.qdb.ts;
 
 import java.util.Optional;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import net.quasardb.qdb.Session;
 import net.quasardb.qdb.jni.qdb;
 import net.quasardb.qdb.jni.Reference;
 import net.quasardb.qdb.exception.ExceptionFactory;
 import net.quasardb.qdb.exception.InputException;
+
 
 /**
  * Represents a timeseries query.
@@ -18,6 +22,7 @@ import net.quasardb.qdb.exception.InputException;
  * @see QueryBuilder
  */
 public final class Query {
+    private static final Logger logger = LoggerFactory.getLogger(Writer.class);
 
     private String query;
 
@@ -42,7 +47,7 @@ public final class Query {
      *              for the full query syntax.
      */
     public static Query of(String query) {
-        System.out.println("executing query: " + query);
+        logger.debug("Executing query: {}", query);
         return new Query(query);
     }
 

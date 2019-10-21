@@ -13,21 +13,9 @@ import java.util.*;
 /**
  * Represents a timeseries row.
  */
-public class Row implements Serializable {
+public final class WritableRow extends Row implements Serializable {
 
     protected Timespec timestamp;
-    protected Value[] values;
-
-    /**
-     * @brief Row without timestamp
-     * @param values All values for this row.
-     *
-     * When querying data from the database, a row might not have a timestamp. This
-     * function can be used to construct these rows.
-     */
-    public Row(Value[] values) {
-        this.values = values;
-    }
 
     /**
      * @brief Row with timestamp
@@ -35,9 +23,10 @@ public class Row implements Serializable {
      *                  that quasardb stores this row under.
      * @param values All values for this row.
      */
-    public Row(Timespec timestamp, Value[] values) {
+    public WritableRow(Timespec timestamp, Value[] values) {
+        super(values);
+
         this.timestamp = timestamp;
-        this.values = values;
     }
 
     /**
@@ -46,7 +35,7 @@ public class Row implements Serializable {
      *                  that quasardb stores this row under.
      * @param values All values for this row.
      */
-    public Row(LocalDateTime timestamp, Value[] values) {
+    public WritableRow(LocalDateTime timestamp, Value[] values) {
         this(new Timespec(timestamp), values);
     }
 
@@ -56,7 +45,7 @@ public class Row implements Serializable {
      *                  that quasardb stores this row under.
      * @param values All values for this row.
      */
-    public Row(Timestamp timestamp, Value[] values) {
+    public WritableRow(Timestamp timestamp, Value[] values) {
         this(new Timespec(timestamp), values);
     }
 
@@ -69,28 +58,16 @@ public class Row implements Serializable {
         return this.timestamp;
     }
 
-    /**
-     * @brief Access to the underlying values of this row.
-     */
-    public Value[] getValues() {
-        return this.values;
-    }
-
     @Override
     public boolean equals(Object obj) {
-        if (!(obj instanceof Row)) return false;
-        Row rhs = (Row)obj;
+        if (super.equals(obj) == false) return false;
+        if (!(obj instanceof WritableRow)) return false;
 
-        if (this.timestamp != null) {
-            if (rhs.getTimestamp() != null) return false;
-
-            if (this.getTimestamp().equals(rhs.getTimestamp()) == false) return false;
-        }
-
-        return Arrays.equals(this.getValues(), rhs.getValues());
+        WritableRow rhs = (WritableRow)obj;
+        return this.timestamp.equals(rhs.getTimestamp());
     }
 
     public String toString() {
-        return "Row (timestamp: " + (this.timestamp != null ? this.timestamp.toString() : "NULL") + ", values = " + Arrays.toString(this.values) + ")";
+        return "WritableRow (timestamp: " + this.timestamp.toString() + ", values = " + Arrays.toString(this.values) + ")";
     }
 }
