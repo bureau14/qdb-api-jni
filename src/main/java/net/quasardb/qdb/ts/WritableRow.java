@@ -18,7 +18,8 @@ public final class WritableRow extends Row implements Serializable {
     protected Timespec timestamp;
 
     /**
-     * @brief Row with timestamp
+     * Row with timestamp
+     *
      * @param timestamp The Valid Time for the row. This timestamp will be the primary index
      *                  that quasardb stores this row under.
      * @param values All values for this row.
@@ -30,7 +31,8 @@ public final class WritableRow extends Row implements Serializable {
     }
 
     /**
-     * @brief Row with timestamp
+     * Row with timestamp
+     *
      * @param timestamp The Valid Time for the row. This timestamp will be the primary index
      *                  that quasardb stores this row under.
      * @param values All values for this row.
@@ -40,7 +42,8 @@ public final class WritableRow extends Row implements Serializable {
     }
 
     /**
-     * @brief Row with timestamp
+     * Row with timestamp
+     *
      * @param timestamp The Valid Time for the row. This timestamp will be the primary index
      *                  that quasardb stores this row under.
      * @param values All values for this row.
@@ -50,14 +53,20 @@ public final class WritableRow extends Row implements Serializable {
     }
 
     /**
-     * @brief Access to the timestamp of this row.
-     * @returns The timestamp, or null if this row does not have a timestamp associated (in case
-     *          of a query result, for example).
+     * Access to the timestamp of this row.
+     *
+     * @return The timestamp, or null if this row does not have a timestamp associated (in case
+     *         of a query result, for example).
      */
     public Timespec getTimestamp() {
         return this.timestamp;
     }
 
+    /**
+     * Comparison-by-value operator.
+     *
+     * @return Returns true when the object representations are equal.
+     */
     @Override
     public boolean equals(Object obj) {
         if (super.equals(obj) == false) return false;
