@@ -371,6 +371,9 @@ public class Value implements Serializable {
 
         case BLOB:
             return "Value (type = BLOB, value = " + this.blobValue.hashCode() + ")";
+
+        case UNINITIALIZED:
+            return "Value (type = NULL)";
         }
 
         return "Value (type = INVALID)";
