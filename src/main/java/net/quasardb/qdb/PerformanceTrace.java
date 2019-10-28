@@ -18,7 +18,6 @@ public class PerformanceTrace {
         public long elapsed;
 
         public Measurement(String label, long elapsed) {
-            System.out.println("measurement constructor, label: " + label + ", elapsed: " + elapsed);
             this.label = label;
             this.elapsed = elapsed;
         }
