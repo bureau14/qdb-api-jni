@@ -8,12 +8,29 @@ import net.quasardb.qdb.jni.qdb;
 import net.quasardb.qdb.jni.Reference;
 
 import net.quasardb.qdb.Session;
+import net.quasardb.qdb.ts.Timespec;
 import net.quasardb.qdb.exception.ExceptionFactory;
 
 public class PerformanceTrace {
 
-    public class Trace {
-        Trace() {
+    public static class Measurement {
+        public String label;
+        public long elapsed;
+
+        public Measurement(String label, long elapsed) {
+            System.out.println("measurement constructor, label: " + label + ", elapsed: " + elapsed);
+            this.label = label;
+            this.elapsed = elapsed;
+        }
+    }
+
+    public static class Trace {
+        public String name;
+        public Measurement[] measurements;
+
+        public Trace(String name, Measurement[] measurements) {
+            this.name = name;
+            this.measurements = measurements;
         }
     }
 

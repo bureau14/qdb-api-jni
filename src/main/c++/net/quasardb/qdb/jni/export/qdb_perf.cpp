@@ -4,6 +4,7 @@
 
 #include "../guard/local_ref.h"
 #include "../util/helpers.h"
+#include "../string.h"
 #include "../introspect.h"
 #include "../debug.h"
 #include "../object.h"
@@ -28,11 +29,132 @@ Java_net_quasardb_qdb_jni_qdb_disable_1performance_1trace(JNIEnv * jniEnv, jclas
   return qdb_perf_disable_client_tracking((qdb_handle_t)handle);
 }
 
+jni::guard::local_ref<jobject>
+native_to_trace(jni::env & env, qdb_perf_profile_t const & profile, jclass traceClass, jmethodID traceConstructor, jclass measurementClass, jmethodID measurementConstructor) {
+  jni::guard::local_ref<jobject> output (jni::object::create(env,
+                                                             traceClass,
+                                                             traceConstructor,
+                                                             jni::string::create(env, profile.name).release()));
+
+  for (qdb_size_t i = 0; i < profile.count; ++i) {
+    qdb_perf_measurement_t const & m = profile.measurements[i];
+
+    jni::guard::local_ref<jobject> measurement(jni::object::create(env,
+                                                                   measurementClass,
+                                                                   measurementConstructor,
+                                                                   (jint)(0),
+                                                                   (jlong)(m.elapsed)));
+
+  }
+
+
+  return std::move(output);
+}
+
+jni::guard::local_ref<jstring>
+native_to_label(jni::env & env, enum qdb_perf_label_t l) {
+  switch (l) {
+  case qdb_pl_undefined:
+    return jni::string::create_utf8(env, "undefined");
+  case qdb_pl_accepted:
+    return jni::string::create_utf8(env, "accepted");
+  case qdb_pl_received:
+    return jni::string::create_utf8(env, "received");
+  case qdb_pl_secured:
+    return jni::string::create_utf8(env, "secured");
+  case qdb_pl_deserialization_starts:
+    return jni::string::create_utf8(env, "deserialization_starts");
+  case qdb_pl_deserialization_ends:
+    return jni::string::create_utf8(env, "deserialization_ends");
+  case qdb_pl_entering_chord:
+    return jni::string::create_utf8(env, "entering_chord");
+  case qdb_pl_processing_starts:
+    return jni::string::create_utf8(env, "processing_starts");
+  case qdb_pl_dispatch:
+    return jni::string::create_utf8(env, "dispatch");
+  case qdb_pl_serialization_starts:
+    return jni::string::create_utf8(env, "serialization_starts");
+  case qdb_pl_serialization_ends:
+    return jni::string::create_utf8(env, "serialization_ends");
+  case qdb_pl_processing_ends:
+    return jni::string::create_utf8(env, "processing_ends");
+  case qdb_pl_replying:
+    return jni::string::create_utf8(env, "replying");
+  case qdb_pl_replied:
+    return jni::string::create_utf8(env, "replied");
+  case qdb_pl_entry_writing_starts:
+    return jni::string::create_utf8(env, "entry_writing_starts");
+  case qdb_pl_entry_writing_ends:
+    return jni::string::create_utf8(env, "entry_writing_ends");
+  case qdb_pl_content_reading_starts:
+    return jni::string::create_utf8(env, "content_reading_starts");
+  case qdb_pl_content_reading_ends:
+    return jni::string::create_utf8(env, "content_reading_ends");
+  case qdb_pl_content_writing_starts:
+    return jni::string::create_utf8(env, "content_writing_starts");
+  case qdb_pl_content_writing_ends:
+    return jni::string::create_utf8(env, "content_writing_ends");
+  case qdb_pl_directory_reading_starts:
+    return jni::string::create_utf8(env, "directory_reading_starts");
+  case qdb_pl_directory_reading_ends:
+    return jni::string::create_utf8(env, "directory_reading_ends");
+  case qdb_pl_directory_writing_starts:
+    return jni::string::create_utf8(env, "directory_writing_starts");
+  case qdb_pl_directory_writing_ends:
+    return jni::string::create_utf8(env, "directory_writing_ends");
+  case qdb_pl_entry_trimming_starts:
+    return jni::string::create_utf8(env, "entry_trimming_starts");
+  case qdb_pl_entry_trimming_ends:
+    return jni::string::create_utf8(env, "entry_trimming_ends");
+  case qdb_pl_ts_evaluating_starts:
+    return jni::string::create_utf8(env, "ts_evaluating_starts");
+  case qdb_pl_ts_evaluating_ends:
+    return jni::string::create_utf8(env, "ts_evaluating_ends");
+  case qdb_pl_ts_bucket_updating_starts:
+    return jni::string::create_utf8(env, "ts_bucket_updating_starts");
+  case qdb_pl_ts_bucket_updating_ends:
+    return jni::string::create_utf8(env, "ts_bucket_updating_ends");
+  case qdb_pl_affix_search_starts:
+    return jni::string::create_utf8(env, "affix_search_starts");
+  case qdb_pl_affix_search_ends:
+    return jni::string::create_utf8(env, "affix_search_ends");
+  case qdb_pl_unknown:
+    return jni::string::create_utf8(env, "unknown");
+  }
+
+  return jni::string::create_utf8(env, "uncategorized");
+
+}
+
+jni::guard::local_ref<jobjectArray>
+native_to_measurements(jni::env & env, qdb_perf_profile_t const & profile, jclass measurementClass, jmethodID measurementConstructor) {
+  jni::guard::local_ref<jobjectArray> output (jni::object::create_array(env,
+                                                                        profile.count,
+                                                                        measurementClass));
+
+  for (qdb_size_t i = 0; i < profile.count; ++i) {
+    qdb_perf_measurement_t const & m = profile.measurements[i];
+
+    // jni::debug::println(env, std::string("elapsed: ") + std::to_string(m.elapsed));
+    // jni::debug::println(env, std::string("label: ") + std::to_string(m.label));
+
+    env.instance().SetObjectArrayElement(output,
+                                         (jsize)i,
+                                         jni::object::create(env,
+                                                             measurementClass,
+                                                             measurementConstructor,
+                                                             native_to_label(env, m.label).release(),
+                                                             (jlong)(m.elapsed)).release());
+
+  }
+
+
+  return std::move(output);
+}
+
 JNIEXPORT jint JNICALL
 Java_net_quasardb_qdb_jni_qdb_get_1performance_1traces(JNIEnv * jniEnv, jclass /* thisClass */, jlong handle, jobject output) {
   jni::env env(jniEnv);
-
-  //jni::debug::println(env,"1 getting traces!\n");
 
   qdb_error_t err;
 
@@ -44,173 +166,44 @@ Java_net_quasardb_qdb_jni_qdb_get_1performance_1traces(JNIEnv * jniEnv, jclass /
     return err;
   }
 
+  //! Initialy class + functions once, cache them accross all operations
+  jclass trace_class =
+    jni::introspect::lookup_class(env, "net/quasardb/qdb/PerformanceTrace$Trace");
 
-  jni::guard::local_ref<jobjectArray> a (jni::object::create_array(env,
-                                                                   profiles_count,
-                                                                   "net/quasardb/qdb/PerformanceTrace$Trace"));
+  jmethodID trace_constructor =
+    jni::introspect::lookup_method(env, trace_class,
+                                   "<init>",
+                                   "(Ljava/lang/String;[Lnet/quasardb/qdb/PerformanceTrace$Measurement;)V");
 
-  setReferenceValue(env, output, a);
+  jclass measurement_class =
+    jni::introspect::lookup_class(env, "net/quasardb/qdb/PerformanceTrace$Measurement");
 
-  //jni::debug::println(env, std::string("2 got traces, count: ") + std::to_string(profiles_count));
+  jmethodID measurement_constructor =
+    jni::introspect::lookup_method(env, measurement_class,
+                                   "<init>",
+                                   "(Ljava/lang/String;J)V");
 
+  //! Create array for all available profiles
+  jni::guard::local_ref<jobjectArray> xs (jni::object::create_array(env,
+                                                                    profiles_count,
+                                                                    trace_class));
+  // For each profile, convert to Trace object and add to array
+  for (qdb_size_t i = 0; i < profiles_count; ++i) {
+    env.instance().SetObjectArrayElement(xs,
+                                         (jsize)i,
+                                         jni::object::create(env,
+                                                             trace_class,
+                                                             trace_constructor,
+                                                             jni::string::create_utf8(env, profiles[i].name.data).release(),
 
+                                                             native_to_measurements(env,
+                                                                                    profiles[i],
+                                                                                    measurement_class,
+                                                                                    measurement_constructor).release()));
+  }
+
+  //! And return output by swapping the reference
+  setReferenceValue(env, output, xs.release());
 
   return qdb_e_ok;
 }
-
-
-// JNIEXPORT jstring JNICALL
-// Java_net_quasardb_qdb_jni_qdb_build(JNIEnv * jniEnv, jclass /*thisClass*/) {
-//   qdb::jni::env env(jniEnv);
-
-//   return env.instance().NewStringUTF(qdb_build());
-// }
-
-// JNIEXPORT jstring JNICALL
-// Java_net_quasardb_qdb_jni_qdb_version(JNIEnv * jniEnv, jclass /*thisClass*/) {
-//   qdb::jni::env env(jniEnv);
-
-//   return env.instance().NewStringUTF(qdb_version());
-// }
-
-// JNIEXPORT jstring JNICALL
-// Java_net_quasardb_qdb_jni_qdb_error_1message(JNIEnv * jniEnv, jclass /*thisClass*/, jint err) {
-//   qdb::jni::env env(jniEnv);
-
-//   return env.instance().NewStringUTF(qdb_error((qdb_error_t)err));
-// }
-
-// JNIEXPORT jlong JNICALL
-// Java_net_quasardb_qdb_jni_qdb_open_1tcp(JNIEnv * /*env*/, jclass /*thisClass*/) {
-//   return (jlong)qdb_open_tcp();
-// }
-
-// JNIEXPORT jint JNICALL
-// Java_net_quasardb_qdb_jni_qdb_connect(JNIEnv * jniEnv, jclass /*thisClass*/, jlong handle, jstring uri) {
-//   qdb::jni::env env(jniEnv);
-
-//   qdb::jni::log::swap_callback();
-
-//   return qdb_connect((qdb_handle_t)handle,
-//                      qdb::jni::string::get_chars_utf8(env, uri));
-// }
-
-// JNIEXPORT jint JNICALL
-// Java_net_quasardb_qdb_jni_qdb_secure_1connect(JNIEnv * jniEnv, jclass /*thisClass*/, jlong handle, jstring uri, jobject securityOptions) {
-//   qdb::jni::env env(jniEnv);
-
-//   qdb::jni::log::swap_callback();
-
-//   qdb_error_t err;
-//   jclass objectClass;
-//   jfieldID userNameField, userPrivateKeyField, clusterPublicKeyField;
-
-//   objectClass = env.instance().GetObjectClass(securityOptions);
-//   userNameField = env.instance().GetFieldID(objectClass, "user_name", "Ljava/lang/String;");
-//   userPrivateKeyField = env.instance().GetFieldID(objectClass, "user_private_key", "Ljava/lang/String;");
-//   clusterPublicKeyField = env.instance().GetFieldID(objectClass, "cluster_public_key", "Ljava/lang/String;");
-
-//   jstring userName = (jstring)env.instance().GetObjectField(securityOptions, userNameField);
-//   jstring userPrivateKey = (jstring)env.instance().GetObjectField(securityOptions, userPrivateKeyField);
-//   jstring clusterPublicKey = (jstring)env.instance().GetObjectField(securityOptions, clusterPublicKeyField);
-
-//   err = qdb_option_set_cluster_public_key((qdb_handle_t)handle,
-//                                           qdb::jni::string::get_chars_utf8(env, clusterPublicKey));
-//   if (QDB_FAILURE(err)) {
-//     return err;
-//   }
-
-//   err = qdb_option_set_user_credentials((qdb_handle_t)handle,
-//                                         qdb::jni::string::get_chars_utf8(env, userName),
-//                                         qdb::jni::string::get_chars_utf8(env, userPrivateKey));
-//   if (QDB_FAILURE(err)) {
-//     return err;
-//   }
-
-//   return qdb_connect((qdb_handle_t)handle,
-//                      qdb::jni::string::get_chars_utf8(env, uri));
-// }
-
-// JNIEXPORT jint JNICALL
-// Java_net_quasardb_qdb_jni_qdb_close(JNIEnv * /*env*/, jclass /*thisClass*/, jlong handle) {
-//   return qdb_close((qdb_handle_t)handle);
-// }
-
-// JNIEXPORT void JNICALL
-// Java_net_quasardb_qdb_jni_qdb_release(JNIEnv * jniEnv, jclass /*thisClass*/, jlong handle,
-//                                       jobject buffer) {
-//   qdb::jni::env env(jniEnv);
-
-//   void *ptr = env.instance().GetDirectBufferAddress(buffer);
-//   qdb_release((qdb_handle_t)handle, ptr);
-// }
-
-// JNIEXPORT jint JNICALL
-// Java_net_quasardb_qdb_jni_qdb_option_1set_1timeout(JNIEnv * /*env*/, jclass /*thisClass*/, jlong handle,
-//                                                    jint timeout) {
-//   return qdb_option_set_timeout((qdb_handle_t)handle, timeout);
-// }
-
-// JNIEXPORT jint JNICALL
-// Java_net_quasardb_qdb_jni_qdb_purge_1all(JNIEnv * /*env*/, jclass /*thisClass*/, jlong handle,
-//                                          jint timeout) {
-//   return qdb_purge_all((qdb_handle_t)handle, timeout);
-// }
-
-// JNIEXPORT jint JNICALL
-// Java_net_quasardb_qdb_jni_qdb_trim_1all(JNIEnv * /*env*/, jclass /*thisClass*/, jlong handle, jint timeout) {
-//   return qdb_trim_all((qdb_handle_t)handle, timeout);
-// }
-
-// JNIEXPORT jint JNICALL
-// Java_net_quasardb_qdb_jni_qdb_remove(JNIEnv * jniEnv, jclass /*thisClass*/, jlong handle, jstring alias) {
-//   qdb::jni::env env(jniEnv);
-
-//   return qdb_remove((qdb_handle_t)handle, qdb::jni::string::get_chars_utf8(env, alias));
-// }
-
-// JNIEXPORT jint JNICALL
-// Java_net_quasardb_qdb_jni_qdb_get_1type(JNIEnv * jniEnv, jclass /*thisClass*/, jlong handle, jstring alias,
-//                                         jobject type) {
-//   qdb::jni::env env(jniEnv);
-//   qdb_entry_metadata_t metadata;
-//   qdb_error_t err = qdb_get_metadata((qdb_handle_t)handle,
-
-//                                      (alias == NULL
-//                                       ? (char const *)(NULL)
-//                                       : qdb::jni::string::get_chars_utf8(env, alias)), &metadata);
-//   setInteger(env, type, metadata.type);
-//   return err;
-// }
-
-// JNIEXPORT jint JNICALL
-// Java_net_quasardb_qdb_jni_qdb_get_1metadata(JNIEnv * jniEnv, jclass /*thisClass*/, jlong handle, jstring alias,
-//                                             jobject meta) {
-//   qdb::jni::env env(jniEnv);
-
-//   void *metaPtr = env.instance().GetDirectBufferAddress(meta);
-//   qdb_size_t metaSize = (qdb_size_t)env.instance().GetDirectBufferCapacity(meta);
-//   if (metaSize != sizeof(qdb_entry_metadata_t)) return qdb_e_invalid_argument;
-
-//   return qdb_get_metadata((qdb_handle_t)handle, qdb::jni::string::get_chars_utf8(env, alias), (qdb_entry_metadata_t *)metaPtr);
-// }
-
-// JNIEXPORT jint JNICALL
-// Java_net_quasardb_qdb_jni_qdb_expires_1at(JNIEnv * jniEnv, jclass /*thisClass*/, jlong handle,
-//                                           jstring alias, jlong expiry) {
-//   qdb::jni::env env(jniEnv);
-
-//   return qdb_expires_at((qdb_handle_t)handle, qdb::jni::string::get_chars_utf8(env, alias), expiry);
-// }
-
-// JNIEXPORT jint JNICALL
-// Java_net_quasardb_qdb_jni_qdb_get_1expiry_1time(JNIEnv * jniEnv, jclass /*thisClass*/, jlong handle,
-//                                                 jstring alias, jobject expiry) {
-//   qdb::jni::env env(jniEnv);
-
-//   qdb_entry_metadata_t metadata;
-//   qdb_error_t err = qdb_get_metadata((qdb_handle_t)handle, qdb::jni::string::get_chars_utf8(env, alias), &metadata);
-//   setLong(env, expiry, static_cast<qdb_time_t>(metadata.expiry_time.tv_sec) * 1000 +
-//     static_cast<qdb_time_t>(metadata.expiry_time.tv_nsec / 1000000ull));
-//   return err;
-// }
