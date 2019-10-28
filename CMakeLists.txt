@@ -29,6 +29,7 @@ set(QDB_JNI_SOURCES
   src/main/c++/net/quasardb/qdb/jni/export/qdb_batch.cpp
   src/main/c++/net/quasardb/qdb/jni/export/qdb_blob.cpp
   src/main/c++/net/quasardb/qdb/jni/export/qdb_client.cpp
+  src/main/c++/net/quasardb/qdb/jni/export/qdb_perf.cpp
   src/main/c++/net/quasardb/qdb/jni/export/qdb_int.cpp
   src/main/c++/net/quasardb/qdb/jni/export/qdb_stream.cpp
   src/main/c++/net/quasardb/qdb/jni/export/qdb_tag.cpp
