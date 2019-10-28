@@ -1,5 +1,7 @@
 package net.quasardb.qdb;
 
+import java.util.Collection;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.Test;
@@ -30,5 +32,16 @@ public class PerformanceTraceTest {
 
         PerformanceTrace.enable(s);
         PerformanceTrace.disable(s);
+    }
+
+
+    @Test
+    public void canGetEmptyPerformanceTraces() {
+        Session s = TestUtils.createSession();
+
+        PerformanceTrace.enable(s);
+
+        Collection<PerformanceTrace.Trace> res = PerformanceTrace.getTraces(s);
+        assertEquals(res.size(), 0);
     }
 }

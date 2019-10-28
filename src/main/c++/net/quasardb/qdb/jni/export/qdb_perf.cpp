@@ -2,10 +2,14 @@
 
 #include "net_quasardb_qdb_jni_qdb.h"
 
-#include "../log.h"
-#include "../env.h"
-#include "../string.h"
+#include "../guard/local_ref.h"
 #include "../util/helpers.h"
+#include "../introspect.h"
+#include "../debug.h"
+#include "../object.h"
+#include "../env.h"
+
+namespace jni = qdb::jni;
 
 JNIEXPORT jint JNICALL
 Java_net_quasardb_qdb_jni_qdb_enable_1performance_1trace(JNIEnv * jniEnv, jclass /* thisClass */, jlong handle) {
@@ -22,6 +26,36 @@ Java_net_quasardb_qdb_jni_qdb_disable_1performance_1trace(JNIEnv * jniEnv, jclas
   }
 
   return qdb_perf_disable_client_tracking((qdb_handle_t)handle);
+}
+
+JNIEXPORT jint JNICALL
+Java_net_quasardb_qdb_jni_qdb_get_1performance_1traces(JNIEnv * jniEnv, jclass /* thisClass */, jlong handle, jobject output) {
+  jni::env env(jniEnv);
+
+  //jni::debug::println(env,"1 getting traces!\n");
+
+  qdb_error_t err;
+
+  qdb_perf_profile_t * profiles;
+  qdb_size_t profiles_count;
+
+  err = qdb_perf_get_profiles((qdb_handle_t)handle, &profiles, &profiles_count);
+  if (QDB_FAILURE(err)) {
+    return err;
+  }
+
+
+  jni::guard::local_ref<jobjectArray> a (jni::object::create_array(env,
+                                                                   profiles_count,
+                                                                   "net/quasardb/qdb/PerformanceTrace$Trace"));
+
+  setReferenceValue(env, output, a);
+
+  //jni::debug::println(env, std::string("2 got traces, count: ") + std::to_string(profiles_count));
+
+
+
+  return qdb_e_ok;
 }
 
 

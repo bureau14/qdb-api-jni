@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 
-rm -rf build && \
-    mkdir build && \
+mkdir build || true && \
     cd build && \
     cmake -G Ninja .. && \
     cmake --build . && \
