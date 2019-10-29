@@ -1,6 +1,7 @@
 #pragma once
 
 #include <jni.h>
+#include <qdb/client.h> // for qdb_string_t
 
 #include "guard/local_ref.h"
 #include "guard/string_utf8.h"
@@ -40,6 +41,11 @@ namespace qdb {
 
             static jni::guard::local_ref<jstring>
             create(jni::env & env, char const * str, jsize len);
+
+            static jni::guard::local_ref<jstring>
+            create(jni::env & env, qdb_string_t str) {
+              return create(env, str.data, (jsize)str.length);
+            }
 
             static jni::guard::local_ref<jstring>
             create_utf8(jni::env & env, char const * str);
