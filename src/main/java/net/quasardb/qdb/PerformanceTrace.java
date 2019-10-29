@@ -4,6 +4,10 @@ import java.util.Collection;
 import java.util.Arrays;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.event.Level;
+
 import net.quasardb.qdb.jni.qdb;
 import net.quasardb.qdb.jni.Reference;
 
@@ -12,8 +16,11 @@ import net.quasardb.qdb.ts.Timespec;
 import net.quasardb.qdb.exception.ExceptionFactory;
 
 public class PerformanceTrace {
+    private static final Logger logger = LoggerFactory.getLogger(PerformanceTrace.class);
 
     public static class Measurement {
+        private static final Logger logger = LoggerFactory.getLogger(Measurement.class);
+
         public String label;
         public long elapsed;
 
@@ -25,9 +32,15 @@ public class PerformanceTrace {
         public String toString() {
             return "Measurement (label='" + this.label + "' elapsed=" + this.elapsed + ")";
         }
+
+        public void log() {
+            logger.debug("<Measurement label='" + this.label + "' elapsed=" + this.elapsed + " />");
+        }
     }
 
     public static class Trace {
+        private static final Logger logger = LoggerFactory.getLogger(Trace.class);
+
         public String name;
         public Measurement[] measurements;
 
@@ -41,6 +54,14 @@ public class PerformanceTrace {
 
 
             return ret;
+        }
+
+        public void log() {
+            logger.debug("<Trace name='" + this.name + "'>");
+            for (Measurement m : measurements) {
+                m.log();
+            }
+            logger.debug("</Trace>");
         }
 
     }
@@ -98,5 +119,28 @@ public class PerformanceTrace {
 
         int err = qdb.clear_performance_traces(s.handle());
         ExceptionFactory.throwIfError(err);
+    }
+
+    /**
+     * Log all available traces directly through slf4j.
+     *
+     * Default implementation automatically clears the trace cache after logging.
+     */
+    public static void log(Session s) {
+        log(s, true);
+    }
+
+    public static void log(Session s, boolean clear) {
+        logger.warn("<Traces>");
+
+        for (Trace t : get(s)) {
+            t.log();
+        }
+
+        logger.warn("</Traces>");
+
+        if (clear) {
+            clear(s);
+        }
     }
 }

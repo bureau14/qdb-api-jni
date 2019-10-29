@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.Arrays;
 
+import org.slf4j.event.Level;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.Test;
@@ -141,5 +143,20 @@ public class PerformanceTraceTest {
 
         Collection<PerformanceTrace.Trace> res5 = PerformanceTrace.pop(s);
         assertEquals(1, res5.size());
+    }
+
+    @Test
+    public void canLogTraces() throws IOException {
+        Session s = TestUtils.createSession();
+
+        PerformanceTrace.enable(s);
+
+        Column[] columns = TestUtils.generateTableColumns(16);
+
+        Collection<PerformanceTrace.Trace> res1 = PerformanceTrace.pop(s);
+
+        Table t = TestUtils.createTable(s, columns);
+
+        PerformanceTrace.log(s);
     }
 }
