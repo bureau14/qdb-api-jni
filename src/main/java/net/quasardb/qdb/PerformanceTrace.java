@@ -21,6 +21,10 @@ public class PerformanceTrace {
             this.label = label;
             this.elapsed = elapsed;
         }
+
+        public String toString() {
+            return "Measurement (label='" + this.label + "' elapsed=" + this.elapsed + ")";
+        }
     }
 
     public static class Trace {
@@ -31,6 +35,14 @@ public class PerformanceTrace {
             this.name = name;
             this.measurements = measurements;
         }
+
+        public String toString() {
+            String ret = "Trace (name='" + this.name + "', measurements='" + Arrays.toString(this.measurements) + ")";
+
+
+            return ret;
+        }
+
     }
 
     public static void enable(Session s) {
@@ -47,7 +59,12 @@ public class PerformanceTrace {
         ExceptionFactory.throwIfError(err);
     }
 
-    public static Collection<Trace> getTraces(Session s) {
+    /**
+     * Access available performance traces.
+     *
+     * This returns all performance traces that have been recorded recently.
+     */
+    public static Collection<Trace> get(Session s) {
         s.throwIfClosed();
 
         Reference<Trace[]> result = new Reference<Trace[]>();
@@ -58,7 +75,25 @@ public class PerformanceTrace {
         return Arrays.asList(result.get());
     }
 
-    public static void clearTraces(Session s) {
+    /**
+     * Access available performance traces, and clear the cache.
+     *
+     * This is effectively the same as calling get() and pop() after each other.
+     */
+    public static Collection<Trace> pop(Session s) {
+        Collection<Trace> result = get(s);
+
+        clear(s);
+
+        return result;
+    }
+
+    /**
+     * Clear performance trace cache.
+     *
+     * Clears all performance traces in cache associated with the session.
+     */
+    public static void clear(Session s) {
         s.throwIfClosed();
 
         int err = qdb.clear_performance_traces(s.handle());

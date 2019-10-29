@@ -207,3 +207,8 @@ Java_net_quasardb_qdb_jni_qdb_get_1performance_1traces(JNIEnv * jniEnv, jclass /
 
   return qdb_e_ok;
 }
+
+JNIEXPORT jint JNICALL
+Java_net_quasardb_qdb_jni_qdb_clear_1performance_1traces(JNIEnv * jniEnv, jclass /* thisClass */, jlong handle) {
+  return qdb_perf_clear_all_profiles((qdb_handle_t)handle);
+}

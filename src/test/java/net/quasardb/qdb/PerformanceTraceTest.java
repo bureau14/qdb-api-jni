@@ -2,6 +2,7 @@ package net.quasardb.qdb;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.Arrays;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -43,7 +44,7 @@ public class PerformanceTraceTest {
 
         PerformanceTrace.enable(s);
 
-        Collection<PerformanceTrace.Trace> res = PerformanceTrace.getTraces(s);
+        Collection<PerformanceTrace.Trace> res = PerformanceTrace.get(s);
         assertEquals(res.size(), 0);
     }
 
@@ -57,7 +58,7 @@ public class PerformanceTraceTest {
         Column[] columns = TestUtils.generateTableColumns(16);
         Table t = TestUtils.createTable(s, columns);
 
-        Collection<PerformanceTrace.Trace> res = PerformanceTrace.getTraces(s);
+        Collection<PerformanceTrace.Trace> res = PerformanceTrace.get(s);
         assertEquals(2, res.size());
 
         for (PerformanceTrace.Trace trace : res) {
@@ -71,5 +72,74 @@ public class PerformanceTraceTest {
                 first = false;
             }
         }
+    }
+
+    @Test
+    public void canClearTraces() throws IOException {
+        Session s = TestUtils.createSession();
+
+        PerformanceTrace.enable(s);
+
+        Column[] columns = TestUtils.generateTableColumns(16);
+        Table t = TestUtils.createTable(s, columns);
+
+        Collection<PerformanceTrace.Trace> res1 = PerformanceTrace.get(s);
+        PerformanceTrace.clear(s);
+        Collection<PerformanceTrace.Trace> res2 = PerformanceTrace.get(s);
+
+        assertEquals(2, res1.size());
+        assertEquals(0, res2.size());
+    }
+
+    @Test
+    public void canPopTraces() throws IOException {
+        Session s = TestUtils.createSession();
+
+        PerformanceTrace.enable(s);
+
+        Column[] columns = TestUtils.generateTableColumns(16);
+        Table t = TestUtils.createTable(s, columns);
+
+        Collection<PerformanceTrace.Trace> res1 = PerformanceTrace.pop(s);
+        Collection<PerformanceTrace.Trace> res2 = PerformanceTrace.get(s);
+
+        assertEquals(2, res1.size());
+        assertEquals(0, res2.size());
+    }
+
+    @Test
+    public void canCollectBatchPushTraces() throws IOException {
+        Session s = TestUtils.createSession();
+
+        PerformanceTrace.enable(s);
+
+        Column[] columns = TestUtils.generateTableColumns(16);
+
+        Collection<PerformanceTrace.Trace> res1 = PerformanceTrace.pop(s);
+
+        Table t = TestUtils.createTable(s, columns);
+
+        Collection<PerformanceTrace.Trace> res2 = PerformanceTrace.pop(s);
+
+        assertEquals(0, res1.size());
+        assertEquals(2, res2.size());
+
+        Writer w = Table.writer(s, t);
+
+        Collection<PerformanceTrace.Trace> res3 = PerformanceTrace.pop(s);
+        assertEquals(0, res3.size());
+
+        WritableRow[] rows = TestUtils.generateTableRows(columns, 32);
+        for (WritableRow row : rows) {
+            w.append(row);
+        }
+
+        Collection<PerformanceTrace.Trace> res4 = PerformanceTrace.pop(s);
+        assertEquals(0, res4.size());
+
+        w.flush();
+
+        Collection<PerformanceTrace.Trace> res5 = PerformanceTrace.pop(s);
+        assertEquals(1, res5.size());
     }
 }
