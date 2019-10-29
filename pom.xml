@@ -215,27 +215,27 @@
             <configuration>
               <artifacts>
                 <artifact>
-                  <file>${project.basedir}/target/jni-3.4.4-SNAPSHOT-SNAPSHOT-linux-x86_64.jar</file>
+                  <file>${project.basedir}/target/jni-3.4.4-SNAPSHOT-linux-x86_64.jar</file>
                   <type>jar</type>
                   <classifier>linux-x86_64</classifier>
                 </artifact>
                 <artifact>
-                  <file>${project.basedir}/target/jni-3.4.4-SNAPSHOT-SNAPSHOT-osx-x86_64.jar</file>
+                  <file>${project.basedir}/target/jni-3.4.4-SNAPSHOT-osx-x86_64.jar</file>
                   <type>jar</type>
                   <classifier>osx-x86_64</classifier>
                 </artifact>
                 <artifact>
-                  <file>${project.basedir}/target/jni-3.4.4-SNAPSHOT-SNAPSHOT-freebsd-x86_64.jar</file>
+                  <file>${project.basedir}/target/jni-3.4.4-SNAPSHOT-freebsd-x86_64.jar</file>
                   <type>jar</type>
                   <classifier>freebsd-x86_64</classifier>
                 </artifact>
                 <artifact>
-                  <file>${project.basedir}/target/jni-3.4.4-SNAPSHOT-SNAPSHOT-windows-x86_64.jar</file>
+                  <file>${project.basedir}/target/jni-3.4.4-SNAPSHOT-windows-x86_64.jar</file>
                   <type>jar</type>
                   <classifier>windows-x86_64</classifier>
                 </artifact>
                 <artifact>
-                  <file>${project.basedir}/target/jni-3.4.4-SNAPSHOT-SNAPSHOT-windows-x86_32.jar</file>
+                  <file>${project.basedir}/target/jni-3.4.4-SNAPSHOT-windows-x86_32.jar</file>
                   <type>jar</type>
                   <classifier>windows-x86_32</classifier>
                 </artifact>
