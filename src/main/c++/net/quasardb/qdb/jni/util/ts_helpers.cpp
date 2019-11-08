@@ -288,8 +288,10 @@ nativeToDoublePoints(qdb::jni::env & env, qdb_ts_double_point * native, size_t c
                                 "net/quasardb/qdb/jni/qdb_ts_double_point"));
 
   for (size_t i = 0; i < count; i++) {
-    env.instance().SetObjectArrayElement(output, (jsize)i,
-                                         nativeToDoublePoint(env, native[i]).release());
+    if (!QDB_IS_NULL_DOUBLE(native[i])) {
+      env.instance().SetObjectArrayElement(output, (jsize)i,
+                                           nativeToDoublePoint(env, native[i]).release());
+    }
   }
 
   return std::move(output);
@@ -330,15 +332,18 @@ nativeToByteBuffer(qdb::jni::env & env, void const * content, qdb_size_t content
 
 jni::guard::local_ref<jobject>
 nativeToBlobPoint(qdb::jni::env & env, qdb_ts_blob_point native) {
+    jni::debug::println(env, "converting blob point!");
+
+
     return std::move(
-        jni::object::create(env,
-                            "net/quasardb/qdb/jni/qdb_ts_blob_point",
-                            "(Lnet/quasardb/qdb/ts/Timespec;Ljava/nio/ByteBuffer;)V",
-                            nativeToTimespec(env,
-                                             native.timestamp).release(),
-                            nativeToByteBuffer(env,
-                                               native.content,
-                                               native.content_length)));
+                     jni::object::create(env,
+                                         "net/quasardb/qdb/jni/qdb_ts_blob_point",
+                                         "(Lnet/quasardb/qdb/ts/Timespec;Ljava/nio/ByteBuffer;)V",
+                                         nativeToTimespec(env,
+                                                          native.timestamp).release(),
+                                         nativeToByteBuffer(env,
+                                                            native.content,
+                                                            native.content_length)));
 }
 
 jni::guard::local_ref<jobjectArray>
@@ -349,9 +354,11 @@ nativeToBlobPoints(qdb::jni::env & env, qdb_ts_blob_point * native, size_t count
                                   "net/quasardb/qdb/jni/qdb_ts_blob_point"));
 
   for (size_t i = 0; i < count; i++) {
-    env.instance().SetObjectArrayElement(array,
-                                         (jsize)i,
-                                         nativeToBlobPoint(env, native[i]).release());
+    if (!QDB_IS_NULL_BLOB(native[i])) {
+      env.instance().SetObjectArrayElement(array,
+                                           (jsize)i,
+                                           nativeToBlobPoint(env, native[i]).release());
+    }
   }
 
   return array;
