@@ -45,6 +45,7 @@ cd ${PWD}/../..
 
 sed -i -e '/<groupId>net.quasardb<\/groupId>/,/<dependencies>/ s/<version>[0-9.]\+[0-9]\(-SNAPSHOT\)\?<\/version>/<version>'"${XYZ_VERSION}${TAGS_VERSION}"'<\/version>/' pom.xml
 sed -i -e '/<artifact>/,/<\/artifact>/ s/<file>\([-.${}a-zA-Z_/]*\)[0-9.]\+[0-9]\(-SNAPSHOT\)\?\([-.${}a-zA-Z_0-9]*\)<\/file>/<file>\1'"${XYZ_VERSION}${TAGS_VERSION}"'\3<\/file>/' pom.xml
+sed -i -e 's/<additionalClasspathElement>\([-.${}a-zA-Z_/]*\)[0-9.]\+[0-9]\(-SNAPSHOT\)\?\([-.${}a-zA-Z_0-9]*\)\(<\/additionalClasspathElement>\)/<additionalClassPathElement>\1'"3.5.0-rc1"'\3<\/additionalClassPathElement>/' pom.xml
 
 # set(NATIVE_JAR_FILE "${CMAKE_BINARY_DIR}/jni-2.8.0-SNAPSHOT-${SYSTEM}-${ARCH}.jar")
 sed -i -e 's/\(set(NATIVE_JAR_FILE\) *\([-".${}a-zA-Z_/]*\)[0-9.]\+[0-9]\(-SNAPSHOT\)\?\([-.${}a-zA-Z_0-9]*")\)/\1 \2'"${XYZ_VERSION}${TAGS_VERSION}"'\4/' native_jar.cmake
