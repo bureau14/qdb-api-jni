@@ -48,7 +48,8 @@ cd ${PWD}/../..
 # </artifact>
 
 # examples/pom
-sed -e '/<artifactId>jni<\/artifactId>/,/<dependency>/ s/<version>\([a-zA-Z_/]*\)[0-9.]\+[0-9]\(-SNAPSHOT\)\?<\/version>/<version>'"${XYZ_VERSION}${TAGS_VERSION}"'<\/version>/' examples/pom.xml
+sed -i -e '/<artifactId>jni<\/artifactId>/,/<dependency>/ s/<version>\([a-zA-Z_/]*\)[0-9.]\+[0-9]\(-SNAPSHOT\)\?<\/version>/<version>'"${XYZ_VERSION}${TAGS_VERSION}"'<\/version>/' examples/pom.xml
+sed -i  -e '/<artifactId>examples<\/artifactId>/,/<dependencies>/ s/<version>\([a-zA-Z_/]*\)[0-9.]\+[0-9]\(-SNAPSHOT\)\?<\/version>/<version>'"${XYZ_VERSION}${TAGS_VERSION}"'<\/version>/' examples/pom.xml
 
 # pom-jni
 sed -i -e '/<groupId>net.quasardb<\/groupId>/,/<dependencies>/ s/<version>[0-9.]\+[0-9]\(-SNAPSHOT\)\?<\/version>/<version>'"${XYZ_VERSION}${TAGS_VERSION}"'<\/version>/' pom-jni.xml
