@@ -48,20 +48,20 @@ cd ${PWD}/../..
 # </artifact>
 
 # examples/pom
-sed -i -e 's/<version>\([-.${}a-zA-Z_/]*\)[0-9.]\+[0-9]\(-SNAPSHOT\)\?\([-.${}a-zA-Z_0-9]*\)\(<\/version>\)/<version>\1'"3.5.0-rc1"'\3<\/version>/' examples/pom.xml
+sed -e '/<artifactId>jni<\/artifactId>/,/<dependency>/ s/<version>\([a-zA-Z_/]*\)[0-9.]\+[0-9]\(-SNAPSHOT\)\?<\/version>/<version>'"${XYZ_VERSION}${TAGS_VERSION}"'<\/version>/' examples/pom.xml
 
 # pom-jni
 sed -i -e '/<groupId>net.quasardb<\/groupId>/,/<dependencies>/ s/<version>[0-9.]\+[0-9]\(-SNAPSHOT\)\?<\/version>/<version>'"${XYZ_VERSION}${TAGS_VERSION}"'<\/version>/' pom-jni.xml
-sed -i -e 's/<file>\([-.${}a-zA-Z_/]*\)[0-9.]\+[0-9]\(-SNAPSHOT\)\?\([-.${}a-zA-Z_0-9]*\)\(<\/file>\)/<file>\1'"3.5.0-rc1"'\3<\/file>/' pom-jni.xml
+sed -i -e 's/<file>\([-.${}a-zA-Z_/]*\)[0-9.]\+[0-9]\(-SNAPSHOT\)\?\([-.${}a-zA-Z_0-9]*\)\(<\/file>\)/<file>\1'"${XYZ_VERSION}${TAGS_VERSION}"'\3<\/file>/' pom-jni.xml
 
 # pom-jni-arch
 sed -i -e '/<groupId>net.quasardb<\/groupId>/,/<dependencies>/ s/<version>[0-9.]\+[0-9]\(-SNAPSHOT\)\?<\/version>/<version>'"${XYZ_VERSION}${TAGS_VERSION}"'<\/version>/' pom-jni-arch.xml
-sed -i -e 's/<file>\([-.${}a-zA-Z_/]*\)[0-9.]\+[0-9]\(-SNAPSHOT\)\?\([-.${}a-zA-Z_0-9]*\)\(<\/file>\)/<file>\1'"3.5.0-rc1"'\3<\/file>/' pom-jni-arch.xml
+sed -i -e 's/<file>\([-.${}a-zA-Z_/]*\)[0-9.]\+[0-9]\(-SNAPSHOT\)\?\([-.${}a-zA-Z_0-9]*\)\(<\/file>\)/<file>\1'"${XYZ_VERSION}${TAGS_VERSION}"'\3<\/file>/' pom-jni-arch.xml
 
 # pom
 sed -i -e '/<groupId>net.quasardb<\/groupId>/,/<dependencies>/ s/<version>[0-9.]\+[0-9]\(-SNAPSHOT\)\?<\/version>/<version>'"${XYZ_VERSION}${TAGS_VERSION}"'<\/version>/' pom.xml
 sed -i -e '/<artifact>/,/<\/artifact>/ s/<file>\([-.${}a-zA-Z_/]*\)[0-9.]\+[0-9]\(-SNAPSHOT\)\?\([-.${}a-zA-Z_0-9]*\)<\/file>/<file>\1'"${XYZ_VERSION}${TAGS_VERSION}"'\3<\/file>/' pom.xml
-sed -i -e 's/<additionalClasspathElement>\([-.${}a-zA-Z_/]*\)[0-9.]\+[0-9]\(-SNAPSHOT\)\?\([-.${}a-zA-Z_0-9]*\)\(<\/additionalClasspathElement>\)/<additionalClassPathElement>\1'"3.5.0-rc1"'\3<\/additionalClassPathElement>/' pom.xml
+sed -i -e 's/<additionalClasspathElement>\([-.${}a-zA-Z_/]*\)[0-9.]\+[0-9]\(-SNAPSHOT\)\?\([-.${}a-zA-Z_0-9]*\)\(<\/additionalClasspathElement>\)/<additionalClassPathElement>\1'"${XYZ_VERSION}${TAGS_VERSION}"'\3<\/additionalClassPathElement>/' pom.xml
 
 # set(NATIVE_JAR_FILE "${CMAKE_BINARY_DIR}/jni-2.8.0-SNAPSHOT-${SYSTEM}-${ARCH}.jar")
 sed -i -e 's/\(set(NATIVE_JAR_FILE\) *\([-".${}a-zA-Z_/]*\)[0-9.]\+[0-9]\(-SNAPSHOT\)\?\([-.${}a-zA-Z_0-9]*")\)/\1 \2'"${XYZ_VERSION}${TAGS_VERSION}"'\4/' native_jar.cmake
