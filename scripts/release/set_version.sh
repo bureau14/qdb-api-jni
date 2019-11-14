@@ -17,7 +17,11 @@ PATCH_VERSION=${WITHOUT_MINOR_VERSION%%.*}
 
 XYZ_VERSION="${MAJOR_VERSION}.${MINOR_VERSION}.${PATCH_VERSION}"
 
-if [[ "${INPUT_VERSION}" == *-* ]] ; then
+if [[ "${INPUT_VERSION}" =~ rc.([[:digit:]]+) ]]
+then
+    TAGS_VERSION="-rc${BASH_REMATCH[1]}"
+elif [[ "${INPUT_VERSION}" == *-* ]]
+then
     TAGS_VERSION="-SNAPSHOT"
 else
     TAGS_VERSION=
