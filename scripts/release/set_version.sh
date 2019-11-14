@@ -47,6 +47,8 @@ cd ${PWD}/../..
 #   <file>${project.basedir}/target/jni-2.8.0-SNAPSHOT-linux-x86_64.jar</file>
 # </artifact>
 
+# examples/pom
+sed -i -e 's/<version>\([-.${}a-zA-Z_/]*\)[0-9.]\+[0-9]\(-SNAPSHOT\)\?\([-.${}a-zA-Z_0-9]*\)\(<\/version>\)/<version>\1'"3.5.0-rc1"'\3<\/version>/' examples/pom.xml
 
 # pom-jni
 sed -i -e '/<groupId>net.quasardb<\/groupId>/,/<dependencies>/ s/<version>[0-9.]\+[0-9]\(-SNAPSHOT\)\?<\/version>/<version>'"${XYZ_VERSION}${TAGS_VERSION}"'<\/version>/' pom-jni.xml
