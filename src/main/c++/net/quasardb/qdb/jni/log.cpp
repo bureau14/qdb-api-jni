@@ -73,7 +73,7 @@ qdb::jni::log::flush(qdb::jni::env & env) {
     // does not have a mechanism to upgrade?
     shared_guard.unlock();
     std::unique_lock unique_guard(buffer_lock);
-    // log::_do_flush(env);
+    log::_do_flush(env);
   }
 }
 

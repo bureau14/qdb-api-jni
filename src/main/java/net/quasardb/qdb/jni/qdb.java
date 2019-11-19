@@ -2,6 +2,7 @@ package net.quasardb.qdb.jni;
 
 import java.nio.ByteBuffer;
 import net.quasardb.qdb.*;
+import net.quasardb.qdb.Logger;
 import net.quasardb.qdb.PerformanceTrace;
 import net.quasardb.qdb.ts.Column;
 import net.quasardb.qdb.ts.Result;
