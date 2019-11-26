@@ -35,7 +35,11 @@ public class TestUtils {
     }
 
     public static Table createTable(Session s, Column[] columns) throws IOException {
-        return Table.create(s, createUniqueAlias(), columns);
+        return createTable(s, createUniqueAlias(), columns);
+    }
+
+    public static Table createTable(Session s, String tableName, Column[] columns) throws IOException {
+        return Table.create(s, tableName, columns);
     }
 
     public static String createUniqueAlias() {
@@ -134,4 +138,34 @@ public class TestUtils {
             .toArray(WritableRow[]::new);
     }
 
+    public static Table seedTable(Session s, Column[] cols, WritableRow[] rows) throws Exception {
+        return seedTable(s, createUniqueAlias(), cols, rows);
+    }
+
+    public static Table seedTable(Session s, String tableName, Column[] cols, WritableRow[] rows) throws Exception {
+        Table t = createTable(s, tableName, cols);
+        Writer writer = Table.writer(s, t);
+
+        for (WritableRow row : rows) {
+            writer.append(row);
+        }
+
+        writer.flush();
+
+        return t;
+    }
+
+    /**
+     * Generates a TimeRange from an array of rows. Assumes that all rows are sorted,
+     * with the oldest row being first.
+     */
+    public static TimeRange rangeFromRows(WritableRow[] rows) {
+        assert(rows.length >= 1);
+
+        Timespec first = rows[0].getTimestamp();
+        Timespec last = rows[(rows.length - 1)].getTimestamp();
+
+        return new TimeRange(first,
+                             last.plusNanos(1));
+    }
 }
