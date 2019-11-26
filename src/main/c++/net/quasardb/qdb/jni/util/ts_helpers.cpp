@@ -332,9 +332,6 @@ nativeToByteBuffer(qdb::jni::env & env, void const * content, qdb_size_t content
 
 jni::guard::local_ref<jobject>
 nativeToBlobPoint(qdb::jni::env & env, qdb_ts_blob_point native) {
-    jni::debug::println(env, "converting blob point!");
-
-
     return std::move(
                      jni::object::create(env,
                                          "net/quasardb/qdb/jni/qdb_ts_blob_point",
