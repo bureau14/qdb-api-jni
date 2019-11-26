@@ -4,6 +4,7 @@ import java.util.Map;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import org.junit.jupiter.api.Test;
@@ -100,5 +101,52 @@ public class QueryTest {
             assertEquals(r.stream().count(), r.rows.length);
         }
 
+    }
+
+    @Test
+    public void nullValuesInResultsTest() throws Exception {
+        Session s = TestUtils.createSession();
+
+        Value.Type[] valueTypes = { Value.Type.INT64,
+                                    Value.Type.DOUBLE,
+                                    Value.Type.TIMESTAMP,
+                                    Value.Type.BLOB };
+
+        for (Value.Type valueType : valueTypes) {
+            Column[] definition =
+                TestUtils.generateTableColumns(valueType, 5);
+
+            WritableRow[] rows = TestUtils.generateTableRows(definition, 32, 10, 0.5);
+            Table t = TestUtils.seedTable(s, definition, rows);
+
+            QueryBuilder b = new QueryBuilder()
+                .add("select ");
+
+            boolean first = true;
+            for (Column c : definition) {
+                if (!first) {
+                    b = b.add(", ");
+                } else {
+                    first = false;
+                }
+
+                b = b.add(c.getName());
+
+            }
+
+            Result r = b.add(" from ")
+                .add(t.getName())
+                .in(TestUtils.rangeFromRows(rows))
+                .asQuery()
+                .execute(s);
+
+            // + 2 because of $timestamp and $table
+            assertEquals(definition.length, r.columns.length);
+            assertEquals(rows.length, r.rows.length);
+
+            for (int i = 0; i < rows.length; ++i) {
+                assertArrayEquals(rows[i].getValues(), r.rows[i].getValues());
+            }
+        }
     }
 }

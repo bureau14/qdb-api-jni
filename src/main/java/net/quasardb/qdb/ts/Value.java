@@ -79,6 +79,13 @@ public class Value implements Serializable {
     }
 
     /**
+     * Returns true if this value is null.
+     */
+    public boolean isNull() {
+        return this.type == Type.UNINITIALIZED;
+    }
+
+    /**
      * Represents a long integer
      */
     public static Value createInt64(long value) {

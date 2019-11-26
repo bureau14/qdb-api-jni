@@ -89,15 +89,23 @@ public class TestUtils {
     }
 
     public static Value generateRandomValueByType(int complexity, Value.Type valueType) {
-        switch (valueType) {
-        case INT64:
-            return Value.createInt64(randomInt64());
-        case DOUBLE:
-            return Value.createDouble(randomDouble());
-        case TIMESTAMP:
-            return Value.createTimestamp(randomTimestamp());
-        case BLOB:
-            return Value.createSafeBlob(createSampleData(complexity));
+        return generateRandomValueByType(complexity, valueType, 0.0);
+    }
+
+    public static Value generateRandomValueByType(int complexity, Value.Type valueType, double nullChance) {
+
+        if (new Random().nextDouble() >= nullChance) {
+
+            switch (valueType) {
+            case INT64:
+                return Value.createInt64(randomInt64());
+            case DOUBLE:
+                return Value.createDouble(randomDouble());
+            case TIMESTAMP:
+                return Value.createTimestamp(randomTimestamp());
+            case BLOB:
+                return Value.createSafeBlob(createSampleData(complexity));
+            }
         }
 
         return Value.createNull();
@@ -112,25 +120,48 @@ public class TestUtils {
     }
 
     /**
-     * Generate table rows.
+     * Generate table rows without null values.
      *
      * @param cols       Describes the table layout
      * @param complexity Arbitrary complexity variable that is used when generating data. E.g. for blobs,
      *                   this denotes the size of the blob value being generated.
      */
     public static WritableRow[] generateTableRows(Column[] cols, int complexity, int count) {
+        return generateTableRows(cols, complexity, count, 0.0);
+    }
+
+    /**
+     * Generate table rows with random null values.
+     *
+     * @param cols       Describes the table layout
+     * @param complexity Arbitrary complexity variable that is used when generating data. E.g. for blobs,
+     *                   this denotes the size of the blob value being generated.
+     * @param nullChance Chance a value is marked as null, 0 being 0% chance and 1 being 100% chance
+     */
+    public static WritableRow[] generateTableRows(Column[] cols, int complexity, int count, double nullChance) {
         // Generate that returns entire rows with an appropriate value for each column.
         Supplier<Value[]> valueGen =
             (() ->
              Arrays.stream(cols)
              .map(Column::getType)
              .map((Value.Type valueType) -> {
-                     return TestUtils.generateRandomValueByType(complexity, valueType);
+                     return TestUtils.generateRandomValueByType(complexity, valueType, nullChance);
                  })
              .toArray(Value[]::new));
 
 
         return Stream.generate(valueGen)
+            .filter((xs) -> {
+                    for (Value x : xs) {
+                        if (!x.isNull()) {
+                            return true;
+                        }
+                    }
+
+                    // All nulls, which would mean an empty row which is not
+                    // inserted.
+                    return false;
+                })
             .limit(count)
             .map((v) ->
                  new WritableRow(Timespec.now(),
