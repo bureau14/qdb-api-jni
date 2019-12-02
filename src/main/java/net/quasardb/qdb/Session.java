@@ -10,6 +10,7 @@ import net.quasardb.qdb.*;
 import net.quasardb.qdb.jni.*;
 import net.quasardb.qdb.exception.ExceptionFactory;
 import net.quasardb.qdb.exception.ClusterClosedException;
+import net.quasardb.qdb.exception.InputBufferTooSmallException;
 
 
 /**

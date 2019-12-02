@@ -193,7 +193,7 @@ public class Table implements Serializable {
      * data.
      *
      * @param session Active session with the QuasarDB cluster.
-     * @param name Timeseries table name. Must already exist.
+     * @param table Table to insert into.
      */
     public static Writer fastWriter(Session session, Table table) {
         return Tables.fastWriter(session, new Table[] {table});
