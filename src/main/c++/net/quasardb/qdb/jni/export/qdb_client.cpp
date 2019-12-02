@@ -99,6 +99,26 @@ Java_net_quasardb_qdb_jni_qdb_option_1set_1timeout(JNIEnv * /*env*/, jclass /*th
   return qdb_option_set_timeout((qdb_handle_t)handle, timeout);
 }
 
+JNIEXPORT jlong JNICALL
+Java_net_quasardb_qdb_jni_qdb_option_1get_1client_1max_1in_1buf_1size(JNIEnv * /*env*/, jclass /*thisClass*/, jlong handle) {
+
+
+  qdb_size_t size;
+
+  qdb_error_t err = qdb_option_get_client_max_in_buf_size((qdb_handle_t)handle, &size);
+  if (QDB_FAILURE(err)) {
+    return err;
+  }
+
+  return size;
+}
+
+JNIEXPORT jint JNICALL
+Java_net_quasardb_qdb_jni_qdb_option_1set_1client_1max_1in_1buf_1size(JNIEnv * /*env*/, jclass /*thisClass*/, jlong handle, jlong size) {
+
+  return qdb_option_set_client_max_in_buf_size((qdb_handle_t)handle, size);
+}
+
 JNIEXPORT jint JNICALL
 Java_net_quasardb_qdb_jni_qdb_purge_1all(JNIEnv * /*env*/, jclass /*thisClass*/, jlong handle,
                                          jint timeout) {

@@ -47,6 +47,8 @@ public class qdb_error {
   public static final int iterator_end = 0xb0000030;
   public static final int invalid_reply = 0xa3000031;
   public static final int ok_created = 0xb0000032;
+  public static final int interrupted = 0xf2000045;
+  public static final int network_inbuf_too_small = 0xe2000046;
 
   public static int origin(int err) {
     return err & 0xf0000000;

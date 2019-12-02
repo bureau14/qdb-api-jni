@@ -128,4 +128,45 @@ public class Session {
     public long handle() {
         return handle;
     }
+
+
+    /**
+     * Set network timeout for this session.
+     *
+     * @param timeoutMillis The timeout of the operation, in milliseconds
+     *
+     * @throws ClusterClosedException If QdbCluster.close() has been called.
+     */
+    public void setTimeout(int timeoutMillis) throws ClusterClosedException {
+        throwIfClosed();
+
+        int err = qdb.option_set_timeout(handle, timeoutMillis);
+        ExceptionFactory.throwIfError(err);
+    }
+
+    /**
+     * Set input buffer size for this session. Increase this if you encounter
+     * {@link InputBufferTooSmallException} while retrieving data from the server.
+     *
+     * @param size The desired size (in bytes) of the input buffer.
+     *
+     * @throws ClusterClosedException If the connection to the cluster is currently closed.
+     */
+    public void setInputBufferSize(long size) throws ClusterClosedException {
+        throwIfClosed();
+
+        int err = qdb.option_set_client_max_in_buf_size(handle, size);
+        ExceptionFactory.throwIfError(err);
+    }
+
+    /**
+     * Returns the current input buffer size (in bytes).
+     *
+     * @throws ClusterClosedException If the connection to the cluster is currently closed.
+     */
+    public long getInputBufferSize() throws ClusterClosedException {
+        throwIfClosed();
+
+        return qdb.option_get_client_max_in_buf_size(handle);
+    }
 }

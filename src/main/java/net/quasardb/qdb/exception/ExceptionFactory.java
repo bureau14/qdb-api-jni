@@ -1,10 +1,15 @@
 package net.quasardb.qdb.exception;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import net.quasardb.qdb.jni.*;
 
 public class ExceptionFactory {
+    private static final Logger logger = LoggerFactory.getLogger(ExceptionFactory.class);
 
     public static void throwIfError(int err) {
+        logger.trace("validating error code: ", err);
         if (qdb_error.severity(err) == qdb_err_severity.info)
             return;
         Exception exception = createException(err);
@@ -12,6 +17,8 @@ public class ExceptionFactory {
     }
 
     public static Exception createException(int err) {
+        logger.debug("creating exception for error with code: " + err + ", inbuf error code = " + qdb_error.network_inbuf_too_small);
+
         switch (err) {
         case qdb_error.connection_refused:
             return new ConnectionRefusedException();
@@ -51,7 +58,14 @@ public class ExceptionFactory {
 
         case qdb_error.invalid_reply:
             return new InvalidReplyException();
-        }
+
+        case qdb_error.interrupted:
+            return new InterruptedException();
+
+        case qdb_error.network_inbuf_too_small:
+            return new InputBufferTooSmallException();
+
+        };
 
         String message = qdb.error_message(err);
 
@@ -73,7 +87,7 @@ public class ExceptionFactory {
 
         case qdb_err_origin.protocol:
             return new ProtocolException(message);
-        }
+        };
 
         return new Exception(message);
     }
