@@ -174,6 +174,32 @@ public class Table implements Serializable {
     }
 
     /**
+     * Initializes new writer for a single table that makes use of
+     * in-place updates rather than copy-on-write. This is especially useful
+     * when you do lots of small, incremental pushes, such as streaming
+     * data.
+     *
+     * @param session Active session with the QuasarDB cluster.
+     * @param name Timeseries table name. Must already exist.
+     */
+    public static Writer fastWriter(Session session, String name) {
+        return fastWriter(session, new Table(session, name));
+    }
+
+    /**
+     * Initializes new writer for a single table that makes use of
+     * in-place updates rather than copy-on-write. This is especially useful
+     * when you do lots of small, incremental pushes, such as streaming
+     * data.
+     *
+     * @param session Active session with the QuasarDB cluster.
+     * @param name Timeseries table name. Must already exist.
+     */
+    public static Writer fastWriter(Session session, Table table) {
+        return Tables.fastWriter(session, new Table[] {table});
+    }
+
+    /**
      * Initializes new writer for a timeseries table that periodically flushes
      * its local cache.
      *
@@ -271,6 +297,56 @@ public class Table implements Serializable {
         return Tables.asyncAutoFlushWriter(session,
                                            new Table[] {table},
                                            threshold);
+    }
+
+    /**
+     * Initializes new writer for a timeseries table that periodically flushes
+     * its local cache, and makes use of high-speed buffered writes.
+     *
+     * @param session Active session with the QuasarDB cluster.
+     * @param name Timeseries table name. Must already exist.
+     */
+    public static AutoFlushWriter fastAutoFlushWriter(Session session, String name) {
+        return fastAutoFlushWriter(session, new Table(session, name));
+    }
+
+    /**
+     * Initializes new writer for a timeseries table that periodically flushes
+     * its local cache, and makes use of high-speed buffered writes.
+     *
+     * @param session Active session with the QuasarDB cluster.
+     * @param table Timeseries table.
+     */
+    public static AutoFlushWriter fastAutoFlushWriter(Session session, Table table) {
+        return Tables.fastAutoFlushWriter(session, new Table[] {table});
+    }
+
+    /**
+     * Initializes new writer for a timeseries table that periodically flushes
+     * its local cache, and makes use of high-speed buffered writes.
+     *
+     * @param session Active session with the QuasarDB cluster.
+     * @param name Timeseries table name. Must already exist.
+     * @param threshold The amount of rows to keep in local buffer before automatic flushing occurs.
+     */
+    public static AutoFlushWriter fastAutoFlushWriter(Session session, String name, long threshold) {
+        return fastAutoFlushWriter(session,
+                                   new Table(session, name),
+                                   threshold);
+    }
+
+    /**
+     * Initializes new writer for a timeseries table that periodically flushes
+     * its local cache, and makes use of high-speed buffered writes.
+     *
+     * @param session Active session with the QuasarDB cluster.
+     * @param table Timeseries table.
+     * @param threshold The amount of rows to keep in local buffer before automatic flushing occurs.
+     */
+    public static AutoFlushWriter fastAutoFlushWriter(Session session, Table table, long threshold) {
+        return Tables.fastAutoFlushWriter(session,
+                                          new Table[] {table},
+                                          threshold);
     }
 
     /**

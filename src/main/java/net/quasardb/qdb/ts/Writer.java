@@ -24,7 +24,19 @@ import net.quasardb.qdb.jni.*;
  * instance per Thread in multi-threaded situations.
  */
 public class Writer implements AutoCloseable, Flushable {
+
+    /**
+     * Determines which mode of operation to use when flushing the writer.
+     */
+    protected enum PushMode {
+        NORMAL,
+        ASYNC,
+        FAST
+    }
+
     private static final Logger logger = LoggerFactory.getLogger(Writer.class);
+
+    PushMode pushMode;
     long pointsSinceFlush = 0;
     boolean async;
     Session session;
@@ -56,11 +68,11 @@ public class Writer implements AutoCloseable, Flushable {
     }
 
     protected Writer(Session session, Table[] tables) {
-        this(session, tables, false);
+        this(session, tables, PushMode.NORMAL);
     }
 
-    protected Writer(Session session, Table[] tables, boolean async) {
-        this.async = async;
+    protected Writer(Session session, Table[] tables, PushMode mode) {
+        this.pushMode = mode;
         this.session = session;
         this.tableOffsets = new HashMap<String, Integer>();
         this.columns = new ArrayList<TableColumn>();
@@ -160,13 +172,28 @@ public class Writer implements AutoCloseable, Flushable {
      */
     public void flush() throws IOException {
         int err;
-        if (this.async == true) {
-            logger.info("Flushing batch writer async, points since last flush: {}", pointsSinceFlush);
-            err = qdb.ts_batch_push_async(this.batchTable);
-        } else {
+
+        switch (this.pushMode) {
+        case NORMAL:
             logger.info("Flushing batch writer sync, points since last flush: {}", pointsSinceFlush);
             err = qdb.ts_batch_push(this.batchTable);
+            break;
+
+        case ASYNC:
+            logger.info("Flushing batch writer async, points since last flush: {}", pointsSinceFlush);
+            err = qdb.ts_batch_push_async(this.batchTable);
+            break;
+
+        case FAST:
+            logger.info("Using in-place fast flushing to push batch, points since last flush: {}", pointsSinceFlush);
+            err = qdb.ts_batch_push_fast(this.batchTable);
+            break;
+
+        default:
+            throw new RuntimeException("Fatal error: unrecognized push mode: " + this.pushMode);
+
         }
+
         ExceptionFactory.throwIfError(err);
 
         pointsSinceFlush = 0;

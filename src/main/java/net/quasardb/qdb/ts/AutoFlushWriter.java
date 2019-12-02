@@ -28,7 +28,7 @@ public final class AutoFlushWriter extends Writer {
      * @param tables Timeseries tables we're writing to.
      */
     protected AutoFlushWriter(Session session, Table[] tables) {
-        this(session, tables, false);
+        this(session, tables, PushMode.NORMAL);
     }
 
     /**
@@ -36,10 +36,10 @@ public final class AutoFlushWriter extends Writer {
      *
      * @param session Active connection with the QdbCluster
      * @param tables Timeseries tables we're writing to.
-     * @param async When true, uses high-speed async writes
+     * @param pushMode Determines which method of operation to use for flushing
      */
-    protected AutoFlushWriter(Session session, Table[] tables, boolean async) {
-        this(session, tables, 50000, async);
+    protected AutoFlushWriter(Session session, Table[] tables, PushMode pushMode) {
+        this(session, tables, 50000, pushMode);
     }
 
     /**
@@ -50,7 +50,7 @@ public final class AutoFlushWriter extends Writer {
      * @param threshold The amount of rows to keep in local buffer before automatic flushing occurs.
      */
     protected AutoFlushWriter(Session session, Table[] tables, long threshold) {
-        this(session, tables, threshold, false);
+        this(session, tables, threshold, PushMode.NORMAL);
     }
 
     /**
@@ -59,10 +59,10 @@ public final class AutoFlushWriter extends Writer {
      * @param session Active connection with the QdbCluster
      * @param tables Timeseries tables we're writing to.
      * @param threshold The amount of rows to keep in local buffer before automatic flushing occurs.
-     * @param async When true, uses high-speed async writes
+     * @param pushMode Determines which method of operation to use for flushing
      */
-    protected AutoFlushWriter(Session session, Table[] tables, long threshold, boolean async) {
-        super(session, tables, async);
+    protected AutoFlushWriter(Session session, Table[] tables, long threshold, PushMode pushMode) {
+        super(session, tables, pushMode);
 
         this.counter = 0;
         this.threshold = threshold;

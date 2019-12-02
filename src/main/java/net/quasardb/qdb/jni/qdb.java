@@ -135,6 +135,7 @@ public final class qdb
     public static native int ts_batch_table_row_append(long batchTable, long offset, Timespec time, Value[] values);
     public static native int ts_batch_push(long batchTable);
     public static native int ts_batch_push_async(long batchTable);
+    public static native int ts_batch_push_fast(long batchTable);
 
     public static native void ts_local_table_release(long handle, long localTable);
     public static native int ts_table_get_ranges(long localTable, TimeRange[] ranges);

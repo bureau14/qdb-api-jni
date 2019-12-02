@@ -167,7 +167,33 @@ public class Tables implements Serializable {
      * @param tables Timeseries tables.
      */
     public static Writer asyncWriter (Session session, Table[] tables) {
-        return new Writer(session, tables, true);
+        return new Writer(session, tables, Writer.PushMode.ASYNC);
+    }
+
+    /**
+     * Initializes new writer for timeseries tables that makes use of
+     * in-place updates rather than copy-on-write. This is especially useful
+     * when you do lots of small, incremental pushes, such as streaming
+     * data.
+     *
+     * @param session Active session with the QuasarDB cluster.
+     * @param tables Timeseries tables.
+     */
+    public static Writer fastWriter (Session session, Tables tables) {
+        return fastWriter(session, tables.getTables());
+    }
+
+    /**
+     * Initializes new writer for timeseries tables that makes use of
+     * in-place updates rather than copy-on-write. This is especially useful
+     * when you do lots of small, incremental pushes, such as streaming
+     * data.
+     *
+     * @param session Active session with the QuasarDB cluster.
+     * @param tables Timeseries tables.
+     */
+    public static Writer fastWriter (Session session, Table[] tables) {
+        return new Writer(session, tables, Writer.PushMode.FAST);
     }
 
     /**
@@ -244,7 +270,7 @@ public class Tables implements Serializable {
     public static AutoFlushWriter asyncAutoFlushWriter(Session session, Table[] tables) {
         return new AutoFlushWriter(session,
                                    tables,
-                                   true);
+                                   Writer.PushMode.ASYNC);
     }
 
     /**
@@ -273,7 +299,61 @@ public class Tables implements Serializable {
         return new AutoFlushWriter(session,
                                    tables,
                                    threshold,
-                                   true);
+                                   Writer.PushMode.ASYNC);
+    }
+
+    /**
+     * Initializes new writer for timeseries tables that periodically flushes
+     * its local cache, and makes use of high-speed in-place writes.
+     *
+     * @param session Active session with the QuasarDB cluster.
+     * @param tables Timeseries tables to write to.
+     */
+    public static AutoFlushWriter fastAutoFlushWriter(Session session, Tables tables) {
+        return fastAutoFlushWriter(session,
+                                    tables.getTables());
+    }
+
+    /**
+     * Initializes new writer for timeseries tables that periodically flushes
+     * its local cache, and makes use of high-speed in-place writes.
+     *
+     * @param session Active session with the QuasarDB cluster.
+     * @param tables Timeseries table.
+     */
+    public static AutoFlushWriter fastAutoFlushWriter(Session session, Table[] tables) {
+        return new AutoFlushWriter(session,
+                                   tables,
+                                   Writer.PushMode.FAST);
+    }
+
+    /**
+     * Initializes new writer for timeseries tables that periodically flushes
+     * its local cache, and makes use of high-speed in-place writes.
+     *
+     * @param session Active session with the QuasarDB cluster.
+     * @param tables Timeseries tables to write to.
+     * @param threshold The amount of rows to keep in local buffer before automatic flushing occurs.
+     */
+    public static AutoFlushWriter fastAutoFlushWriter(Session session, Tables tables, long threshold) {
+        return fastAutoFlushWriter(session,
+                                    tables.getTables(),
+                                    threshold);
+    }
+
+    /**
+     * Initializes new writer for timeseries tables that periodically flushes
+     * its local cache, and makes use of high-speed in-place writes.
+     *
+     * @param session Active session with the QuasarDB cluster.
+     * @param tables Timeseries table.
+     * @param threshold The amount of rows to keep in local buffer before automatic flushing occurs.
+     */
+    public static AutoFlushWriter fastAutoFlushWriter(Session session, Table[] tables, long threshold) {
+        return new AutoFlushWriter(session,
+                                   tables,
+                                   threshold,
+                                   Writer.PushMode.FAST);
     }
 
 
