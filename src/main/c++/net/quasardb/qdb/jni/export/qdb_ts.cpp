@@ -178,7 +178,7 @@ Java_net_quasardb_qdb_jni_qdb_ts_1batch_1push_1fast(JNIEnv * jniEnv, jclass /*th
 
   qdb::jni::log::swap_callback();
 
-  return qdb_ts_batch_fast_push((qdb_batch_table_t)batchTable);
+  return qdb_ts_batch_push_fast((qdb_batch_table_t)batchTable);
 }
 
 JNIEXPORT jint JNICALL
