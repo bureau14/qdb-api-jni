@@ -7,6 +7,5 @@ public final class qdb_entry_type {
   public static final int hset = 2;
   public static final int tag = 3;
   public static final int deque = 4;
-  public static final int stream = 5;
   public static final int timeseries = 6;
 }

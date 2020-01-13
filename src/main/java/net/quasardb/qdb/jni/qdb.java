@@ -104,15 +104,6 @@ public final class qdb
     public static native int get_performance_traces(long handle, Reference<PerformanceTrace.Trace[]> traces);
     public static native int clear_performance_traces(long handle);
 
-    public static native int stream_open(long handle, String alias, int mode, Reference<Long> stream);
-    public static native int stream_close(long stream);
-    public static native int stream_read(long stream, ByteBuffer content, Reference<Long> bytesRead);
-    public static native int stream_write(long stream, ByteBuffer content);
-    public static native int stream_size(long stream, Reference<Long> size);
-    public static native int stream_getpos(long stream, Reference<Long> position);
-    public static native int stream_setpos(long stream, long position);
-    public static native int stream_truncate(long stream, long position);
-
     public static native int attach_tag(long handle, String alias, String tag);
     public static native int has_tag(long handle, String alias, String tag);
     public static native int detach_tag(long handle, String alias, String tag);
