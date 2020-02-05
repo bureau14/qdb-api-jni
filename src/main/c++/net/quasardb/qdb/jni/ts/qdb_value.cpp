@@ -34,6 +34,10 @@ qdb::jni::ts::value::from_native(qdb::jni::env & env, qdb_point_result_t const &
             return _from_native_blob(env, input);
             break;
 
+        case qdb_query_result_string:
+            return _from_native_string(env, input);
+            break;
+
         case qdb_query_result_count:
             return _from_native_count(env, input);
             break;
@@ -103,6 +107,12 @@ qdb::jni::ts::value::_from_native_blob(qdb::jni::env & env, qdb_point_result_t c
                                         jni::byte_buffer::create_copy(env,
                                                                       input.payload.blob.content,
                                                                       input.payload.blob.content_length).release()));
+}
+
+
+/* static */ qdb::jni::guard::local_ref<jobject>
+qdb::jni::ts::value::_from_native_string(qdb::jni::env & env, qdb_point_result_t const & input) {
+  // :TODO: implement
 }
 
 /* static */ qdb::jni::guard::local_ref<jobject>

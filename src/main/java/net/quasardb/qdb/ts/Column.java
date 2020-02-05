@@ -22,6 +22,17 @@ public class Column {
         }
     }
 
+
+    /**
+     * A string column.
+     */
+    public static class String_ extends Column {
+        public String_(String name) {
+            super(name, Value.Type.STRING);
+        }
+    }
+
+
     /**
      * A double precision column.
      */

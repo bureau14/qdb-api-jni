@@ -330,6 +330,20 @@ nativeToByteBuffer(qdb::jni::env & env, void const * content, qdb_size_t content
   return env.instance().NewDirectByteBuffer((void *)(content), contentLength);
 }
 
+
+jni::guard::local_ref<jstring>
+nativeToString(qdb::jni::env & env, char const * content, qdb_size_t contentLength) {
+
+  // quasardb doesn't null-terminate strings, JNI does not accept explicit string length
+  // and assumes null-terminated UTF-8 strings. As such we're gonna heap allocate
+  // it, just to null-terminate it.
+
+  std::unique_ptr<char> copy(strndup(content, contentLength));
+  auto ret = jni::string::create_utf8(env, copy.get());
+
+  return std::move(ret);
+}
+
 jni::guard::local_ref<jobject>
 nativeToBlobPoint(qdb::jni::env & env, qdb_ts_blob_point native) {
     return std::move(
@@ -587,7 +601,39 @@ tableRowSetBlobColumnValue(qdb::jni::env & env,
   return err;
 }
 
+qdb_error_t
+tableRowSetStringColumnValue(qdb::jni::env & env,
+                             qdb_batch_table_t batchTable,
+                             qdb_size_t index,
+                             jobject value) {
 
+  jclass objectClass = env.instance().GetObjectClass(value);
+  jmethodID methodId = env.instance().GetMethodID(objectClass, "getString", "()Ljava/lang/String;");
+  assert(methodId != NULL);
+
+  jni::guard::string_utf8 stringValue =
+    jni::string::get_chars_utf8(env,
+                                (jstring)env.instance().CallObjectMethod(value, methodId));
+
+  // I don't think the JNI provides a method to figure out the length of a string in
+  // ascii representation; it always just counts the amount of UTF-8 chars. As such
+  // we have to count the amount of bytes using strlen() here.
+  jsize len = strlen(stringValue);
+
+  printf("setting string..\n");
+  fflush(stdout);
+
+  qdb_error_t err =  qdb_ts_batch_row_set_string(batchTable,
+                                                 index,
+                                                 stringValue,
+                                                 len);
+
+  printf("set string!\n");
+  fflush(stdout);
+
+  return err;
+
+}
 
 qdb_error_t
 tableRowSetColumnValue(qdb::jni::env & env,
@@ -611,6 +657,10 @@ tableRowSetColumnValue(qdb::jni::env & env,
 
   case qdb_ts_column_blob:
     return tableRowSetBlobColumnValue(env, batchTable, index, value);
+    break;
+
+  case qdb_ts_column_string:
+    return tableRowSetStringColumnValue(env, batchTable, index, value);
     break;
 
   case qdb_ts_column_uninitialized:
@@ -755,6 +805,30 @@ tableGetRowBlobValue(qdb::jni::env & env, qdb_local_table_t localTable, qdb_size
   return err;
 }
 
+
+qdb_error_t
+tableGetRowStringValue(qdb::jni::env & env, qdb_local_table_t localTable, qdb_size_t index, jobject output) {
+
+  char const * value = NULL;
+  qdb_size_t length = 0;
+
+  qdb_error_t err = qdb_ts_row_get_string(localTable, index, &value, &length);
+
+  if (QDB_SUCCESS(err)) {
+    assert(value != NULL);
+
+    jni::guard::local_ref<jstring> stringValue = nativeToString(env, value, length);
+
+    jclass objectClass = env.instance().GetObjectClass(output);
+    jmethodID methodId = env.instance().GetMethodID(objectClass, "setString", "(Ljava/lang/String;)V");
+    assert(methodId != NULL);
+
+    env.instance().CallVoidMethod(output, methodId, stringValue.release());
+  }
+
+  return err;
+}
+
 qdb_error_t
 tableGetRowValues (qdb::jni::env & env, qdb_local_table_t localTable, qdb_ts_column_info_t * columns, qdb_size_t count, jobjectArray values) {
   qdb_error_t err;
@@ -784,6 +858,10 @@ tableGetRowValues (qdb::jni::env & env, qdb_local_table_t localTable, qdb_ts_col
 
     case qdb_ts_column_blob:
       err = tableGetRowBlobValue(env, localTable, i, value);
+      break;
+
+    case qdb_ts_column_string:
+      err = tableGetRowStringValue(env, localTable, i, value);
       break;
 
     case qdb_ts_column_uninitialized:

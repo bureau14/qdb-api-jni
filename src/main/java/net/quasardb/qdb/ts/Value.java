@@ -18,12 +18,14 @@ public class Value implements Serializable {
     long int64Value;
     double doubleValue;
     Timespec timestampValue;
+    String stringValue;
     ByteBuffer blobValue;
 
     public enum Type {
         UNINITIALIZED(qdb_ts_column_type.uninitialized),
         DOUBLE(qdb_ts_column_type.double_),
         BLOB(qdb_ts_column_type.blob),
+        STRING(qdb_ts_column_type.string),
         INT64(qdb_ts_column_type.int64),
         TIMESTAMP(qdb_ts_column_type.timestamp)
         ;
@@ -44,6 +46,9 @@ public class Value implements Serializable {
 
             case qdb_ts_column_type.blob:
                 return Type.BLOB;
+
+            case qdb_ts_column_type.string:
+                return Type.STRING;
 
             case qdb_ts_column_type.int64:
                 return Type.INT64;
@@ -204,24 +209,23 @@ public class Value implements Serializable {
     }
 
     /**
-     * Convenience function that coerces a String to a blob value. Creates
-     * copy of string. Assumes default character encoding type.
-     *
-     * @param value String representation of value.
+     * Update this value to be a String.
      */
-    public static Value createSafeString(String value) {
-        return createSafeBlob(value.getBytes());
+    public void setString(String value) {
+        this.type = Type.STRING;
+        this.stringValue = value;
     }
 
     /**
-     * Convenience function that coerces a String to a blob value. Creates
-     * copy of string, and interprets bytes using specific charset.
+     * Create a new String value.
      *
      * @param value String representation of value.
-     * @param charset Character set to map string characters to bytes.
      */
-    public static Value createSafeString(String value, Charset charset) {
-        return createSafeBlob(value.getBytes(charset));
+    public static Value createString(String value) {
+        Value val = new Value(Type.STRING);
+        val.stringValue = value;
+        return val;
+
     }
 
     @Override
@@ -245,6 +249,9 @@ public class Value implements Serializable {
 
         case BLOB:
             return this.getBlob().equals(rhs.getBlob());
+
+        case STRING:
+            return this.getString().equals(rhs.getString());
 
         case UNINITIALIZED:
             // null == null always true
@@ -273,6 +280,10 @@ public class Value implements Serializable {
 
         case BLOB:
             writeBlobValue(stream, this.blobValue);
+            break;
+
+        case STRING:
+            stream.writeObject(this.stringValue);
             break;
         }
     }
@@ -310,6 +321,10 @@ public class Value implements Serializable {
 
         case BLOB:
             this.blobValue = readBlobValue(stream);
+            break;
+
+        case STRING:
+            this.stringValue = (String)(stream.readObject());
             break;
         }
     }
@@ -364,6 +379,14 @@ public class Value implements Serializable {
         return this.blobValue.asReadOnlyBuffer();
     }
 
+    public String getString() {
+        if (this.type != Type.STRING) {
+            throw new IncompatibleTypeException();
+        }
+
+        return this.stringValue;
+    }
+
     public String toString() {
 
         switch (this.type) {
@@ -378,6 +401,9 @@ public class Value implements Serializable {
 
         case BLOB:
             return "Value (type = BLOB, value = " + this.blobValue.hashCode() + ")";
+
+        case STRING:
+            return "Value (type = STRING, value = '" + this.stringValue + "')";
 
         case UNINITIALIZED:
             return "Value (type = NULL)";
