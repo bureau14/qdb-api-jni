@@ -43,7 +43,8 @@ public class QueryTest {
         Value.Type[] valueTypes = { Value.Type.INT64,
                                     Value.Type.DOUBLE,
                                     Value.Type.TIMESTAMP,
-                                    Value.Type.BLOB };
+                                    Value.Type.BLOB,
+                                    Value.Type.STRING };
 
         for (Value.Type valueType : valueTypes) {
             Column[] definition =
@@ -80,7 +81,8 @@ public class QueryTest {
         Value.Type[] valueTypes = { Value.Type.INT64,
                                     Value.Type.DOUBLE,
                                     Value.Type.TIMESTAMP,
-                                    Value.Type.BLOB };
+                                    Value.Type.BLOB,
+                                    Value.Type.STRING };
 
         for (Value.Type valueType : valueTypes) {
             Column[] definition =
@@ -110,7 +112,8 @@ public class QueryTest {
         Value.Type[] valueTypes = { Value.Type.INT64,
                                     Value.Type.DOUBLE,
                                     Value.Type.TIMESTAMP,
-                                    Value.Type.BLOB };
+                                    Value.Type.BLOB,
+                                    Value.Type.STRING };
 
         for (Value.Type valueType : valueTypes) {
             Column[] definition =

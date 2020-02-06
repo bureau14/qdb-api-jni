@@ -51,6 +51,10 @@ namespace qdb {
             create_utf8(jni::env & env, char const * str);
 
 
+            static jni::guard::local_ref<jstring>
+            create_utf8(jni::env & env, char const * str, qdb_size_t contentLength);
+
+
             /**
              * Create new array of Strings with certain size.
              */

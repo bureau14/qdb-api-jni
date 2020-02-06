@@ -105,6 +105,8 @@ public class TestUtils {
                 return Value.createTimestamp(randomTimestamp());
             case BLOB:
                 return Value.createSafeBlob(createSampleData(complexity));
+            case STRING:
+                return Value.createString(createUniqueAlias());
             }
         }
 

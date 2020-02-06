@@ -330,20 +330,6 @@ nativeToByteBuffer(qdb::jni::env & env, void const * content, qdb_size_t content
   return env.instance().NewDirectByteBuffer((void *)(content), contentLength);
 }
 
-
-jni::guard::local_ref<jstring>
-nativeToString(qdb::jni::env & env, char const * content, qdb_size_t contentLength) {
-
-  // quasardb doesn't null-terminate strings, JNI does not accept explicit string length
-  // and assumes null-terminated UTF-8 strings. As such we're gonna heap allocate
-  // it, just to null-terminate it.
-
-  std::unique_ptr<char> copy(strndup(content, contentLength));
-  auto ret = jni::string::create_utf8(env, copy.get());
-
-  return std::move(ret);
-}
-
 jni::guard::local_ref<jobject>
 nativeToBlobPoint(qdb::jni::env & env, qdb_ts_blob_point native) {
     return std::move(
@@ -369,6 +355,42 @@ nativeToBlobPoints(qdb::jni::env & env, qdb_ts_blob_point * native, size_t count
       env.instance().SetObjectArrayElement(array,
                                            (jsize)i,
                                            nativeToBlobPoint(env, native[i]).release());
+    }
+  }
+
+  return array;
+}
+
+jni::guard::local_ref<jstring>
+nativeToString(qdb::jni::env & env, char const * content, qdb_size_t contentLength) {
+  return std::move(jni::string::create_utf8(env, content, contentLength));
+}
+
+jni::guard::local_ref<jobject>
+nativeToStringPoint(qdb::jni::env & env, qdb_ts_string_point native) {
+    return std::move(
+                     jni::object::create(env,
+                                         "net/quasardb/qdb/jni/qdb_ts_string_point",
+                                         "(Lnet/quasardb/qdb/ts/Timespec;Ljava/lang/String;)V",
+                                         nativeToTimespec(env,
+                                                          native.timestamp).release(),
+                                         nativeToString(env,
+                                                        native.content,
+                                                        native.content_length).release()));
+}
+
+jni::guard::local_ref<jobjectArray>
+nativeToStringPoints(qdb::jni::env & env, qdb_ts_string_point * native, size_t count) {
+    jni::guard::local_ref<jobjectArray> array(
+        jni::object::create_array(env,
+                                  count,
+                                  "net/quasardb/qdb/jni/qdb_ts_string_point"));
+
+  for (size_t i = 0; i < count; i++) {
+    if (!QDB_IS_NULL_STRING(native[i])) {
+      env.instance().SetObjectArrayElement(array,
+                                           (jsize)i,
+                                           nativeToStringPoint(env, native[i]).release());
     }
   }
 

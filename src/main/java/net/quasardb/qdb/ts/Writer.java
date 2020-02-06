@@ -135,6 +135,7 @@ public class Writer implements AutoCloseable, Flushable {
      */
     public int tableIndexByName(String name) {
         Integer offset = this.tableOffsets.get(name);
+        logger.debug("Resolved trable {} to column offset {}", name, offset);
         if (offset == null) {
             throw new InvalidArgumentException();
         }
@@ -213,7 +214,7 @@ public class Writer implements AutoCloseable, Flushable {
      * @see Table#autoFlushWriter
      */
     public void append(Integer offset, Timespec timestamp, Value[] values) throws IOException {
-        logger.trace("Appending row to batch writer at offset {} with timestamp {}", offset, timestamp);
+        logger.debug("Appending row to batch writer at offset {} with timestamp {}", offset, timestamp);
         int err = qdb.ts_batch_table_row_append(this.batchTable, offset, timestamp, values);
         ExceptionFactory.throwIfError(err);
 

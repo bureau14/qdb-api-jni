@@ -7,6 +7,7 @@
 #include "../guard/local_ref.h"
 #include "../byte_buffer.h"
 #include "../object.h"
+#include "../string.h"
 #include "qdb_value.h"
 
 /* static */ qdb::jni::guard::local_ref<jobject>
@@ -112,7 +113,15 @@ qdb::jni::ts::value::_from_native_blob(qdb::jni::env & env, qdb_point_result_t c
 
 /* static */ qdb::jni::guard::local_ref<jobject>
 qdb::jni::ts::value::_from_native_string(qdb::jni::env & env, qdb_point_result_t const & input) {
-  // :TODO: implement
+    return std::move(
+        jni::object::call_static_method(env,
+                                        "net/quasardb/qdb/ts/Value",
+                                        "createString",
+                                        "(Ljava/lang/String;)Lnet/quasardb/qdb/ts/Value;",
+                                        jni::string::create_utf8(env,
+                                                                 input.payload.string.content,
+                                                                 input.payload.string.content_length).release()));
+
 }
 
 /* static */ qdb::jni::guard::local_ref<jobject>
