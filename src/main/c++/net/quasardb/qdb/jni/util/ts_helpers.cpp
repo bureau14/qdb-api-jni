@@ -1,6 +1,7 @@
 #include "ts_helpers.h"
 
 #include "../debug.h"
+#include "../log.h"
 #include "../object.h"
 #include "../string.h"
 #include "../introspect.h"
@@ -361,6 +362,42 @@ nativeToBlobPoints(qdb::jni::env & env, qdb_ts_blob_point * native, size_t count
   return array;
 }
 
+jni::guard::local_ref<jstring>
+nativeToString(qdb::jni::env & env, char const * content, qdb_size_t contentLength) {
+  return std::move(jni::string::create_utf8(env, content, contentLength));
+}
+
+jni::guard::local_ref<jobject>
+nativeToStringPoint(qdb::jni::env & env, qdb_ts_string_point native) {
+    return std::move(
+                     jni::object::create(env,
+                                         "net/quasardb/qdb/jni/qdb_ts_string_point",
+                                         "(Lnet/quasardb/qdb/ts/Timespec;Ljava/lang/String;)V",
+                                         nativeToTimespec(env,
+                                                          native.timestamp).release(),
+                                         nativeToString(env,
+                                                        native.content,
+                                                        native.content_length).release()));
+}
+
+jni::guard::local_ref<jobjectArray>
+nativeToStringPoints(qdb::jni::env & env, qdb_ts_string_point * native, size_t count) {
+    jni::guard::local_ref<jobjectArray> array(
+        jni::object::create_array(env,
+                                  count,
+                                  "net/quasardb/qdb/jni/qdb_ts_string_point"));
+
+  for (size_t i = 0; i < count; i++) {
+    if (!QDB_IS_NULL_STRING(native[i])) {
+      env.instance().SetObjectArrayElement(array,
+                                           (jsize)i,
+                                           nativeToStringPoint(env, native[i]).release());
+    }
+  }
+
+  return array;
+}
+
 void
 doubleAggregateToNative(qdb::jni::env & env, jobject input, qdb_ts_double_aggregation_t * native) {
   assert(input != NULL);
@@ -522,9 +559,18 @@ tableRowSetInt64ColumnValue(qdb::jni::env & env,
   jmethodID methodId = env.instance().GetMethodID(objectClass, "getInt64", "()J");
   assert(methodId != NULL);
 
-  return qdb_ts_batch_row_set_int64(batchTable,
-                                    index,
-                                    env.instance().CallLongMethod(value, methodId));
+  qdb::jni::log::trace("Batch writer setting int64 at offset %d", index);
+
+  qdb_int_t v = env.instance().CallLongMethod(value, methodId);
+  qdb_error_t err = qdb_ts_batch_row_set_int64(batchTable,
+                                               index,
+                                               v);
+
+  if (QDB_FAILURE(err)) {
+    qdb::jni::log::error("Unable to set int64 %d at offset %d: %s", v, index, qdb_error(err));
+  }
+
+  return err;
 }
 
 qdb_error_t
@@ -536,9 +582,18 @@ tableRowSetDoubleColumnValue(qdb::jni::env & env,
   jmethodID methodId = env.instance().GetMethodID(objectClass, "getDouble", "()D");
   assert(methodId != NULL);
 
-  return qdb_ts_batch_row_set_double(batchTable,
-                                     index,
-                                     env.instance().CallDoubleMethod(value, methodId));
+  qdb::jni::log::trace("Batch writer setting double at offset %d", index);
+
+  double v = env.instance().CallDoubleMethod(value, methodId);
+  qdb_error_t err = qdb_ts_batch_row_set_double(batchTable,
+                                                index,
+                                                v);
+  if (QDB_FAILURE(err)) {
+    qdb::jni::log::error("Unable to set double %.6f at offset %d: %s", v, index, qdb_error(err));
+  }
+
+  return err;
+
 }
 
 qdb_error_t
@@ -558,9 +613,16 @@ tableRowSetTimestampColumnValue(qdb::jni::env & env,
   qdb_timespec_t timestamp;
   timespecToNative(env, timestampObject, &timestamp);
 
+  qdb::jni::log::trace("Batch writer setting timestamp at offset %d", index);
+
   qdb_error_t err = qdb_ts_batch_row_set_timestamp(batchTable,
                                                    index,
                                                    &timestamp);
+
+  if (QDB_FAILURE(err)) {
+    qdb::jni::log::error("Unable to set timestampd at offset %d: %s", value, index, qdb_error(err));
+  }
+
   env.instance().DeleteLocalRef(timestampObject);
   return err;
 }
@@ -579,15 +641,53 @@ tableRowSetBlobColumnValue(qdb::jni::env & env,
   void * blob_addr = env.instance().GetDirectBufferAddress(blobValue);
   qdb_size_t blob_size = (qdb_size_t)(env.instance().GetDirectBufferCapacity(blobValue));
 
+  qdb::jni::log::trace("Batch writer setting blob at offset %d", index);
+
   qdb_error_t err =  qdb_ts_batch_row_set_blob(batchTable,
                                                index,
                                                blob_addr,
                                                blob_size);
+
+  if (QDB_FAILURE(err)) {
+    qdb::jni::log::error("Unable to set blob of %d bytes at offset %d: %s", blob_size, index, qdb_error(err));
+  }
+
   env.instance().DeleteLocalRef(blobValue);
   return err;
 }
 
+qdb_error_t
+tableRowSetStringColumnValue(qdb::jni::env & env,
+                             qdb_batch_table_t batchTable,
+                             qdb_size_t index,
+                             jobject value) {
 
+  jclass objectClass = env.instance().GetObjectClass(value);
+  jmethodID methodId = env.instance().GetMethodID(objectClass, "getString", "()Ljava/lang/String;");
+  assert(methodId != NULL);
+
+  jni::guard::string_utf8 stringValue =
+    jni::string::get_chars_utf8(env,
+                                (jstring)env.instance().CallObjectMethod(value, methodId));
+
+  // I don't think the JNI provides a method to figure out the length of a string in
+  // ascii representation; it always just counts the amount of UTF-8 chars. As such
+  // we have to count the amount of bytes using strlen() here.
+  jsize len = strlen(stringValue);
+
+  qdb::jni::log::trace("Batch writer setting string at offset %d", index);
+  qdb_error_t err =  qdb_ts_batch_row_set_string(batchTable,
+                                                 index,
+                                                 stringValue,
+                                                 len);
+
+  if (QDB_FAILURE(err)) {
+    qdb::jni::log::error("Unable to set string %s at offset %d: %s", (char const *)(stringValue), index, qdb_error(err));
+  }
+
+  return err;
+
+}
 
 qdb_error_t
 tableRowSetColumnValue(qdb::jni::env & env,
@@ -611,6 +711,10 @@ tableRowSetColumnValue(qdb::jni::env & env,
 
   case qdb_ts_column_blob:
     return tableRowSetBlobColumnValue(env, batchTable, index, value);
+    break;
+
+  case qdb_ts_column_string:
+    return tableRowSetStringColumnValue(env, batchTable, index, value);
     break;
 
   case qdb_ts_column_uninitialized:
@@ -755,6 +859,30 @@ tableGetRowBlobValue(qdb::jni::env & env, qdb_local_table_t localTable, qdb_size
   return err;
 }
 
+
+qdb_error_t
+tableGetRowStringValue(qdb::jni::env & env, qdb_local_table_t localTable, qdb_size_t index, jobject output) {
+
+  char const * value = NULL;
+  qdb_size_t length = 0;
+
+  qdb_error_t err = qdb_ts_row_get_string(localTable, index, &value, &length);
+
+  if (QDB_SUCCESS(err)) {
+    assert(value != NULL);
+
+    jni::guard::local_ref<jstring> stringValue = nativeToString(env, value, length);
+
+    jclass objectClass = env.instance().GetObjectClass(output);
+    jmethodID methodId = env.instance().GetMethodID(objectClass, "setString", "(Ljava/lang/String;)V");
+    assert(methodId != NULL);
+
+    env.instance().CallVoidMethod(output, methodId, stringValue.release());
+  }
+
+  return err;
+}
+
 qdb_error_t
 tableGetRowValues (qdb::jni::env & env, qdb_local_table_t localTable, qdb_ts_column_info_t * columns, qdb_size_t count, jobjectArray values) {
   qdb_error_t err;
@@ -784,6 +912,10 @@ tableGetRowValues (qdb::jni::env & env, qdb_local_table_t localTable, qdb_ts_col
 
     case qdb_ts_column_blob:
       err = tableGetRowBlobValue(env, localTable, i, value);
+      break;
+
+    case qdb_ts_column_string:
+      err = tableGetRowStringValue(env, localTable, i, value);
       break;
 
     case qdb_ts_column_uninitialized:

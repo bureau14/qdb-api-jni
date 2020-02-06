@@ -33,6 +33,29 @@ qdb::jni::log::swap_callback() {
   }
 }
 
+
+void
+qdb::jni::log::_do_log(qdb_log_level_t log_level,
+                       const unsigned long * date,
+                       unsigned long pid,
+                       unsigned long tid,
+                       std::string const & msg)
+{
+  qdb::jni::log::message_t x { log_level,
+                               { static_cast<int>(date[0]),
+                                 static_cast<int>(date[1]),
+                                 static_cast<int>(date[2]),
+                                 static_cast<int>(date[3]),
+                                 static_cast<int>(date[4]),
+                                 static_cast<int>(date[5]) },
+                               static_cast<int>(pid),
+                               static_cast<int>(tid),
+                               msg };
+
+    std::unique_lock guard(buffer_lock);
+    buffer.push_back(x);
+}
+
 /* static */ void
 qdb::jni::log::_callback(qdb_log_level_t log_level,
                          const unsigned long * date,
@@ -41,19 +64,27 @@ qdb::jni::log::_callback(qdb_log_level_t log_level,
                          const char * message_buffer,
                          size_t message_size )
 {
-    message_t x { log_level,
-                  { static_cast<int>(date[0]),
-                    static_cast<int>(date[1]),
-                    static_cast<int>(date[2]),
-                    static_cast<int>(date[3]),
-                    static_cast<int>(date[4]),
-                    static_cast<int>(date[5]) },
-                  static_cast<int>(pid),
-                  static_cast<int>(tid),
-                  std::string(message_buffer, message_size) };
+  _do_log(log_level, date, pid, tid,
+          std::string(message_buffer, message_size));
+}
 
-    std::unique_lock guard(buffer_lock);
-    buffer.push_back(x);
+
+void
+qdb::jni::log::_current_date(unsigned long * date) {
+  time_t now = time(0);
+  struct tm * utc = gmtime(&now); // thread safety?
+
+  date[0] = utc->tm_year + 1900;
+  date[1] = utc->tm_mon + 1;
+  date[2] = utc->tm_mday;
+  date[3] = utc->tm_hour;
+  date[4] = utc->tm_min;
+  date[5] = utc->tm_sec;
+}
+
+
+qdb::jni::log::flush_guard::~flush_guard() {
+  qdb::jni::log::flush(env_);
 }
 
 /* static */ void

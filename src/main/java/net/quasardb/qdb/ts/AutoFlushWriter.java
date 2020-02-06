@@ -6,6 +6,9 @@ import java.lang.AutoCloseable;
 import java.nio.channels.SeekableByteChannel;
 import java.util.*;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import net.quasardb.qdb.*;
 import net.quasardb.qdb.jni.*;
 
@@ -17,6 +20,9 @@ import net.quasardb.qdb.jni.*;
  * AutFlushWriter instance per Thread in multi-threaded situations.
  */
 public final class AutoFlushWriter extends Writer {
+
+
+    private static final Logger logger = LoggerFactory.getLogger(Writer.class);
 
     long counter;
     long threshold;
@@ -63,6 +69,8 @@ public final class AutoFlushWriter extends Writer {
      */
     protected AutoFlushWriter(Session session, Table[] tables, long threshold, PushMode pushMode) {
         super(session, tables, pushMode);
+
+        logger.info("Initializing AutoFlushWriter with {} tables, {} threshold, {} pushMode", tables.length, threshold, pushMode);
 
         this.counter = 0;
         this.threshold = threshold;

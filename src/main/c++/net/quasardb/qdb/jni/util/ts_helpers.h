@@ -57,6 +57,12 @@ nativeToBlobPoint(qdb::jni::env & env, qdb_ts_blob_point native);
 qdb::jni::guard::local_ref<jobjectArray>
 nativeToBlobPoints(qdb::jni::env & env, qdb_ts_blob_point * native, size_t count);
 
+qdb::jni::guard::local_ref<jobject>
+nativeToStringPoint(qdb::jni::env & env, qdb_ts_string_point native);
+
+qdb::jni::guard::local_ref<jobjectArray>
+nativeToStringPoints(qdb::jni::env & env, qdb_ts_string_point * native, size_t count);
+
 void doubleAggregateToNative(qdb::jni::env &env, jobject input, qdb_ts_double_aggregation_t * native);
 void doubleAggregatesToNative(qdb::jni::env & env, jobjectArray input, size_t count, qdb_ts_double_aggregation_t * native);
 

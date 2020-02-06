@@ -149,6 +149,18 @@ public final class qdb
                                                qdb_ts_blob_aggregation[] input,
                                                Reference<qdb_ts_blob_aggregation[]> aggregations);
 
+    public static native int ts_string_insert(long handle,
+                                              String alias,
+                                              String column,
+                                              qdb_ts_string_point[] points);
+    public static native int ts_string_get_ranges(
+        long handle, String alias, String column, TimeRange[] ranges, Reference<qdb_ts_string_point[]> points);
+    public static native int ts_string_aggregate(long handle,
+                                                 String alias,
+                                                 String column,
+                                                 qdb_ts_string_aggregation[] input,
+                                                 Reference<qdb_ts_string_aggregation[]> aggregations);
+
     public static native int query_execute(long handle, String query, Reference<Result> result);
 
     public static native int node_status(long handle, String uri, Reference<String> content);

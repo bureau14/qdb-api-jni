@@ -138,6 +138,10 @@ Java_net_quasardb_qdb_jni_qdb_ts_1batch_1table_1row_1append(JNIEnv * jniEnv, jcl
                                                             jobjectArray values) {
   qdb::jni::env env(jniEnv);
 
+  //! Useful when we're debugging our batch writer IndexOutOfBounds exceptions. We
+  //! could remove it later to reduce performance overhead.
+  qdb::jni::log::flush_guard flush(env);
+
   qdb_error_t err = tableRowAppend(env,
                                    (qdb_batch_table_t)batchTable,
                                    columnIndex,
@@ -379,6 +383,40 @@ Java_net_quasardb_qdb_jni_qdb_ts_1blob_1get_1ranges(JNIEnv * jniEnv, jclass /*th
       setReferenceValue(env,
                         points,
                         nativeToBlobPoints(env, nativePoints, pointCount).release());
+  }
+
+  delete[] nativeTimeRanges;
+  return err;
+}
+
+
+JNIEXPORT jint JNICALL
+Java_net_quasardb_qdb_jni_qdb_ts_1string_1get_1ranges(JNIEnv * jniEnv, jclass /*thisClass*/, jlong handle,
+                                                      jstring alias, jstring column, jobjectArray ranges, jobject points) {
+  qdb::jni::env env(jniEnv);
+
+  qdb_size_t rangeCount = env.instance().GetArrayLength(ranges);
+  qdb_ts_range_t * nativeTimeRanges = new qdb_ts_range_t[rangeCount];
+  timeRangesToNative(env, ranges, rangeCount, nativeTimeRanges);
+
+  qdb_ts_string_point * nativePoints;
+  qdb_size_t pointCount;
+
+  qdb_error_t err = qdb_ts_string_get_ranges((qdb_handle_t)handle,
+                                             qdb::jni::string::get_chars_utf8(env, alias),
+                                             qdb::jni::string::get_chars_utf8(env, column),
+                                             nativeTimeRanges,
+                                             rangeCount,
+                                             &nativePoints,
+                                             &pointCount);
+
+  if (QDB_SUCCESS(err)) {
+      // Note that at this point, we're moving the `nativePoints` buffer to
+      // our java ecosystem, and will be picked up to be cleared by the JVM
+      // garbage collector. As such, we do NOT call `qdb_release` here
+      setReferenceValue(env,
+                        points,
+                        nativeToStringPoints(env, nativePoints, pointCount).release());
   }
 
   delete[] nativeTimeRanges;

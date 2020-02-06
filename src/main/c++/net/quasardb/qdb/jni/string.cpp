@@ -26,6 +26,18 @@ qdb::jni::string::create_utf8(jni::env & env, char const * str)  {
                                             env.instance().NewStringUTF(str)));
 }
 
+
+
+/* static */ qdb::jni::guard::local_ref<jstring>
+qdb::jni::string::create_utf8(jni::env & env, char const * str, qdb_size_t len)  {
+  // quasardb doesn't null-terminate strings, JNI does not accept explicit string length
+  // and assumes null-terminated UTF-8 strings. As such we're gonna heap allocate
+  // it, just to null-terminate it.
+  std::string copy{str, len};
+  return std::move(qdb::jni::guard::local_ref<jstring>(env,
+                                                       env.instance().NewStringUTF(copy.c_str())));
+}
+
 /* static */ qdb::jni::guard::local_ref<jobjectArray>
 qdb::jni::string::create_array(jni::env & env,
                                jsize size)

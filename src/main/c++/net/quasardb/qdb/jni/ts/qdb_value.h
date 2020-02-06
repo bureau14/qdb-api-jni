@@ -39,6 +39,9 @@ namespace qdb {
                 _from_native_blob(qdb::jni::env & env, qdb_point_result_t const & input);
 
                 static jni::guard::local_ref<jobject>
+                _from_native_string(qdb::jni::env & env, qdb_point_result_t const & input);
+
+                static jni::guard::local_ref<jobject>
                 _from_native_null(qdb::jni::env & env);
 
             };

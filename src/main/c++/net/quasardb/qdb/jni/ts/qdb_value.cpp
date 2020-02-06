@@ -7,6 +7,7 @@
 #include "../guard/local_ref.h"
 #include "../byte_buffer.h"
 #include "../object.h"
+#include "../string.h"
 #include "qdb_value.h"
 
 /* static */ qdb::jni::guard::local_ref<jobject>
@@ -32,6 +33,10 @@ qdb::jni::ts::value::from_native(qdb::jni::env & env, qdb_point_result_t const &
 
         case qdb_query_result_blob:
             return _from_native_blob(env, input);
+            break;
+
+        case qdb_query_result_string:
+            return _from_native_string(env, input);
             break;
 
         case qdb_query_result_count:
@@ -103,6 +108,20 @@ qdb::jni::ts::value::_from_native_blob(qdb::jni::env & env, qdb_point_result_t c
                                         jni::byte_buffer::create_copy(env,
                                                                       input.payload.blob.content,
                                                                       input.payload.blob.content_length).release()));
+}
+
+
+/* static */ qdb::jni::guard::local_ref<jobject>
+qdb::jni::ts::value::_from_native_string(qdb::jni::env & env, qdb_point_result_t const & input) {
+    return std::move(
+        jni::object::call_static_method(env,
+                                        "net/quasardb/qdb/ts/Value",
+                                        "createString",
+                                        "(Ljava/lang/String;)Lnet/quasardb/qdb/ts/Value;",
+                                        jni::string::create_utf8(env,
+                                                                 input.payload.string.content,
+                                                                 input.payload.string.content_length).release()));
+
 }
 
 /* static */ qdb::jni::guard::local_ref<jobject>
