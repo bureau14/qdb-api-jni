@@ -127,6 +127,34 @@ public class Logger
                                      int hour, int min, int sec) {
         return LocalDateTime.of(year, month, day,
                                 hour, min, sec).toInstant(ZoneOffset.UTC);
+    }
+
+    public static void log(int level,
+                           int year, int month, int day,
+                           int hour, int min, int sec,
+                           int pid, int tid,
+                           String msg) {
+        try {
+            logMethodCache.invoke(_delegate,
+                                  new QdbEvent(levelFromNative(level),
+                                               toInstant(year, month, day,
+                                                         hour, min, sec),
+                                               pid, tid, msg));
+        } catch (Exception e) {
+            _delegate.error("Internal error: unable to access slf4j logging method", e);
+        }
+    }
+
+
+    public static void trace(String msg) {
+        _delegate.trace(msg);
+    }
+
+    public static void debug(String msg) {
+        _delegate.debug(msg);
+    }
+
+    public static void info(String msg) {
         _delegate.info(msg);
     }
 
