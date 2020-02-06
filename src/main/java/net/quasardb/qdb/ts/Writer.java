@@ -94,6 +94,7 @@ public class Writer implements AutoCloseable, Flushable {
                                           theBatchTable);
         ExceptionFactory.throwIfError(err);
 
+        logger.info("Successfully initialized Writer with {} columns for {} tables to Writer state", this.columns.size(), tables.length);
         this.batchTable = theBatchTable.value;
     }
 
@@ -111,15 +112,19 @@ public class Writer implements AutoCloseable, Flushable {
             this.tableOffsets.put(table.name, this.columns.size());
 
             for (Column column : table.columns) {
+                logger.debug("Initializing extra column {} of table {} at offset {}", column.name, table.name, this.columns.size());
                 this.columns.add(new TableColumn(table.name, column.name));
                 columns.add(new TableColumn(table.name, column.name));
             }
         }
 
+        logger.debug("Added {} columns for {} tables to Writer state, invoking native", columns.size(), tables.length);
         TableColumn[] tableColumns = columns.toArray(new TableColumn[columns.size()]);
         int err = qdb.ts_batch_table_extra_columns(this.batchTable,
                                                    tableColumns);
         ExceptionFactory.throwIfError(err);
+
+        logger.info("Successfully added {} columns for {} tables to Writer state", columns.size(), tables.length);
 
     }
 
