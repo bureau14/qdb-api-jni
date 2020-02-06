@@ -9,7 +9,7 @@ public class ExceptionFactory {
     private static final Logger logger = LoggerFactory.getLogger(ExceptionFactory.class);
 
     public static void throwIfError(int err) {
-        logger.trace("validating error code: ", err);
+        logger.trace("validating error code: {}", err);
         if (qdb_error.severity(err) == qdb_err_severity.info)
             return;
         Exception exception = createException(err);
