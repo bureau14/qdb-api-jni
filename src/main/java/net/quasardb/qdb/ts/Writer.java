@@ -15,6 +15,7 @@ import org.slf4j.LoggerFactory;
 import net.quasardb.qdb.*;
 import net.quasardb.qdb.exception.ExceptionFactory;
 import net.quasardb.qdb.exception.InvalidArgumentException;
+import net.quasardb.qdb.exception.OutOfBoundsException;
 import net.quasardb.qdb.jni.*;
 
 /**
@@ -221,6 +222,11 @@ public class Writer implements AutoCloseable, Flushable {
      * @see Table#autoFlushWriter
      */
     public void append(Integer offset, Timespec timestamp, Value[] values) throws IOException {
+        if (offset < 0 || offset >= this.columns.size()) {
+            logger.error("Invalid offset {}, only {} columns", offset, this.columns.size());
+            throw new OutOfBoundsException();
+        }
+
         logger.debug("Appending row to batch writer at offset {} with {} values with timestamp {}", offset, values.length, timestamp);
         int err = qdb.ts_batch_table_row_append(this.batchTable, offset, timestamp, values);
         ExceptionFactory.throwIfError(err);
