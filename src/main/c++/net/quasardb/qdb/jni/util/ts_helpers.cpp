@@ -1,6 +1,7 @@
 #include "ts_helpers.h"
 
 #include "../debug.h"
+#include "../log.h"
 #include "../object.h"
 #include "../string.h"
 #include "../introspect.h"
@@ -558,9 +559,18 @@ tableRowSetInt64ColumnValue(qdb::jni::env & env,
   jmethodID methodId = env.instance().GetMethodID(objectClass, "getInt64", "()J");
   assert(methodId != NULL);
 
-  return qdb_ts_batch_row_set_int64(batchTable,
-                                    index,
-                                    env.instance().CallLongMethod(value, methodId));
+  qdb::jni::log::trace("Batch writer setting int64 at offset %d", index);
+
+  qdb_int_t v = env.instance().CallLongMethod(value, methodId);
+  qdb_error_t err = qdb_ts_batch_row_set_int64(batchTable,
+                                               index,
+                                               v);
+
+  if (QDB_FAILURE(err)) {
+    qdb::jni::log::error("Unable to set int64 %d at offset %d: %s", v, index, qdb_error(err));
+  }
+
+  return err;
 }
 
 qdb_error_t
@@ -572,9 +582,18 @@ tableRowSetDoubleColumnValue(qdb::jni::env & env,
   jmethodID methodId = env.instance().GetMethodID(objectClass, "getDouble", "()D");
   assert(methodId != NULL);
 
-  return qdb_ts_batch_row_set_double(batchTable,
-                                     index,
-                                     env.instance().CallDoubleMethod(value, methodId));
+  qdb::jni::log::trace("Batch writer setting double at offset %d", index);
+
+  double v = env.instance().CallDoubleMethod(value, methodId);
+  qdb_error_t err = qdb_ts_batch_row_set_double(batchTable,
+                                                index,
+                                                v);
+  if (QDB_FAILURE(err)) {
+    qdb::jni::log::error("Unable to set double %.6f at offset %d: %s", v, index, qdb_error(err));
+  }
+
+  return err;
+
 }
 
 qdb_error_t
@@ -594,9 +613,16 @@ tableRowSetTimestampColumnValue(qdb::jni::env & env,
   qdb_timespec_t timestamp;
   timespecToNative(env, timestampObject, &timestamp);
 
+  qdb::jni::log::trace("Batch writer setting timestamp at offset %d", index);
+
   qdb_error_t err = qdb_ts_batch_row_set_timestamp(batchTable,
                                                    index,
                                                    &timestamp);
+
+  if (QDB_FAILURE(err)) {
+    qdb::jni::log::error("Unable to set timestampd at offset %d: %s", value, index, qdb_error(err));
+  }
+
   env.instance().DeleteLocalRef(timestampObject);
   return err;
 }
@@ -615,10 +641,17 @@ tableRowSetBlobColumnValue(qdb::jni::env & env,
   void * blob_addr = env.instance().GetDirectBufferAddress(blobValue);
   qdb_size_t blob_size = (qdb_size_t)(env.instance().GetDirectBufferCapacity(blobValue));
 
+  qdb::jni::log::trace("Batch writer setting blob at offset %d", index);
+
   qdb_error_t err =  qdb_ts_batch_row_set_blob(batchTable,
                                                index,
                                                blob_addr,
                                                blob_size);
+
+  if (QDB_FAILURE(err)) {
+    qdb::jni::log::error("Unable to set blob of %d bytes at offset %d: %s", blob_size, index, qdb_error(err));
+  }
+
   env.instance().DeleteLocalRef(blobValue);
   return err;
 }
@@ -642,16 +675,15 @@ tableRowSetStringColumnValue(qdb::jni::env & env,
   // we have to count the amount of bytes using strlen() here.
   jsize len = strlen(stringValue);
 
-  printf("setting string..\n");
-  fflush(stdout);
-
+  qdb::jni::log::trace("Batch writer setting string at offset %d", index);
   qdb_error_t err =  qdb_ts_batch_row_set_string(batchTable,
                                                  index,
                                                  stringValue,
                                                  len);
 
-  printf("set string!\n");
-  fflush(stdout);
+  if (QDB_FAILURE(err)) {
+    qdb::jni::log::error("Unable to set string %s at offset %d: %s", (char const *)(stringValue), index, qdb_error(err));
+  }
 
   return err;
 

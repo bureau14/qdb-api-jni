@@ -78,9 +78,11 @@ public class Writer implements AutoCloseable, Flushable {
         this.columns = new ArrayList<TableColumn>();
 
         for (Table table : tables) {
+            logger.debug("Initializing table {} at offset {}", table.name, this.columns.size());
             this.tableOffsets.put(table.name, this.columns.size());
 
             for (Column column : table.columns) {
+                logger.debug("Initializing column {} of table {} at offset {}", column.name, table.name, this.columns.size());
                 this.columns.add(new TableColumn(table.name, column.name));
             }
         }
@@ -214,7 +216,7 @@ public class Writer implements AutoCloseable, Flushable {
      * @see Table#autoFlushWriter
      */
     public void append(Integer offset, Timespec timestamp, Value[] values) throws IOException {
-        logger.debug("Appending row to batch writer at offset {} with timestamp {}", offset, timestamp);
+        logger.debug("Appending row to batch writer at offset {} with {} values with timestamp {}", offset, values.length, timestamp);
         int err = qdb.ts_batch_table_row_append(this.batchTable, offset, timestamp, values);
         ExceptionFactory.throwIfError(err);
 

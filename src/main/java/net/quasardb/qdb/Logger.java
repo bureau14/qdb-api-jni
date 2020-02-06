@@ -123,19 +123,18 @@ public class Logger
         return null;
     }
 
-    public static void log(int level,
-                           int year, int month, int day,
-                           int hour, int min, int sec,
-                           int pid, int tid,
-                           String msg) {
-        try {
-            logMethodCache.invoke(_delegate,
-                                  new QdbEvent(levelFromNative(level),
-                                               LocalDateTime.of(year, month, day,
-                                                                hour, min, sec).toInstant(ZoneOffset.UTC),
-                                               pid, tid, msg));
-        } catch (Exception e) {
-            _delegate.error("Internal error: unable to access slf4j logging method\n");
-        }
+    private static Instant toInstant(int year, int month, int day,
+                                     int hour, int min, int sec) {
+        return LocalDateTime.of(year, month, day,
+                                hour, min, sec).toInstant(ZoneOffset.UTC);
+        _delegate.info(msg);
+    }
+
+    public static void warn(String msg) {
+        _delegate.warn(msg);
+    }
+
+    public static void error(String msg) {
+        _delegate.error(msg);
     }
 }

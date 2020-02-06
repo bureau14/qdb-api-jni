@@ -138,6 +138,10 @@ Java_net_quasardb_qdb_jni_qdb_ts_1batch_1table_1row_1append(JNIEnv * jniEnv, jcl
                                                             jobjectArray values) {
   qdb::jni::env env(jniEnv);
 
+  //! Useful when we're debugging our batch writer IndexOutOfBounds exceptions. We
+  //! could remove it later to reduce performance overhead.
+  qdb::jni::log::flush_guard flush(env);
+
   qdb_error_t err = tableRowAppend(env,
                                    (qdb_batch_table_t)batchTable,
                                    columnIndex,
