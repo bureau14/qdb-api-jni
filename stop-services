@@ -1,9 +1,0 @@
-#!/bin/sh
-
-pkill -SIGKILL -f qdbd
-
-echo "qdbd.out.txt: "
-cat qdbd.out.txt
-
-echo "qdbd.err.txt: "
-cat qdbd.err.txt

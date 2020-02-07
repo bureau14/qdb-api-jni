@@ -1,6 +1,10 @@
 import java.time.Instant;
 import java.io.IOException;
+import java.io.FileNotFoundException;
 import java.util.stream.Stream;
+import java.nio.file.Paths;
+import java.nio.file.Files;
+import org.json.JSONObject;
 
 // import-start
 import net.quasardb.qdb.*;
@@ -23,15 +27,27 @@ public class Tutorial {
     }
 
     private void secureConnect() {
+        String username = "";
+        String user_secret_key = "";
+        String cluster_public_key = "";
+        try {
+            String user_file_content = new String(Files.readAllBytes(Paths.get("user_private.key")));
+            JSONObject user = new JSONObject(user_file_content);
+            username = user.get("username").toString();
+            user_secret_key = user.get("secret_key").toString();
+            cluster_public_key = new String(Files.readAllBytes(Paths.get("cluster_public.key")));
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         // secure-connect-start
         Session c;
         try {
-            c = Session.connect(new Session.SecurityOptions("user_name",
-                                                            // User private key
-                                                            "SL8sm9dM5xhPE6VNhfYY4ib4qk3vmAFDXCZ2FDi8AuJ4=",
-                                                            // Cluster public key
-                                                            "PZMBhqk43w+HNr9lLGe+RYq+qWZPrksFWMF1k1UG/vwc="),
-                                "qdb://127.0.0.1:28362");
+            c = Session.connect(new Session.SecurityOptions(username,
+                                                            user_secret_key,
+                                                            cluster_public_key),
+                                "qdb://127.0.0.1:2838");
         } catch (ConnectionRefusedException ex) {
             System.err.println("Failed to connect to cluster, make sure server is running!");
             System.exit(1);
@@ -45,7 +61,7 @@ public class Tutorial {
         Session c;
 
         try {
-            c = Session.connect("qdb://127.0.0.1:28360");
+            c = Session.connect("qdb://127.0.0.1:2836");
         } catch (ConnectionRefusedException ex) {
             System.err.println("Failed to connect to cluster, make sure server is running!");
             throw ex;

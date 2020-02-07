@@ -11,7 +11,7 @@ import net.quasardb.qdb.*;
 
 public class TestUtils {
     private static long n = 1;
-    public static final String CLUSTER_URI = "qdb://127.0.0.1:28360";
+    public static final String CLUSTER_URI = "qdb://127.0.0.1:2836";
 
     public static Session createSession() {
         return Session.connect(CLUSTER_URI);
