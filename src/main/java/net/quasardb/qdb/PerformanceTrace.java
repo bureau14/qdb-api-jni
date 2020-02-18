@@ -13,7 +13,6 @@ import net.quasardb.qdb.jni.Reference;
 
 import net.quasardb.qdb.Session;
 import net.quasardb.qdb.ts.Timespec;
-import net.quasardb.qdb.exception.ExceptionFactory;
 
 public class PerformanceTrace {
     private static final Logger logger = LoggerFactory.getLogger(PerformanceTrace.class);
@@ -69,15 +68,13 @@ public class PerformanceTrace {
     public static void enable(Session s) {
         s.throwIfClosed();
 
-        int err = qdb.enable_performance_trace(s.handle());
-        ExceptionFactory.throwIfError(err);
+        qdb.enable_performance_trace(s.handle());
     }
 
     public static void disable(Session s) {
         s.throwIfClosed();
 
-        int err = qdb.disable_performance_trace(s.handle());
-        ExceptionFactory.throwIfError(err);
+        qdb.disable_performance_trace(s.handle());
     }
 
     /**
@@ -90,8 +87,7 @@ public class PerformanceTrace {
 
         Reference<Trace[]> result = new Reference<Trace[]>();
 
-        int err = qdb.get_performance_traces(s.handle(), result);
-        ExceptionFactory.throwIfError(err);
+        qdb.get_performance_traces(s.handle(), result);
 
         return Arrays.asList(result.get());
     }
@@ -117,8 +113,7 @@ public class PerformanceTrace {
     public static void clear(Session s) {
         s.throwIfClosed();
 
-        int err = qdb.clear_performance_traces(s.handle());
-        ExceptionFactory.throwIfError(err);
+        qdb.clear_performance_traces(s.handle());
     }
 
     /**

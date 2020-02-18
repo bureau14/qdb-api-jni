@@ -5,7 +5,7 @@ package net.quasardb.qdb.exception;
  */
 public final class BatchAlreadyRunException extends OperationException {
 
-    public BatchAlreadyRunException() {
-        super("Cannot modify a batch that has already been run");
+    public BatchAlreadyRunException(String message) {
+        super(message);
     }
 }

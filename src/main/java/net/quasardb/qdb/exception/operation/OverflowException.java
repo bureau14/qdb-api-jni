@@ -5,7 +5,7 @@ package net.quasardb.qdb.exception;
  */
 public final class OverflowException extends OperationException {
 
-    public OverflowException() {
-        super("The operation provokes overflow.");
+    public OverflowException(String message) {
+        super(message);
     }
 }

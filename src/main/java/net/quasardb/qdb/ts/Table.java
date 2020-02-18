@@ -14,7 +14,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import net.quasardb.qdb.*;
-import net.quasardb.qdb.exception.ExceptionFactory;
 import net.quasardb.qdb.exception.InvalidArgumentException;
 import net.quasardb.qdb.jni.*;
 
@@ -45,8 +44,7 @@ public class Table implements Serializable {
 
         Reference<Column[]> columns =
             new Reference<Column[]>();
-        int err = qdb.ts_list_columns(session.handle(), this.name, columns);
-        ExceptionFactory.throwIfError(err);
+        qdb.ts_list_columns(session.handle(), this.name, columns);
         this.columns = columns.value;
 
         // Keep track of the columns that are part of this table, so
@@ -108,12 +106,10 @@ public class Table implements Serializable {
      */
     static public Table create(Session session, String name, Column[] columns, long shardSize) {
         logger.info("Creating new table {} with shard size: {}", name, shardSize);
-        int err = qdb.ts_create(session.handle(),
-                                name,
-                                shardSize,
-                                columns);
-
-        ExceptionFactory.throwIfError(err);
+        qdb.ts_create(session.handle(),
+                      name,
+                      shardSize,
+                      columns);
 
         return new Table(session, name);
     }
@@ -126,8 +122,7 @@ public class Table implements Serializable {
      */
     public static void remove(Session session, String name) {
         logger.info("Dropping table {}", name);
-        int err = qdb.ts_remove(session.handle(), name);
-        ExceptionFactory.throwIfError(err);
+        qdb.ts_remove(session.handle(), name);
     }
 
 
@@ -418,8 +413,7 @@ public class Table implements Serializable {
     public static void attachTags(Session session, String tableName, List<String> tags) {
         for (String tag : tags) {
             logger.debug("Attaching tag {} to table {}", tag, tableName);
-            int err = qdb.attach_tag(session.handle(), tableName, tag);
-            ExceptionFactory.throwIfError(err);
+            qdb.attach_tag(session.handle(), tableName, tag);
         }
     }
 
@@ -447,7 +441,7 @@ public class Table implements Serializable {
     public int columnIndexById (String id) {
         Integer offset = this.columnOffsets.get(id);
         if (offset == null) {
-            throw new InvalidArgumentException();
+            throw new InvalidArgumentException("Column '" + id + "' not found for this table: '" + this.name + "'");
         }
 
         return offset.intValue();

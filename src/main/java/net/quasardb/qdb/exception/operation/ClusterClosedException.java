@@ -5,7 +5,7 @@ package net.quasardb.qdb.exception;
  */
 public final class ClusterClosedException extends OperationException {
 
-    public ClusterClosedException() {
-        super("Operation cannot be performed because Cluster.close() has been called");
+    public ClusterClosedException(String message) {
+        super(message);
     }
 }

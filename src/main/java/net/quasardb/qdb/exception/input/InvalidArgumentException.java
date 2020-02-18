@@ -5,10 +5,6 @@ package net.quasardb.qdb.exception;
  */
 public final class InvalidArgumentException extends InputException {
 
-    public InvalidArgumentException() {
-        super("The argument is invalid.");
-    }
-
     public InvalidArgumentException(String message) {
         super(message);
     }

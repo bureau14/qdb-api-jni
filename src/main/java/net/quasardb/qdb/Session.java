@@ -8,7 +8,6 @@ import org.slf4j.LoggerFactory;
 
 import net.quasardb.qdb.*;
 import net.quasardb.qdb.jni.*;
-import net.quasardb.qdb.exception.ExceptionFactory;
 import net.quasardb.qdb.exception.ClusterClosedException;
 import net.quasardb.qdb.exception.InputBufferTooSmallException;
 
@@ -79,8 +78,7 @@ public class Session {
     static public Session connect(String uri) {
         logger.info("Establishing an insecure connection to cluster: {}", uri);
         Session s = new Session();
-        int err = qdb.connect(s.handle, uri);
-        ExceptionFactory.throwIfError(err);
+        qdb.connect(s.handle, uri);
 
         return s;
     }
@@ -95,8 +93,7 @@ public class Session {
     static public Session connect(SecurityOptions options, String uri) {
         logger.info("Establishing a secure connection to cluster: {}", uri);
         Session s = new Session();
-        int err = qdb.secure_connect(s.handle, uri, SecurityOptions.toNative(options));
-        ExceptionFactory.throwIfError(err);
+        qdb.secure_connect(s.handle, uri, SecurityOptions.toNative(options));
 
         return s;
     }
@@ -116,7 +113,7 @@ public class Session {
     public void throwIfClosed() {
         if (handle == 0) {
             logger.warn("Session invoked while closed!");
-            throw new ClusterClosedException();
+            throw new ClusterClosedException("Session function invoked but is already closed.");
         }
     }
 
@@ -141,8 +138,7 @@ public class Session {
     public void setTimeout(int timeoutMillis) throws ClusterClosedException {
         throwIfClosed();
 
-        int err = qdb.option_set_timeout(handle, timeoutMillis);
-        ExceptionFactory.throwIfError(err);
+        qdb.option_set_timeout(handle, timeoutMillis);
     }
 
     /**
@@ -156,8 +152,7 @@ public class Session {
     public void setInputBufferSize(long size) throws ClusterClosedException {
         throwIfClosed();
 
-        int err = qdb.option_set_client_max_in_buf_size(handle, size);
-        ExceptionFactory.throwIfError(err);
+        qdb.option_set_client_max_in_buf_size(handle, size);
     }
 
     /**

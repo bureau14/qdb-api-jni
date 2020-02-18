@@ -5,7 +5,7 @@ package net.quasardb.qdb.exception;
  */
 public final class OperationDisabledException extends OperationException {
 
-    public OperationDisabledException() {
-        super("The requested operation cannot be performed because it has been disabled.");
+    public OperationDisabledException(String message) {
+        super(message);
     }
 }

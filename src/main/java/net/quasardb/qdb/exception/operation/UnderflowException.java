@@ -5,7 +5,7 @@ package net.quasardb.qdb.exception;
  */
 public final class UnderflowException extends OperationException {
 
-    public UnderflowException() {
-        super("The operation provokes underflow.");
+    public UnderflowException(String message) {
+        super(message);
     }
 }

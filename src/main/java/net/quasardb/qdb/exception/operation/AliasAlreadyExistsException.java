@@ -5,7 +5,7 @@ package net.quasardb.qdb.exception;
  */
 public final class AliasAlreadyExistsException extends OperationException {
 
-    public AliasAlreadyExistsException() {
-        super("An entry matching the provided alias already exists.");
+    public AliasAlreadyExistsException(String message) {
+        super(message);
     }
 }

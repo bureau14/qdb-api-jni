@@ -4,6 +4,7 @@
 
 #include "net_quasardb_qdb_jni_qdb.h"
 
+#include "../exception.h"
 #include "../local_frame.h"
 #include "../guard/local_ref.h"
 #include "../string.h"
@@ -85,21 +86,27 @@ Java_net_quasardb_qdb_jni_qdb_query_1execute(JNIEnv * jniEnv, jclass /*thisClass
     qdb::jni::env env(jniEnv);
     qdb_query_result_t * result = NULL;
 
-    qdb_error_t err =
-        qdb_query((qdb_handle_t)(handle),
-                  qdb::jni::string::get_chars_utf8(env, query), &result);
+    try {
+      qdb_error_t err =
+        qdb::jni::exception::throw_if_error((qdb_handle_t)(handle),
+                                            qdb_query((qdb_handle_t)(handle),
+                                                      qdb::jni::string::get_chars_utf8(env, query), &result));
 
-    if (QDB_SUCCESS(err)) {
-        assert(result != NULL);
+      assert(result != NULL);
 
-        setReferenceValue(env,
-                          outputReference,
-                          nativeToResult(env,
-                                         *result,
-                                         jni::introspect::lookup_class(env,
-                                                                       "net/quasardb/qdb/ts/Result")).release());
+      setReferenceValue(env,
+                        outputReference,
+                        nativeToResult(env,
+                                       *result,
+                                       jni::introspect::lookup_class(env,
+                                                                     "net/quasardb/qdb/ts/Result")).release());
+
+      qdb_release((qdb_handle_t)handle, result);
+
+      return err;
+
+    } catch (jni::exception const & e) {
+      e.throw_new(env);
+      return e.error();
     }
-
-    qdb_release((qdb_handle_t)handle, result);
-    return err;
 }

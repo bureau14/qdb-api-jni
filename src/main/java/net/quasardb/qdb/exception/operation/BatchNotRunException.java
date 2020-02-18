@@ -5,7 +5,7 @@ package net.quasardb.qdb.exception;
  */
 public final class BatchNotRunException extends OperationException {
 
-    public BatchNotRunException() {
-        super("Cannot read the result because the batch hasn't been run.");
+    public BatchNotRunException(String message) {
+        super(message);
     }
 }

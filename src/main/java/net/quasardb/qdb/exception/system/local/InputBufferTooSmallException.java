@@ -7,7 +7,7 @@ package net.quasardb.qdb.exception;
  */
 public class InputBufferTooSmallException extends LocalSystemException {
 
-    public InputBufferTooSmallException() {
-        super("Local input buffer is too small to fit the result set. Hint: consider increasing your local buffer size using Session.setInputBufferSize() or requesting smaller timeranged.");
+    public InputBufferTooSmallException(String message) {
+        super(message);
     }
 }

@@ -18,6 +18,7 @@ set(QDB_JNI_SOURCES
   src/main/c++/net/quasardb/qdb/jni/byte_buffer.cpp
   src/main/c++/net/quasardb/qdb/jni/debug.cpp
   src/main/c++/net/quasardb/qdb/jni/env.cpp
+  src/main/c++/net/quasardb/qdb/jni/exception.cpp
   src/main/c++/net/quasardb/qdb/jni/introspect.cpp
   src/main/c++/net/quasardb/qdb/jni/string.cpp
   src/main/c++/net/quasardb/qdb/jni/vm.cpp

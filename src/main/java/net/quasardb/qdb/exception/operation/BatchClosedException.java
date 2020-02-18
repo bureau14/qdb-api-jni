@@ -5,7 +5,7 @@ package net.quasardb.qdb.exception;
  */
 public final class BatchClosedException extends OperationException {
 
-    public BatchClosedException() {
-        super("Operation cannot be performed because the batch has been closed.");
+    public BatchClosedException(String message) {
+        super(message);
     }
 }

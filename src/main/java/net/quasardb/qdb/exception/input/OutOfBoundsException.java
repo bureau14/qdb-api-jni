@@ -5,7 +5,7 @@ package net.quasardb.qdb.exception;
  */
 public final class OutOfBoundsException extends InputException {
 
-    public OutOfBoundsException() {
-        super("The given index was out of bounds.");
+    public OutOfBoundsException(String message) {
+        super(message);
     }
 }

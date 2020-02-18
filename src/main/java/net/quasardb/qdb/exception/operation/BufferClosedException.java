@@ -5,7 +5,7 @@ package net.quasardb.qdb.exception;
  */
 public final class BufferClosedException extends OperationException {
 
-    public BufferClosedException() {
-        super("Operation cannot be performed because Buffer.close() was called");
+    public BufferClosedException(String message) {
+        super(message);
     }
 }

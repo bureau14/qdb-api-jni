@@ -5,10 +5,6 @@ package net.quasardb.qdb.exception;
  */
 public final class IncompatibleTypeException extends OperationException {
 
-    public IncompatibleTypeException() {
-        this("The alias has a type incompatible for this operation.");
-    }
-
     public IncompatibleTypeException(String msg) {
         super(msg);
     }

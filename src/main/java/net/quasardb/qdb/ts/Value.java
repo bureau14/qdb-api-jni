@@ -6,7 +6,6 @@ import java.nio.charset.Charset;
 
 import net.quasardb.qdb.*;
 import net.quasardb.qdb.jni.*;
-import net.quasardb.qdb.exception.ExceptionFactory;
 import net.quasardb.qdb.exception.IncompatibleTypeException;
 
 /**
@@ -349,7 +348,7 @@ public class Value implements Serializable {
 
     public long getInt64() {
         if (this.type != Type.INT64) {
-            throw new IncompatibleTypeException();
+            throw new IncompatibleTypeException("Not an integer: " + this.type.toString());
         }
 
         return this.int64Value;
@@ -357,7 +356,7 @@ public class Value implements Serializable {
 
     public double getDouble() {
         if (this.type != Type.DOUBLE) {
-            throw new IncompatibleTypeException();
+            throw new IncompatibleTypeException("Not a double: " + this.type.toString());
         }
 
         return this.doubleValue;
@@ -365,7 +364,7 @@ public class Value implements Serializable {
 
     public Timespec getTimestamp() {
         if (this.type != Type.TIMESTAMP) {
-            throw new IncompatibleTypeException();
+            throw new IncompatibleTypeException("Not a timestamp: " + this.type.toString());
         }
 
         return this.timestampValue;
@@ -373,7 +372,7 @@ public class Value implements Serializable {
 
     public ByteBuffer getBlob() {
         if (this.type != Type.BLOB) {
-            throw new IncompatibleTypeException();
+            throw new IncompatibleTypeException("Not a blob: " + this.type.toString());
         }
 
         return this.blobValue.asReadOnlyBuffer();
@@ -381,7 +380,7 @@ public class Value implements Serializable {
 
     public String getString() {
         if (this.type != Type.STRING) {
-            throw new IncompatibleTypeException();
+            throw new IncompatibleTypeException("Not a string: " + this.type.toString());
         }
 
         return this.stringValue;

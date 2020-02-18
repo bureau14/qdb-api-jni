@@ -5,7 +5,7 @@ package net.quasardb.qdb.exception;
  */
 public final class HostNotFoundException extends ConnectionException {
 
-    public HostNotFoundException() {
-        super("The remote host cannot be resolved.");
+    public HostNotFoundException(String message) {
+        super(message);
     }
 }

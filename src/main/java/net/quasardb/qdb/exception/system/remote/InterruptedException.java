@@ -6,7 +6,7 @@ package net.quasardb.qdb.exception;
  */
 public class InterruptedException extends RemoteSystemException {
 
-    public InterruptedException() {
-        super("The remote connection was interrupted.");
+    public InterruptedException(String message) {
+        super(message);
     }
 }

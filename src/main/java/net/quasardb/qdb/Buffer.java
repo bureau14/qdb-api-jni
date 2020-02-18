@@ -53,7 +53,7 @@ public final class Buffer implements AutoCloseable {
 
     private void throwIfClosed() {
         if (buffer == null) {
-            throw new BufferClosedException();
+            throw new BufferClosedException("The buffer is closed");
         }
     }
 }

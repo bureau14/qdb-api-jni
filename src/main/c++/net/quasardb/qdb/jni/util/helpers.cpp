@@ -1,5 +1,7 @@
 #include "../env.h"
+#include "../exception.h"
 #include "helpers.h"
+#include "../log.h"
 
 void
 setReferenceValue(qdb::jni::env & env, jobject reference, jobject value) {

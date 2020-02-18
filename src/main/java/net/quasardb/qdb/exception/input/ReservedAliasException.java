@@ -5,7 +5,7 @@ package net.quasardb.qdb.exception;
  */
 public final class ReservedAliasException extends InputException {
 
-    public ReservedAliasException() {
-        super("The alias name or prefix is reserved.");
+    public ReservedAliasException(String message) {
+        super(message);
     }
 }

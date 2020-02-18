@@ -13,7 +13,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import net.quasardb.qdb.*;
-import net.quasardb.qdb.exception.ExceptionFactory;
 import net.quasardb.qdb.exception.InvalidArgumentException;
 import net.quasardb.qdb.exception.OutOfBoundsException;
 import net.quasardb.qdb.jni.*;
@@ -90,10 +89,9 @@ public class Writer implements AutoCloseable, Flushable {
 
         TableColumn[] tableColumns = this.columns.toArray(new TableColumn[columns.size()]);
         Reference<Long> theBatchTable = new Reference<Long>();
-        int err = qdb.ts_batch_table_init(this.session.handle(),
-                                          tableColumns,
-                                          theBatchTable);
-        ExceptionFactory.throwIfError(err);
+        qdb.ts_batch_table_init(this.session.handle(),
+                                tableColumns,
+                                theBatchTable);
 
         logger.info("Successfully initialized Writer with {} columns for {} tables to Writer state", this.columns.size(), tables.length);
         this.batchTable = theBatchTable.value;
@@ -121,9 +119,9 @@ public class Writer implements AutoCloseable, Flushable {
 
         logger.debug("Added {} columns for {} tables to Writer state, invoking native", columns.size(), tables.length);
         TableColumn[] tableColumns = columns.toArray(new TableColumn[columns.size()]);
-        int err = qdb.ts_batch_table_extra_columns(this.batchTable,
-                                                   tableColumns);
-        ExceptionFactory.throwIfError(err);
+        qdb.ts_batch_table_extra_columns(this.session.handle(),
+                                         this.batchTable,
+                                         tableColumns);
 
         logger.info("Successfully added {} columns for {} tables to Writer state", columns.size(), tables.length);
 
@@ -145,7 +143,7 @@ public class Writer implements AutoCloseable, Flushable {
         Integer offset = this.tableOffsets.get(name);
         logger.debug("Resolved trable {} to column offset {}", name, offset);
         if (offset == null) {
-            throw new InvalidArgumentException();
+            throw new InvalidArgumentException("Table not seen before: '" + name + "'. Please use extratables() to explicitly add the table to the Writer state.");
         }
 
         return offset.intValue();
@@ -185,25 +183,23 @@ public class Writer implements AutoCloseable, Flushable {
         switch (this.pushMode) {
         case NORMAL:
             logger.info("Flushing batch writer sync, points since last flush: {}", pointsSinceFlush);
-            err = qdb.ts_batch_push(this.batchTable);
+            err = qdb.ts_batch_push(this.session.handle(), this.batchTable);
             break;
 
         case ASYNC:
             logger.info("Flushing batch writer async, points since last flush: {}", pointsSinceFlush);
-            err = qdb.ts_batch_push_async(this.batchTable);
+            err = qdb.ts_batch_push_async(this.session.handle(), this.batchTable);
             break;
 
         case FAST:
             logger.info("Using in-place fast flushing to push batch, points since last flush: {}", pointsSinceFlush);
-            err = qdb.ts_batch_push_fast(this.batchTable);
+            err = qdb.ts_batch_push_fast(this.session.handle(), this.batchTable);
             break;
 
         default:
             throw new RuntimeException("Fatal error: unrecognized push mode: " + this.pushMode);
 
         }
-
-        ExceptionFactory.throwIfError(err);
 
         pointsSinceFlush = 0;
     }
@@ -224,12 +220,15 @@ public class Writer implements AutoCloseable, Flushable {
     public void append(Integer offset, Timespec timestamp, Value[] values) throws IOException {
         if (offset < 0 || offset >= this.columns.size()) {
             logger.error("Invalid offset {}, only {} columns", offset, this.columns.size());
-            throw new OutOfBoundsException();
+            throw new OutOfBoundsException("Unable to append at offset " + offset.toString() + ", out of bounds.");
         }
 
-        logger.debug("Appending row to batch writer at offset {} with {} values with timestamp {}", offset, values.length, timestamp);
-        int err = qdb.ts_batch_table_row_append(this.batchTable, offset, timestamp, values);
-        ExceptionFactory.throwIfError(err);
+        logger.trace("Appending row to batch writer at offset {} with {} values with timestamp {}", offset, values.length, timestamp);
+        qdb.ts_batch_table_row_append(this.session.handle(),
+                                      this.batchTable,
+                                      offset,
+                                      timestamp,
+                                      values);
 
         this.pointsSinceFlush += values.length;
     }

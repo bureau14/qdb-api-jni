@@ -13,7 +13,6 @@ import java.util.stream.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import net.quasardb.qdb.exception.ExceptionFactory;
 import net.quasardb.qdb.exception.InvalidArgumentException;
 import net.quasardb.qdb.exception.InvalidIteratorException;
 
@@ -42,13 +41,11 @@ public class Reader implements AutoCloseable, Iterator<WritableRow> {
         this.next = new Reference<WritableRow>();
 
         Reference<Long> theLocalTable = new Reference<Long>();
-        int err = qdb.ts_local_table_init(this.session.handle(), table.getName(), table.getColumns(), theLocalTable);
-        ExceptionFactory.throwIfError(err);
+        qdb.ts_local_table_init(this.session.handle(), table.getName(), table.getColumns(), theLocalTable);
 
         this.localTable = theLocalTable.get();
 
-        err = qdb.ts_table_get_ranges(this.localTable, ranges);
-        ExceptionFactory.throwIfError(err);
+        qdb.ts_table_get_ranges(this.session.handle(), this.localTable, ranges);
     }
 
     /**
@@ -75,8 +72,7 @@ public class Reader implements AutoCloseable, Iterator<WritableRow> {
      * reference to the internal row.
      */
     private void readNext() {
-        int err = qdb.ts_table_next_row(this.localTable, this.table.getColumns(), this.next);
-        ExceptionFactory.throwIfError(err);
+        qdb.ts_table_next_row(this.session.handle(), this.localTable, this.table.getColumns(), this.next);
     }
 
     /**
@@ -122,7 +118,7 @@ public class Reader implements AutoCloseable, Iterator<WritableRow> {
         this.maybeReadNext();
 
         if (this.hasNext() == false) {
-            throw new InvalidIteratorException();
+            throw new InvalidIteratorException("Attempted to read next but has no next rows");
         }
 
         return this.next.pop();

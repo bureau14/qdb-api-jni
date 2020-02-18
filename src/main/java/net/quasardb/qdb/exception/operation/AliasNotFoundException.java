@@ -5,7 +5,7 @@ package net.quasardb.qdb.exception;
  */
 public final class AliasNotFoundException extends OperationException {
 
-    public AliasNotFoundException() {
-        super("An entry matching the provided alias cannot be found.");
+    public AliasNotFoundException(String message) {
+        super(message);
     }
 }

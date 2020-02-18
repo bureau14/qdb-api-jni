@@ -14,7 +14,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import net.quasardb.qdb.*;
-import net.quasardb.qdb.exception.ExceptionFactory;
 import net.quasardb.qdb.exception.InvalidArgumentException;
 import net.quasardb.qdb.exception.IncompatibleTypeException;
 import net.quasardb.qdb.jni.*;
@@ -103,7 +102,6 @@ public class Tables implements Serializable {
         logger.debug("Looking up all tables by tag: {}", tag);
         Reference<Long> iterator = new Reference<Long>();
         int err = qdb.tag_iterator_begin(session.handle(), tag, iterator);
-        ExceptionFactory.throwIfError(err);
 
         Tables tables = new Tables();
 
@@ -122,7 +120,6 @@ public class Tables implements Serializable {
 
             err = qdb.tag_iterator_next(handle);
             hasNext = err == qdb_error.ok;
-            ExceptionFactory.throwIfError(err);
         }
 
         return tables;

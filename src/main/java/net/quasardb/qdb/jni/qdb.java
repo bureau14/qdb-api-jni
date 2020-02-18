@@ -121,16 +121,16 @@ public final class qdb
     public static native int
     ts_local_table_init(long handle, String alias, Column[] columns, Reference<Long> localTable);
     public static native int ts_batch_table_init(long handle, Writer.TableColumn[] columns, Reference<Long> batchTable);
-    public static native int ts_batch_table_extra_columns(long batchTable, Writer.TableColumn[] columns);
+    public static native int ts_batch_table_extra_columns(long handle, long batchTable, Writer.TableColumn[] columns);
     public static native void ts_batch_table_release(long handle, long batchTable);
-    public static native int ts_batch_table_row_append(long batchTable, long offset, Timespec time, Value[] values);
-    public static native int ts_batch_push(long batchTable);
-    public static native int ts_batch_push_async(long batchTable);
-    public static native int ts_batch_push_fast(long batchTable);
+    public static native int ts_batch_table_row_append(long handle, long batchTable, long offset, Timespec time, Value[] values);
+    public static native int ts_batch_push(long handle, long batchTable);
+    public static native int ts_batch_push_async(long handle, long batchTable);
+    public static native int ts_batch_push_fast(long hadnle, long batchTable);
 
     public static native void ts_local_table_release(long handle, long localTable);
-    public static native int ts_table_get_ranges(long localTable, TimeRange[] ranges);
-    public static native int ts_table_next_row(long localTable, Column[] columns, Reference<WritableRow> output);
+    public static native int ts_table_get_ranges(long handle, long localTable, TimeRange[] ranges);
+    public static native int ts_table_next_row(long handle, long localTable, Column[] columns, Reference<WritableRow> output);
 
     public static native int ts_double_insert(long handle, String alias, String column, qdb_ts_double_point[] points);
     public static native int ts_double_get_ranges(
@@ -184,10 +184,10 @@ public final class qdb
     public static native void
     batch_write_blob_update(long batch, int index, String alias, ByteBuffer content, long expiry);
     public static native int
-    batch_read_blob_compare_and_swap(long batch, int index, String alias, Reference<ByteBuffer> originalContent);
-    public static native int batch_read_blob_get(long batch, int index, String alias, Reference<ByteBuffer> content);
+    batch_read_blob_compare_and_swap(long handle, long batch, int index, String alias, Reference<ByteBuffer> originalContent);
+    public static native int batch_read_blob_get(long handle, long batch, int index, String alias, Reference<ByteBuffer> content);
     public static native int
-    batch_read_blob_get_and_update(long batch, int index, String alias, Reference<ByteBuffer> content);
-    public static native int batch_read_blob_put(long batch, int index, String alias);
-    public static native int batch_read_blob_update(long batch, int index, String alias);
+    batch_read_blob_get_and_update(long handle, long batch, int index, String alias, Reference<ByteBuffer> content);
+    public static native int batch_read_blob_put(long handle, long batch, int index, String alias);
+    public static native int batch_read_blob_update(long handle, long batch, int index, String alias);
 }

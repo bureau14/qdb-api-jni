@@ -8,7 +8,6 @@ import org.slf4j.LoggerFactory;
 import net.quasardb.qdb.Session;
 import net.quasardb.qdb.jni.qdb;
 import net.quasardb.qdb.jni.Reference;
-import net.quasardb.qdb.exception.ExceptionFactory;
 import net.quasardb.qdb.exception.InputException;
 
 
@@ -58,8 +57,7 @@ public final class Query {
 
         Reference<Result> result = new Reference<Result>();
 
-        int err = qdb.query_execute(session.handle(), this.query, result);
-        ExceptionFactory.throwIfError(err);
+        qdb.query_execute(session.handle(), this.query, result);
 
         return result.value;
     }

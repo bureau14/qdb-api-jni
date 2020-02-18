@@ -7,7 +7,7 @@ package net.quasardb.qdb.exception;
  */
 public final class InvalidIteratorException extends OperationException {
 
-    public InvalidIteratorException() {
-        super("The operation being performed is referencing an invalid iterator.");
+    public InvalidIteratorException(String message) {
+        super(message);
     }
 }

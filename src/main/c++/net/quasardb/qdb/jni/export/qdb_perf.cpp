@@ -9,24 +9,38 @@
 #include "../debug.h"
 #include "../object.h"
 #include "../env.h"
+#include "../exception.h"
 
 namespace jni = qdb::jni;
 
 JNIEXPORT jint JNICALL
 Java_net_quasardb_qdb_jni_qdb_enable_1performance_1trace(JNIEnv * jniEnv, jclass /* thisClass */, jlong handle) {
-  return qdb_perf_enable_client_tracking((qdb_handle_t)handle);
+  qdb::jni::env env(jniEnv);
+  try {
+    return jni::exception::throw_if_error((qdb_handle_t)handle,
+                                          qdb_perf_enable_client_tracking((qdb_handle_t)handle));
+
+  } catch (jni::exception const & e) {
+    e.throw_new(env);
+    return e.error();
+  }
 }
 
 JNIEXPORT jint JNICALL
 Java_net_quasardb_qdb_jni_qdb_disable_1performance_1trace(JNIEnv * jniEnv, jclass /* thisClass */, jlong handle) {
-  qdb_error_t err;
+  qdb::jni::env env(jniEnv);
 
-  err = qdb_perf_clear_all_profiles((qdb_handle_t)handle);
-  if (QDB_FAILURE(err)) {
-    return err;
+  try {
+    jni::exception::throw_if_error((qdb_handle_t)handle,
+                                   qdb_perf_clear_all_profiles((qdb_handle_t)handle));
+
+    return jni::exception::throw_if_error((qdb_handle_t)handle,
+                                          qdb_perf_disable_client_tracking((qdb_handle_t)handle));
+
+  } catch (jni::exception const & e) {
+    e.throw_new(env);
+    return e.error();
   }
-
-  return qdb_perf_disable_client_tracking((qdb_handle_t)handle);
 }
 
 jni::guard::local_ref<jobject>
@@ -156,56 +170,57 @@ JNIEXPORT jint JNICALL
 Java_net_quasardb_qdb_jni_qdb_get_1performance_1traces(JNIEnv * jniEnv, jclass /* thisClass */, jlong handle, jobject output) {
   jni::env env(jniEnv);
 
-  qdb_error_t err;
+  try {
+    qdb_perf_profile_t * profiles;
+    qdb_size_t profiles_count;
 
-  qdb_perf_profile_t * profiles;
-  qdb_size_t profiles_count;
+    jni::exception::throw_if_error((qdb_handle_t)handle,
+                                   qdb_perf_get_profiles((qdb_handle_t)handle, &profiles, &profiles_count));
 
-  err = qdb_perf_get_profiles((qdb_handle_t)handle, &profiles, &profiles_count);
-  if (QDB_FAILURE(err)) {
-    return err;
+    //! Initialy class + functions once, cache them accross all operations
+    jclass trace_class =
+      jni::introspect::lookup_class(env, "net/quasardb/qdb/PerformanceTrace$Trace");
+
+    jmethodID trace_constructor =
+      jni::introspect::lookup_method(env, trace_class,
+                                     "<init>",
+                                     "(Ljava/lang/String;[Lnet/quasardb/qdb/PerformanceTrace$Measurement;)V");
+
+    jclass measurement_class =
+      jni::introspect::lookup_class(env, "net/quasardb/qdb/PerformanceTrace$Measurement");
+
+    jmethodID measurement_constructor =
+      jni::introspect::lookup_method(env, measurement_class,
+                                     "<init>",
+                                     "(Ljava/lang/String;J)V");
+
+    //! Create array for all available profiles
+    jni::guard::local_ref<jobjectArray> xs (jni::object::create_array(env,
+                                                                      profiles_count,
+                                                                      trace_class));
+    // For each profile, convert to Trace object and add to array
+    for (qdb_size_t i = 0; i < profiles_count; ++i) {
+      env.instance().SetObjectArrayElement(xs,
+                                           (jsize)i,
+                                           jni::object::create(env,
+                                                               trace_class,
+                                                               trace_constructor,
+                                                               jni::string::create_utf8(env, profiles[i].name.data).release(),
+
+                                                               native_to_measurements(env,
+                                                                                      profiles[i],
+                                                                                      measurement_class,
+                                                                                      measurement_constructor).release()));
+    }
+
+    //! And return output by swapping the reference
+    setReferenceValue(env, output, xs.release());
+
+    return qdb_e_ok;
+  } catch (jni::exception const & e) {
+    e.throw_new(env);
+    return e.error();
   }
-
-  //! Initialy class + functions once, cache them accross all operations
-  jclass trace_class =
-    jni::introspect::lookup_class(env, "net/quasardb/qdb/PerformanceTrace$Trace");
-
-  jmethodID trace_constructor =
-    jni::introspect::lookup_method(env, trace_class,
-                                   "<init>",
-                                   "(Ljava/lang/String;[Lnet/quasardb/qdb/PerformanceTrace$Measurement;)V");
-
-  jclass measurement_class =
-    jni::introspect::lookup_class(env, "net/quasardb/qdb/PerformanceTrace$Measurement");
-
-  jmethodID measurement_constructor =
-    jni::introspect::lookup_method(env, measurement_class,
-                                   "<init>",
-                                   "(Ljava/lang/String;J)V");
-
-  //! Create array for all available profiles
-  jni::guard::local_ref<jobjectArray> xs (jni::object::create_array(env,
-                                                                    profiles_count,
-                                                                    trace_class));
-  // For each profile, convert to Trace object and add to array
-  for (qdb_size_t i = 0; i < profiles_count; ++i) {
-    env.instance().SetObjectArrayElement(xs,
-                                         (jsize)i,
-                                         jni::object::create(env,
-                                                             trace_class,
-                                                             trace_constructor,
-                                                             jni::string::create_utf8(env, profiles[i].name.data).release(),
-
-                                                             native_to_measurements(env,
-                                                                                    profiles[i],
-                                                                                    measurement_class,
-                                                                                    measurement_constructor).release()));
-  }
-
-  //! And return output by swapping the reference
-  setReferenceValue(env, output, xs.release());
-
-  return qdb_e_ok;
 }
 
 JNIEXPORT jint JNICALL

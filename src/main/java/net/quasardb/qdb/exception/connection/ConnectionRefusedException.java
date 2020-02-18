@@ -5,7 +5,7 @@ package net.quasardb.qdb.exception;
  */
 public final class ConnectionRefusedException extends ConnectionException {
 
-    public ConnectionRefusedException() {
-        super("Connection refused.");
+    public ConnectionRefusedException(String message) {
+        super(message);
     }
 }

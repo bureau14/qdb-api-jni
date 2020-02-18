@@ -5,7 +5,7 @@ package net.quasardb.qdb.exception;
  */
 public final class ResourceLockedException extends OperationException {
 
-    public ResourceLockedException() {
-        super("The entry is currently locked by another client.");
+    public ResourceLockedException(String message) {
+        super(message);
     }
 }
