@@ -1,71 +1,77 @@
 #pragma once
 
-#include <utility>
+#include "log.h"
 #include <cassert>
 #include <jni.h>
-#include "log.h"
+#include <utility>
 
-namespace qdb {
-  namespace jni {
+namespace qdb
+{
+namespace jni
+{
 
-    class vm;
+class vm;
+
+/**
+ * Provides safe access to the JNIEnv environment.
+ *
+ * A JNIEnv can be acquired in two ways: the most obvious way that the
+ * JNIEnv is provided when the JVM invokes a native function. However, a
+ * JNIEnv can also be resolved from the JavaVM, provided that the active
+ * thread is attached to the JVM.
+ *
+ * Where a JNIEnv cannot be shared between threads, a JavaVM can be. This
+ * class wraps around the necessary boilerplate to make this completely
+ * transparent, at the cost of a small performance penalty during object
+ * construction.
+ *
+ * If available, one should always initialise a qdb::jni::env from an
+ * existing JNIEnv.
+ */
+class env
+{
+  private:
+    JNIEnv *_env;
+
+  public:
+    /**
+     * Initialise an env from a JNIEnv *. This is the most commonly used
+     * method of initialisation, and will ensure qdb::jni::vm is initialised.
+     */
+    env(JNIEnv *e) : _env(e)
+    {
+    }
 
     /**
-     * Provides safe access to the JNIEnv environment.
+     * Initialise an env from a JavaVM &. This can be used in cases where
+     * a JNIEnv * is not available, and this constructor will acquire a
+     * JNIEnv * for the current thread from the JavaVM.
      *
-     * A JNIEnv can be acquired in two ways: the most obvious way that the
-     * JNIEnv is provided when the JVM invokes a native function. However, a
-     * JNIEnv can also be resolved from the JavaVM, provided that the active
-     * thread is attached to the JVM.
-     *
-     * Where a JNIEnv cannot be shared between threads, a JavaVM can be. This
-     * class wraps around the necessary boilerplate to make this completely
-     * transparent, at the cost of a small performance penalty during object
-     * construction.
-     *
-     * If available, one should always initialise a qdb::jni::env from an
-     * existing JNIEnv.
+     * \warning Requires the current thread to be attached to the JVM.
      */
-    class env {
-    private:
-      JNIEnv * _env;
+    env(JavaVM &vm);
 
-    public:
-      /**
-       * Initialise an env from a JNIEnv *. This is the most commonly used
-       * method of initialisation, and will ensure qdb::jni::vm is initialised.
-       */
-      env(JNIEnv * e) : _env(e) {
-      }
+    /**
+     * Initialise an env from a global JavaVM.
+     */
 
-      /**
-       * Initialise an env from a JavaVM &. This can be used in cases where
-       * a JNIEnv * is not available, and this constructor will acquire a
-       * JNIEnv * for the current thread from the JavaVM.
-       *
-       * \warning Requires the current thread to be attached to the JVM.
-       */
-      env(JavaVM & vm);
-
-      /**
-       * Initialise an env from a global JavaVM.
-       */
-
-      JNIEnv & instance() {
+    JNIEnv &
+    instance()
+    {
         assert(_env != NULL);
         return *_env;
-      }
+    }
 
-      ~env() {
+    ~env()
+    {
         log::flush(*this);
-      }
+    }
 
-    protected:
-      env (env const &) = delete;
-      env (env const &&) = delete;
-      env & operator=(env const &) = delete;
-      env & operator=(env const &&) = delete;
-
-    };
-  };
+  protected:
+    env(env const &) = delete;
+    env(env const &&) = delete;
+    env &operator=(env const &) = delete;
+    env &operator=(env const &&) = delete;
 };
+}; // namespace jni
+}; // namespace qdb

@@ -1,12 +1,12 @@
-#include <stdio.h>
 #include "vm.h"
+#include <stdio.h>
 
+qdb::jni::vm::vm(JNIEnv *env)
+{
+    JavaVM *vm = NULL;
+    jint err = env->GetJavaVM(&vm);
+    assert(err == 0);
+    assert(vm != NULL);
 
-qdb::jni::vm::vm(JNIEnv * env) {
-  JavaVM * vm = NULL;
-  jint err = env->GetJavaVM(&vm);
-  assert(err == 0);
-  assert(vm != NULL);
-
-  _vm = vm;
+    _vm = vm;
 }
