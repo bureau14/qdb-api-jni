@@ -16,7 +16,7 @@ xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
     <artifactId>jni</artifactId>
     <version>3.7.0-SNAPSHOT</version>
     <packaging>jar</packaging>
-    <file>target/jni-3.7.0-SNAPSHOT.jar</file>
+    <file>target/jni-3.8.0-SNAPSHOT.jar</file>
   </properties>
 
   <dependencies>
