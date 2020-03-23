@@ -201,4 +201,13 @@ public class TestUtils {
         return new TimeRange(first,
                              last.plusNanos(1));
     }
+
+    public static TimeRange[] rangesFromRows(WritableRow[] rows) {
+        return Arrays.stream(rows)
+            .map(WritableRow::getTimestamp)
+            .map((t) -> {
+                     return new TimeRange(t, t.plusNanos(1));
+                })
+            .toArray(TimeRange[]::new);
+    }
 }
