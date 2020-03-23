@@ -22,6 +22,28 @@ import net.quasardb.qdb.exception.InvalidArgumentException;
 
 public class WriterTest {
 
+    static Stream<Arguments> pushModeAndValueTypeProvider() {
+        return Stream.of(Arguments.of(Writer.PushMode.NORMAL, Value.Type.DOUBLE),
+                         Arguments.of(Writer.PushMode.NORMAL, Value.Type.INT64),
+                         Arguments.of(Writer.PushMode.NORMAL, Value.Type.BLOB),
+                         Arguments.of(Writer.PushMode.NORMAL, Value.Type.TIMESTAMP),
+
+                         Arguments.of(Writer.PushMode.ASYNC, Value.Type.DOUBLE),
+                         Arguments.of(Writer.PushMode.ASYNC, Value.Type.INT64),
+                         Arguments.of(Writer.PushMode.ASYNC, Value.Type.BLOB),
+                         Arguments.of(Writer.PushMode.ASYNC, Value.Type.TIMESTAMP),
+
+                         Arguments.of(Writer.PushMode.FAST, Value.Type.DOUBLE),
+                         Arguments.of(Writer.PushMode.FAST, Value.Type.INT64),
+                         Arguments.of(Writer.PushMode.FAST, Value.Type.BLOB),
+                         Arguments.of(Writer.PushMode.FAST, Value.Type.TIMESTAMP)
+
+                         );
+    }
+
+
+
+
     Writer writerByPushMode(Session s, Table t, Writer.PushMode mode) {
         switch (mode) {
         case NORMAL:
@@ -158,22 +180,38 @@ public class WriterTest {
         assertEquals(readRow, writeRow);
     }
 
-    static Stream<Arguments> pushModeAndValueTypeProvider() {
-        return Stream.of(Arguments.of(Writer.PushMode.NORMAL, Value.Type.DOUBLE),
-                         Arguments.of(Writer.PushMode.NORMAL, Value.Type.INT64),
-                         Arguments.of(Writer.PushMode.NORMAL, Value.Type.BLOB),
-                         Arguments.of(Writer.PushMode.NORMAL, Value.Type.TIMESTAMP),
 
-                         Arguments.of(Writer.PushMode.ASYNC, Value.Type.DOUBLE),
-                         Arguments.of(Writer.PushMode.ASYNC, Value.Type.INT64),
-                         Arguments.of(Writer.PushMode.ASYNC, Value.Type.BLOB),
-                         Arguments.of(Writer.PushMode.ASYNC, Value.Type.TIMESTAMP),
+    @ParameterizedTest
+    @MethodSource("pushModeAndValueTypeProvider")
+    public void canInsertMultipleRows(Writer.PushMode mode, Value.Type valueType) throws Exception {
+        String alias = TestUtils.createUniqueAlias();
+        Column[] definition = TestUtils.generateTableColumns(valueType, 1);
 
-                         Arguments.of(Writer.PushMode.FAST, Value.Type.DOUBLE),
-                         Arguments.of(Writer.PushMode.FAST, Value.Type.INT64),
-                         Arguments.of(Writer.PushMode.FAST, Value.Type.BLOB),
-                         Arguments.of(Writer.PushMode.FAST, Value.Type.TIMESTAMP)
+        Session s = TestUtils.createSession();
+        Table t = TestUtils.createTable(definition);
+        Writer writer = writerByPushMode(s, t, mode);
 
-                         );
+        int ROW_COUNT = 100000;
+
+        WritableRow[] rows = new WritableRow[ROW_COUNT];
+        for (int i = 0; i < rows.length; ++i) {
+            rows[i] =
+                new WritableRow (LocalDateTime.now(),
+                                 new Value[] {
+                                     TestUtils.generateRandomValueByType(valueType)});
+            writer.append(rows[i]);
+        }
+
+        pushmodeAwareFlush(writer);
+
+
+        TimeRange[] ranges = {
+            new TimeRange(rows[0].getTimestamp(),
+                          new Timespec(rows[(rows.length - 1)].getTimestamp().asLocalDateTime().plusNanos(1)))
+        };
+
+        WritableRow[] readRows = Table.reader(s, t, ranges).stream().toArray(WritableRow[]::new);
+
+        assertArrayEquals(rows, readRows);
     }
 }
