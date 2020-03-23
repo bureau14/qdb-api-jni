@@ -93,6 +93,10 @@ public class TestUtils {
 
     }
 
+    public static Value generateRandomValueByType(Value.Type valueType) {
+        return generateRandomValueByType(32, valueType);
+    }
+
     public static Value generateRandomValueByType(int complexity, Value.Type valueType) {
         return generateRandomValueByType(complexity, valueType, 0.0);
     }

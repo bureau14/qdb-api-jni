@@ -28,7 +28,7 @@ public class Writer implements AutoCloseable, Flushable {
     /**
      * Determines which mode of operation to use when flushing the writer.
      */
-    protected enum PushMode {
+    public enum PushMode {
         NORMAL,
         ASYNC,
         FAST
@@ -172,6 +172,10 @@ public class Writer implements AutoCloseable, Flushable {
         qdb.ts_batch_table_release(this.session.handle(), this.batchTable);
 
         this.batchTable = null;
+    }
+
+    public Writer.PushMode pushMode() {
+        return this.pushMode;
     }
 
     /**
