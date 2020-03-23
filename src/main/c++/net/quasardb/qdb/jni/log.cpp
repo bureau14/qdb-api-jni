@@ -24,9 +24,9 @@ qdb::jni::log::swap_callback()
     error = qdb_log_remove_callback(local_callback_id);
     if (error)
     {
-        fprintf(stderr, "unable to remove previous callback: %s (%#x)\n",
-                qdb_error(error), error);
-        fflush(stderr);
+        // fprintf(stderr, "unable to remove previous callback: %s (%#x)\n",
+        //         qdb_error(error), error);
+        // fflush(stderr);
     }
 
     error = qdb_log_add_callback(_callback, &local_callback_id);
