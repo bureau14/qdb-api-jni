@@ -1,10 +1,15 @@
 package net.quasardb.common;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectOutputStream;
+import java.io.ObjectInputStream;
 import java.io.IOException;
 import java.util.stream.Stream;
 import java.util.*;
 import java.nio.ByteBuffer;
 import java.util.function.Supplier;
+import java.io.Serializable;
 
 import net.quasardb.qdb.ts.*;
 import net.quasardb.qdb.*;
@@ -210,4 +215,24 @@ public class TestUtils {
                 })
             .toArray(TimeRange[]::new);
     }
+
+    public static <T extends Serializable> byte[] serialize(T obj)
+        throws IOException
+    {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        ObjectOutputStream oos = new ObjectOutputStream(baos);
+        oos.writeObject(obj);
+        oos.close();
+        return baos.toByteArray();
+    }
+
+    public static <T extends Serializable> T deserialize(byte[] b, Class<T> cl)
+        throws IOException, ClassNotFoundException
+    {
+        ByteArrayInputStream bais = new ByteArrayInputStream(b);
+        ObjectInputStream ois = new ObjectInputStream(bais);
+        Object o = ois.readObject();
+        return cl.cast(o);
+    }
+
 }
