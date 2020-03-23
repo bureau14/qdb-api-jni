@@ -191,7 +191,7 @@ public class WriterTest {
         Table t = TestUtils.createTable(definition);
         Writer writer = writerByPushMode(s, t, mode);
 
-        int ROW_COUNT = 100000;
+        int ROW_COUNT = 10000;
 
         WritableRow[] rows = new WritableRow[ROW_COUNT];
         for (int i = 0; i < rows.length; ++i) {
