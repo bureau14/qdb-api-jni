@@ -88,27 +88,6 @@ public class WriterBenchmarkTest {
         org.openjdk.jmh.Main.main(argv);
     }
 
-
-    /**
-     *
-     * Baseline:
-     *
-Benchmark                 (columnCount)  (rowCount)  (valueType)  Mode  Cnt    Score    Error  Units
-WriterBenchmarkTest.test             25       10000       DOUBLE  avgt   10  758.726 ± 13.983  ms/op
-WriterBenchmarkTest.test             25       10000         BLOB  avgt   10  834.138 ± 24.322  ms/op
-
-     */
-
-    /**
-     * After optimizations:
-     *
-
-Benchmark                 (columnCount)  (rowCount)  (valueType)  Mode  Cnt    Score   Error  Units
-WriterBenchmarkTest.test             25       10000       DOUBLE  avgt   15  112.080 ± 3.283  ms/op
-WriterBenchmarkTest.test             25       10000         BLOB  avgt   15  161.123 ± 4.686  ms/op
-
-     */
-
     @Benchmark
     @BenchmarkMode(Mode.AverageTime)
     @Warmup(batchSize = -1, iterations = 1, time = 10, timeUnit = TimeUnit.MILLISECONDS)
