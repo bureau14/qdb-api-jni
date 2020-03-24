@@ -13,6 +13,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import net.quasardb.qdb.*;
+import net.quasardb.qdb.exception.InputException;
 import net.quasardb.qdb.exception.InvalidArgumentException;
 import net.quasardb.qdb.exception.OutOfBoundsException;
 import net.quasardb.qdb.jni.*;
@@ -31,7 +32,8 @@ public class Writer implements AutoCloseable, Flushable {
     public enum PushMode {
         NORMAL,
         ASYNC,
-        FAST
+        FAST,
+        TRUNCATE
     }
 
     private static final Logger logger = LoggerFactory.getLogger(Writer.class);
@@ -42,6 +44,7 @@ public class Writer implements AutoCloseable, Flushable {
     Session session;
     Long batchTable;
     List<TableColumn> columns;
+    TimeRange minMaxTs;
 
     /**
      * Maintains a cache of table offsets so we can easily look them up
@@ -76,6 +79,7 @@ public class Writer implements AutoCloseable, Flushable {
         this.session = session;
         this.tableOffsets = new HashMap<String, Integer>();
         this.columns = new ArrayList<TableColumn>();
+        this.minMaxTs = null;
 
         for (Table table : tables) {
             logger.debug("Initializing table {} at offset {}", table.name, this.columns.size());
@@ -182,22 +186,37 @@ public class Writer implements AutoCloseable, Flushable {
      * Flush current local cache to server.
      */
     public void flush() throws IOException {
-        int err;
-
         switch (this.pushMode) {
         case NORMAL:
             logger.info("Flushing batch writer sync, points since last flush: {}", pointsSinceFlush);
-            err = qdb.ts_batch_push(this.session.handle(), this.batchTable);
+            qdb.ts_batch_push(this.session.handle(), this.batchTable);
             break;
 
         case ASYNC:
             logger.info("Flushing batch writer async, points since last flush: {}", pointsSinceFlush);
-            err = qdb.ts_batch_push_async(this.session.handle(), this.batchTable);
+            qdb.ts_batch_push_async(this.session.handle(), this.batchTable);
             break;
 
         case FAST:
             logger.info("Using in-place fast flushing to push batch, points since last flush: {}", pointsSinceFlush);
-            err = qdb.ts_batch_push_fast(this.session.handle(), this.batchTable);
+            qdb.ts_batch_push_fast(this.session.handle(), this.batchTable);
+            break;
+
+        case TRUNCATE:
+            if (this.minMaxTs == null) {
+                logger.warn("Trying to flush with truncate push, but empty dataset. Please append new rows to the writer before calling flush()");
+            } else {
+                // Point the end exactly 1 nanosecond after the last timestamp, as the range
+                // is begin-inclusive but end-exclusive, i.e. [Tmin, Tmax)
+                TimeRange[] r = {
+                    this.minMaxTs.withEnd(this.minMaxTs.end.plusNanos(1))
+                };
+
+                logger.info("Flushing batch writer and truncating existing data in range {}, points since last flush: {}", this.minMaxTs.toString(), pointsSinceFlush);
+                qdb.ts_batch_push_truncate(this.session.handle(),
+                                           this.batchTable,
+                                           r);
+            }
             break;
 
         default:
@@ -206,7 +225,30 @@ public class Writer implements AutoCloseable, Flushable {
         }
 
         pointsSinceFlush = 0;
+        this.minMaxTs = null;
     }
+
+    /**
+     * Flush with specific time range, only useful in the context of a truncate push mode.
+     */
+    public void flush(TimeRange range) throws IOException {
+        flush(new TimeRange[]{range});
+    }
+
+    /**
+     * Flush with specific time range, only useful in the context of a truncate push mode.
+     */
+    public void flush(TimeRange[] ranges) throws IOException {
+        if (this.pushMode != PushMode.TRUNCATE) {
+            throw new RuntimeException("Fatal error: can only flush with a time range in truncate push mode, our current mode is: " + this.pushMode.toString());
+        }
+
+        logger.info("Flushing batch writer and truncating existing data in range {}, points since last flush: {}", this.minMaxTs.toString(), pointsSinceFlush);
+        qdb.ts_batch_push_truncate(this.session.handle(),
+                                   this.batchTable,
+                                   ranges);
+    }
+
 
     /**
      * Append a new row to the local table cache. Should be periodically flushed,
@@ -235,6 +277,12 @@ public class Writer implements AutoCloseable, Flushable {
                                       values);
 
         this.pointsSinceFlush += values.length;
+
+        if (this.minMaxTs == null) {
+            this.minMaxTs = new TimeRange(timestamp, timestamp);
+        } else {
+            this.minMaxTs = TimeRange.merge(this.minMaxTs, timestamp);
+        }
     }
 
     /**

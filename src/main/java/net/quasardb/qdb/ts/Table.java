@@ -195,6 +195,32 @@ public class Table implements Serializable {
     }
 
     /**
+     * Initializes new writer for a single table that replaces any
+     * existing data with the new data, rather than just adding. This
+     * is recommended if you want the ability to retry operations, and
+     * you are not inserting into the same table from multiple writers.
+     *
+     * @param session Active session with the QuasarDB cluster.
+     * @param name Timeseries table name. Must already exist.
+     */
+    public static Writer truncateWriter(Session session, String name) {
+        return truncateWriter(session, new Table(session, name));
+    }
+
+    /**
+     * Initializes new writer for a single table that replaces any
+     * existing data with the new data, rather than just adding. This
+     * is recommended if you want the ability to retry operations, and
+     * you are not inserting into the same table from multiple writers.
+     *
+     * @param session Active session with the QuasarDB cluster.
+     * @param table Table to insert into.
+     */
+    public static Writer truncateWriter(Session session, Table table) {
+        return Tables.truncateWriter(session, new Table[] {table});
+    }
+
+    /**
      * Initializes new writer for a timeseries table that periodically flushes
      * its local cache.
      *

@@ -35,8 +35,24 @@ public class TestUtils {
             .toArray(Column[]::new);
     }
 
+    public static Column[] generateTableColumns(Value.Type[] valueTypes) {
+        return Arrays.stream(valueTypes)
+            .limit(valueTypes.length)
+            .map((valueType) -> {
+                    return new Column(createUniqueAlias(),
+                                      valueType);
+                })
+            .toArray(Column[]::new);
+    }
+
     public static Table createTable(Column[] columns) throws IOException {
-        return createTable(createSession(), columns);
+        Session s = createSession();
+
+        try {
+            return createTable(s, columns);
+        } finally {
+            s.close();
+        }
     }
 
     public static Table createTable(Session s, Column[] columns) throws IOException {

@@ -193,6 +193,33 @@ public class Tables implements Serializable {
         return new Writer(session, tables, Writer.PushMode.FAST);
     }
 
+
+    /**
+     * Initializes new writer for a single table that replaces any
+     * existing data with the new data, rather than just adding. This
+     * is recommended if you want the ability to retry operations, and
+     * you are not inserting into the same table from multiple writers.
+     *
+     * @param session Active session with the QuasarDB cluster.
+     * @param tables Timeseries tables.
+     */
+    public static Writer truncateWriter (Session session, Tables tables) {
+        return truncateWriter(session, tables.getTables());
+    }
+
+    /**
+     * Initializes new writer for a single table that replaces any
+     * existing data with the new data, rather than just adding. This
+     * is recommended if you want the ability to retry operations, and
+     * you are not inserting into the same table from multiple writers.
+     *
+     * @param session Active session with the QuasarDB cluster.
+     * @param tables Timeseries tables.
+     */
+    public static Writer truncateWriter (Session session, Table[] tables) {
+        return new Writer(session, tables, Writer.PushMode.TRUNCATE);
+    }
+
     /**
      * Initializes new writer for timeseries tables that periodically flushes
      * its local cache.

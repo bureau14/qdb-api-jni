@@ -8,6 +8,7 @@ import java.time.Instant;
 import java.time.Clock;
 
 import net.quasardb.qdb.jni.*;
+import net.quasardb.qdb.exception.InvalidArgumentException;
 
 /**
  * Nanosecond precision time specification for QuasarDB. Allows construction from
@@ -74,6 +75,10 @@ public class Timespec implements Serializable {
         }
 
         return false;
+    }
+
+    public boolean isEmpty() {
+        return this.sec == -1 && this.nsec == -1;
     }
 
     /**
@@ -167,4 +172,68 @@ public class Timespec implements Serializable {
     public long toEpochMillis() {
         return (long)(this.sec * 1000) + (long)(this.nsec / 1000000);
     }
+
+    /**
+     * Returns the smallest timespec between the two, that is, the time that is pointing
+     * towards the earliest point in time.
+     */
+    public static Timespec min(Timespec lhs, Timespec rhs) {
+        if (lhs.sec == -1 && rhs.sec != -1) {
+            return rhs;
+        }
+        if (rhs.sec == -1 && lhs.sec != -1) {
+            return lhs;
+        }
+
+        if (rhs.sec == -1 && lhs.sec == -1) {
+            throw new InvalidArgumentException("Both time ranges are null.");
+        }
+
+        if (lhs.sec < rhs.sec) {
+            return lhs;
+        }
+
+        if (rhs.sec < lhs.sec) {
+            return rhs;
+        }
+
+        // lhs.sec == rhs.sec
+        if (lhs.nsec < rhs.nsec) {
+            return lhs;
+        }
+
+        return rhs;
+    }
+
+    /**
+     * Returns the smallest timespec between the two, that is, the time that is pointing
+     * towards the latest point in time.
+     */
+    public static Timespec max(Timespec lhs, Timespec rhs) {
+        if (lhs.sec == -1 && rhs.sec != -1) {
+            return rhs;
+        }
+        if (rhs.sec == -1 && lhs.sec != -1) {
+            return lhs;
+        }
+
+        if (rhs.sec == -1 && lhs.sec == -1) {
+            throw new InvalidArgumentException("Both time ranges are null.");
+        }
+
+        if (lhs.sec > rhs.sec) {
+            return lhs;
+        }
+        if (rhs.sec > lhs.sec) {
+            return rhs;
+        }
+
+        // lhs.sec == rhs.sec
+        if (lhs.nsec > rhs.nsec) {
+            return lhs;
+        }
+
+        return rhs;
+    }
+
 }

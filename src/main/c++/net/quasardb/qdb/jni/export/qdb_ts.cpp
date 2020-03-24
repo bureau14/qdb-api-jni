@@ -329,6 +329,39 @@ Java_net_quasardb_qdb_jni_qdb_ts_1batch_1push_1fast(JNIEnv *jniEnv,
 }
 
 JNIEXPORT jint JNICALL
+Java_net_quasardb_qdb_jni_qdb_ts_1batch_1push_1truncate(JNIEnv *jniEnv,
+                                                        jclass /*thisClass*/,
+                                                        jlong handle,
+                                                        jlong batchTable,
+                                                        jobjectArray ranges)
+{
+    qdb::jni::env env(jniEnv);
+
+    try
+    {
+        qdb_size_t rangeCount = env.instance().GetArrayLength(ranges);
+        std::unique_ptr<qdb_ts_range_t> nativeTimeRanges (new qdb_ts_range_t[rangeCount]);
+        timeRangesToNative(env, ranges, rangeCount, nativeTimeRanges.get());
+
+        qdb::jni::log::swap_callback();
+
+        printf("flushing!!\n");
+        fflush(stdout);
+
+        return jni::exception::throw_if_error(
+            (qdb_handle_t)handle,
+            qdb_ts_batch_push_truncate((qdb_batch_table_t)batchTable,
+                                       nativeTimeRanges.get(),
+                                       rangeCount));
+    }
+    catch (jni::exception const &e)
+    {
+        e.throw_new(env);
+        return e.error();
+    }
+}
+
+JNIEXPORT jint JNICALL
 Java_net_quasardb_qdb_jni_qdb_ts_1local_1table_1init(JNIEnv *jniEnv,
                                                      jclass /*thisClass*/,
                                                      jlong handle,
@@ -489,10 +522,9 @@ Java_net_quasardb_qdb_jni_qdb_ts_1double_1get_1ranges(JNIEnv *jniEnv,
     try
     {
         qdb_size_t rangeCount = env.instance().GetArrayLength(ranges);
-        qdb_ts_range_t *nativeTimeRanges =
-            (qdb_ts_range_t *)(malloc(rangeCount * sizeof(qdb_ts_range_t)));
+        std::unique_ptr<qdb_ts_range_t> nativeTimeRanges (new qdb_ts_range_t[rangeCount]);
 
-        timeRangesToNative(env, ranges, rangeCount, nativeTimeRanges);
+        timeRangesToNative(env, ranges, rangeCount, nativeTimeRanges.get());
 
         qdb_ts_double_point *native_points;
         qdb_size_t point_count;
@@ -502,7 +534,7 @@ Java_net_quasardb_qdb_jni_qdb_ts_1double_1get_1ranges(JNIEnv *jniEnv,
             qdb_ts_double_get_ranges(
                 (qdb_handle_t)handle,
                 qdb::jni::string::get_chars_utf8(env, alias),
-                qdb::jni::string::get_chars_utf8(env, column), nativeTimeRanges,
+                qdb::jni::string::get_chars_utf8(env, column), nativeTimeRanges.get(),
                 rangeCount, &native_points, &point_count));
 
         setReferenceValue(
@@ -510,8 +542,6 @@ Java_net_quasardb_qdb_jni_qdb_ts_1double_1get_1ranges(JNIEnv *jniEnv,
             nativeToDoublePoints(env, native_points, point_count).release());
 
         qdb_release((qdb_handle_t)handle, native_points);
-
-        free(nativeTimeRanges);
         return qdb_e_ok;
     }
     catch (jni::exception const &e)

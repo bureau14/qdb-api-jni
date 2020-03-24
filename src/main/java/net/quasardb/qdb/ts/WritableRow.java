@@ -76,6 +76,16 @@ public final class WritableRow extends Row implements Serializable {
         return this.timestamp.equals(rhs.getTimestamp());
     }
 
+    /**
+     * Determine whether this row has any null values.
+     *
+     * @return Returns true when at least one value is a null value.
+     */
+
+    public boolean hasNullValues() {
+        return Arrays.stream(this.values).anyMatch(Value::isNull);
+    }
+
     public String toString() {
         return "WritableRow (timestamp: " + this.timestamp.toString() + ", values = " + Arrays.toString(this.values) + ")";
     }

@@ -44,4 +44,34 @@ public class TimeRange implements Serializable {
     public String toString() {
         return "TimeRange (begin: " + this.begin.toString() + ", end: " + this.end.toString() + ")";
     }
+
+    /**
+     * Returns the union of two time ranges, that is, the range that can contain both
+     * time ranges.
+     */
+    public static TimeRange union(TimeRange lhs, TimeRange rhs) {
+        return new TimeRange(Timespec.min(lhs.begin, rhs.begin),
+                             Timespec.max(lhs.end, rhs.end));
+    }
+
+    /**
+     * Returns the intersection of two time ranges, that is, the widest possible range that
+     * is contained by both time ranges.
+     *
+     * Undefined behavior if the two timespecs do not overlap.
+     */
+    public static TimeRange intersect(TimeRange lhs, TimeRange rhs) {
+        return new TimeRange(Timespec.max(lhs.begin, rhs.begin),
+                             Timespec.min(lhs.end, rhs.end));
+    }
+
+    /**
+     * Merges a new timespec into this time range, and widens the time range if necessary
+     * to be wide enough to contain this time point.
+     */
+    public static TimeRange merge(TimeRange r, Timespec t) {
+        r.begin = Timespec.min(r.begin, t);
+        r.end = Timespec.max(r.end, t);
+        return r;
+    }
 }
