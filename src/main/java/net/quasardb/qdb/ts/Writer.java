@@ -270,11 +270,15 @@ public class Writer implements AutoCloseable, Flushable {
         }
 
         logger.trace("Appending row to batch writer at offset {} with {} values with timestamp {}", offset, values.length, timestamp);
-        qdb.ts_batch_table_row_append(this.session.handle(),
-                                      this.batchTable,
-                                      offset,
-                                      timestamp,
-                                      values);
+
+        qdb.ts_batch_start_row(this.batchTable,
+                               timestamp.sec, timestamp.nsec);
+
+        for (int i = 0; i < values.length; ++i) {
+            Value v = values[i];
+
+            v.setNative(this.batchTable, offset + i);
+        }
 
         this.pointsSinceFlush += values.length;
 

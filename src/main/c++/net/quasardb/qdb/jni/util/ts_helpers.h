@@ -110,13 +110,6 @@ nativeToBlobAggregate(qdb::jni::env &env, qdb_ts_blob_aggregation_t native);
 qdb::jni::guard::local_ref<jobjectArray> nativeToBlobAggregates(
     qdb::jni::env &env, qdb_ts_blob_aggregation_t *native, size_t count);
 
-qdb_error_t tableRowAppend(qdb::jni::env &env,
-                           qdb_handle_t handle,
-                           qdb_batch_table_t batchTable,
-                           jlong columnIndex,
-                           jobject time,
-                           jobjectArray values,
-                           size_t count);
 qdb_error_t tableGetRanges(qdb::jni::env &env,
                            qdb_handle_t handle,
                            qdb_local_table_t localTable,

@@ -52,17 +52,17 @@ public class WriterTest {
                          Arguments.of(Writer.PushMode.TRUNCATE, Value.Type.TIMESTAMP),
                          Arguments.of(Writer.PushMode.TRUNCATE, Value.Type.STRING),
 
-                         Arguments.of(Writer.PushMode.FAST, Value.Type.DOUBLE),
-                         Arguments.of(Writer.PushMode.FAST, Value.Type.INT64),
-                         Arguments.of(Writer.PushMode.FAST, Value.Type.BLOB),
-                         Arguments.of(Writer.PushMode.FAST, Value.Type.TIMESTAMP),
-                         Arguments.of(Writer.PushMode.FAST, Value.Type.STRING),
-
                          Arguments.of(Writer.PushMode.ASYNC, Value.Type.DOUBLE),
                          Arguments.of(Writer.PushMode.ASYNC, Value.Type.INT64),
                          Arguments.of(Writer.PushMode.ASYNC, Value.Type.BLOB),
                          Arguments.of(Writer.PushMode.ASYNC, Value.Type.TIMESTAMP),
-                         Arguments.of(Writer.PushMode.ASYNC, Value.Type.STRING)
+                         Arguments.of(Writer.PushMode.ASYNC, Value.Type.STRING),
+
+                         Arguments.of(Writer.PushMode.FAST, Value.Type.DOUBLE),
+                         Arguments.of(Writer.PushMode.FAST, Value.Type.INT64),
+                         Arguments.of(Writer.PushMode.FAST, Value.Type.BLOB),
+                         Arguments.of(Writer.PushMode.FAST, Value.Type.TIMESTAMP),
+                         Arguments.of(Writer.PushMode.FAST, Value.Type.STRING)
 
                          );
     }
@@ -89,16 +89,6 @@ public class WriterTest {
                                                                                  Value.Type.STRING}),
 
 
-                         Arguments.of(Writer.PushMode.FAST, new Value.Type[]{Value.Type.DOUBLE,
-                                                                             Value.Type.INT64}),
-                         Arguments.of(Writer.PushMode.FAST, new Value.Type[]{Value.Type.INT64,
-                                                                             Value.Type.BLOB}),
-                         Arguments.of(Writer.PushMode.FAST, new Value.Type[]{Value.Type.BLOB,
-                                                                             Value.Type.TIMESTAMP}),
-                         Arguments.of(Writer.PushMode.FAST, new Value.Type[]{Value.Type.TIMESTAMP,
-                                                                             Value.Type.STRING}),
-
-
                          Arguments.of(Writer.PushMode.ASYNC, new Value.Type[]{Value.Type.DOUBLE,
                                                                               Value.Type.INT64}),
                          Arguments.of(Writer.PushMode.ASYNC, new Value.Type[]{Value.Type.INT64,
@@ -106,7 +96,17 @@ public class WriterTest {
                          Arguments.of(Writer.PushMode.ASYNC, new Value.Type[]{Value.Type.BLOB,
                                                                               Value.Type.TIMESTAMP}),
                          Arguments.of(Writer.PushMode.ASYNC, new Value.Type[]{Value.Type.TIMESTAMP,
-                                                                              Value.Type.STRING})
+                                                                              Value.Type.STRING}),
+
+                         Arguments.of(Writer.PushMode.FAST, new Value.Type[]{Value.Type.DOUBLE,
+                                                                             Value.Type.INT64}),
+                         Arguments.of(Writer.PushMode.FAST, new Value.Type[]{Value.Type.INT64,
+                                                                             Value.Type.BLOB}),
+                         Arguments.of(Writer.PushMode.FAST, new Value.Type[]{Value.Type.BLOB,
+                                                                             Value.Type.TIMESTAMP}),
+                         Arguments.of(Writer.PushMode.FAST, new Value.Type[]{Value.Type.TIMESTAMP,
+                                                                             Value.Type.STRING})
+
 
                          );
     }
@@ -345,5 +345,4 @@ public class WriterTest {
         WritableRow[] readRows = Table.reader(s, t, ranges).stream().toArray(WritableRow[]::new);
         assertArrayEquals(rows, readRows);
     }
-
 }
