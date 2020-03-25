@@ -43,7 +43,7 @@ public class WriterBenchmarkTest {
     @Param({"10000"})
     public int rowCount;
 
-    @Param({"DOUBLE", "BLOB"})
+    @Param({"DOUBLE", "INT64", "TIMESTAMP", "BLOB", "STRING"})
     public Value.Type valueType;
 
     private Value[] v;
@@ -90,6 +90,7 @@ public class WriterBenchmarkTest {
 
     @Benchmark
     @BenchmarkMode(Mode.AverageTime)
+    @Fork(jvmArgsAppend = {"-XX:+CriticalJNINatives", "-Xcomp", "-server"})
     @Warmup(batchSize = -1, iterations = 1, time = 10, timeUnit = TimeUnit.MILLISECONDS)
     @Measurement(batchSize = -1, iterations = 3, time = 10, timeUnit = TimeUnit.MILLISECONDS)
     @OutputTimeUnit(TimeUnit.MILLISECONDS)
