@@ -324,11 +324,11 @@ JavaCritical_net_quasardb_qdb_jni_qdb_ts_1batch_1start_1row(jlong batchTable,
 }
 
 JNIEXPORT jint JNICALL
-Java_net_quasardb_qdb_jni_qdb_native_1ts_1batch_1row_1set_1double(JNIEnv * jniEnv,
-                                                                  jclass /* thisClass */,
-                                                                  jlong batchTable,
-                                                                  jlong index,
-                                                                  double val) {
+Java_net_quasardb_qdb_jni_qdb_ts_1batch_1row_1set_1double(JNIEnv * jniEnv,
+                                                          jclass /* thisClass */,
+                                                          jlong batchTable,
+                                                          jlong index,
+                                                          double val) {
   qdb::jni::env env(jniEnv);
   return qdb_ts_batch_row_set_double((qdb_batch_table_t)(batchTable),
                                      index,
@@ -337,9 +337,9 @@ Java_net_quasardb_qdb_jni_qdb_native_1ts_1batch_1row_1set_1double(JNIEnv * jniEn
 
 
 JNIEXPORT jint JNICALL
-JavaCritical_net_quasardb_qdb_jni_qdb_native_1ts_1batch_1row_1set_1double(jlong batchTable,
-                                                                          jlong index,
-                                                                          double val) {
+JavaCritical_net_quasardb_qdb_jni_qdb_ts_1batch_1row_1set_1double(jlong batchTable,
+                                                                  jlong index,
+                                                                  double val) {
   return qdb_ts_batch_row_set_double((qdb_batch_table_t)(batchTable),
                                      index,
                                      val);
