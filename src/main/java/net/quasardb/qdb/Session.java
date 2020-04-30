@@ -2,6 +2,7 @@ package net.quasardb.qdb;
 
 import java.io.Serializable;
 import java.nio.ByteBuffer;
+import java.lang.AutoCloseable;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,7 +19,7 @@ import net.quasardb.qdb.exception.InputBufferTooSmallException;
  * when secure connections are used), you are encouraged to pool instances
  * of this class are you would do with any other connection pool.
  */
-public class Session {
+public class Session implements AutoCloseable {
     private static final Logger logger = LoggerFactory.getLogger(Session.class);
 
     private transient long handle;
