@@ -6,7 +6,7 @@
   <groupId>net.quasardb</groupId>
   <artifactId>jni</artifactId>
   <packaging>jar</packaging>
-  <version>3.8.1</version>
+  <version>3.8.1-1</version>
   <name>quasardb</name>
 
   <description>
@@ -206,11 +206,11 @@
         <configuration>
           <trimStackTrace>false</trimStackTrace>
           <additionalClasspathElements>
-            <additionalClasspathElement>${project.basedir}/target/jni-3.8.1-linux-x86_64.jar</additionalClasspathElement>
-            <additionalClasspathElement>${project.basedir}/target/jni-3.8.1-osx-x86_64.jar</additionalClasspathElement>
-            <additionalClasspathElement>${project.basedir}/target/jni-3.8.1-freebsd-x86_64.jar</additionalClasspathElement>
-            <additionalClasspathElement>${project.basedir}/target/jni-3.8.1-windows-x86_64.jar</additionalClasspathElement>
-            <additionalClasspathElement>${project.basedir}/target/jni-3.8.1-windows-x86_32.jar</additionalClasspathElement>
+            <additionalClasspathElement>${project.basedir}/target/jni-3.8.1-1-linux-x86_64.jar</additionalClasspathElement>
+            <additionalClasspathElement>${project.basedir}/target/jni-3.8.1-1-osx-x86_64.jar</additionalClasspathElement>
+            <additionalClasspathElement>${project.basedir}/target/jni-3.8.1-1-freebsd-x86_64.jar</additionalClasspathElement>
+            <additionalClasspathElement>${project.basedir}/target/jni-3.8.1-1-windows-x86_64.jar</additionalClasspathElement>
+            <additionalClasspathElement>${project.basedir}/target/jni-3.8.1-1-windows-x86_32.jar</additionalClasspathElement>
           </additionalClasspathElements>
         </configuration>
       </plugin>
@@ -229,27 +229,27 @@
             <configuration>
               <artifacts>
                 <artifact>
-                  <file>${project.basedir}/target/jni-3.8.1-linux-x86_64.jar</file>
+                  <file>${project.basedir}/target/jni-3.8.1-1-linux-x86_64.jar</file>
                   <type>jar</type>
                   <classifier>linux-x86_64</classifier>
                 </artifact>
                 <artifact>
-                  <file>${project.basedir}/target/jni-3.8.1-osx-x86_64.jar</file>
+                  <file>${project.basedir}/target/jni-3.8.1-1-osx-x86_64.jar</file>
                   <type>jar</type>
                   <classifier>osx-x86_64</classifier>
                 </artifact>
                 <artifact>
-                  <file>${project.basedir}/target/jni-3.8.1-freebsd-x86_64.jar</file>
+                  <file>${project.basedir}/target/jni-3.8.1-1-freebsd-x86_64.jar</file>
                   <type>jar</type>
                   <classifier>freebsd-x86_64</classifier>
                 </artifact>
                 <artifact>
-                  <file>${project.basedir}/target/jni-3.8.1-windows-x86_64.jar</file>
+                  <file>${project.basedir}/target/jni-3.8.1-1-windows-x86_64.jar</file>
                   <type>jar</type>
                   <classifier>windows-x86_64</classifier>
                 </artifact>
                 <artifact>
-                  <file>${project.basedir}/target/jni-3.8.1-windows-x86_32.jar</file>
+                  <file>${project.basedir}/target/jni-3.8.1-1-windows-x86_32.jar</file>
                   <type>jar</type>
                   <classifier>windows-x86_32</classifier>
                 </artifact>
