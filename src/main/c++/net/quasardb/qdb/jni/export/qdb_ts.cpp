@@ -10,6 +10,7 @@
 #include "../string.h"
 #include "../util/helpers.h"
 #include "../util/ts_helpers.h"
+#include "../byte_array.h"
 
 namespace jni = qdb::jni;
 
@@ -426,13 +427,14 @@ Java_net_quasardb_qdb_jni_qdb_ts_1batch_1row_1set_1string(JNIEnv * jniEnv,
                                                           jbyteArray bb) {
   qdb::jni::env env(jniEnv);
 
-  jbyte * addr = env.instance().GetByteArrayElements(bb, 0);
-  qdb_size_t bytes = env.instance().GetArrayLength(bb);
+  jni::guard::byte_array barry(jni::byte_array::get_bytes(env, bb));
 
-  return qdb_ts_batch_row_set_string((qdb_batch_table_t)(batchTable),
-                                     index,
-                                     (char const *)(addr),
-                                     bytes);
+  qdb_error_t result = qdb_ts_batch_row_set_string((qdb_batch_table_t)(batchTable),
+                                                   index,
+                                                   (char const *)barry.ptr(),
+                                                   barry.len());
+
+  return result;
 }
 
 
