@@ -35,17 +35,21 @@ import net.quasardb.qdb.exception.InvalidArgumentException;
 
 @State(Scope.Benchmark)
 @Threads(1)
-public class WriterBenchmarkTest {
+public class WriterExtraTablesBenchmarkTest {
 
-    @Param({"25"})
+    @Param({"5"})
     public int columnCount;
 
-    @Param({"10000"})
+    @Param({"1000"})
     public int rowCount;
 
-    @Param({"DOUBLE", "INT64", "TIMESTAMP", "BLOB", "STRING"})
+    @Param({"10000"})
+    public int tableCount;
+
+    @Param({"DOUBLE"})
     public Value.Type valueType;
 
+    private Table[] t;
     private Value[] v;
     private Session s;
     private Writer w;
@@ -71,13 +75,22 @@ public class WriterBenchmarkTest {
         }
 
         Column[] c = TestUtils.generateTableColumns(this.valueType, this.columnCount);
-        Table t = TestUtils.createTable(this.s, c);
-        this.w = Table.writer(this.s, t);
+
+        this.t = new Table[this.tableCount];
+        for (int i = 0; i < this.tableCount; ++i) {
+            Table t = TestUtils.createTable(this.s, c);
+            this.t[i] = t;
+        }
+
+        this.w = Tables.writer(this.s, this.t);
     }
 
     @TearDown(Level.Invocation)
     public void teardownInvocation() throws Exception {
         this.v = null;
+        this.w.close();
+        this.w = null;
+        this.t = null;
     }
 
 
@@ -90,11 +103,10 @@ public class WriterBenchmarkTest {
 
     @Benchmark
     @BenchmarkMode(Mode.AverageTime)
-    @Fork(jvmArgsAppend = {"-XX:+CriticalJNINatives", "-Xcomp", "-server"})
-    @Warmup(batchSize = -1, iterations = 1, time = 10, timeUnit = TimeUnit.MILLISECONDS)
-    @Measurement(batchSize = -1, iterations = 3, time = 10, timeUnit = TimeUnit.MILLISECONDS)
+    @Fork(value = 1, warmups = 1)
+    @Measurement(batchSize = -1, iterations = 1, time = 1, timeUnit = TimeUnit.MILLISECONDS)
     @OutputTimeUnit(TimeUnit.MILLISECONDS)
-    public void test() throws Exception {
+    public void appendBenchmark() throws Exception {
 
         for (int i = 0; i < this.rowCount; ++i) {
             this.w.append(0, this.ts, this.v);
