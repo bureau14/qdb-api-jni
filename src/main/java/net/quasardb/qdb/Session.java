@@ -166,17 +166,4 @@ public class Session implements AutoCloseable {
 
         return qdb.option_get_client_max_in_buf_size(handle);
     }
-
-    /**
-     * Wait for all nodes of the cluster to be stabilized.
-     *
-     * @param timeoutMillis The timeout of the operation, in milliseconds
-     *
-     * @throws ClusterClosedException If QdbCluster.close() has been called.
-     */
-    public void waitForStabilization(int timeoutMillis) throws ClusterClosedException {
-        throwIfClosed();
-
-        qdb.wait_for_stabilization(handle, timeoutMillis);
-    }
 }
