@@ -147,6 +147,27 @@ public class Table implements Serializable {
     }
 
     /**
+     * Initializes new, experimental high-performance pinned columns writer.
+     *
+     * @param session Active session with the QuasarDB cluster.
+     * @param name Timeseries table name. Must already exist.
+     */
+    public static Writer pinnedWriter(Session session, String name) {
+        return writer(session, new Table(session, name));
+    }
+
+    /**
+     * Initializes new, experimental high-performance pinned columns writer.
+     *
+     * @param session Active session with the QuasarDB cluster.
+     * @param table Timeseries table.
+     */
+    public static Writer pinnedWriter(Session session, Table table) {
+        return Tables.pinnedWriter(session, new Table[] {table});
+    }
+
+
+    /**
      * Initializes new writer for a single timeseries table using
      * high-speed buffered writes.
      *
