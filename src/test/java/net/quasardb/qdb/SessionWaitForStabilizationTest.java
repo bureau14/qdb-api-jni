@@ -21,6 +21,6 @@ public class SessionWaitForStabilizationTest {
     @Test
     public void canWaitForStabilization() {
         Session s = TestUtils.createSession();
-        s.waitForStabilization();
+        s.waitForStabilization(60000);
     }
 }
