@@ -172,10 +172,10 @@ public class Session implements AutoCloseable {
      *
      * @param timeoutMillis The timeout of the operation, in milliseconds
      *
-     * @throws ClusterClosedException If QdbCluster.close() has been called.
+     * @throws ClusterClosedException If the connection to the cluster is currently closed.
      */
-    public void waitForStabilization(int timeoutMillis) {
+    public void waitForStabilization(int timeoutMillis) throws ClusterClosedException {
         throwIfClosed();
-        qdb.wait_for_stabilization(session.handle(), timeoutMillis);
+        qdb.wait_for_stabilization(handle, timeoutMillis);
     }
 }
