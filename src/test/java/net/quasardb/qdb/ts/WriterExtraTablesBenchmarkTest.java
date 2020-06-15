@@ -49,6 +49,9 @@ public class WriterExtraTablesBenchmarkTest {
     @Param({"DOUBLE"})
     public Value.Type valueType;
 
+    @Param({"writer", "pinnedWriter"})
+    public String writerType;
+
     private Table[] t;
     private Value[] v;
     private Session s;
@@ -82,7 +85,13 @@ public class WriterExtraTablesBenchmarkTest {
             this.t[i] = t;
         }
 
-        this.w = Tables.writer(this.s, this.t);
+        if (this.writerType.equals("writer")) {
+            this.w = Tables.writer(this.s, this.t);
+        } else if (this.writerType.equals("pinnedWriter")) {
+            this.w = Tables.pinnedWriter(this.s, this.t);
+        } else {
+            throw new RuntimeException("Unrecognized writer type: " + this.writerType);
+        }
     }
 
     @TearDown(Level.Invocation)
