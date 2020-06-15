@@ -116,6 +116,8 @@ public final class qdb
 
     public static native int ts_create(long handle, String alias, long shard_size, Column[] columns);
     public static native int ts_remove(long handle, String alias);
+    public static native long ts_shard_size(long handle, String alias);
+
     public static native int ts_insert_columns(long handle, String alias, Column[] columns);
     public static native int ts_list_columns(long handle, String alias, Reference<Column[]> columns);
     public static native int

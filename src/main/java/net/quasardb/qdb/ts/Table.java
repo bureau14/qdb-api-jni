@@ -472,6 +472,20 @@ public class Table implements Serializable {
     }
 
     /**
+     * Returns the shard size (in milliseconds) of the table.
+     */
+    public static long getShardSize(Session session, Table table) {
+        return getShardSize(session, table.getName());
+    }
+
+    /**
+     * Returns the shard size (in milliseconds) of the table.
+     */
+    public static long getShardSize(Session session, String tableName) {
+        return qdb.ts_shard_size(session.handle(), tableName);
+    }
+
+    /**
      * Returns column representation of this table.
      */
     public Column[] getColumns() {

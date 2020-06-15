@@ -78,6 +78,38 @@ Java_net_quasardb_qdb_jni_qdb_ts_1remove(JNIEnv *jniEnv,
     }
 }
 
+
+JNIEXPORT jlong JNICALL
+Java_net_quasardb_qdb_jni_qdb_ts_1shard_1size(JNIEnv *jniEnv,
+                                              jclass /*thisClass*/,
+                                              jlong handle,
+                                              jstring alias)
+{
+    qdb::jni::env env(jniEnv);
+    try {
+      qdb_uint_t shard_size {0};
+      qdb::jni::exception::throw_if_error(
+          (qdb_handle_t)handle,
+          qdb_ts_shard_size((qdb_handle_t)handle,
+                            qdb::jni::string::get_chars_utf8(env, alias),
+                            &shard_size));
+
+
+      assert(shard_size > 0);
+      return (jlong)shard_size;
+
+
+    }
+    catch (jni::exception const &e)
+    {
+
+        //! :XXX: memory leak for native_columns? use unique_ptr instead?
+
+        e.throw_new(env);
+        return e.error();
+    }
+}
+
 JNIEXPORT jint JNICALL
 Java_net_quasardb_qdb_jni_qdb_ts_1insert_1columns(JNIEnv *jniEnv,
                                                   jclass /*thisClass*/,
