@@ -20,6 +20,17 @@ class env;
 class object
 {
   public:
+
+    static jclass
+    get_class(jni::env & env, jobject object)  {
+      assert(object != NULL);
+
+      jclass result = env.instance().GetObjectClass(object);
+      assert(result != NULL);
+      return result;
+    }
+
+
     /**
      * Creates new object by its class and constructor.
      */

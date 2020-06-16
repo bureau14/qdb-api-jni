@@ -5,12 +5,14 @@
 #include "net_quasardb_qdb_jni_qdb.h"
 
 #include "../env.h"
+#include "../object.h"
 #include "../exception.h"
 #include "../log.h"
 #include "../string.h"
 #include "../util/helpers.h"
 #include "../util/ts_helpers.h"
 #include "../byte_array.h"
+#include "../primitive_array.h"
 
 namespace jni = qdb::jni;
 
