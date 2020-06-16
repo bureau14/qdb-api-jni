@@ -1,6 +1,8 @@
 #include <cassert>
+#include <string.h> // memcpy
 #include <qdb/ts.h>
 #include <stdlib.h>
+#include <iostream>
 
 #include "net_quasardb_qdb_jni_qdb.h"
 
@@ -263,6 +265,119 @@ Java_net_quasardb_qdb_jni_qdb_ts_1batch_1table_1release(JNIEnv * /*env*/,
     qdb_release((qdb_handle_t)handle, (qdb_batch_table_t)batchTable);
 }
 
+
+
+/**
+ * Cast a java array of Writer.TableColumn[] to a native array of column types.
+ * `out` is assumed to be pre-allocated and should be as long as the `in` length.
+ */
+void
+pin_columns(qdb_batch_table_t table,
+            qdb_ts_column_type_t * types) {
+}
+
+JNIEXPORT jint JNICALL
+Java_net_quasardb_qdb_jni_qdb_ts_1batch_1pinned_1push(JNIEnv *jniEnv,
+                                                      jclass /*thisClass*/,
+                                                      jlong handle,
+                                                      jlong batchTable,
+                                                      jintArray columnTypes,
+                                                      jobjectArray rows)
+{
+
+    qdb::jni::env env(jniEnv);
+    try
+    {
+        qdb::jni::log::swap_callback();
+
+        // qdb_ts_column_type_t * column_types[column_count];
+        // to_column_type_array(env, columns, column_types, column_count);
+        auto column_types_guard = jni::primitive_array::get_array_critical<qdb_ts_column_type_t>(env, columnTypes);
+
+        // Sanity check
+        assert(column_types_guard.size() == env.instance().GetArrayLength(columnTypes));
+
+        /**
+         * Push a single shard using pinned columns. We first pin all the columns
+         * that we expect.
+         */
+        size_t rowCount = env.instance().GetArrayLength(rows);
+
+        printf("pinned push\n");
+        fflush(stdout);
+        return qdb_e_ok;
+    }
+    catch (jni::exception const &e)
+    {
+        e.throw_new(env);
+        return e.error();
+    }
+}
+
+
+
+JNIEXPORT jint JNICALL
+Java_net_quasardb_qdb_jni_qdb_ts_1batch_1set_1pinned_1doubles(JNIEnv *jniEnv,
+                                                              jclass /*thisClass*/,
+                                                              jlong handle_,
+                                                              jlong table_,
+                                                              jlong shard_,
+                                                              jint columnIndex,
+                                                              jlongArray timeoffsets_,
+                                                              jdoubleArray values)
+{
+
+    qdb::jni::env env(jniEnv);
+    try
+    {
+        qdb::jni::log::swap_callback();
+
+        qdb_handle_t handle      = reinterpret_cast<qdb_handle_t>(handle_);
+        qdb_batch_table_t table  = reinterpret_cast<qdb_batch_table_t>(table_);
+        qdb_timespec_t shard     = qdb_timespec_t {shard_, 0};
+        qdb_time_t * timeoffsets = NULL;
+        double * data            = NULL;
+
+
+        // qdb_ts_column_type_t * column_types[column_count];
+        // to_column_type_array(env, columns, column_types, column_count);
+        auto values_guard       = jni::primitive_array::get_array_critical<double>(env, values);
+        auto timeoffsets_guard = jni::primitive_array::get_array_critical<long>(env, timeoffsets_);
+
+        assert(values_guard.size () == timeoffsets_guard.size());
+
+        /**
+         * Push a single shard using pinned columns. We first pin all the columns
+         * that we expect.
+         */
+        jni::exception::throw_if_error(handle,
+                                       qdb_ts_batch_pin_double_column(table,
+                                                                      columnIndex,
+                                                                      values_guard.size(),
+                                                                      &shard,
+                                                                      &timeoffsets,
+                                                                      &data));
+
+        assert(timeoffsets != NULL);
+        assert(data != NULL);
+
+        memcpy((void *)data,
+               (const void *)(values_guard.get()),
+               values_guard.size());
+
+        memcpy((void *)timeoffsets,
+               (const void *)(timeoffsets_guard.get()),
+               timeoffsets_guard.size());
+
+        return qdb_e_ok;
+    }
+    catch (jni::exception const &e)
+    {
+        e.throw_new(env);
+        return e.error();
+    }
+}
+
 JNIEXPORT jint JNICALL
 Java_net_quasardb_qdb_jni_qdb_ts_1batch_1push(JNIEnv *jniEnv,
                                               jclass /*thisClass*/,
@@ -357,6 +472,15 @@ JavaCritical_net_quasardb_qdb_jni_qdb_ts_1batch_1start_1row(jlong batchTable,
   return qdb_ts_batch_start_row((qdb_batch_table_t)(batchTable),
                                 &ts);
 }
+
+
+/****
+ * 'regular' column set.
+ *
+ * The functions below are here to keep the old functionality of 'regular' batch
+ * row set functions. Due to performance concerns these functions are set to be
+ * deprecated once we're certain the pinned column approach is stable.
+ */
 
 JNIEXPORT jint JNICALL
 Java_net_quasardb_qdb_jni_qdb_ts_1batch_1row_1set_1double(JNIEnv * jniEnv,
@@ -505,6 +629,28 @@ Java_net_quasardb_qdb_jni_qdb_ts_1batch_1push_1truncate(JNIEnv *jniEnv,
         return e.error();
     }
 }
+
+
+/****
+ * 'pinned' column set
+ *
+ * These functions use the pinned columns under the hood directly. It's an experimental
+ * approach but scales *much* better accross vast numbers of columns in the batch writer
+ * state (i.e. will scale to millions of columns in state).
+ */
+
+JNIEXPORT jint JNICALL
+Java_net_quasardb_qdb_jni_qdb_ts_1batch_1row_1set_1pinned_1double(JNIEnv * jniEnv,
+                                                                  jclass /* thisClass */,
+                                                                  jlong pinnedColumn,
+                                                                  jlong rowIndex,
+                                                                  double val) {
+  qdb::jni::env env(jniEnv);
+
+  return qdb_e_ok;
+}
+
+
 
 JNIEXPORT jint JNICALL
 Java_net_quasardb_qdb_jni_qdb_ts_1local_1table_1init(JNIEnv *jniEnv,

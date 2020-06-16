@@ -41,6 +41,10 @@ public class TableTest {
         Column[] columns = TestUtils.generateTableColumns(8);
         Session s = TestUtils.createSession();
         Table t = Table.create(s, TestUtils.createUniqueAlias(), columns, shardSize);
-        assertEquals(Table.getShardSize(s, t), shardSize);
+        assertEquals(Table.getShardSize(s, t), shardSize / 1000);
+        assertEquals(Table.getShardSizeMillis(s, t), shardSize);
+
+        assertEquals(t.getShardSize(), shardSize / 1000);
+        assertEquals(t.getShardSizeMillis(), shardSize);
     }
 }

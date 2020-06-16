@@ -43,7 +43,8 @@ public class Writer implements AutoCloseable, Flushable {
     boolean async;
     Session session;
     Long batchTable;
-    List<TableColumn> columns;
+    protected List<TableColumn> columns;
+
     TimeRange minMaxTs;
 
     /**

@@ -49,7 +49,7 @@ public class WriterExtraTablesBenchmarkTest {
     @Param({"DOUBLE"})
     public Value.Type valueType;
 
-    @Param({"writer", "pinnedWriter"})
+    @Param({"pinnedWriter", "writer"})
     public String writerType;
 
     private Table[] t;
@@ -113,6 +113,7 @@ public class WriterExtraTablesBenchmarkTest {
     @Benchmark
     @BenchmarkMode(Mode.AverageTime)
     @Fork(value = 1, warmups = 1)
+    @Warmup(iterations = 5)
     @Measurement(batchSize = -1, iterations = 1, time = 1, timeUnit = TimeUnit.MILLISECONDS)
     @OutputTimeUnit(TimeUnit.MILLISECONDS)
     public void appendBenchmark() throws Exception {
@@ -120,8 +121,7 @@ public class WriterExtraTablesBenchmarkTest {
         for (int i = 0; i < this.rowCount; ++i) {
             this.w.append(0, this.ts, this.v);
         }
+
+        this.w.flush();
     }
-
-
-
 }

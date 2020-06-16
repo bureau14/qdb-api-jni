@@ -174,6 +174,14 @@ public class Timespec implements Serializable {
     }
 
     /**
+     * Converts this timespec to the number of nanoseconds from the epoch of 1970-01-01
+     */
+    public long toEpochNanos() {
+        return (this.sec * 1000000000) + this.nsec;
+    }
+
+
+    /**
      * Returns the smallest timespec between the two, that is, the time that is pointing
      * towards the earliest point in time.
      */

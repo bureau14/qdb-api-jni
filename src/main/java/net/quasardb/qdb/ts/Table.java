@@ -28,6 +28,8 @@ public class Table implements Serializable {
     final static long DEFAULT_SHARD_SIZE = 86400000;
 
     protected String name;
+    protected long shardSizeMillis;
+    protected long shardSizeSecs;
     protected Column[] columns;
     Map <String, Integer> columnOffsets;
 
@@ -53,6 +55,14 @@ public class Table implements Serializable {
         for (int i = 0; i < this.columns.length; ++i) {
             this.columnOffsets.put(this.columns[i].name, i);
         }
+
+        // Cache our shard size for quick lookups. The (pinned) batch writer may
+        // be doing lookups of this on a frequent basis.
+        this.shardSizeMillis = Table.getShardSize(session, name);
+
+        // The batch writer needs the shard size by seconds a lot, specifically,
+        // so we also cache that here.
+        this.shardSizeSecs = this.shardSizeMillis / 1000;
     }
 
     /**
@@ -465,17 +475,38 @@ public class Table implements Serializable {
     }
 
     /**
-     * Returns the timeseries table name.
+     * Returns the table name.
      */
     public String getName() {
         return this.name;
     }
 
     /**
+     * Returns this table's shard size (in milliseconds)
+     */
+    public long getShardSizeMillis() {
+        return this.shardSizeMillis;
+    }
+
+    /**
+     * Returns this table's shard size (in seconds)
+     */
+    public long getShardSize() {
+        return this.shardSizeSecs;
+    }
+
+    /**
      * Returns the shard size (in milliseconds) of the table.
      */
+    public static long getShardSizeMillis(Session session, Table table) {
+        return table.getShardSizeMillis();
+    }
+
+    /**
+     * Returns the shard size (in seconds) of the table.
+     */
     public static long getShardSize(Session session, Table table) {
-        return getShardSize(session, table.getName());
+        return table.getShardSize();
     }
 
     /**
