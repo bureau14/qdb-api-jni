@@ -115,6 +115,16 @@ public class PinnedWriter extends Writer {
                                                    timeoffsets,
                                                    Values.asPrimitiveInt64Array(columnValues));
                     break;
+
+                case TIMESTAMP:
+                    qdb.ts_batch_set_pinned_timestamps(handle,
+                                                       batchTable,
+                                                       shard,
+                                                       offset,
+                                                       timeoffsets,
+                                                       Values.asPrimitiveTimestampArray(columnValues));
+                    break;
+
                 default:
                     throw new RuntimeException("Column type not yet implemented: " + columnType.toString());
                 };

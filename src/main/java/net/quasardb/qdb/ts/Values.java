@@ -1,5 +1,6 @@
 package net.quasardb.qdb.ts;
 
+import net.quasardb.qdb.jni.Constants;
 import java.util.List;
 
 /**
@@ -12,19 +13,18 @@ public class Values {
         case DOUBLE:
             return in.doubleValue;
         case UNINITIALIZED:
-            return Double.NaN;
+            return Constants.nullDouble;
         }
 
         throw new RuntimeException("Not a double value: " + in.toString());
     }
-
 
     private static long asInt64(Value in) {
         switch (in.getType()) {
         case INT64:
             return in.int64Value;
         case UNINITIALIZED:
-            return -1;
+            return Constants.nullInt64;
         }
 
         throw new RuntimeException("Not an int64 value: " + in.toString());
@@ -55,6 +55,29 @@ public class Values {
         }
 
         return out;
+    }
+
+    public static Timespecs asPrimitiveTimestampArray (List<Value> in) {
+        long[] sec = new long[in.size()];
+        long[] nsec = new long[in.size()];
+        for (int i = 0; i < in.size(); ++i) {
+            Value v = in.get(i);
+
+            switch (v.getType()) {
+            case TIMESTAMP:
+                sec[i] = v.timestampValue.getSec();
+                nsec[i] = v.timestampValue.getNano();
+                break;
+            case UNINITIALIZED:
+                sec[i] = Constants.nullTime;
+                nsec[i] = Constants.nullTime;
+                break;
+            default:
+                throw new RuntimeException("Not a timestamp value: " + v.toString());
+            }
+        }
+
+        return new Timespecs(sec, nsec);
     }
 
 };

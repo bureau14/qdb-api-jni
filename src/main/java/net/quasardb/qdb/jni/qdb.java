@@ -10,6 +10,7 @@ import net.quasardb.qdb.ts.WritableRow;
 import net.quasardb.qdb.ts.Table;
 import net.quasardb.qdb.ts.TimeRange;
 import net.quasardb.qdb.ts.Timespec;
+import net.quasardb.qdb.ts.Timespecs;
 import net.quasardb.qdb.ts.Value;
 import net.quasardb.qdb.ts.Writer;
 import net.quasardb.qdb.ts.PinnedWriter;
@@ -172,6 +173,13 @@ public final class qdb
                                                         int columnIndex,
                                                         long[] timeoffsets,
                                                         long[] values);
+
+    public static native int ts_batch_set_pinned_timestamps(long handle,
+                                                            long batchTable,
+                                                            long shard,
+                                                            int columnIndex,
+                                                            long[] timeoffsets,
+                                                            Timespecs values);
 
     public static native int ts_batch_row_set_pinned_double(long columnIndex,
                                                             long rowIndex,

@@ -71,7 +71,10 @@ public class WriterTest {
 
 
     static Stream<Arguments> pushModeAndValueTypeProvider() {
-        return Stream.of(Arguments.of(Writer.PushMode.PINNED_NORMAL, Value.Type.DOUBLE));
+        return Stream.of(Arguments.of(Writer.PushMode.PINNED_NORMAL, Value.Type.DOUBLE),
+                         Arguments.of(Writer.PushMode.PINNED_NORMAL, Value.Type.INT64),
+                         Arguments.of(Writer.PushMode.PINNED_NORMAL, Value.Type.TIMESTAMP)
+                         );
     }
 
 
