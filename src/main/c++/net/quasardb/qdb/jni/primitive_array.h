@@ -1,5 +1,6 @@
 #pragma once
 
+#include <iostream>
 #include <jni.h>
 #include <qdb/client.h> // for qdb_string_t
 

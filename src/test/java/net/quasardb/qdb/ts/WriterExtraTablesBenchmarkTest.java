@@ -37,7 +37,7 @@ import net.quasardb.qdb.exception.InvalidArgumentException;
 @Threads(1)
 public class WriterExtraTablesBenchmarkTest {
 
-    @Param({"5"})
+    @Param({"10"})
     public int columnCount;
 
     @Param({"1000"})
@@ -46,7 +46,7 @@ public class WriterExtraTablesBenchmarkTest {
     @Param({"10000"})
     public int tableCount;
 
-    @Param({"DOUBLE"})
+    @Param({"DOUBLE", "INT64", "TIMESTAMP"})
     public Value.Type valueType;
 
     @Param({"pinnedWriter", "writer"})

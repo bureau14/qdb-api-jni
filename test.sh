@@ -10,4 +10,4 @@ mkdir build || true && \
     cd .. && \
     #mvn  '-Dtest=WriterExtraTablesBenchmarkTest*' test
     # mvn  '-Dtest=TableTest*' test
-    mvn -Dmaven.failsafe.debug '-Dtest=WriterTest*' test
+    mvn '-Dtest=WriterTest#canInsertNullRows' test

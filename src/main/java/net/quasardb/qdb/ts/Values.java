@@ -1,7 +1,9 @@
 package net.quasardb.qdb.ts;
 
-import net.quasardb.qdb.jni.Constants;
+import java.nio.ByteBuffer;
 import java.util.List;
+
+import net.quasardb.qdb.jni.Constants;
 
 /**
  * Utility functions that operate on (arrays of) values.
@@ -28,6 +30,17 @@ public class Values {
         }
 
         throw new RuntimeException("Not an int64 value: " + in.toString());
+    }
+
+    private static ByteBuffer asBlob(Value in) {
+        switch (in.getType()) {
+        case BLOB:
+            return in.blobValue;
+        case UNINITIALIZED:
+            return Constants.nullBlob;
+        }
+
+        throw new RuntimeException("Not a blob value: " + in.toString());
     }
 
     public static double[] asPrimitiveDoubleArray (Value[] in) {
@@ -78,6 +91,15 @@ public class Values {
         }
 
         return new Timespecs(sec, nsec);
+    }
+
+    public static ByteBuffer[] asPrimitiveBlobArray (List<Value> in) {
+        ByteBuffer[] out = new ByteBuffer[in.size()];
+        for (int i = 0; i < in.size(); ++i) {
+            out[i] = asBlob(in.get(i));
+        }
+
+        return out;
     }
 
 };

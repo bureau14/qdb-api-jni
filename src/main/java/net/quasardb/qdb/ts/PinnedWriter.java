@@ -125,6 +125,15 @@ public class PinnedWriter extends Writer {
                                                        Values.asPrimitiveTimestampArray(columnValues));
                     break;
 
+                case BLOB:
+                    qdb.ts_batch_set_pinned_blobs(handle,
+                                                  batchTable,
+                                                  shard,
+                                                  offset,
+                                                  timeoffsets,
+                                                  Values.asPrimitiveBlobArray(columnValues));
+                    break;
+
                 default:
                     throw new RuntimeException("Column type not yet implemented: " + columnType.toString());
                 };
