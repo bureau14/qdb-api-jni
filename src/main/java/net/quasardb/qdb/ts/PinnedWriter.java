@@ -65,23 +65,22 @@ public class PinnedWriter extends Writer {
         }
 
         void add (int offset, long timeOffset, Value[] values) {
-            assert (this.timeoffsets.size () == this.valuesByColumn.size());
-
             this.timeoffsets.add(this.currentRow, timeOffset);
             for (int i = 0; i < values.length; ++i) {
                 ArrayList columnValues = this.valuesByColumn.get(offset + i);
-                columnValues.ensureCapacity(this.currentRow);
+                assert(columnValues.size () == this.currentRow);
+
                 columnValues.add(this.currentRow, values[i]);
             }
 
             ++this.currentRow;
+
         }
 
         void flush(long handle, long batchTable, long shard) {
             // `offset` is the relative offset of the column within the total
             // batch writer state.
             assert(this.columnTypes.length == this.valuesByColumn.size());
-            assert(this.timeoffsets.size() == this.valuesByColumn.size());
 
             long[] timeoffsets = new long[this.timeoffsets.size()];
             for (int i = 0; i < this.timeoffsets.size(); ++i) {
@@ -106,6 +105,15 @@ public class PinnedWriter extends Writer {
                                                     offset,
                                                     timeoffsets,
                                                     Values.asPrimitiveDoubleArray(columnValues));
+                    break;
+
+                case INT64:
+                    qdb.ts_batch_set_pinned_int64s(handle,
+                                                   batchTable,
+                                                   shard,
+                                                   offset,
+                                                   timeoffsets,
+                                                   Values.asPrimitiveInt64Array(columnValues));
                     break;
                 default:
                     throw new RuntimeException("Column type not yet implemented: " + columnType.toString());

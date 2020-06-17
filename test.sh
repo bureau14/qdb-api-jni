@@ -8,5 +8,6 @@ mkdir build || true && \
     cmake -G Ninja .. && \
     cmake --build . && \
     cd .. && \
-    mvn  '-Dtest=WriterExtraTablesBenchmarkTest*' test
+    #mvn  '-Dtest=WriterExtraTablesBenchmarkTest*' test
     # mvn  '-Dtest=TableTest*' test
+    mvn -Dmaven.failsafe.debug '-Dtest=WriterTest*' test

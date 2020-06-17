@@ -118,6 +118,8 @@ public class WriterExtraTablesBenchmarkTest {
     @OutputTimeUnit(TimeUnit.MILLISECONDS)
     public void appendBenchmark() throws Exception {
 
+        System.out.println("first table name: " + this.t[0].getName());
+
         for (int i = 0; i < this.rowCount; ++i) {
             this.w.append(0, this.ts, this.v);
         }
