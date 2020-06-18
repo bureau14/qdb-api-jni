@@ -35,12 +35,26 @@ public class Values {
     private static ByteBuffer asBlob(Value in) {
         switch (in.getType()) {
         case BLOB:
+            assert (in.blobValue.isDirect());
             return in.blobValue;
         case UNINITIALIZED:
             return Constants.nullBlob;
         }
 
         throw new RuntimeException("Not a blob value: " + in.toString());
+    }
+
+    private static ByteBuffer asString(Value in) {
+        switch (in.getType()) {
+        case STRING:
+            assert (in.blobValue != null);
+            assert (in.blobValue.isDirect());
+            return in.blobValue;
+        case UNINITIALIZED:
+            return Constants.nullBlob;
+        }
+
+        throw new RuntimeException("Not a string value: " + in.toString());
     }
 
     public static double[] asPrimitiveDoubleArray (Value[] in) {
@@ -97,6 +111,15 @@ public class Values {
         ByteBuffer[] out = new ByteBuffer[in.size()];
         for (int i = 0; i < in.size(); ++i) {
             out[i] = asBlob(in.get(i));
+        }
+
+        return out;
+    }
+
+    public static ByteBuffer[] asPrimitiveStringArray (List<Value> in) {
+        ByteBuffer[] out = new ByteBuffer[in.size()];
+        for (int i = 0; i < in.size(); ++i) {
+            out[i] = asString(in.get(i));
         }
 
         return out;

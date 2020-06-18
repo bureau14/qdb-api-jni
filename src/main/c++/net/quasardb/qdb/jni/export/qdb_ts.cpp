@@ -416,6 +416,29 @@ Java_net_quasardb_qdb_jni_qdb_ts_1batch_1set_1pinned_1blobs(JNIEnv *jniEnv,
     }
 }
 
+
+JNIEXPORT jint JNICALL
+Java_net_quasardb_qdb_jni_qdb_ts_1batch_1set_1pinned_1strings(JNIEnv *jniEnv,
+                                                              jclass /*thisClass*/,
+                                                              jlong handle_,
+                                                              jlong table_,
+                                                              jlong shard_,
+                                                              jint columnIndex,
+                                                              jlongArray timeoffsets_,
+                                                              jobjectArray values)
+{
+    qdb::jni::env env(jniEnv);
+    try
+    {
+      return jni::set_pinned_objects<jni::object_array, qdb_string_t>(env, handle_, table_, shard_, columnIndex, timeoffsets_, values);
+    }
+    catch (jni::exception const &e)
+    {
+      e.throw_new(env);
+      return e.error();
+    }
+}
+
 JNIEXPORT jint JNICALL
 Java_net_quasardb_qdb_jni_qdb_ts_1batch_1push(JNIEnv *jniEnv,
                                               jclass /*thisClass*/,

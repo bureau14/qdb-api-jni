@@ -188,6 +188,13 @@ public final class qdb
                                                        long[] timeoffsets,
                                                        ByteBuffer[] values);
 
+    public static native int ts_batch_set_pinned_strings(long handle,
+                                                         long batchTable,
+                                                         long shard,
+                                                         int columnIndex,
+                                                         long[] timeoffsets,
+                                                         ByteBuffer[] values);
+
     public static native int ts_batch_row_set_pinned_double(long columnIndex,
                                                             long rowIndex,
                                                             double value);

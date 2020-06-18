@@ -23,6 +23,7 @@ class string_utf8
     qdb::jni::env &_env;
     jstring &_str;
     char const *_ptr;
+    size_t _len;
 
   public:
     /**
@@ -30,17 +31,19 @@ class string_utf8
      * env->GetStringUTFChars, and will ensure the reference
      * is released when necessary.
      */
-    string_utf8(qdb::jni::env &env, jstring &str, char const *ptr)
-        : _env(env), _str(str), _ptr(ptr)
+    string_utf8(qdb::jni::env &env, jstring &str, char const *ptr, size_t len)
+        : _env(env), _str(str), _ptr(ptr), _len(len)
     {
+
     }
 
     string_utf8(string_utf8 &&o) noexcept
-        : _env(o._env), _str(o._str), _ptr(o._ptr)
+        : _env(o._env), _str(o._str), _ptr(o._ptr), _len(o._len)
     {
         // By setting the other ptr to NULL, we're now effectively
         // claiming ownership of the char *.
         o._ptr = NULL;
+        o._len = 0;
     }
 
     ~string_utf8()
@@ -61,6 +64,20 @@ class string_utf8
     operator char const *() const
     {
         return _ptr;
+    }
+
+    size_t size() const {
+        return _len;
+    }
+
+    /**
+     * Returns pointer to the underlying string and releases the ownership.
+     */
+    char const * release()
+    {
+        char const * ptr = _ptr;
+        _ptr = NULL;
+        return ptr;
     }
 };
 }; // namespace guard

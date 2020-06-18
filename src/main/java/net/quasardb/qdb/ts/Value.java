@@ -287,6 +287,35 @@ public class Value implements Serializable {
 
     }
 
+    /**
+     * If this Value's type is a string, ensures that it creates a
+     * directly allocated ByteBuffer with a copy of the UTF-8 string representation.
+     *
+     * Because this implies that the String is then represented as a direct ByteBuffer
+     * with a 'stable' memory region behind it, it'll allow us to use this buffer
+     * in native code safely for extended periods of time without requiring a copy.
+     *
+     * @return Returns this value.
+     */
+    public Value ensureByteBufferBackedString() {
+        // TODO(leon): once pinned writers have stabilized, we should
+        // always represent all strings as bytebuffers immeidately.
+        assert(this.type == Type.STRING);
+        assert(this.stringValue != null);
+
+        if (this.blobValue == null) {
+            byte[] bs = this.stringValue.getBytes(StandardCharsets.UTF_8);
+            int size = bs.length;
+            this.blobValue = ByteBuffer.allocateDirect(size);
+            this.blobValue.put(bs, 0, size);
+            this.blobValue.rewind();
+        }
+
+        assert(this.blobValue != null);
+        return this;
+
+    }
+
     @Override
     public boolean equals(Object obj) {
         if (!(obj instanceof Value)) return false;

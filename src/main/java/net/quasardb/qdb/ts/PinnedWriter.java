@@ -70,6 +70,17 @@ public class PinnedWriter extends Writer {
                 ArrayList columnValues = this.valuesByColumn.get(offset + i);
                 assert(columnValues.size () == this.currentRow);
 
+                if (values[i].getType() == Value.Type.STRING) {
+                    // TODO(leon): once pinned writers have stabilized, we should
+                    // always represent all strings as bytebuffers immeidately.
+                    //
+                    // Invoking this call here has the advantage that the Value matrix
+                    // we buffer 'owns' the directly allocated memory region, and means
+                    // it's released automatically when the GC decides the Value objects
+                    // (and thus, their underlying direct ByteBuffers) are to be evicted.
+                    values[i].ensureByteBufferBackedString();
+                }
+
                 columnValues.add(this.currentRow, values[i]);
             }
 
@@ -132,6 +143,15 @@ public class PinnedWriter extends Writer {
                                                   offset,
                                                   timeoffsets,
                                                   Values.asPrimitiveBlobArray(columnValues));
+                    break;
+
+                case STRING:
+                    qdb.ts_batch_set_pinned_strings(handle,
+                                                    batchTable,
+                                                    shard,
+                                                    offset,
+                                                    timeoffsets,
+                                                    Values.asPrimitiveStringArray(columnValues));
                     break;
 
                 default:
@@ -233,12 +253,19 @@ public class PinnedWriter extends Writer {
             PinnedMatrix xs = this.matrixByShard.get(shard);
             assert(xs != null);
 
+            logger.debug("Pinning columns for shard {}", shard);
+
             xs.flush(this.session.handle(),
                      this.batchTable,
                      shard);
         }
 
+        logger.debug("All columns pinned, handing over to Writer.flush");
+
         super.flush();
+
+        logger.debug("Flush successful, releasing pinned memory");
+
     }
 
     private static long calculateOffset(long shard, Timespec ts) {

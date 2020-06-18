@@ -12,4 +12,5 @@ public class Constants {
     public static long maxTime = 0xFFFFFFFFFFFFFFFFL;
     public static long nullTime = minTime;
     public static ByteBuffer nullBlob = null;
+    public static String nullString = null;
 };

@@ -169,6 +169,55 @@ struct column_pinner<jni::object_array, qdb_blob_t>
 };
 
 
+
+template <>
+struct column_pinner<jni::object_array, qdb_string_t>
+{
+  void pin(qdb::jni::env & env,
+           qdb_handle_t handle,
+           qdb_batch_table_t table,
+           qdb_size_t index,
+           qdb_size_t capacity,
+           qdb_timespec_t * timestamp,
+           qdb_time_t ** timeoffsets,
+           qdb_string_t ** data) {
+  jni::exception::throw_if_error(handle,
+                                 qdb_ts_batch_pin_string_column(table,
+                                                                index,
+                                                                capacity,
+                                                                timestamp,
+                                                                timeoffsets,
+                                                                data));
+
+  }
+
+  void copy(qdb::jni::env & env,
+            long const * in_timeoffsets,
+            jni::object_array const & in_data,
+            long * out_timeoffsets,
+            qdb_string_t * out_data,
+            qdb_size_t len) {
+
+    assert(in_data.size () == len);
+
+    for (qdb_size_t i = 0; i < len; ++i) {
+      jobject bb = in_data.get(i);
+
+      if (bb == NULL) {
+        continue;
+      }
+
+      out_timeoffsets[i] = in_timeoffsets[i];
+      jni::byte_buffer::get_address(env,
+                                    bb,
+                                    (void const **)(&out_data[i].data),
+                                    &out_data[i].length);
+
+    }
+  }
+};
+
+
 template <>
 struct column_pinner<long, qdb_timespec_t>
 {
