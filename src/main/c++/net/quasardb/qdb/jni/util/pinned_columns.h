@@ -158,7 +158,7 @@ struct column_pinner<jni::object_array, qdb_blob_t>
         continue;
       }
 
-      std::cout << "blob(" << i << "): " << bb << std::endl;
+      out_timeoffsets[i] = in_timeoffsets[i];
 
       jni::byte_buffer::get_address(env,
                                     bb,
