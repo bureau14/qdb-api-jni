@@ -17,6 +17,9 @@ xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
     <version>3.9.0-SNAPSHOT</version>
     <packaging>jar</packaging>
     <file>target/jni-3.9.0-SNAPSHOT.jar</file>
+
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
   </properties>
 
   <dependencies>

@@ -13,6 +13,11 @@
     API for the JNI components of the QuasarDB API for Java. Should not be included directly.
   </description>
 
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+  </properties>
+
   <url>http://www.quasardb.net/</url>
   <licenses>
     <license>
