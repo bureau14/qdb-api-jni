@@ -4,7 +4,7 @@ import java.io.Serializable;
 
 /**
  * Efficient, array-based representation of many timespecs. Primarily used for
- * efficient transfer of large amount of timespecs to<>from JNI.
+ * efficient transfer of large amount of timespecs to and from JNI.
  */
 public class Timespecs implements Serializable {
     public long[] sec;
