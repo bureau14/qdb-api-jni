@@ -163,7 +163,7 @@ public class Timespec implements Serializable {
     }
 
     public String toString() {
-        return "Timespec (sec: " + this.sec + ", nsec: " + this.nsec + ")";
+        return "Timespec (" + this.asInstant().toString() + ")";
     }
 
     /**
