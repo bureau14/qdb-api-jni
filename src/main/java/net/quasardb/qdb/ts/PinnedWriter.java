@@ -124,8 +124,6 @@ public class PinnedWriter extends Writer {
                 Value.Type columnType = this.columnTypes[offset];
                 assert(columnValues != null);
 
-                System.out.println("Pinning column " + Integer.toString(offset) + " with " + Integer.toString(columnValues.length) + " values");
-
                 switch (columnType) {
                 case DOUBLE:
                     qdb.ts_batch_set_pinned_doubles(handle,
