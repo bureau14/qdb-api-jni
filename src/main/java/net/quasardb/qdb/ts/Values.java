@@ -11,6 +11,10 @@ import net.quasardb.qdb.jni.Constants;
 public class Values {
 
     private static double asDouble(Value in) {
+        if (in == null) {
+            return Constants.nullDouble;
+        }
+
         switch (in.getType()) {
         case DOUBLE:
             return in.doubleValue;
@@ -22,6 +26,10 @@ public class Values {
     }
 
     private static long asInt64(Value in) {
+        if (in == null) {
+            return Constants.nullInt64;
+        }
+
         switch (in.getType()) {
         case INT64:
             return in.int64Value;
@@ -33,6 +41,10 @@ public class Values {
     }
 
     private static ByteBuffer asBlob(Value in) {
+        if (in == null) {
+            return Constants.nullBlob;
+        }
+
         switch (in.getType()) {
         case BLOB:
             assert (in.blobValue.isDirect());
@@ -45,6 +57,10 @@ public class Values {
     }
 
     private static ByteBuffer asString(Value in) {
+        if (in == null) {
+            return Constants.nullBlob;
+        }
+
         switch (in.getType()) {
         case STRING:
             assert (in.blobValue != null);
@@ -66,40 +82,28 @@ public class Values {
         return out;
     }
 
-    public static double[] asPrimitiveDoubleArray (List<Value> in) {
-        double[] out = new double[in.size()];
-        for (int i = 0; i < in.size(); ++i) {
-            out[i] = asDouble(in.get(i));
+    public static long[] asPrimitiveInt64Array (Value[] in) {
+        long[] out = new long[in.length];
+        for (int i = 0; i < in.length; ++i) {
+            out[i] = asInt64(in[i]);
         }
 
         return out;
     }
 
-    public static long[] asPrimitiveInt64Array (List<Value> in) {
-        long[] out = new long[in.size()];
-        for (int i = 0; i < in.size(); ++i) {
-            out[i] = asInt64(in.get(i));
-        }
+    public static Timespecs asPrimitiveTimestampArray (Value[] in) {
+        long[] sec = new long[in.length];
+        long[] nsec = new long[in.length];
+        for (int i = 0; i < in.length; ++i) {
+            Value v = in[i];
 
-        return out;
-    }
-
-    public static Timespecs asPrimitiveTimestampArray (List<Value> in) {
-        long[] sec = new long[in.size()];
-        long[] nsec = new long[in.size()];
-        for (int i = 0; i < in.size(); ++i) {
-            Value v = in.get(i);
-
-            switch (v.getType()) {
-            case TIMESTAMP:
-                sec[i] = v.timestampValue.getSec();
-                nsec[i] = v.timestampValue.getNano();
-                break;
-            case UNINITIALIZED:
+            if (v == null || v.getType () == Value.Type.UNINITIALIZED) {
                 sec[i] = Constants.nullTime;
                 nsec[i] = Constants.nullTime;
-                break;
-            default:
+            } else if (v.getType () == Value.Type.TIMESTAMP) {
+                sec[i] = v.timestampValue.getSec();
+                nsec[i] = v.timestampValue.getNano();
+            } else {
                 throw new RuntimeException("Not a timestamp value: " + v.toString());
             }
         }
@@ -107,19 +111,19 @@ public class Values {
         return new Timespecs(sec, nsec);
     }
 
-    public static ByteBuffer[] asPrimitiveBlobArray (List<Value> in) {
-        ByteBuffer[] out = new ByteBuffer[in.size()];
-        for (int i = 0; i < in.size(); ++i) {
-            out[i] = asBlob(in.get(i));
+    public static ByteBuffer[] asPrimitiveBlobArray (Value[] in) {
+        ByteBuffer[] out = new ByteBuffer[in.length];
+        for (int i = 0; i < in.length; ++i) {
+            out[i] = asBlob(in[i]);
         }
 
         return out;
     }
 
-    public static ByteBuffer[] asPrimitiveStringArray (List<Value> in) {
-        ByteBuffer[] out = new ByteBuffer[in.size()];
-        for (int i = 0; i < in.size(); ++i) {
-            out[i] = asString(in.get(i));
+    public static ByteBuffer[] asPrimitiveStringArray (Value[] in) {
+        ByteBuffer[] out = new ByteBuffer[in.length];
+        for (int i = 0; i < in.length; ++i) {
+            out[i] = asString(in[i]);
         }
 
         return out;

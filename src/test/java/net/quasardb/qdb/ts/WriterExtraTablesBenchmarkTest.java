@@ -43,14 +43,14 @@ public class WriterExtraTablesBenchmarkTest {
     @Param({"1000"})
     public int rowCount;
 
-    @Param({"10000"})
+    @Param({"1000", "5000", "50000"})
     public int tableCount;
-
-    @Param({"DOUBLE", "INT64", "TIMESTAMP"})
-    public Value.Type valueType;
 
     @Param({"pinnedWriter", "writer"})
     public String writerType;
+
+    @Param({"DOUBLE", "INT64", "TIMESTAMP", "BLOB", "STRING"})
+    public Value.Type valueType;
 
     private Table[] t;
     private Value[] v;
@@ -114,12 +114,9 @@ public class WriterExtraTablesBenchmarkTest {
     @BenchmarkMode(Mode.AverageTime)
     @Fork(value = 1, warmups = 1)
     @Warmup(iterations = 5)
-    @Measurement(batchSize = -1, iterations = 1, time = 1, timeUnit = TimeUnit.MILLISECONDS)
+    @Measurement(batchSize = -1, iterations = 3, time = 1, timeUnit = TimeUnit.MILLISECONDS)
     @OutputTimeUnit(TimeUnit.MILLISECONDS)
     public void appendBenchmark() throws Exception {
-
-        System.out.println("first table name: " + this.t[0].getName());
-
         for (int i = 0; i < this.rowCount; ++i) {
             this.w.append(0, this.ts, this.v);
         }

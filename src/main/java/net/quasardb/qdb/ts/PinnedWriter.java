@@ -8,6 +8,7 @@ import java.time.LocalDateTime;
 
 import java.nio.channels.SeekableByteChannel;
 import java.util.*;
+import java.util.stream.*;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,8 +32,7 @@ import net.quasardb.qdb.jni.*;
 public class PinnedWriter extends Writer {
 
     private static final Logger logger = LoggerFactory.getLogger(PinnedWriter.class);
-
-    private final int chunkSize = 50000;
+    private static final int INITIAL_CHUNK_SIZE = 65536;
 
     private int currentRow;
     private Long2ObjectOpenHashMap<PinnedMatrix> matrixByShard;
@@ -43,32 +43,49 @@ public class PinnedWriter extends Writer {
 
     public static class PinnedMatrix {
         Value.Type[] columnTypes;
-        ArrayList<Long> timeoffsets;
-        ArrayList<ArrayList<Value> > valuesByColumn;
+        long[] timeoffsets;
+        ArrayList<Value[]> valuesByColumn;
         int currentRow;
 
         public PinnedMatrix(Value.Type[] columnTypes) {
 
             this.columnTypes = columnTypes;
             this.currentRow = 0;
-            this.timeoffsets = new ArrayList<Long>();
+            this.timeoffsets = new long[INITIAL_CHUNK_SIZE];
 
+            this.valuesByColumn = PinnedMatrix.toValuesByColumn(columnTypes,  INITIAL_CHUNK_SIZE);
+            assert(this.valuesByColumn.size() == columnTypes.length);
+        }
+
+        private static ArrayList<Value[]> toValuesByColumn(Value.Type[] columnTypes, int chunkSize) {
             int columnCount = columnTypes.length;
-            this.valuesByColumn = new ArrayList<ArrayList <Value> >(columnCount);
+            ArrayList<Value[]> result = new ArrayList<Value[]>(columnCount);
 
             for (int i = 0; i < columnCount; ++i) {
-                this.valuesByColumn.add(i, new ArrayList<Value>());
+                result.add(i, new Value[chunkSize]);
             }
 
-            assert(this.valuesByColumn.size() == columnCount);
+            return result;
+        }
+
+        void extraColumns(Value.Type[] columnTypes) {
+            assert(this.valuesByColumn != null);
+
+            this.valuesByColumn.addAll(PinnedMatrix.toValuesByColumn(columnTypes, INITIAL_CHUNK_SIZE));
+
+            this.columnTypes = Stream
+                .concat(Arrays.stream(this.columnTypes),
+                        Arrays.stream(columnTypes))
+                .toArray(Value.Type[]::new);
 
         }
 
         void add (int offset, long timeOffset, Value[] values) {
-            this.timeoffsets.add(this.currentRow, timeOffset);
+            this.timeoffsets[this.currentRow] = timeOffset;
             for (int i = 0; i < values.length; ++i) {
-                ArrayList columnValues = this.valuesByColumn.get(offset + i);
-                assert(columnValues.size () == this.currentRow);
+                Value[] columnValues = this.valuesByColumn.get(offset + i);
+                assert(columnValues.length > this.currentRow);
+                //assert(columnValues.size () == this.currentRow);
 
                 if (values[i].getType() == Value.Type.STRING) {
                     // TODO(leon): once pinned writers have stabilized, we should
@@ -81,7 +98,7 @@ public class PinnedWriter extends Writer {
                     values[i].ensureByteBufferBackedString();
                 }
 
-                columnValues.add(this.currentRow, values[i]);
+                columnValues[this.currentRow] = values[i];
             }
 
             ++this.currentRow;
@@ -93,20 +110,21 @@ public class PinnedWriter extends Writer {
             // batch writer state.
             assert(this.columnTypes.length == this.valuesByColumn.size());
 
-            long[] timeoffsets = new long[this.timeoffsets.size()];
-            for (int i = 0; i < this.timeoffsets.size(); ++i) {
-                timeoffsets[i] = this.timeoffsets.get(i).longValue();
-            }
-
             for (int offset = 0; offset < this.valuesByColumn.size(); ++offset) {
-                ArrayList<Value> columnValues = valuesByColumn.get(offset);
+                Value[] columnValues = valuesByColumn.get(offset);
 
-                if (columnValues.size() == 0) {
+                if (columnValues.length == 0) {
+                    logger.debug("Column with offset {} has no values, skipping entirely", offset);
                     continue;
                 }
 
+                // We always expect a 'perfect' matrix
+                assert(this.timeoffsets.length == columnValues.length);
+
                 Value.Type columnType = this.columnTypes[offset];
                 assert(columnValues != null);
+
+                System.out.println("Pinning column " + Integer.toString(offset) + " with " + Integer.toString(columnValues.length) + " values");
 
                 switch (columnType) {
                 case DOUBLE:
@@ -114,7 +132,7 @@ public class PinnedWriter extends Writer {
                                                     batchTable,
                                                     shard,
                                                     offset,
-                                                    timeoffsets,
+                                                    this.timeoffsets,
                                                     Values.asPrimitiveDoubleArray(columnValues));
                     break;
 
@@ -123,7 +141,7 @@ public class PinnedWriter extends Writer {
                                                    batchTable,
                                                    shard,
                                                    offset,
-                                                   timeoffsets,
+                                                   this.timeoffsets,
                                                    Values.asPrimitiveInt64Array(columnValues));
                     break;
 
@@ -132,7 +150,7 @@ public class PinnedWriter extends Writer {
                                                        batchTable,
                                                        shard,
                                                        offset,
-                                                       timeoffsets,
+                                                       this.timeoffsets,
                                                        Values.asPrimitiveTimestampArray(columnValues));
                     break;
 
@@ -141,7 +159,7 @@ public class PinnedWriter extends Writer {
                                                   batchTable,
                                                   shard,
                                                   offset,
-                                                  timeoffsets,
+                                                  this.timeoffsets,
                                                   Values.asPrimitiveBlobArray(columnValues));
                     break;
 
@@ -150,7 +168,7 @@ public class PinnedWriter extends Writer {
                                                     batchTable,
                                                     shard,
                                                     offset,
-                                                    timeoffsets,
+                                                    this.timeoffsets,
                                                     Values.asPrimitiveStringArray(columnValues));
                     break;
 
@@ -167,8 +185,9 @@ public class PinnedWriter extends Writer {
         super(session, tables);
         this.currentRow = 0;
         this.matrixByShard = new Long2ObjectOpenHashMap<PinnedMatrix>();
-        this.resolveShardSizes(tables);
-        this.resolveColumnTypes(tables);
+
+        this.columnShardSizes = PinnedWriter.tablesToColumnShardSizes(tables);
+        this.columnTypes = PinnedWriter.tablesToColumnTypes(tables);
     }
 
     protected PinnedWriter(Session session, Table[] tables, Writer.PushMode mode) {
@@ -176,52 +195,69 @@ public class PinnedWriter extends Writer {
         this.currentRow = 0;
         this.matrixByShard = new Long2ObjectOpenHashMap<PinnedMatrix>();
 
-        this.resolveShardSizes(tables);
-        this.resolveColumnTypes(tables);
+        this.columnShardSizes = PinnedWriter.tablesToColumnShardSizes(tables);
+        this.columnTypes = PinnedWriter.tablesToColumnTypes(tables);
     }
 
-    private void resolveShardSizes(Table[] tables) {
-        // We know in advance the amount of columns we expect.
-        this.columnShardSizes = new long[this.columns.size()];
+    private static long[] tablesToColumnShardSizes(Table[] tables) {
+        int columnCount =
+            Arrays.stream(tables).map(t -> t.getColumns().length).reduce(0, Integer::sum);
+        long[] result = new long[columnCount];
 
         int i = 0;
 
         for (Table t : tables) {
             for (Column c : t.columns) {
-                this.columnShardSizes[i++] = t.getShardSize();
+                result[i++] = t.getShardSize();
             }
         }
 
-        assert i == this.columnShardSizes.length;
+        return result;
     }
 
-    private void resolveColumnTypes(Table[] tables) {
-        // We know in advance the amount of columns we expect.
-        this.columnTypes = new Value.Type[this.columns.size()];
+    private static Value.Type[] tablesToColumnTypes(Table[] tables) {
+        int columnCount =
+            Arrays.stream(tables).map(t -> t.getColumns().length).reduce(0, Integer::sum);
+        Value.Type[] result = new Value.Type[columnCount];
 
         int i = 0;
 
         for (Table t : tables) {
             for (Column c : t.columns) {
-                this.columnTypes[i++] =  c.getType();
+                result[i++] = c.getType();
             }
         }
 
-        assert i == this.columnTypes.length;
-    }
-
-    private static long[] pinColumns(Long batchTable, List<Writer.TableColumn> columns) {
-        throw new RuntimeException("Not yet implemented");
+        return result;
     }
 
     @Override
     public void extraTables(Table[] tables) {
-        throw new RuntimeException("Not yet implemented");
+        super.extraTables(tables);
+
+        long[] newShardSizes = PinnedWriter.tablesToColumnShardSizes(tables);
+        Value.Type[] newColumnTypes = PinnedWriter.tablesToColumnTypes(tables);
+
+        this.columnShardSizes = LongStream
+            .concat(Arrays.stream(this.columnShardSizes),
+                    Arrays.stream(newShardSizes))
+            .toArray();
+
+
+        this.columnTypes = Stream
+            .concat(Arrays.stream(this.columnTypes),
+                    Arrays.stream(newColumnTypes))
+            .toArray(Value.Type[]::new);
+
+        for (long shard : this.matrixByShard.keySet()) {
+            this.matrixByShard
+                .get(shard)
+                .extraColumns(newColumnTypes);
+        }
     }
 
     @Override
     public void append(Integer offset, Timespec timestamp, Value[] values) throws IOException {
-        assert this.currentRow < this.chunkSize : "Internal row index cannot exceed chunk size";
         long shard = PinnedWriter.truncateTimespecToShard(this.columnShardSizes[offset],
                                                           timestamp.getSec());
 
