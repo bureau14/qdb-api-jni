@@ -61,7 +61,7 @@ public class PerformanceTraceTest {
         Table t = TestUtils.createTable(s, columns);
 
         Collection<PerformanceTrace.Trace> res = PerformanceTrace.get(s);
-        assertEquals(2, res.size());
+        assertEquals(3, res.size());
 
         for (PerformanceTrace.Trace trace : res) {
             assertTrue(trace.measurements.length > 1);
@@ -89,7 +89,10 @@ public class PerformanceTraceTest {
         PerformanceTrace.clear(s);
         Collection<PerformanceTrace.Trace> res2 = PerformanceTrace.get(s);
 
-        assertEquals(2, res1.size());
+        System.out.println(res1.toString());
+        System.out.println(res2.toString());
+
+        assertEquals(3, res1.size());
         assertEquals(0, res2.size());
     }
 
@@ -105,7 +108,7 @@ public class PerformanceTraceTest {
         Collection<PerformanceTrace.Trace> res1 = PerformanceTrace.pop(s);
         Collection<PerformanceTrace.Trace> res2 = PerformanceTrace.get(s);
 
-        assertEquals(2, res1.size());
+        assertEquals(3, res1.size());
         assertEquals(0, res2.size());
     }
 
@@ -124,7 +127,7 @@ public class PerformanceTraceTest {
         Collection<PerformanceTrace.Trace> res2 = PerformanceTrace.pop(s);
 
         assertEquals(0, res1.size());
-        assertEquals(2, res2.size());
+        assertEquals(3, res2.size());
 
         Writer w = Table.writer(s, t);
 
