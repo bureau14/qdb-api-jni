@@ -33,94 +33,94 @@ import net.quasardb.qdb.*;
 import net.quasardb.qdb.exception.InvalidIteratorException;
 import net.quasardb.qdb.exception.InvalidArgumentException;
 
-@State(Scope.Benchmark)
-@Threads(1)
-public class WriterExtraTablesBenchmarkTest {
+// @State(Scope.Benchmark)
+// @Threads(1)
+// public class WriterExtraTablesBenchmarkTest {
 
-    @Param({"10"})
-    public int columnCount;
+//     @Param({"10"})
+//     public int columnCount;
 
-    @Param({"1000"})
-    public int rowCount;
+//     @Param({"1000"})
+//     public int rowCount;
 
-    @Param({"1000", "5000", "50000"})
-    public int tableCount;
+//     @Param({"1000", "5000", "50000"})
+//     public int tableCount;
 
-    @Param({"pinnedWriter", "writer"})
-    public String writerType;
+//     @Param({"pinnedWriter", "writer"})
+//     public String writerType;
 
-    @Param({"DOUBLE", "INT64", "TIMESTAMP", "BLOB", "STRING"})
-    public Value.Type valueType;
+//     @Param({"DOUBLE", "INT64", "TIMESTAMP", "BLOB", "STRING"})
+//     public Value.Type valueType;
 
-    private Table[] t;
-    private Value[] v;
-    private Session s;
-    private Writer w;
-    private Timespec ts;
+//     private Table[] t;
+//     private Value[] v;
+//     private Session s;
+//     private Writer w;
+//     private Timespec ts;
 
-    @Setup(Level.Trial)
-    public void setupTrial() throws Exception {
-        this.s = TestUtils.createSession();
-    }
+//     @Setup(Level.Trial)
+//     public void setupTrial() throws Exception {
+//         this.s = TestUtils.createSession();
+//     }
 
-    @TearDown(Level.Trial)
-    public void teardownTrial() throws Exception {
-        this.s.close();
-    }
+//     @TearDown(Level.Trial)
+//     public void teardownTrial() throws Exception {
+//         this.s.close();
+//     }
 
-    @Setup(Level.Invocation)
-    public void setupInvocation() throws Exception {
-        this.ts = Timespec.now();
+//     @Setup(Level.Invocation)
+//     public void setupInvocation() throws Exception {
+//         this.ts = Timespec.now();
 
-        this.v = new Value[this.columnCount];
-        for (int i = 0; i < this.columnCount; ++i) {
-            this.v[i] = TestUtils.generateRandomValueByType(this.valueType);
-        }
+//         this.v = new Value[this.columnCount];
+//         for (int i = 0; i < this.columnCount; ++i) {
+//             this.v[i] = TestUtils.generateRandomValueByType(this.valueType);
+//         }
 
-        Column[] c = TestUtils.generateTableColumns(this.valueType, this.columnCount);
+//         Column[] c = TestUtils.generateTableColumns(this.valueType, this.columnCount);
 
-        this.t = new Table[this.tableCount];
-        for (int i = 0; i < this.tableCount; ++i) {
-            Table t = TestUtils.createTable(this.s, c);
-            this.t[i] = t;
-        }
+//         this.t = new Table[this.tableCount];
+//         for (int i = 0; i < this.tableCount; ++i) {
+//             Table t = TestUtils.createTable(this.s, c);
+//             this.t[i] = t;
+//         }
 
-        if (this.writerType.equals("writer")) {
-            this.w = Tables.writer(this.s, this.t);
-        } else if (this.writerType.equals("pinnedWriter")) {
-            this.w = Tables.pinnedWriter(this.s, this.t);
-        } else {
-            throw new RuntimeException("Unrecognized writer type: " + this.writerType);
-        }
-    }
+//         if (this.writerType.equals("writer")) {
+//             this.w = Tables.writer(this.s, this.t);
+//         } else if (this.writerType.equals("pinnedWriter")) {
+//             this.w = Tables.pinnedWriter(this.s, this.t);
+//         } else {
+//             throw new RuntimeException("Unrecognized writer type: " + this.writerType);
+//         }
+//     }
 
-    @TearDown(Level.Invocation)
-    public void teardownInvocation() throws Exception {
-        this.v = null;
-        this.w.close();
-        this.w = null;
-        this.t = null;
-    }
+//     @TearDown(Level.Invocation)
+//     public void teardownInvocation() throws Exception {
+//         this.v = null;
+//         this.w.close();
+//         this.w = null;
+//         this.t = null;
+//     }
 
 
-    @Test
-    public void benchmark() throws Exception {
-        // Junit entrypoint, junit -> jmh wrapper
-        String[] argv = {};
-        org.openjdk.jmh.Main.main(argv);
-    }
+//     @Test
+//     public void benchmark() throws Exception {
+//         // Junit entrypoint, junit -> jmh wrapper
+//         String[] argv = {};
+//         org.openjdk.jmh.Main.main(argv);
+//     }
 
-    @Benchmark
-    @BenchmarkMode(Mode.AverageTime)
-    @Fork(value = 1, warmups = 1)
-    @Warmup(iterations = 5)
-    @Measurement(batchSize = -1, iterations = 3, time = 1, timeUnit = TimeUnit.MILLISECONDS)
-    @OutputTimeUnit(TimeUnit.MILLISECONDS)
-    public void appendBenchmark() throws Exception {
-        for (int i = 0; i < this.rowCount; ++i) {
-            this.w.append(0, this.ts, this.v);
-        }
+//     @Benchmark
+//     @BenchmarkMode(Mode.AverageTime)
+//     @Fork(value = 1, warmups = 1)
+//     @Warmup(iterations = 5)
+//     @Measurement(batchSize = -1, iterations = 3, time = 1, timeUnit = TimeUnit.MILLISECONDS)
+//     @OutputTimeUnit(TimeUnit.MILLISECONDS)
+//     public void appendBenchmark() throws Exception {
+//         for (int i = 0; i < this.rowCount; ++i) {
+//             this.w.append(0, this.ts, this.v);
+//         }
 
-        this.w.flush();
-    }
-}
+//         this.w.flush();
+//     }
+// }
