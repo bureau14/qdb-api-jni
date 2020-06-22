@@ -89,9 +89,6 @@ public class PerformanceTraceTest {
         PerformanceTrace.clear(s);
         Collection<PerformanceTrace.Trace> res2 = PerformanceTrace.get(s);
 
-        System.out.println(res1.toString());
-        System.out.println(res2.toString());
-
         assertEquals(3, res1.size());
         assertEquals(0, res2.size());
     }
