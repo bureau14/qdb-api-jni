@@ -24,19 +24,19 @@ struct column_pinner
            T ** data);
 
   void copy(qdb::jni::env & env,
-            long const * in_timeoffsets, T const * in_data,
-            long * out_timeoffsets, T * out_data,
+            jlong const * in_timeoffsets, T const * in_data,
+            qdb_time_t * out_timeoffsets, T * out_data,
             qdb_size_t len);
 
 
   void copy(qdb::jni::env & env,
-            long const * in_timeoffsets, T const & in_data,
-            long * out_timeoffsets, T * out_data,
+            jlong const * in_timeoffsets, T const & in_data,
+            qdb_time_t * out_timeoffsets, T * out_data,
             qdb_size_t len);
 
   void copy2(qdb::jni::env & env,
-             long const * in_timeoffsets, T * in1_data, T * in2_data,
-             long * out_timeoffsets, U * out_data,
+             jlong const * in_timeoffsets, T * in1_data, T * in2_data,
+             qdb_time_t * out_timeoffsets, U * out_data,
              qdb_size_t len);
 
 };
@@ -63,9 +63,9 @@ struct column_pinner<double>
   }
 
   void copy(qdb::jni::env & env,
-            long const * in_timeoffsets,
+            jlong const * in_timeoffsets,
             double const * in_data,
-            long * out_timeoffsets,
+            qdb_time_t * out_timeoffsets,
             double * out_data,
             qdb_size_t len) {
 
@@ -103,9 +103,9 @@ struct column_pinner<qdb_int_t>
   }
 
   void copy(qdb::jni::env & env,
-            long const * in_timeoffsets,
+            jlong const * in_timeoffsets,
             qdb_int_t const * in_data,
-            long * out_timeoffsets,
+            qdb_time_t * out_timeoffsets,
             qdb_int_t * out_data,
             qdb_size_t len) {
 
@@ -143,9 +143,9 @@ struct column_pinner<jni::object_array, qdb_blob_t>
   }
 
   void copy(qdb::jni::env & env,
-            long const * in_timeoffsets,
+            jlong const * in_timeoffsets,
             jni::object_array const & in_data,
-            long * out_timeoffsets,
+            qdb_time_t * out_timeoffsets,
             qdb_blob_t * out_data,
             qdb_size_t len) {
 
@@ -192,9 +192,9 @@ struct column_pinner<jni::object_array, qdb_string_t>
   }
 
   void copy(qdb::jni::env & env,
-            long const * in_timeoffsets,
+            jlong const * in_timeoffsets,
             jni::object_array const & in_data,
-            long * out_timeoffsets,
+            qdb_time_t * out_timeoffsets,
             qdb_string_t * out_data,
             qdb_size_t len) {
 
@@ -240,10 +240,10 @@ struct column_pinner<long, qdb_timespec_t>
   }
 
   void copy2(qdb::jni::env & env,
-             long const * in_timeoffsets,
+             jlong const * in_timeoffsets,
              long const * in1_data,
              long const * in2_data,
-             long * out_timeoffsets,
+             qdb_time_t * out_timeoffsets,
              qdb_timespec_t * out_data,
              qdb_size_t len) {
 
@@ -283,7 +283,7 @@ set_pinned(qdb::jni::env & env,
   // qdb_ts_column_type_t * column_types[column_count];
   // to_column_type_array(env, columns, column_types, column_count);
   auto values_guard       = jni::primitive_array::get_array_critical<T>(env, values);
-  auto timeoffsets_guard  = jni::primitive_array::get_array_critical<long>(env, timeoffsets_);
+  auto timeoffsets_guard  = jni::primitive_array::get_array_critical<jlong>(env, timeoffsets_);
 
   assert(values_guard.size () == timeoffsets_guard.size());
 
@@ -337,7 +337,7 @@ set_pinned2(qdb::jni::env & env,
   // to_column_type_array(env, columns, column_types, column_count);
   auto values1_guard      = jni::primitive_array::get_array_critical<T>(env, values1);
   auto values2_guard      = jni::primitive_array::get_array_critical<T>(env, values2);
-  auto timeoffsets_guard  = jni::primitive_array::get_array_critical<long>(env, timeoffsets_);
+  auto timeoffsets_guard  = jni::primitive_array::get_array_critical<jlong>(env, timeoffsets_);
 
   assert(values1_guard.size () == timeoffsets_guard.size());
   assert(values2_guard.size () == timeoffsets_guard.size());
@@ -392,7 +392,7 @@ set_pinned_objects(qdb::jni::env & env,
   // to_column_type_array(env, columns, column_types, column_count);
 
   object_array values(env, values_);
-  auto timeoffsets_guard  = jni::primitive_array::get_array_critical<long>(env, timeoffsets_);
+  auto timeoffsets_guard  = jni::primitive_array::get_array_critical<jlong>(env, timeoffsets_);
 
   assert(values.size () == timeoffsets_guard.size());
 
