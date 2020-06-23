@@ -57,14 +57,14 @@ column_pinner<double>::copy(qdb::jni::env & env,
  */
 
 void
-column_pinner<qdb_int_t>::pin(qdb::jni::env & env,
-                              qdb_handle_t handle,
-                              qdb_batch_table_t table,
-                              qdb_size_t index,
-                              qdb_size_t capacity,
-                              qdb_timespec_t * timestamp,
-                              qdb_time_t ** timeoffsets,
-                              qdb_int_t ** data) {
+column_pinner<jlong, qdb_int_t>::pin(qdb::jni::env & env,
+                                     qdb_handle_t handle,
+                                     qdb_batch_table_t table,
+                                     qdb_size_t index,
+                                     qdb_size_t capacity,
+                                     qdb_timespec_t * timestamp,
+                                     qdb_time_t ** timeoffsets,
+                                     qdb_int_t ** data) {
   jni::exception::throw_if_error(handle,
                                  qdb_ts_batch_pin_int64_column(table,
                                                                 index,
@@ -76,12 +76,12 @@ column_pinner<qdb_int_t>::pin(qdb::jni::env & env,
 }
 
 void
-column_pinner<qdb_int_t>::copy(qdb::jni::env & env,
-                               jlong const * in_timeoffsets,
-                               qdb_int_t const * in_data,
-                               qdb_time_t * out_timeoffsets,
-                               qdb_int_t * out_data,
-                               qdb_size_t len) {
+column_pinner<jlong, qdb_int_t>::copy(qdb::jni::env & env,
+                                      jlong const * in_timeoffsets,
+                                      qdb_int_t const * in_data,
+                                      qdb_time_t * out_timeoffsets,
+                                      qdb_int_t * out_data,
+                                      qdb_size_t len) {
 
   for (qdb_size_t i = 0; i < len; ++i) {
     if (in_data[i] == (qdb_int_t)0x8000000000000000ll) {
