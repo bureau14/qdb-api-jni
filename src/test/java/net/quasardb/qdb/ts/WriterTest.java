@@ -52,11 +52,11 @@ public class WriterTest {
                          Arguments.of(Writer.PushMode.TRUNCATE, Value.Type.TIMESTAMP),
                          Arguments.of(Writer.PushMode.TRUNCATE, Value.Type.STRING),
 
-                         Arguments.of(Writer.PushMode.ASYNC, Value.Type.DOUBLE),
-                         Arguments.of(Writer.PushMode.ASYNC, Value.Type.INT64),
-                         Arguments.of(Writer.PushMode.ASYNC, Value.Type.BLOB),
-                         Arguments.of(Writer.PushMode.ASYNC, Value.Type.TIMESTAMP),
-                         Arguments.of(Writer.PushMode.ASYNC, Value.Type.STRING),
+                         // Arguments.of(Writer.PushMode.ASYNC, Value.Type.DOUBLE),
+                         // Arguments.of(Writer.PushMode.ASYNC, Value.Type.INT64),
+                         // Arguments.of(Writer.PushMode.ASYNC, Value.Type.BLOB),
+                         // Arguments.of(Writer.PushMode.ASYNC, Value.Type.TIMESTAMP),
+                         // Arguments.of(Writer.PushMode.ASYNC, Value.Type.STRING),
 
                          Arguments.of(Writer.PushMode.FAST, Value.Type.DOUBLE),
                          Arguments.of(Writer.PushMode.FAST, Value.Type.INT64),
@@ -89,14 +89,14 @@ public class WriterTest {
                                                                                  Value.Type.STRING}),
 
 
-                         Arguments.of(Writer.PushMode.ASYNC, new Value.Type[]{Value.Type.DOUBLE,
-                                                                              Value.Type.INT64}),
-                         Arguments.of(Writer.PushMode.ASYNC, new Value.Type[]{Value.Type.INT64,
-                                                                              Value.Type.BLOB}),
-                         Arguments.of(Writer.PushMode.ASYNC, new Value.Type[]{Value.Type.BLOB,
-                                                                              Value.Type.TIMESTAMP}),
-                         Arguments.of(Writer.PushMode.ASYNC, new Value.Type[]{Value.Type.TIMESTAMP,
-                                                                              Value.Type.STRING}),
+                         // Arguments.of(Writer.PushMode.ASYNC, new Value.Type[]{Value.Type.DOUBLE,
+                         //                                                      Value.Type.INT64}),
+                         // Arguments.of(Writer.PushMode.ASYNC, new Value.Type[]{Value.Type.INT64,
+                         //                                                      Value.Type.BLOB}),
+                         // Arguments.of(Writer.PushMode.ASYNC, new Value.Type[]{Value.Type.BLOB,
+                         //                                                      Value.Type.TIMESTAMP}),
+                         // Arguments.of(Writer.PushMode.ASYNC, new Value.Type[]{Value.Type.TIMESTAMP,
+                         //                                                      Value.Type.STRING}),
 
                          Arguments.of(Writer.PushMode.FAST, new Value.Type[]{Value.Type.DOUBLE,
                                                                              Value.Type.INT64}),
@@ -320,7 +320,7 @@ public class WriterTest {
         Table t = TestUtils.createTable(definition);
         Writer writer = writerByPushMode(t, mode);
 
-        int ROW_COUNT = 1000;
+        int ROW_COUNT = 100000;
 
         WritableRow[] rows = new WritableRow[ROW_COUNT];
         for (int i = 0; i < rows.length; ++i) {
@@ -344,5 +344,68 @@ public class WriterTest {
 
         WritableRow[] readRows = Table.reader(s, t, ranges).stream().toArray(WritableRow[]::new);
         assertArrayEquals(rows, readRows);
+    }
+
+    @ParameterizedTest
+    @MethodSource("pushModeAndValueTypesProvider")
+    public void canAddExtraTable(Writer.PushMode mode,
+                                 Value.Type[] valueTypes) throws Exception {
+        Column[] definition = TestUtils.generateTableColumns(valueTypes);
+
+        Table t1 = TestUtils.createTable(definition);
+        Table t2 = TestUtils.createTable(definition);
+
+        Writer writer = writerByPushMode(t1, mode);
+
+        int ROW_COUNT = 1000;
+
+        WritableRow[] rows1 = new WritableRow[ROW_COUNT];
+        WritableRow[] rows2 = new WritableRow[ROW_COUNT];
+
+        for (int i = 0; i < rows1.length; ++i) {
+            Value[] vs = Arrays.stream(valueTypes)
+                .map((valueType) -> {
+                        return TestUtils.generateRandomValueByType(32, valueType);
+                    })
+                .toArray(Value[]::new);
+
+            rows1[i] =
+                new WritableRow (LocalDateTime.now(), vs);
+            writer.append(t1.getName(), rows1[i]);
+        }
+
+        // This is the crucial test: add additional state in the middle of the flush
+        writer.extraTables(t2);
+
+        for (int i = 0; i < rows2.length; ++i) {
+            Value[] vs = Arrays.stream(valueTypes)
+                .map((valueType) -> {
+                        return TestUtils.generateRandomValueByType(32, valueType);
+                    })
+                .toArray(Value[]::new);
+
+            rows2[i] =
+                new WritableRow (LocalDateTime.now(), vs);
+            writer.append(t2.getName(), rows2[i]);
+        }
+
+        // Do note we actually need to flush, as the pinned writer does most of its
+        // complex operations in the flush operation.
+        pushmodeAwareFlush(writer);
+
+        TimeRange[] ranges1 = {
+            new TimeRange(rows1[0].getTimestamp(),
+                          new Timespec(rows1[(rows1.length - 1)].getTimestamp().asLocalDateTime().plusNanos(1)))
+        };
+
+        TimeRange[] ranges2 = {
+            new TimeRange(rows2[0].getTimestamp(),
+                          new Timespec(rows2[(rows2.length - 1)].getTimestamp().asLocalDateTime().plusNanos(1)))
+        };
+
+        WritableRow[] readRows1 = Table.reader(s, t1, ranges1).stream().toArray(WritableRow[]::new);
+        WritableRow[] readRows2 = Table.reader(s, t2, ranges2).stream().toArray(WritableRow[]::new);
+        assertArrayEquals(rows1, readRows1);
+        assertArrayEquals(rows2, readRows2);
     }
 }
