@@ -64,7 +64,7 @@ struct column_pinner<double>
 };
 
 template <>
-struct column_pinner<qdb_int_t>
+struct column_pinner<jlong, qdb_int_t>
 {
   void pin(qdb::jni::env & env,
            qdb_handle_t handle,
@@ -77,7 +77,7 @@ struct column_pinner<qdb_int_t>
 
   void copy(qdb::jni::env & env,
             jlong const * in_timeoffsets,
-            qdb_int_t const * in_data,
+            jlong const * in_data,
             qdb_time_t * out_timeoffsets,
             qdb_int_t * out_data,
             qdb_size_t len);
