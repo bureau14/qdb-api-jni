@@ -324,12 +324,39 @@ Java_net_quasardb_qdb_jni_qdb_ts_1batch_1set_1pinned_1doubles(JNIEnv *jniEnv,
                                                               jlong shard_,
                                                               jint columnIndex,
                                                               jlongArray timeoffsets_,
-                                                              jdoubleArray values)
+                                                              jdoubleArray data_)
 {
+    // We do a fast copy and rely on this assumption
+    static_assert(sizeof(jdouble) == sizeof(double));
+
     qdb::jni::env env(jniEnv);
     try
     {
-      return jni::set_pinned<double>(env, handle_, table_, shard_, columnIndex, timeoffsets_, values);
+       qdb_time_t * timeoffsets = NULL;
+       double * data            = NULL;
+
+       qdb_handle_t handle      = reinterpret_cast<qdb_handle_t>(handle_);
+       qdb_batch_table_t table  = reinterpret_cast<qdb_batch_table_t>(table_);
+       qdb_timespec_t shard     = qdb_timespec_t {shard_, 0};
+
+
+       auto data_guard         = jni::primitive_array::get_array_critical<jdouble>(env, data_);
+       auto timeoffsets_guard  = jni::primitive_array::get_array_critical<jlong>(env, timeoffsets_);
+
+       assert(data_guard.size () == timeoffsets_guard.size());
+
+       jni::column_pinner<double> pinner {};
+       pinner.pin(env, handle, table, columnIndex, data_guard.size(), &shard, &timeoffsets, &data);
+
+
+       // note: data_guard uses `jdouble` while data is in `double` -- see static assert above.
+       pinner.copy(env,
+                   timeoffsets_guard.get(), data_guard.get(),
+                   timeoffsets, data,
+                   data_guard.size());
+
+
+       return qdb_e_ok;
     }
     catch (jni::exception const &e)
     {
@@ -346,12 +373,40 @@ Java_net_quasardb_qdb_jni_qdb_ts_1batch_1set_1pinned_1int64s(JNIEnv *jniEnv,
                                                              jlong shard_,
                                                              jint columnIndex,
                                                              jlongArray timeoffsets_,
-                                                             jlongArray values)
+                                                             jlongArray data_)
 {
+    static_assert(sizeof(jlong) == sizeof(qdb_int_t));
+    static_assert(sizeof(jlong) == sizeof(int64_t));
+
     qdb::jni::env env(jniEnv);
     try
     {
-      return jni::set_pinned<int64_t>(env, handle_, table_, shard_, columnIndex, timeoffsets_, values);
+       qdb_time_t * timeoffsets = NULL;
+       qdb_int_t * data         = NULL;
+
+       qdb_handle_t handle      = reinterpret_cast<qdb_handle_t>(handle_);
+       qdb_batch_table_t table  = reinterpret_cast<qdb_batch_table_t>(table_);
+       qdb_timespec_t shard     = qdb_timespec_t {shard_, 0};
+
+       auto data_guard         = jni::primitive_array::get_array_critical<jlong>(env, data_);
+       auto timeoffsets_guard  = jni::primitive_array::get_array_critical<jlong>(env, timeoffsets_);
+
+       assert(data_guard.size () == timeoffsets_guard.size());
+
+       jni::column_pinner<qdb_int_t> pinner {};
+       pinner.pin(env, handle, table, columnIndex, data_guard.size(), &shard, &timeoffsets, &data);
+
+       assert(timeoffsets != NULL);
+       assert(data != NULL);
+
+       // note: data_guard uses `jlong` while data is in `qdb_int_t` -- see static assert above.
+       pinner.copy(env,
+                   timeoffsets_guard.get(), data_guard.get(),
+                   timeoffsets, data,
+                   data_guard.size());
+
+
+       return qdb_e_ok;
     }
     catch (jni::exception const &e)
     {
@@ -370,22 +425,56 @@ Java_net_quasardb_qdb_jni_qdb_ts_1batch_1set_1pinned_1timestamps(JNIEnv *jniEnv,
                                                                  jlongArray timeoffsets_,
                                                                  jobject values)
 {
+    static_assert(sizeof(jlong) == sizeof(qdb_time_t));
+
     qdb::jni::env env(jniEnv);
     try
     {
+       qdb_time_t * timeoffsets = NULL;
+       qdb_timespec_t * data    = NULL;
+
+       qdb_handle_t handle      = reinterpret_cast<qdb_handle_t>(handle_);
+       qdb_batch_table_t table  = reinterpret_cast<qdb_batch_table_t>(table_);
+       qdb_timespec_t shard     = qdb_timespec_t {shard_, 0};
+
+
+      /**
+       * We retrieve a `Timespecs` class from the jvm in `values`, which contains two
+       * primitive arrays sec and nsec. Our first task is to get native access to these
+       * underlying arrays.
+       */
       jclass timespecClass = jni::object::get_class(env, values);
       jfieldID secField = jni::introspect::lookup_field(env, timespecClass,
                                                        "sec", "[J");
       jfieldID nsecField = jni::introspect::lookup_field(env, timespecClass,
                                                         "nsec", "[J");
-
       jlongArray secArray = (jlongArray)env.instance().GetObjectField(values, secField);
       jlongArray nsecArray = (jlongArray)env.instance().GetObjectField(values, nsecField);
+
       assert(secArray != NULL);
       assert(nsecArray != NULL);
 
-      return jni::set_pinned2<jlong, qdb_timespec_t>(env, handle_, table_, shard_, columnIndex,
-                                                     timeoffsets_, secArray, nsecArray);
+      /**
+       * Pin the columns, same logic as other `set_pinned_*` functions. Difference is that
+       * we have two value arrays (secArray and nsecArray), so we invoke copy2 on the pinner.
+       */
+      auto sec_guard         = jni::primitive_array::get_array_critical<jlong>(env, secArray);
+      auto nsec_guard         = jni::primitive_array::get_array_critical<jlong>(env, nsecArray);
+      auto timeoffsets_guard  = jni::primitive_array::get_array_critical<jlong>(env, timeoffsets_);
+
+      assert(timeoffsets_guard.size() == sec_guard.size());
+      assert(timeoffsets_guard.size() == nsec_guard.size());
+
+      jni::column_pinner<jlong, qdb_timespec_t> pinner {};
+      pinner.pin(env, handle, table, columnIndex, timeoffsets_guard.size(), &shard, &timeoffsets, &data);
+
+      // note: (n)sec_guard uses `jlong` while data is in `qdb_time_t` -- see static assert above.
+      pinner.copy2(env,
+                   timeoffsets_guard.get(), sec_guard.get(), nsec_guard.get(),
+                   timeoffsets, data,
+                   timeoffsets_guard.size());
+
+      return qdb_e_ok;
     }
     catch (jni::exception const &e)
     {
@@ -402,12 +491,36 @@ Java_net_quasardb_qdb_jni_qdb_ts_1batch_1set_1pinned_1blobs(JNIEnv *jniEnv,
                                                             jlong shard_,
                                                             jint columnIndex,
                                                             jlongArray timeoffsets_,
-                                                            jobjectArray values)
+                                                            jobjectArray data_)
 {
     qdb::jni::env env(jniEnv);
     try
     {
-      return jni::set_pinned_objects<jni::object_array, qdb_blob_t>(env, handle_, table_, shard_, columnIndex, timeoffsets_, values);
+       qdb_time_t * timeoffsets = NULL;
+       qdb_blob_t * data        = NULL;
+
+       qdb_handle_t handle      = reinterpret_cast<qdb_handle_t>(handle_);
+       qdb_batch_table_t table  = reinterpret_cast<qdb_batch_table_t>(table_);
+       qdb_timespec_t shard     = qdb_timespec_t {shard_, 0};
+
+       jni::object_array values(env, data_);
+       auto timeoffsets_guard  = jni::primitive_array::get_array_critical<jlong>(env, timeoffsets_);
+
+       assert(values.size () == timeoffsets_guard.size());
+
+       jni::column_pinner<jni::object_array, qdb_blob_t> pinner {};
+       pinner.pin(env, handle, table, columnIndex, timeoffsets_guard.size(), &shard, &timeoffsets, &data);
+
+       assert(timeoffsets != NULL);
+       assert(data != NULL);
+
+       pinner.copy(env,
+                   timeoffsets_guard.get(), values,
+                   timeoffsets, data,
+                   timeoffsets_guard.size());
+
+
+       return qdb_e_ok;
     }
     catch (jni::exception const &e)
     {
@@ -425,12 +538,36 @@ Java_net_quasardb_qdb_jni_qdb_ts_1batch_1set_1pinned_1strings(JNIEnv *jniEnv,
                                                               jlong shard_,
                                                               jint columnIndex,
                                                               jlongArray timeoffsets_,
-                                                              jobjectArray values)
+                                                              jobjectArray data_)
 {
     qdb::jni::env env(jniEnv);
     try
     {
-      return jni::set_pinned_objects<jni::object_array, qdb_string_t>(env, handle_, table_, shard_, columnIndex, timeoffsets_, values);
+       qdb_time_t * timeoffsets = NULL;
+       qdb_string_t * data        = NULL;
+
+       qdb_handle_t handle      = reinterpret_cast<qdb_handle_t>(handle_);
+       qdb_batch_table_t table  = reinterpret_cast<qdb_batch_table_t>(table_);
+       qdb_timespec_t shard     = qdb_timespec_t {shard_, 0};
+
+       jni::object_array values(env, data_);
+       auto timeoffsets_guard  = jni::primitive_array::get_array_critical<jlong>(env, timeoffsets_);
+
+       assert(values.size () == timeoffsets_guard.size());
+
+       jni::column_pinner<jni::object_array, qdb_string_t> pinner {};
+       pinner.pin(env, handle, table, columnIndex, timeoffsets_guard.size(), &shard, &timeoffsets, &data);
+
+       assert(timeoffsets != NULL);
+       assert(data != NULL);
+
+       pinner.copy(env,
+                   timeoffsets_guard.get(), values,
+                   timeoffsets, data,
+                   timeoffsets_guard.size());
+
+
+       return qdb_e_ok;
     }
     catch (jni::exception const &e)
     {

@@ -1,5 +1,8 @@
 #include "pinned_columns.h"
 
+#include "../byte_buffer.h"
+#include "../exception.h"
+
 namespace qdb
 {
 namespace jni
