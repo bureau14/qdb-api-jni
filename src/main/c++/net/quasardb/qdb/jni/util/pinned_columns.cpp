@@ -78,7 +78,7 @@ column_pinner<jlong, qdb_int_t>::pin(qdb::jni::env & env,
 void
 column_pinner<jlong, qdb_int_t>::copy(qdb::jni::env & env,
                                       jlong const * in_timeoffsets,
-                                      qdb_int_t const * in_data,
+                                      jlong const * in_data,
                                       qdb_time_t * out_timeoffsets,
                                       qdb_int_t * out_data,
                                       qdb_size_t len) {
