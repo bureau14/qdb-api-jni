@@ -766,6 +766,8 @@ tableGetRowBlobValue(qdb::jni::env &env,
 
     env.instance().CallVoidMethod(output, methodId, byteBuffer);
 
+    qdb_release(handle, value);
+
     return qdb_e_ok;
 }
 
@@ -794,6 +796,8 @@ tableGetRowStringValue(qdb::jni::env &env,
     assert(methodId != NULL);
 
     env.instance().CallVoidMethod(output, methodId, stringValue.release());
+
+    qdb_release(handle, value);
 
     return qdb_e_ok;
 }

@@ -58,11 +58,11 @@ public class WriterTest {
                          Arguments.of(Writer.PushMode.TRUNCATE, Value.Type.TIMESTAMP),
                          Arguments.of(Writer.PushMode.TRUNCATE, Value.Type.STRING),
 
-                         Arguments.of(Writer.PushMode.ASYNC, Value.Type.DOUBLE),
-                         Arguments.of(Writer.PushMode.ASYNC, Value.Type.INT64),
-                         Arguments.of(Writer.PushMode.ASYNC, Value.Type.BLOB),
-                         Arguments.of(Writer.PushMode.ASYNC, Value.Type.TIMESTAMP),
-                         Arguments.of(Writer.PushMode.ASYNC, Value.Type.STRING),
+                         // Arguments.of(Writer.PushMode.ASYNC, Value.Type.DOUBLE),
+                         // Arguments.of(Writer.PushMode.ASYNC, Value.Type.INT64),
+                         // Arguments.of(Writer.PushMode.ASYNC, Value.Type.BLOB),
+                         // Arguments.of(Writer.PushMode.ASYNC, Value.Type.TIMESTAMP),
+                         // Arguments.of(Writer.PushMode.ASYNC, Value.Type.STRING),
 
                          Arguments.of(Writer.PushMode.FAST, Value.Type.DOUBLE),
                          Arguments.of(Writer.PushMode.FAST, Value.Type.INT64),
@@ -104,14 +104,14 @@ public class WriterTest {
                                                                                  Value.Type.STRING}),
 
 
-                         Arguments.of(Writer.PushMode.ASYNC, new Value.Type[]{Value.Type.DOUBLE,
-                                                                              Value.Type.INT64}),
-                         Arguments.of(Writer.PushMode.ASYNC, new Value.Type[]{Value.Type.INT64,
-                                                                              Value.Type.BLOB}),
-                         Arguments.of(Writer.PushMode.ASYNC, new Value.Type[]{Value.Type.BLOB,
-                                                                              Value.Type.TIMESTAMP}),
-                         Arguments.of(Writer.PushMode.ASYNC, new Value.Type[]{Value.Type.TIMESTAMP,
-                                                                              Value.Type.STRING}),
+                         // Arguments.of(Writer.PushMode.ASYNC, new Value.Type[]{Value.Type.DOUBLE,
+                         //                                                      Value.Type.INT64}),
+                         // Arguments.of(Writer.PushMode.ASYNC, new Value.Type[]{Value.Type.INT64,
+                         //                                                      Value.Type.BLOB}),
+                         // Arguments.of(Writer.PushMode.ASYNC, new Value.Type[]{Value.Type.BLOB,
+                         //                                                      Value.Type.TIMESTAMP}),
+                         // Arguments.of(Writer.PushMode.ASYNC, new Value.Type[]{Value.Type.TIMESTAMP,
+                         //                                                      Value.Type.STRING}),
 
                          Arguments.of(Writer.PushMode.FAST, new Value.Type[]{Value.Type.DOUBLE,
                                                                              Value.Type.INT64}),
@@ -339,7 +339,7 @@ public class WriterTest {
         Table t = TestUtils.createTable(definition);
         Writer writer = writerByPushMode(t, mode);
 
-        int ROW_COUNT = 1000;
+        int ROW_COUNT = 100000;
 
         WritableRow[] rows = new WritableRow[ROW_COUNT];
         for (int i = 0; i < rows.length; ++i) {
@@ -365,7 +365,10 @@ public class WriterTest {
         assertArrayEquals(rows, readRows);
     }
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> 4a9ecdf... Explicitly release memory after setting blob/string values
     @ParameterizedTest
     @MethodSource("pushModeAndValueTypesProvider")
     public void canAddExtraTable(Writer.PushMode mode,
@@ -428,6 +431,3 @@ public class WriterTest {
         assertArrayEquals(rows1, readRows1);
         assertArrayEquals(rows2, readRows2);
     }
-
-
-}
