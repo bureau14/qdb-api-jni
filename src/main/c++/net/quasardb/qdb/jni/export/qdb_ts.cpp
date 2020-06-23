@@ -15,6 +15,8 @@
 #include "../util/ts_helpers.h"
 #include "../util/pinned_columns.h"
 #include "../byte_array.h"
+#include "../object_array.h"
+#include "../primitive_array.h"
 
 namespace jni = qdb::jni;
 

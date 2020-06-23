@@ -2,6 +2,8 @@
 
 #include "../byte_buffer.h"
 #include "../exception.h"
+#include "../object_array.h"
+#include "../primitive_array.h"
 
 namespace qdb
 {

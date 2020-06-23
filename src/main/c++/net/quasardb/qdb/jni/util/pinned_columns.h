@@ -1,10 +1,9 @@
 #pragma once
 
+#include <jni.h>
+
 #include <qdb/client.h>
 #include <qdb/ts.h>
-
-#include "../object_array.h"
-#include "../primitive_array.h"
 
 namespace qdb
 {
@@ -12,6 +11,7 @@ namespace jni
 {
 
 class env;
+class object_array;
 
 /**
  * T = input type, U = output type, e.g. T = jlong, U = qdb_int_t
