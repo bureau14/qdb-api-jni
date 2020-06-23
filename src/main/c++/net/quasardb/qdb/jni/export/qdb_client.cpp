@@ -259,6 +259,26 @@ Java_net_quasardb_qdb_jni_qdb_trim_1all(JNIEnv *jniEnv,
 }
 
 JNIEXPORT jint JNICALL
+Java_net_quasardb_qdb_jni_qdb_wait_1for_1stabilization(JNIEnv *jniEnv,
+                                                       jclass /*thisClass*/,
+                                                       jlong handle,
+                                                       jint timeout)
+{
+    qdb::jni::env env(jniEnv);
+    try
+    {
+        return jni::exception::throw_if_error(
+            (qdb_handle_t)handle,
+            qdb_wait_for_stabilization((qdb_handle_t)handle, timeout));
+    }
+    catch (jni::exception const &e)
+    {
+        e.throw_new(env);
+        return e.error();
+    }
+}
+
+JNIEXPORT jint JNICALL
 Java_net_quasardb_qdb_jni_qdb_remove(JNIEnv *jniEnv,
                                      jclass /*thisClass*/,
                                      jlong handle,

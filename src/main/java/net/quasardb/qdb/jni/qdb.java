@@ -75,6 +75,7 @@ public final class qdb
     public static native long option_get_client_max_in_buf_size(long handle);
     public static native int purge_all(long handle, int timeout);
     public static native int trim_all(long handle, int timeout);
+    public static native int wait_for_stabilization(long handle, int timeout);
 
     public static native int remove(long handle, String alias);
     public static native int expires_at(long handle, String alias, long expiry_time);
