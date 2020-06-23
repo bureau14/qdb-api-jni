@@ -219,7 +219,7 @@ struct column_pinner<jni::object_array, qdb_string_t>
 
 
 template <>
-struct column_pinner<long, qdb_timespec_t>
+struct column_pinner<jlong, qdb_timespec_t>
 {
   void pin(qdb::jni::env & env,
            qdb_handle_t handle,
@@ -241,8 +241,8 @@ struct column_pinner<long, qdb_timespec_t>
 
   void copy2(qdb::jni::env & env,
              jlong const * in_timeoffsets,
-             long const * in1_data,
-             long const * in2_data,
+             jlong const * in1_data,
+             jlong const * in2_data,
              qdb_time_t * out_timeoffsets,
              qdb_timespec_t * out_data,
              qdb_size_t len) {

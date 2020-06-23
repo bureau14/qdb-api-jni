@@ -384,8 +384,8 @@ Java_net_quasardb_qdb_jni_qdb_ts_1batch_1set_1pinned_1timestamps(JNIEnv *jniEnv,
       assert(secArray != NULL);
       assert(nsecArray != NULL);
 
-      return jni::set_pinned2<long, qdb_timespec_t>(env, handle_, table_, shard_, columnIndex,
-                                                    timeoffsets_, secArray, nsecArray);
+      return jni::set_pinned2<jlong, qdb_timespec_t>(env, handle_, table_, shard_, columnIndex,
+                                                     timeoffsets_, secArray, nsecArray);
     }
     catch (jni::exception const &e)
     {
