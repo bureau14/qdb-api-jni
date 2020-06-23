@@ -393,7 +393,7 @@ Java_net_quasardb_qdb_jni_qdb_ts_1batch_1set_1pinned_1int64s(JNIEnv *jniEnv,
 
        assert(data_guard.size () == timeoffsets_guard.size());
 
-       jni::column_pinner<qdb_int_t> pinner {};
+       jni::column_pinner<jlong, qdb_int_t> pinner {};
        pinner.pin(env, handle, table, columnIndex, data_guard.size(), &shard, &timeoffsets, &data);
 
        assert(timeoffsets != NULL);
