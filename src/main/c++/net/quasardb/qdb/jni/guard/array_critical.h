@@ -28,7 +28,7 @@ class array_critical
   public:
     /**
      * Constructor. Assumes `ptr` is acquired through
-     * env->GetString_CriticalUTFChars, and will ensure the reference
+     * env->GetPrimitiveArrayCritical, and will ensure the reference
      * is released when necessary.
      */
     array_critical(qdb::jni::env &env, jarray & arr, T * ptr, qdb_size_t len)
