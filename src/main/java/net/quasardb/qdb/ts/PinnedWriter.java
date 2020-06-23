@@ -80,7 +80,28 @@ public class PinnedWriter extends Writer {
 
         }
 
+        private void resizeArraysTo(int size) {
+            assert(size > this.timeoffsets.length);
+
+            logger.debug("Resizing internal arrays to {}", size);
+
+            this.timeoffsets = Arrays.copyOf(this.timeoffsets, size);
+
+            for (int i = 0; i < this.valuesByColumn.size(); ++i) {
+                Value[] columnValues = this.valuesByColumn.get(i);
+
+                assert (size > columnValues.length);
+                this.valuesByColumn.set(i, Arrays.copyOf(columnValues, size));
+            }
+        }
+
+
         void add (int offset, long timeOffset, Value[] values) {
+            if (this.currentRow == this.timeoffsets.length) {
+                this.resizeArraysTo(this.timeoffsets.length * 2);
+            }
+
+
             this.timeoffsets[this.currentRow] = timeOffset;
             for (int i = 0; i < values.length; ++i) {
                 Value[] columnValues = this.valuesByColumn.get(offset + i);
@@ -102,7 +123,6 @@ public class PinnedWriter extends Writer {
             }
 
             ++this.currentRow;
-
         }
 
         void flush(long handle, long batchTable, long shard) {
