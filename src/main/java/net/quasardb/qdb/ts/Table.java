@@ -135,6 +135,15 @@ public class Table implements Serializable {
         qdb.ts_remove(session.handle(), name);
     }
 
+    /**
+     * Remove existing timeseries table.
+     *
+     * @param session Active session with the QuasarDB cluster
+     * @param table Table to remove
+     */
+    public static void remove(Session session, Table table) {
+        remove(session, table.getName());
+    }
 
     /**
      * Initializes new writer for a single timeseries table.
