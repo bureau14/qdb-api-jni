@@ -28,6 +28,8 @@ public class Table implements Serializable {
     final static long DEFAULT_SHARD_SIZE = 86400000;
 
     protected String name;
+    protected long shardSizeMillis;
+    protected long shardSizeSecs;
     protected Column[] columns;
     Map <String, Integer> columnOffsets;
 
@@ -53,6 +55,14 @@ public class Table implements Serializable {
         for (int i = 0; i < this.columns.length; ++i) {
             this.columnOffsets.put(this.columns[i].name, i);
         }
+
+        // Cache our shard size for quick lookups. The (pinned) batch writer may
+        // be doing lookups of this on a frequent basis.
+        this.shardSizeMillis = Table.getShardSize(session, name);
+
+        // The batch writer needs the shard size by seconds a lot, specifically,
+        // so we also cache that here.
+        this.shardSizeSecs = this.shardSizeMillis / 1000;
     }
 
     /**
@@ -125,6 +135,15 @@ public class Table implements Serializable {
         qdb.ts_remove(session.handle(), name);
     }
 
+    /**
+     * Remove existing timeseries table.
+     *
+     * @param session Active session with the QuasarDB cluster
+     * @param table Table to remove
+     */
+    public static void remove(Session session, Table table) {
+        remove(session, table.getName());
+    }
 
     /**
      * Initializes new writer for a single timeseries table.
@@ -147,6 +166,46 @@ public class Table implements Serializable {
     }
 
     /**
+     * Initializes new, experimental high-performance pinned columns writer.
+     *
+     * @param session Active session with the QuasarDB cluster.
+     * @param name Timeseries table name. Must already exist.
+     */
+    public static Writer pinnedWriter(Session session, String name) {
+        return pinnedWriter(session, new Table(session, name));
+    }
+
+    /**
+     * Initializes new, experimental high-performance pinned columns writer.
+     *
+     * @param session Active session with the QuasarDB cluster.
+     * @param table Timeseries table.
+     */
+    public static Writer pinnedWriter(Session session, Table table) {
+        return Tables.pinnedWriter(session, new Table[] {table});
+    }
+
+    /**
+     * Initializes new, experimental high-performance pinned columns writer.
+     *
+     * @param session Active session with the QuasarDB cluster.
+     * @param name Timeseries table name. Must already exist.
+     */
+    public static Writer pinnedTruncateWriter(Session session, String name) {
+        return pinnedTruncateWriter(session, new Table(session, name));
+    }
+
+    /**
+     * Initializes new, experimental high-performance pinned columns writer.
+     *
+     * @param session Active session with the QuasarDB cluster.
+     * @param table Timeseries table.
+     */
+    public static Writer pinnedTruncateWriter(Session session, Table table) {
+        return Tables.pinnedTruncateWriter(session, new Table[] {table});
+    }
+
+    /**
      * Initializes new writer for a single timeseries table using
      * high-speed buffered writes.
      *
@@ -166,6 +225,27 @@ public class Table implements Serializable {
      */
     public static Writer asyncWriter(Session session, Table table) {
         return Tables.asyncWriter(session, new Table[] {table});
+    }
+
+
+    /**
+     * Initializes new, experimental high-performance pinned columns writer.
+     *
+     * @param session Active session with the QuasarDB cluster.
+     * @param name Timeseries table name. Must already exist.
+     */
+    public static Writer pinnedAsyncWriter(Session session, String name) {
+        return pinnedAsyncWriter(session, new Table(session, name));
+    }
+
+    /**
+     * Initializes new, experimental high-performance pinned columns writer.
+     *
+     * @param session Active session with the QuasarDB cluster.
+     * @param table Timeseries table.
+     */
+    public static Writer pinnedAsyncWriter(Session session, Table table) {
+        return Tables.pinnedAsyncWriter(session, new Table[] {table});
     }
 
     /**
@@ -444,10 +524,45 @@ public class Table implements Serializable {
     }
 
     /**
-     * Returns the timeseries table name.
+     * Returns the table name.
      */
     public String getName() {
         return this.name;
+    }
+
+    /**
+     * Returns this table's shard size (in milliseconds)
+     */
+    public long getShardSizeMillis() {
+        return this.shardSizeMillis;
+    }
+
+    /**
+     * Returns this table's shard size (in seconds)
+     */
+    public long getShardSize() {
+        return this.shardSizeSecs;
+    }
+
+    /**
+     * Returns the shard size (in milliseconds) of the table.
+     */
+    public static long getShardSizeMillis(Session session, Table table) {
+        return table.getShardSizeMillis();
+    }
+
+    /**
+     * Returns the shard size (in seconds) of the table.
+     */
+    public static long getShardSize(Session session, Table table) {
+        return table.getShardSize();
+    }
+
+    /**
+     * Returns the shard size (in milliseconds) of the table.
+     */
+    public static long getShardSize(Session session, String tableName) {
+        return qdb.ts_shard_size(session.handle(), tableName);
     }
 
     /**

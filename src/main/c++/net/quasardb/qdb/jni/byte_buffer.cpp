@@ -1,3 +1,4 @@
+#include <iostream>
 #include "byte_buffer.h"
 #include "env.h"
 #include "object.h"
@@ -30,4 +31,10 @@ qdb::jni::byte_buffer::create_copy(qdb::jni::env &env,
     // ByteBuffer, which automatically frees the area when the GC decides
     // to clean it up.
     return create(env, dest, len);
+}
+
+/* static */  void
+qdb::jni::byte_buffer::get_address(qdb::jni::env & env, jobject bb, const void ** buffer, qdb_size_t * len) {
+  *buffer = env.instance().GetDirectBufferAddress(bb);
+  *len = static_cast<qdb_size_t>(env.instance().GetDirectBufferCapacity(bb));
 }

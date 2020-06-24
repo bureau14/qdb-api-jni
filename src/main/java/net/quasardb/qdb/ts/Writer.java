@@ -33,7 +33,9 @@ public class Writer implements AutoCloseable, Flushable {
         NORMAL,
         ASYNC,
         FAST,
-        TRUNCATE
+        TRUNCATE,
+
+        PINNED_NORMAL
     }
 
     private static final Logger logger = LoggerFactory.getLogger(Writer.class);
@@ -43,7 +45,8 @@ public class Writer implements AutoCloseable, Flushable {
     boolean async;
     Session session;
     Long batchTable;
-    List<TableColumn> columns;
+    protected List<TableColumn> columns;
+
     TimeRange minMaxTs;
 
     /**
@@ -172,7 +175,7 @@ public class Writer implements AutoCloseable, Flushable {
      */
     public void close() throws IOException {
         logger.info("Closing batch writer");
-        this.flush();
+        //this.flush();
         qdb.ts_batch_table_release(this.session.handle(), this.batchTable);
 
         this.batchTable = null;
@@ -281,7 +284,10 @@ public class Writer implements AutoCloseable, Flushable {
         }
 
         this.pointsSinceFlush += values.length;
+        this.trackMinMaxTimestamp(timestamp);
+    }
 
+    protected void trackMinMaxTimestamp(Timespec timestamp) {
         if (this.minMaxTs == null) {
             this.minMaxTs = new TimeRange(timestamp, timestamp);
         } else {

@@ -10,8 +10,10 @@ import net.quasardb.qdb.ts.WritableRow;
 import net.quasardb.qdb.ts.Table;
 import net.quasardb.qdb.ts.TimeRange;
 import net.quasardb.qdb.ts.Timespec;
+import net.quasardb.qdb.ts.Timespecs;
 import net.quasardb.qdb.ts.Value;
 import net.quasardb.qdb.ts.Writer;
+import net.quasardb.qdb.ts.PinnedWriter;
 
 public final class qdb
 {
@@ -117,6 +119,8 @@ public final class qdb
 
     public static native int ts_create(long handle, String alias, long shard_size, Column[] columns);
     public static native int ts_remove(long handle, String alias);
+    public static native long ts_shard_size(long handle, String alias);
+
     public static native int ts_insert_columns(long handle, String alias, Column[] columns);
     public static native int ts_list_columns(long handle, String alias, Reference<Column[]> columns);
     public static native int
@@ -131,6 +135,10 @@ public final class qdb
 
     public static native int ts_batch_push_truncate(long handle, long batchTable, TimeRange[] ranges);
 
+    public static native int ts_batch_pinned_push(long handle,
+                                                  long batchTable,
+                                                  int[] columnTypes,
+                                                  Object[] rows);
 
     public static native int ts_batch_start_row(long timestamp,
                                                 long sec,
@@ -152,6 +160,63 @@ public final class qdb
     public static native int ts_batch_row_set_string(long batchTable,
                                                      long index,
                                                      byte[] value);
+
+    public static native int ts_batch_set_pinned_doubles(long handle,
+                                                         long batchTable,
+                                                         long shard,
+                                                         int columnIndex,
+                                                         long[] timeoffsets,
+                                                         double[] values);
+
+    public static native int ts_batch_set_pinned_int64s(long handle,
+                                                        long batchTable,
+                                                        long shard,
+                                                        int columnIndex,
+                                                        long[] timeoffsets,
+                                                        long[] values);
+
+    public static native int ts_batch_set_pinned_timestamps(long handle,
+                                                            long batchTable,
+                                                            long shard,
+                                                            int columnIndex,
+                                                            long[] timeoffsets,
+                                                            Timespecs values);
+
+    public static native int ts_batch_set_pinned_blobs(long handle,
+                                                       long batchTable,
+                                                       long shard,
+                                                       int columnIndex,
+                                                       long[] timeoffsets,
+                                                       ByteBuffer[] values);
+
+    public static native int ts_batch_set_pinned_strings(long handle,
+                                                         long batchTable,
+                                                         long shard,
+                                                         int columnIndex,
+                                                         long[] timeoffsets,
+                                                         ByteBuffer[] values);
+
+    public static native int ts_batch_row_set_pinned_double(long columnIndex,
+                                                            long rowIndex,
+                                                            double value);
+
+    public static native int ts_batch_row_set_pinned_int64(long columnIndex,
+                                                           long rowIndex,
+                                                           long value);
+
+    public static native int ts_batch_row_set_pinned_timestamp(long columnIndex,
+                                                               long rowIndex,
+                                                               long sec,
+                                                               long nsec);
+
+    public static native int ts_batch_row_set_pinned_blob(long columnIndex,
+                                                          long rowIndex,
+                                                          ByteBuffer value);
+
+    public static native int ts_batch_row_set_pinned_string(long columnIndex,
+                                                            long rowIndex,
+                                                            byte[] value);
+
 
     public static native void ts_local_table_release(long handle, long localTable);
     public static native int ts_table_get_ranges(long handle, long localTable, TimeRange[] ranges);

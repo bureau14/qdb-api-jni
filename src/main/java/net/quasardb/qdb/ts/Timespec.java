@@ -163,7 +163,7 @@ public class Timespec implements Serializable {
     }
 
     public String toString() {
-        return "Timespec (sec: " + this.sec + ", nsec: " + this.nsec + ")";
+        return "Timespec (" + this.asInstant().toString() + ")";
     }
 
     /**
@@ -172,6 +172,14 @@ public class Timespec implements Serializable {
     public long toEpochMillis() {
         return (long)(this.sec * 1000) + (long)(this.nsec / 1000000);
     }
+
+    /**
+     * Converts this timespec to the number of nanoseconds from the epoch of 1970-01-01
+     */
+    public long toEpochNanos() {
+        return (this.sec * 1000000000) + this.nsec;
+    }
+
 
     /**
      * Returns the smallest timespec between the two, that is, the time that is pointing

@@ -46,17 +46,23 @@ public class WriterTest {
                          Arguments.of(Writer.PushMode.NORMAL, Value.Type.TIMESTAMP),
                          Arguments.of(Writer.PushMode.NORMAL, Value.Type.STRING),
 
+                         Arguments.of(Writer.PushMode.PINNED_NORMAL, Value.Type.DOUBLE),
+                         Arguments.of(Writer.PushMode.PINNED_NORMAL, Value.Type.INT64),
+                         Arguments.of(Writer.PushMode.PINNED_NORMAL, Value.Type.TIMESTAMP),
+                         Arguments.of(Writer.PushMode.PINNED_NORMAL, Value.Type.BLOB),
+                         Arguments.of(Writer.PushMode.PINNED_NORMAL, Value.Type.STRING),
+
                          Arguments.of(Writer.PushMode.TRUNCATE, Value.Type.DOUBLE),
                          Arguments.of(Writer.PushMode.TRUNCATE, Value.Type.INT64),
                          Arguments.of(Writer.PushMode.TRUNCATE, Value.Type.BLOB),
                          Arguments.of(Writer.PushMode.TRUNCATE, Value.Type.TIMESTAMP),
                          Arguments.of(Writer.PushMode.TRUNCATE, Value.Type.STRING),
 
-                         // Arguments.of(Writer.PushMode.ASYNC, Value.Type.DOUBLE),
-                         // Arguments.of(Writer.PushMode.ASYNC, Value.Type.INT64),
-                         // Arguments.of(Writer.PushMode.ASYNC, Value.Type.BLOB),
-                         // Arguments.of(Writer.PushMode.ASYNC, Value.Type.TIMESTAMP),
-                         // Arguments.of(Writer.PushMode.ASYNC, Value.Type.STRING),
+                         Arguments.of(Writer.PushMode.ASYNC, Value.Type.DOUBLE),
+                         Arguments.of(Writer.PushMode.ASYNC, Value.Type.INT64),
+                         Arguments.of(Writer.PushMode.ASYNC, Value.Type.BLOB),
+                         Arguments.of(Writer.PushMode.ASYNC, Value.Type.TIMESTAMP),
+                         Arguments.of(Writer.PushMode.ASYNC, Value.Type.STRING),
 
                          Arguments.of(Writer.PushMode.FAST, Value.Type.DOUBLE),
                          Arguments.of(Writer.PushMode.FAST, Value.Type.INT64),
@@ -79,6 +85,15 @@ public class WriterTest {
                          Arguments.of(Writer.PushMode.NORMAL, new Value.Type[]{Value.Type.TIMESTAMP,
                                                                                Value.Type.STRING}),
 
+                         Arguments.of(Writer.PushMode.PINNED_NORMAL, new Value.Type[]{Value.Type.DOUBLE,
+                                                                                      Value.Type.INT64}),
+                         Arguments.of(Writer.PushMode.PINNED_NORMAL, new Value.Type[]{Value.Type.INT64,
+                                                                                      Value.Type.BLOB}),
+                         Arguments.of(Writer.PushMode.PINNED_NORMAL, new Value.Type[]{Value.Type.BLOB,
+                                                                                      Value.Type.TIMESTAMP}),
+                         Arguments.of(Writer.PushMode.PINNED_NORMAL, new Value.Type[]{Value.Type.TIMESTAMP,
+                                                                                      Value.Type.STRING}),
+
                          Arguments.of(Writer.PushMode.TRUNCATE, new Value.Type[]{Value.Type.DOUBLE,
                                                                                  Value.Type.INT64}),
                          Arguments.of(Writer.PushMode.TRUNCATE, new Value.Type[]{Value.Type.INT64,
@@ -89,14 +104,14 @@ public class WriterTest {
                                                                                  Value.Type.STRING}),
 
 
-                         // Arguments.of(Writer.PushMode.ASYNC, new Value.Type[]{Value.Type.DOUBLE,
-                         //                                                      Value.Type.INT64}),
-                         // Arguments.of(Writer.PushMode.ASYNC, new Value.Type[]{Value.Type.INT64,
-                         //                                                      Value.Type.BLOB}),
-                         // Arguments.of(Writer.PushMode.ASYNC, new Value.Type[]{Value.Type.BLOB,
-                         //                                                      Value.Type.TIMESTAMP}),
-                         // Arguments.of(Writer.PushMode.ASYNC, new Value.Type[]{Value.Type.TIMESTAMP,
-                         //                                                      Value.Type.STRING}),
+                         Arguments.of(Writer.PushMode.ASYNC, new Value.Type[]{Value.Type.DOUBLE,
+                                                                              Value.Type.INT64}),
+                         Arguments.of(Writer.PushMode.ASYNC, new Value.Type[]{Value.Type.INT64,
+                                                                              Value.Type.BLOB}),
+                         Arguments.of(Writer.PushMode.ASYNC, new Value.Type[]{Value.Type.BLOB,
+                                                                              Value.Type.TIMESTAMP}),
+                         Arguments.of(Writer.PushMode.ASYNC, new Value.Type[]{Value.Type.TIMESTAMP,
+                                                                              Value.Type.STRING}),
 
                          Arguments.of(Writer.PushMode.FAST, new Value.Type[]{Value.Type.DOUBLE,
                                                                              Value.Type.INT64}),
@@ -115,6 +130,8 @@ public class WriterTest {
         switch (mode) {
         case NORMAL:
             return t.writer(s, t);
+        case PINNED_NORMAL:
+            return t.pinnedWriter(s, t);
         case FAST:
             return t.fastWriter(s, t);
         case ASYNC:
@@ -130,6 +147,8 @@ public class WriterTest {
         switch (mode) {
         case NORMAL:
             return t.writer(s, t);
+        case PINNED_NORMAL:
+            return t.pinnedWriter(s, t);
         case FAST:
             return t.fastWriter(s, t);
         case ASYNC:
@@ -224,10 +243,10 @@ public class WriterTest {
             TestUtils.generateRandomValueByType(valueType)
         };
 
-        Timespec timestamp = new Timespec(LocalDateTime.now());
+        Timespec timestamp = Timespec.now();
+
         WritableRow writeRow = new WritableRow(timestamp, values);
         writer.append(writeRow);
-
         pushmodeAwareFlush(writer);
 
         TimeRange[] ranges = {

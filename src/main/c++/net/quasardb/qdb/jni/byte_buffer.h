@@ -1,7 +1,7 @@
 #pragma once
 
 #include <jni.h>
-
+#include <qdb/client.h> // qdb_size_t
 #include "guard/local_ref.h"
 #include "introspect.h"
 
@@ -31,6 +31,11 @@ class byte_buffer
      */
     static jni::guard::local_ref<jobject>
     create_copy(qdb::jni::env &env, void const *buffer, jsize len);
+
+
+    static void
+    get_address(qdb::jni::env & env, jobject bb, const void ** buffer, qdb_size_t * len);
+
 };
 }; // namespace jni
 }; // namespace qdb

@@ -9,7 +9,7 @@ import net.quasardb.qdb.jni.*;
 import net.quasardb.qdb.exception.IncompatibleTypeException;
 
 /**
- * Represents a timeseries table.
+ * Represents a timeseries value.
  */
 public class Value implements Serializable {
 
@@ -75,6 +75,7 @@ public class Value implements Serializable {
         return new Value(Type.UNINITIALIZED);
     }
 
+
     public void setNative(long batchTable, int offset) {
         switch (this.type) {
         case DOUBLE:
@@ -98,8 +99,41 @@ public class Value implements Serializable {
                                         this.stringValue.getBytes(StandardCharsets.UTF_8));
             break;
         }
-
     }
+
+    public void setPinnedNative(long pinnedColumn, int rowOffset) {
+        switch (this.type) {
+        case DOUBLE:
+            qdb.ts_batch_row_set_pinned_double(pinnedColumn,
+                                               rowOffset,
+                                               this.doubleValue);
+            break;
+        case INT64:
+            qdb.ts_batch_row_set_pinned_int64(pinnedColumn,
+                                              rowOffset,
+                                              this.int64Value);
+            break;
+        case TIMESTAMP:
+            qdb.ts_batch_row_set_pinned_timestamp(pinnedColumn,
+                                                  rowOffset,
+                                                  this.timestampValue.sec,
+                                                  this.timestampValue.nsec);
+            break;
+        case BLOB:
+            qdb.ts_batch_row_set_pinned_blob(pinnedColumn,
+                                             rowOffset,
+                                             this.blobValue);
+            break;
+        case STRING:
+            // Convert string to ByteBuffer before passing over to JNI so that
+            // we can keep the JNI code really simple (=> fast).
+            qdb.ts_batch_row_set_pinned_string(pinnedColumn,
+                                               rowOffset,
+                                               this.stringValue.getBytes(StandardCharsets.UTF_8));
+            break;
+        }
+    }
+
 
     /**
      * Updates value to represent an unintialised value.
@@ -250,6 +284,35 @@ public class Value implements Serializable {
         Value val = new Value(Type.STRING);
         val.stringValue = value;
         return val;
+
+    }
+
+    /**
+     * If this Value's type is a string, ensures that it creates a
+     * directly allocated ByteBuffer with a copy of the UTF-8 string representation.
+     *
+     * Because this implies that the String is then represented as a direct ByteBuffer
+     * with a 'stable' memory region behind it, it'll allow us to use this buffer
+     * in native code safely for extended periods of time without requiring a copy.
+     *
+     * @return Returns this value.
+     */
+    public Value ensureByteBufferBackedString() {
+        // TODO(leon): once pinned writers have stabilized, we should
+        // always represent all strings as bytebuffers immeidately.
+        assert(this.type == Type.STRING);
+        assert(this.stringValue != null);
+
+        if (this.blobValue == null) {
+            byte[] bs = this.stringValue.getBytes(StandardCharsets.UTF_8);
+            int size = bs.length;
+            this.blobValue = ByteBuffer.allocateDirect(size);
+            this.blobValue.put(bs, 0, size);
+            this.blobValue.rewind();
+        }
+
+        assert(this.blobValue != null);
+        return this;
 
     }
 

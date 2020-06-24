@@ -7,8 +7,10 @@ qdb::jni::string::get_chars_utf8(qdb::jni::env &env, jstring str)
 {
     assert(str != NULL);
 
-    return std::move(qdb::jni::guard::string_utf8(
-        env, str, env.instance().GetStringUTFChars(str, NULL)));
+    return std::move(qdb::jni::guard::string_utf8(env,
+                                                  str,
+                                                  env.instance().GetStringUTFChars(str, NULL),
+                                                  env.instance().GetStringUTFLength(str)));
 }
 
 /* static */ qdb::jni::guard::local_ref<jstring>
