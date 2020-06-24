@@ -132,7 +132,18 @@ public class Tables implements Serializable {
      * @param tables Timeseries tables.
      */
     public static Writer writer (Session session, Tables tables) {
-        return writer(session, tables.getTables());
+        return writer(session, tables, Writer.PushMode.NORMAL);
+    }
+
+
+    /**
+     * Initializes new writer for timeseries table.
+     *
+     * @param session Active session with the QuasarDB cluster.
+     * @param tables Timeseries tables.
+     */
+    public static Writer writer (Session session, Tables tables, Writer.PushMode mode) {
+        return writer(session, tables.getTables(), mode);
     }
 
     /**
@@ -142,7 +153,18 @@ public class Tables implements Serializable {
      * @param tables Timeseries tables.
      */
     public static Writer writer (Session session, Table[] tables) {
-        return new Writer (session, tables);
+        return writer(session, tables, Writer.PushMode.NORMAL);
+    }
+
+    /**
+     * Initializes new writer for timeseries table.
+     *
+     * @param session Active session with the QuasarDB cluster.
+     * @param tables Timeseries tables.
+     * @param mode Push mode to use
+     */
+    public static Writer writer (Session session, Table[] tables, Writer.PushMode mode) {
+        return new Writer (session, tables, mode);
     }
 
     /**
@@ -152,7 +174,17 @@ public class Tables implements Serializable {
      * @param tables Timeseries tables.
      */
     public static Writer pinnedWriter (Session session, Tables tables) {
-        return pinnedWriter(session, tables.getTables());
+        return pinnedWriter(session, tables, Writer.PushMode.NORMAL);
+    }
+
+    /**
+     * Initializes new, experimental pinned columns writer for timeseries tables.
+     *
+     * @param session Active session with the QuasarDB cluster.
+     * @param tables Timeseries tables.
+     */
+    public static Writer pinnedWriter (Session session, Tables tables, Writer.PushMode mode) {
+        return pinnedWriter(session, tables.getTables(), mode);
     }
 
     /**
@@ -162,7 +194,58 @@ public class Tables implements Serializable {
      * @param tables Timeseries tables.
      */
     public static Writer pinnedWriter (Session session, Table[] tables) {
-        return new PinnedWriter (session, tables);
+        return pinnedWriter (session, tables, Writer.PushMode.NORMAL);
+    }
+
+    /**
+     * Initializes new, experimental pinned columns writer for timeseries tables.
+     *
+     * @param session Active session with the QuasarDB cluster.
+     * @param tables Timeseries tables.
+     * @param mode The pushmode to use
+     */
+    public static Writer pinnedWriter (Session session, Table[] tables, Writer.PushMode mode) {
+        return new PinnedWriter (session, tables, mode);
+    }
+
+    /**
+     * Initializes new, experimental pinned columns writer for timeseries tables.
+     *
+     * @param session Active session with the QuasarDB cluster.
+     * @param tables Timeseries tables.
+     */
+    public static Writer pinnedTruncateWriter (Session session, Tables tables) {
+        return pinnedTruncateWriter(session, tables.getTables());
+    }
+
+    /**
+     * Initializes new, experimental pinned columns writer for timeseries tables.
+     *
+     * @param session Active session with the QuasarDB cluster.
+     * @param tables Timeseries tables.
+     */
+    public static Writer pinnedTruncateWriter (Session session, Table[] tables) {
+        return new PinnedWriter(session, tables, Writer.PushMode.TRUNCATE);
+    }
+
+    /**
+     * Initializes new, experimental pinned columns writer for timeseries tables.
+     *
+     * @param session Active session with the QuasarDB cluster.
+     * @param tables Timeseries tables.
+     */
+    public static Writer pinnedAsyncWriter (Session session, Tables tables) {
+        return pinnedAsyncWriter(session, tables.getTables());
+    }
+
+    /**
+     * Initializes new, experimental pinned columns writer for timeseries tables.
+     *
+     * @param session Active session with the QuasarDB cluster.
+     * @param tables Timeseries tables.
+     */
+    public static Writer pinnedAsyncWriter (Session session, Table[] tables) {
+        return new PinnedWriter(session, tables, Writer.PushMode.ASYNC);
     }
 
     /**

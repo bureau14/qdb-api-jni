@@ -163,7 +163,7 @@ public class Table implements Serializable {
      * @param name Timeseries table name. Must already exist.
      */
     public static Writer pinnedWriter(Session session, String name) {
-        return writer(session, new Table(session, name));
+        return pinnedWriter(session, new Table(session, name));
     }
 
     /**
@@ -176,6 +176,25 @@ public class Table implements Serializable {
         return Tables.pinnedWriter(session, new Table[] {table});
     }
 
+    /**
+     * Initializes new, experimental high-performance pinned columns writer.
+     *
+     * @param session Active session with the QuasarDB cluster.
+     * @param name Timeseries table name. Must already exist.
+     */
+    public static Writer pinnedTruncateWriter(Session session, String name) {
+        return pinnedTruncateWriter(session, new Table(session, name));
+    }
+
+    /**
+     * Initializes new, experimental high-performance pinned columns writer.
+     *
+     * @param session Active session with the QuasarDB cluster.
+     * @param table Timeseries table.
+     */
+    public static Writer pinnedTruncateWriter(Session session, Table table) {
+        return Tables.pinnedTruncateWriter(session, new Table[] {table});
+    }
 
     /**
      * Initializes new writer for a single timeseries table using
@@ -197,6 +216,27 @@ public class Table implements Serializable {
      */
     public static Writer asyncWriter(Session session, Table table) {
         return Tables.asyncWriter(session, new Table[] {table});
+    }
+
+
+    /**
+     * Initializes new, experimental high-performance pinned columns writer.
+     *
+     * @param session Active session with the QuasarDB cluster.
+     * @param name Timeseries table name. Must already exist.
+     */
+    public static Writer pinnedAsyncWriter(Session session, String name) {
+        return pinnedAsyncWriter(session, new Table(session, name));
+    }
+
+    /**
+     * Initializes new, experimental high-performance pinned columns writer.
+     *
+     * @param session Active session with the QuasarDB cluster.
+     * @param table Timeseries table.
+     */
+    public static Writer pinnedAsyncWriter(Session session, Table table) {
+        return Tables.pinnedAsyncWriter(session, new Table[] {table});
     }
 
     /**

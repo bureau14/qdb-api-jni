@@ -215,8 +215,6 @@ public class Writer implements AutoCloseable, Flushable {
                     this.minMaxTs.withEnd(this.minMaxTs.end.plusNanos(1))
                 };
 
-                System.out.println ("timeranges = " + Arrays.toString(r));
-
                 logger.info("Flushing batch writer and truncating existing data in range {}, points since last flush: {}", this.minMaxTs.toString(), pointsSinceFlush);
                 qdb.ts_batch_push_truncate(this.session.handle(),
                                            this.batchTable,
