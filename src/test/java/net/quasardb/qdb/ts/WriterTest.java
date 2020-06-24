@@ -339,7 +339,7 @@ public class WriterTest {
         Table t = TestUtils.createTable(definition);
         Writer writer = writerByPushMode(t, mode);
 
-        int ROW_COUNT = 1000;
+        int ROW_COUNT = 100000;
 
         WritableRow[] rows = new WritableRow[ROW_COUNT];
         for (int i = 0; i < rows.length; ++i) {
@@ -364,7 +364,6 @@ public class WriterTest {
         WritableRow[] readRows = Table.reader(s, t, ranges).stream().toArray(WritableRow[]::new);
         assertArrayEquals(rows, readRows);
     }
-
 
     @ParameterizedTest
     @MethodSource("pushModeAndValueTypesProvider")
@@ -428,6 +427,4 @@ public class WriterTest {
         assertArrayEquals(rows1, readRows1);
         assertArrayEquals(rows2, readRows2);
     }
-
-
 }
