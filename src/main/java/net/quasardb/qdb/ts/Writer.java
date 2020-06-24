@@ -175,7 +175,7 @@ public class Writer implements AutoCloseable, Flushable {
      */
     public void close() throws IOException {
         logger.info("Closing batch writer");
-        this.flush();
+        //this.flush();
         qdb.ts_batch_table_release(this.session.handle(), this.batchTable);
 
         this.batchTable = null;
@@ -214,6 +214,8 @@ public class Writer implements AutoCloseable, Flushable {
                 TimeRange[] r = {
                     this.minMaxTs.withEnd(this.minMaxTs.end.plusNanos(1))
                 };
+
+                System.out.println ("timeranges = " + Arrays.toString(r));
 
                 logger.info("Flushing batch writer and truncating existing data in range {}, points since last flush: {}", this.minMaxTs.toString(), pointsSinceFlush);
                 qdb.ts_batch_push_truncate(this.session.handle(),
@@ -284,7 +286,10 @@ public class Writer implements AutoCloseable, Flushable {
         }
 
         this.pointsSinceFlush += values.length;
+        this.trackMinMaxTimestamp(timestamp);
+    }
 
+    protected void trackMinMaxTimestamp(Timespec timestamp) {
         if (this.minMaxTs == null) {
             this.minMaxTs = new TimeRange(timestamp, timestamp);
         } else {
