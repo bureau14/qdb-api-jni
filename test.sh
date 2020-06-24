@@ -8,6 +8,4 @@ mkdir build || true && \
     cmake -G Ninja .. && \
     cmake --build . && \
     cd .. && \
-    #mvn  '-Dtest=WriterExtraTablesBenchmarkTest*' test
-    # mvn  '-Dtest=TableTest*' test
-    mvn '-Dtest=WriterTest#canInsertNullRows' test
+    mvn test
