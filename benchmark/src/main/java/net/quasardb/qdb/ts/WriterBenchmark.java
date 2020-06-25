@@ -29,16 +29,16 @@ public class WriterBenchmark {
     @Param({"10000"})
     public int rowCount;
 
-    @Param({"1000", "10000"})
+    @Param({"10000"})
     public int tableCount;
 
     @Param({"pinnedWriter", "writer"})
     public String writerType;
 
-    @Param({"NORMAL", "ASYNC", "FAST"})
+    @Param({"NORMAL", "ASYNC"})
     public Writer.PushMode pushMode;
 
-    @Param({"DOUBLE", "BLOB"})
+    @Param({"DOUBLE"})
     public Value.Type valueType;
 
     private Table[] t;
