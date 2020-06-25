@@ -255,4 +255,13 @@ public class TestUtils {
         return cl.cast(o);
     }
 
+    public static WritableRow[] readRows(Session s, Table t, TimeRange[] r) throws IOException {
+        Reader x = Table.reader(s,t,r);
+        try {
+            return x.stream().toArray(WritableRow[]::new);
+        } finally {
+            x.close();
+        }
+    }
+
 }

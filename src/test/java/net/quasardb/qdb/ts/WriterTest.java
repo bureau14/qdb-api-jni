@@ -321,8 +321,7 @@ public class WriterTest {
                           new Timespec(rows[(rows.length - 1)].getTimestamp().asLocalDateTime().plusNanos(1)))
         };
 
-        WritableRow[] readRows = Table.reader(s, t, ranges).stream().toArray(WritableRow[]::new);
-
+        WritableRow[] readRows = TestUtils.readRows(s, t, ranges);
         WritableRow[] nonNullWrittenRows = Arrays.stream(rows).filter(r -> !r.hasNullValues()).toArray(WritableRow[]::new);
 
         assertArrayEquals(nonNullWrittenRows, readRows);
@@ -361,7 +360,7 @@ public class WriterTest {
                           new Timespec(rows[(rows.length - 1)].getTimestamp().asLocalDateTime().plusNanos(1)))
         };
 
-        WritableRow[] readRows = Table.reader(s, t, ranges).stream().toArray(WritableRow[]::new);
+        WritableRow[] readRows = TestUtils.readRows(s, t, ranges);
         assertArrayEquals(rows, readRows);
     }
 
@@ -422,8 +421,8 @@ public class WriterTest {
                           new Timespec(rows2[(rows2.length - 1)].getTimestamp().asLocalDateTime().plusNanos(1)))
         };
 
-        WritableRow[] readRows1 = Table.reader(s, t1, ranges1).stream().toArray(WritableRow[]::new);
-        WritableRow[] readRows2 = Table.reader(s, t2, ranges2).stream().toArray(WritableRow[]::new);
+        WritableRow[] readRows1 = TestUtils.readRows(s, t1, ranges1);
+        WritableRow[] readRows2 = TestUtils.readRows(s, t2, ranges2);
         assertArrayEquals(rows1, readRows1);
         assertArrayEquals(rows2, readRows2);
     }
