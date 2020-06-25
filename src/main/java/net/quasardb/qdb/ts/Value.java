@@ -237,6 +237,31 @@ public class Value implements Serializable {
         this.blobValue = value.duplicate();
     }
 
+
+    /**
+     * Updates value to take a certain blob value. Will create a copy of the byte array.
+     */
+    public void setSafeBlob(byte[] value) {
+        this.type = Type.BLOB;
+
+        int size = value.length;
+        this.blobValue = ByteBuffer.allocateDirect(size);
+        this.blobValue.put(value, 0, size);
+        this.blobValue.rewind();
+    }
+
+    /**
+     * Updates value to take a certain blob value. Will create copy of the byte array.
+     */
+    public void setSafeBlob(ByteBuffer value) {
+        this.type = Type.BLOB;
+
+        int size = value.capacity();
+        this.blobValue = ByteBuffer.allocateDirect(size);
+        this.blobValue.put(value);
+        this.blobValue.rewind();
+    }
+
     /**
      * Represents a safe blob value that copies the byte array.
      */

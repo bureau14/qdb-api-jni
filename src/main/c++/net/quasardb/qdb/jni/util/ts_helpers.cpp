@@ -760,7 +760,7 @@ tableGetRowBlobValue(qdb::jni::env &env,
     assert(byteBuffer != NULL);
 
     jclass objectClass = env.instance().GetObjectClass(output);
-    jmethodID methodId = env.instance().GetMethodID(objectClass, "setBlob",
+    jmethodID methodId = env.instance().GetMethodID(objectClass, "setSafeBlob",
                                                     "(Ljava/nio/ByteBuffer;)V");
     assert(methodId != NULL);
 
