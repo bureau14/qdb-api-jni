@@ -23,22 +23,22 @@ import net.quasardb.qdb.exception.InvalidArgumentException;
 @Threads(1)
 public class WriterBenchmark {
 
-    @Param({"10"})
+    @Param({"5"})
     public int columnCount;
 
-    @Param({"10000"})
+    @Param({"1000", "10000"})
     public int rowCount;
 
-    @Param({"10000"})
+    @Param({"1000", "10000"})
     public int tableCount;
 
-    @Param({"pinnedWriter"})
+    @Param({"pinnedWriter", "writer"})
     public String writerType;
 
-    @Param({"NORMAL"})
+    @Param({"NORMAL", "ASYNC"})
     public Writer.PushMode pushMode;
 
-    @Param({"DOUBLE"})
+    @Param({"DOUBLE", "BLOB"})
     public Value.Type valueType;
 
     private Table[] t;
