@@ -13,7 +13,7 @@ class NativeLibraryLoader {
   public static Path getResourceAsLocalFile(String name) {
     URL url = NativeLibraryLoader.class.getResource(name);
     if (url == null)
-      throw new RuntimeException("Cannot find native library is classpath: " + name);
+      throw new RuntimeException("Cannot find native library in classpath: " + name);
 
     if (url.getProtocol().equals("file"))
       return convertURLtoPath(url);

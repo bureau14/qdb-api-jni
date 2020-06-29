@@ -11,4 +11,4 @@ mkdir build || true && \
     # mvn -X test
     # mvn  -X '-Dtest=WriterExtraTablesBenchmarkTest*' test
     # mvn   -X  '-Dtest=TableTest*' test
-    mvn -X '-Dtest=WriterTest*' test
+    mvn -X '-Dtest=WriterTest#canAddExtraTable' test
