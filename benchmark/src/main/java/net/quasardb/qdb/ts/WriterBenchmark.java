@@ -32,10 +32,10 @@ public class WriterBenchmark {
     @Param({"10000"})
     public int tableCount;
 
-    @Param({"pinnedWriter", "writer"})
+    @Param({"pinnedWriter"})
     public String writerType;
 
-    @Param({"NORMAL", "ASYNC"})
+    @Param({"NORMAL"})
     public Writer.PushMode pushMode;
 
     @Param({"DOUBLE"})
