@@ -11,6 +11,7 @@ import java.nio.ByteBuffer;
 import java.util.function.Supplier;
 import java.io.Serializable;
 
+import net.quasardb.qdb.jni.qdb;
 import net.quasardb.qdb.ts.*;
 import net.quasardb.qdb.*;
 
@@ -20,6 +21,14 @@ public class TestUtils {
 
     public static Session createSession() {
         return Session.connect(CLUSTER_URI);
+    }
+
+    public static void purgeAll() {
+        purgeAll(createSession());
+    }
+
+    public static void purgeAll(Session s) {
+        qdb.purge_all(s.handle(), 30000);
     }
 
     public static Column[] generateTableColumns(int count) {

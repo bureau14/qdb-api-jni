@@ -59,6 +59,7 @@ public class WriterBenchmark {
 
     @Setup(Level.Invocation)
     public void setupInvocation() throws Exception {
+        TestUtils.purgeAll(this.s);
         this.ts = Timespec.now();
 
         this.v = new Value[this.columnCount];
