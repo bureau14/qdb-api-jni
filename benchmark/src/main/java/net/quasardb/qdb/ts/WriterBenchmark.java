@@ -38,10 +38,10 @@ public class WriterBenchmark {
     @Param({"5"})
     public int columnCount;
 
-    @Param({"1000"})
+    @Param({"100", "1000", "10000"})
     public int rowCount;
 
-    @Param({"ASYNC"})
+    @Param({"NORMAL", "ASYNC"})
     public Writer.PushMode pushMode;
 
     @Param({"DOUBLE", "STRING"})
