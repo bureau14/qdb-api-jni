@@ -52,7 +52,7 @@ public class PinnedWriter extends Writer {
 
             this.columnTypes = columnTypes;
             this.currentRow = 0;
-            this.timeoffsets = new LongArrayList(64 * 1024); // 64k values pre-allocated
+            this.timeoffsets = new LongArrayList(64);
 
 
             this.valuesByColumn = PinnedMatrix.toValuesByColumn(columnTypes);
@@ -64,7 +64,7 @@ public class PinnedWriter extends Writer {
             ObjectArrayList<Value>[] result = new ObjectArrayList[columnCount];
 
             for (int i = 0; i < columnCount; ++i) {
-                result[i] = new ObjectArrayList<Value>(64 * 1024);
+                result[i] = new ObjectArrayList<Value>(64);
             }
 
             return result;
