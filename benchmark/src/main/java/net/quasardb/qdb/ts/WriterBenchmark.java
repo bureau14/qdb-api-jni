@@ -38,7 +38,7 @@ public class WriterBenchmark {
     @Param({"5"})
     public int columnCount;
 
-    @Param({"10000"})
+    @Param({"1000"})
     public int rowCount;
 
     @Param({"ASYNC"})
