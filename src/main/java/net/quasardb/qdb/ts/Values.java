@@ -3,7 +3,7 @@ package net.quasardb.qdb.ts;
 import java.nio.ByteBuffer;
 import java.util.*;
 
-import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
 import net.quasardb.qdb.jni.Constants;
 
@@ -72,40 +72,40 @@ public class Values {
         throw new RuntimeException("Not a string value: " + in.toString());
     }
 
-    public static double[] asPrimitiveDoubleArray (Int2ObjectMap<Value> in, int len) {
+    public static double[] asPrimitiveDoubleArray (ObjectArrayList<Value> in) {
+        int len = in.size();
         double[] out = new double[len];
-        Arrays.fill(out, Constants.nullDouble);
 
-        ObjectSet<Int2ObjectMap.Entry<Value>> entries = in.int2ObjectEntrySet();
-        for (Int2ObjectMap.Entry<Value> entry : entries) {
-            out[entry.getIntKey()] = asDouble((Value)(entry.getValue()));
+        Object[] xs = in.elements();
+        for (int i = 0; i < len; ++i) {
+            out[i] = asDouble((Value)xs[i]);
         }
 
         return out;
     }
 
-    public static long[] asPrimitiveInt64Array (Int2ObjectMap<Value> in, int len) {
+    public static long[] asPrimitiveInt64Array  (ObjectArrayList<Value> in) {
+        int len = in.size();
         long[] out = new long[len];
-        Arrays.fill(out, Constants.nullInt64);
 
-        ObjectSet<Int2ObjectMap.Entry<Value>> entries = in.int2ObjectEntrySet();
-        for (Int2ObjectMap.Entry<Value> entry : entries) {
-            out[entry.getIntKey()] = asInt64((Value)(entry.getValue()));
+        Object[] xs = in.elements();
+        for (int i = 0; i < len; ++i) {
+            out[i] = asInt64((Value)xs[i]);
         }
 
         return out;
     }
 
-    public static Timespecs asPrimitiveTimestampArray (Int2ObjectMap<Value> in, int len) {
+    public static Timespecs asPrimitiveTimestampArray (ObjectArrayList<Value> in) {
+        int len = in.size();
         long[] sec = new long[len];
         long[] nsec = new long[len];
         Arrays.fill(sec, Constants.nullTime);
         Arrays.fill(nsec, Constants.nullTime);
 
-        ObjectSet<Int2ObjectMap.Entry<Value>> entries = in.int2ObjectEntrySet();
-        for (Int2ObjectMap.Entry<Value> entry : entries) {
-            Value v = entry.getValue();
-            int i =  entry.getIntKey();
+        Object[] xs = in.elements();
+        for (int i = 0; i < len; ++i) {
+            Value v = (Value)xs[i];
 
             if (v.getType () == Value.Type.UNINITIALIZED) {
                 sec[i] = Constants.nullTime;
@@ -121,26 +121,25 @@ public class Values {
         return new Timespecs(sec, nsec);
     }
 
-    public static ByteBuffer[] asPrimitiveBlobArray (Int2ObjectMap<Value> in, int len) {
+    public static ByteBuffer[] asPrimitiveBlobArray (ObjectArrayList<Value> in) {
+        int len = in.size();
         ByteBuffer[] out = new ByteBuffer[len];
-        Arrays.fill(out, Constants.nullBlob);
 
-        ObjectSet<Int2ObjectMap.Entry<Value>> entries = in.int2ObjectEntrySet();
-        for (Int2ObjectMap.Entry<Value> entry : entries) {
-            out[entry.getIntKey()] = asBlob((Value)(entry.getValue()));
+        Object[] xs = in.elements();
+        for (int i = 0; i < len; ++i) {
+            out[i] = asBlob((Value)(xs[i]));
         }
 
         return out;
     }
 
-    public static ByteBuffer[] asPrimitiveStringArray (Int2ObjectMap<Value> in, int len) {
+    public static ByteBuffer[] asPrimitiveStringArray (ObjectArrayList<Value> in) {
+        int len = in.size();
         ByteBuffer[] out = new ByteBuffer[len];
-        Arrays.fill(out, Constants.nullBlob);
 
-
-        ObjectSet<Int2ObjectMap.Entry<Value>> entries = in.int2ObjectEntrySet();
-        for (Int2ObjectMap.Entry<Value> entry : entries) {
-            out[entry.getIntKey()] = asString((Value)(entry.getValue()));
+        Object[] xs = in.elements();
+        for (int i = 0; i < len; ++i) {
+            out[i] = asString((Value)(xs[i]));
         }
 
         return out;

@@ -573,6 +573,20 @@ public class Table implements Serializable {
     }
 
     /**
+     * Returns the types of each of the columns.
+     */
+    public Value.Type[] getColumnTypes() {
+        Column[] columns = this.getColumns();
+
+        Value.Type[] columnTypes = new Value.Type[columns.length];
+        for (int i = 0; i < columns.length; ++i) {
+            columnTypes[i] = columns[i].getType();
+        }
+
+        return columnTypes;
+    }
+
+    /**
      * Utility function that looks up a column's index by its id. The first
      * column starts with 0.
      *

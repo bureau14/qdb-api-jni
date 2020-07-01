@@ -23,22 +23,28 @@ import net.quasardb.qdb.exception.InvalidArgumentException;
 @Threads(1)
 public class WriterBenchmark {
 
+    @Param({"FIRST", "MANY"})
+    public String tableSpread;
+
+    @Param({"writer", "pinnedWriter"})
+    public String writerType;
+
+    @Param({"APPEND", "FLUSH", "APPEND_FLUSH"})
+    public String operationType;
+
+    @Param({"10000"})
+    public int tableCount;
+
     @Param({"5"})
     public int columnCount;
 
-    @Param({"1000", "10000"})
+    @Param({"10000"})
     public int rowCount;
 
-    @Param({"1000", "10000"})
-    public int tableCount;
-
-    @Param({"pinnedWriter", "writer"})
-    public String writerType;
-
-    @Param({"NORMAL", "ASYNC"})
+    @Param({"ASYNC"})
     public Writer.PushMode pushMode;
 
-    @Param({"DOUBLE", "BLOB"})
+    @Param({"DOUBLE", "STRING"})
     public Value.Type valueType;
 
     private Table[] t;
@@ -47,25 +53,36 @@ public class WriterBenchmark {
     private Writer w;
     private Timespec ts;
 
+    private Value[] blobValues;
+    private Value[] doubleValues;
+
+    public WriterBenchmark() {
+        for (int i = 0; i < this.columnCount; ++i) {
+            this.v[i] = TestUtils.generateRandomValueByType(this.valueType);
+        }
+
+    }
+
     @Setup(Level.Trial)
     public void setupTrial() throws Exception {
         this.s = TestUtils.createSession();
-    }
-
-    @TearDown(Level.Trial)
-    public void teardownTrial() throws Exception {
-        this.s.close();
-    }
-
-    @Setup(Level.Invocation)
-    public void setupInvocation() throws Exception {
-        TestUtils.purgeAll(this.s);
         this.ts = Timespec.now();
 
         this.v = new Value[this.columnCount];
         for (int i = 0; i < this.columnCount; ++i) {
             this.v[i] = TestUtils.generateRandomValueByType(this.valueType);
         }
+    }
+
+    @TearDown(Level.Trial)
+    public void teardownTrial() throws Exception {
+        this.v = null;
+        this.s.close();
+    }
+
+    @Setup(Level.Invocation)
+    public void setupInvocation() throws Exception {
+        TestUtils.purgeAll(this.s);
 
         Column[] c = TestUtils.generateTableColumns(this.valueType, this.columnCount);
 
@@ -82,50 +99,69 @@ public class WriterBenchmark {
         } else {
             throw new RuntimeException("Unrecognized writer type: " + this.writerType);
         }
+
+        if (this.operationType.equals("FLUSH")) {
+            this.appendRows();
+        }
     }
 
     @TearDown(Level.Invocation)
     public void teardownInvocation() throws Exception {
-        this.v = null;
         this.w.close();
         this.w = null;
-
-        for (Table t : this.t) {
-            Table.remove(this.s, t);
-        }
-
         this.t = null;
+
+        System.gc();
     }
 
-    @Benchmark
-    @BenchmarkMode(Mode.AverageTime)
-    @Fork(value = 1, warmups = 1)
-    @Warmup(iterations = 5)
-    @Measurement(batchSize = -1, iterations = 3, time = 1, timeUnit = TimeUnit.MILLISECONDS)
-    @OutputTimeUnit(TimeUnit.MILLISECONDS)
-    public void appendFirstTableBenchmark() throws Exception {
+    void appendFirstTableRows() throws Exception {
         for (int i = 0; i < this.rowCount; ++i) {
             this.w.append(0, this.ts, this.v);
         }
-
-        this.w.flush();
     }
 
-    @Benchmark
-    @BenchmarkMode(Mode.AverageTime)
-    @Fork(value = 1, warmups = 1)
-    @Warmup(iterations = 5)
-    @Measurement(batchSize = -1, iterations = 3, time = 1, timeUnit = TimeUnit.MILLISECONDS)
-    @OutputTimeUnit(TimeUnit.MILLISECONDS)
-    public void appendManyTablesBenchmark() throws Exception {
-
+    void appendManyTablesRows()  throws Exception {
         for (int i = 0; i < this.rowCount; ++i) {
             int randomTable = ThreadLocalRandom.current().nextInt(0, this.tableCount);
             int offset = randomTable * this.columnCount;
 
             this.w.append(offset, this.ts, this.v);
         }
+    }
 
-        this.w.flush();
+    void appendRows() throws Exception {
+        if (this.tableSpread.equals("FIRST")) {
+            this.appendFirstTableRows();
+        } else if (this.tableSpread.equals("MANY")) {
+            this.appendManyTablesRows();
+        }
+
+        if (this.writerType.equals("pinnedWriter")) {
+            PinnedWriter pw = (PinnedWriter)this.w;
+            pw.prepareFlush();
+        }
+    }
+
+    void flush() throws Exception {
+        if (!this.operationType.equals("APPEND"))  {
+            this.w.flush();
+        }
+
+    }
+
+    @Benchmark
+    @BenchmarkMode(Mode.AverageTime)
+    @Fork(1)
+    @Warmup(iterations = 5)
+    @Measurement(batchSize = -1, iterations = 3, time = 1, timeUnit = TimeUnit.MILLISECONDS)
+    @OutputTimeUnit(TimeUnit.MILLISECONDS)
+    public void benchmark() throws Exception {
+        if (!this.operationType.equals("FLUSH")) {
+            this.appendRows();
+        }
+
+        if (!this.operationType.equals("APPEND")) {
+            this.flush();
+        }
     }
 }

@@ -101,40 +101,6 @@ public class Value implements Serializable {
         }
     }
 
-    public void setPinnedNative(long pinnedColumn, int rowOffset) {
-        switch (this.type) {
-        case DOUBLE:
-            qdb.ts_batch_row_set_pinned_double(pinnedColumn,
-                                               rowOffset,
-                                               this.doubleValue);
-            break;
-        case INT64:
-            qdb.ts_batch_row_set_pinned_int64(pinnedColumn,
-                                              rowOffset,
-                                              this.int64Value);
-            break;
-        case TIMESTAMP:
-            qdb.ts_batch_row_set_pinned_timestamp(pinnedColumn,
-                                                  rowOffset,
-                                                  this.timestampValue.sec,
-                                                  this.timestampValue.nsec);
-            break;
-        case BLOB:
-            qdb.ts_batch_row_set_pinned_blob(pinnedColumn,
-                                             rowOffset,
-                                             this.blobValue);
-            break;
-        case STRING:
-            // Convert string to ByteBuffer before passing over to JNI so that
-            // we can keep the JNI code really simple (=> fast).
-            qdb.ts_batch_row_set_pinned_string(pinnedColumn,
-                                               rowOffset,
-                                               this.stringValue.getBytes(StandardCharsets.UTF_8));
-            break;
-        }
-    }
-
-
     /**
      * Updates value to represent an unintialised value.
      */

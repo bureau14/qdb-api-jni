@@ -13,10 +13,12 @@ import org.slf4j.LoggerFactory;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongIterator;
+import it.unimi.dsi.fastutil.longs.LongSet;
 import it.unimi.dsi.fastutil.longs.LongArrayList;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
+import it.unimi.dsi.fastutil.ints.IntSortedSet;
 import it.unimi.dsi.fastutil.ints.Int2ObjectLinkedOpenHashMap;
-import it.unimi.dsi.fastutil.ints.IntIterator;
+import it.unimi.dsi.fastutil.ints.IntBidirectionalIterator;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 
 import net.quasardb.qdb.*;
@@ -32,9 +34,10 @@ public class PinnedWriter extends Writer {
 
     private static final Logger logger = LoggerFactory.getLogger(PinnedWriter.class);
 
-    private int currentRow;
-    private Long2ObjectOpenHashMap<PinnedMatrix> matrixByShard;
-    private Value.Type[] columnTypes;
+    private boolean pinned;
+    private Int2ObjectLinkedOpenHashMap<Long2ObjectOpenHashMap<PinnedMatrix>> shardsByTableOffset;
+    private Int2ObjectLinkedOpenHashMap<Value.Type[]> columnTypesByTableOffset;
+
     private long[] columnShardSizes;
 
     private Value[][] valuesByColumn;
@@ -42,7 +45,7 @@ public class PinnedWriter extends Writer {
     public static class PinnedMatrix {
         Value.Type[] columnTypes;
         LongArrayList timeoffsets;
-        ArrayList<Int2ObjectLinkedOpenHashMap<Value> > valuesByColumn;
+        ObjectArrayList<Value>[] valuesByColumn;
         int currentRow;
 
         public PinnedMatrix(Value.Type[] columnTypes) {
@@ -51,44 +54,45 @@ public class PinnedWriter extends Writer {
             this.currentRow = 0;
             this.timeoffsets = new LongArrayList(64 * 1024); // 64k values pre-allocated
 
+
             this.valuesByColumn = PinnedMatrix.toValuesByColumn(columnTypes);
-            assert(this.valuesByColumn.size() == columnTypes.length);
+            assert(this.valuesByColumn.length == columnTypes.length);
         }
 
-        private static ArrayList<Int2ObjectLinkedOpenHashMap<Value> > toValuesByColumn(Value.Type[] columnTypes) {
+        private static ObjectArrayList<Value>[] toValuesByColumn(Value.Type[] columnTypes) {
             int columnCount = columnTypes.length;
-            ArrayList<Int2ObjectLinkedOpenHashMap<Value> > result = new ArrayList<Int2ObjectLinkedOpenHashMap<Value> >(columnCount);
+            ObjectArrayList<Value>[] result = new ObjectArrayList[columnCount];
 
             for (int i = 0; i < columnCount; ++i) {
-                result.add(i, null);
+                result[i] = new ObjectArrayList<Value>(64 * 1024);
             }
 
             return result;
         }
 
-        void extraColumns(Value.Type[] columnTypes) {
-            assert(this.valuesByColumn != null);
+        // void extraColumns(Value.Type[] columnTypes) {
+        //     assert(this.valuesByColumn != null);
 
-            this.valuesByColumn.addAll(PinnedMatrix.toValuesByColumn(columnTypes));
+        //     this.valuesByColumn.addAll(PinnedMatrix.toValuesByColumn(columnTypes));
 
-            this.columnTypes = Stream
-                .concat(Arrays.stream(this.columnTypes),
-                        Arrays.stream(columnTypes))
-                .toArray(Value.Type[]::new);
+        //     this.columnTypes = Stream
+        //         .concat(Arrays.stream(this.columnTypes),
+        //                 Arrays.stream(columnTypes))
+        //         .toArray(Value.Type[]::new);
 
-        }
+        // }
 
-        void add (int offset, long timeOffset, Value[] values) {
-            this.timeoffsets.add(this.currentRow, timeOffset);
+        void add (long timeOffset, Value[] values) {
+            // Just a basic sanity check
+            assert(this.valuesByColumn.length == columnTypes.length);
+
+            // We expect a value for each column
+            assert(values.length == this.valuesByColumn.length);
+
+            this.timeoffsets.add(timeOffset);
             for (int i = 0; i < values.length; ++i) {
-                Int2ObjectLinkedOpenHashMap<Value> columnValues = this.valuesByColumn.get(offset + i);
-
-                if (columnValues == null) {
-                    columnValues = new Int2ObjectLinkedOpenHashMap<Value>();
-                    this.valuesByColumn.add(offset + i, columnValues);
-                }
-
-                assert(columnValues.containsKey(this.currentRow) == false);
+                ObjectArrayList<Value> columnValues = this.valuesByColumn[i];
+                assert(columnValues != null);
 
                 if (values[i].getType() == Value.Type.STRING) {
                     // TODO(leon): once pinned writers have stabilized, we should
@@ -101,84 +105,77 @@ public class PinnedWriter extends Writer {
                     values[i].ensureByteBufferBackedString();
                 }
 
-                columnValues.put(this.currentRow, values[i]);
-            }
+                columnValues.add(values[i]);
 
-            ++this.currentRow;
+                assert(columnValues.size() == this.timeoffsets.size());
+            }
         }
 
-        void flush(long handle, long batchTable, long shard) {
+        void flush(long handle, long batchTable, long shard, int tableOffset) {
             // Since every row is guaranteed to contain a time offset, we can use
             // the timeoffsets to determine the 'height' of the matrix.
             //
             // We'll then make a 'perfect' matrix, and fill any non-set values in
             // any column with an explicit null value.
-            int matrixHeight = this.timeoffsets.size();
-            assert(this.timeoffsets.size() == this.currentRow);
+            for (int columnOffset = 0; columnOffset < this.columnTypes.length; ++columnOffset) {
 
-            for (int offset = 0; offset < this.columnTypes.length; ++offset) {
+                ObjectArrayList<Value> columnValues = this.valuesByColumn[columnOffset];
+                Value.Type columnType = this.columnTypes[columnOffset];
 
-                Int2ObjectLinkedOpenHashMap<Value> columnValues = valuesByColumn.get(offset);
-
-                if (columnValues == null) {
-                    logger.debug("Column with offset {} has no values, skipping entirely", offset);
-                    continue;
-                }
-
-                Value.Type columnType = this.columnTypes[offset];
                 assert(columnValues != null);
+                assert(columnType != null);
+                assert(columnValues.size() == this.timeoffsets.size());
 
                 long[] timeoffsets_ = this.timeoffsets.toArray(new long[this.timeoffsets.size()]);
 
                 switch (columnType) {
                 case DOUBLE:
-                    qdb.ts_batch_set_pinned_doubles(handle,
-                                                    batchTable,
-                                                    shard,
-                                                    offset,
-                                                    timeoffsets_,
-                                                    Values.asPrimitiveDoubleArray(columnValues,
-                                                                                  matrixHeight));
-                    break;
+                    {
+                        double[] xs = Values.asPrimitiveDoubleArray(columnValues);
+                        assert(xs.length == timeoffsets_.length);
+                        qdb.ts_batch_set_pinned_doubles(handle,
+                                                        batchTable,
+                                                        shard,
+                                                        tableOffset + columnOffset,
+                                                        timeoffsets_,
+                                                        xs);
+                        break;
+                    }
 
                 case INT64:
                     qdb.ts_batch_set_pinned_int64s(handle,
                                                    batchTable,
                                                    shard,
-                                                   offset,
+                                                   tableOffset + columnOffset,
                                                    timeoffsets_,
-                                                   Values.asPrimitiveInt64Array(columnValues,
-                                                                                matrixHeight));
+                                                   Values.asPrimitiveInt64Array(columnValues));
                     break;
 
                 case TIMESTAMP:
                     qdb.ts_batch_set_pinned_timestamps(handle,
                                                        batchTable,
                                                        shard,
-                                                       offset,
+                                                       tableOffset + columnOffset,
                                                        timeoffsets_,
-                                                       Values.asPrimitiveTimestampArray(columnValues,
-                                                                                        matrixHeight));
+                                                       Values.asPrimitiveTimestampArray(columnValues));
                     break;
 
                 case BLOB:
                     qdb.ts_batch_set_pinned_blobs(handle,
                                                   batchTable,
                                                   shard,
-                                                  offset,
+                                                  tableOffset + columnOffset,
                                                   timeoffsets_,
-                                                  Values.asPrimitiveBlobArray(columnValues,
-                                                                              matrixHeight));
+                                                  Values.asPrimitiveBlobArray(columnValues));
                     break;
 
                 case STRING:
                     qdb.ts_batch_set_pinned_strings(handle,
                                                     batchTable,
                                                     shard,
-                                                    offset,
+                                                    tableOffset + columnOffset,
                                                     timeoffsets_,
-                                                    Values.asPrimitiveStringArray(columnValues,
-                                                                                  matrixHeight));
+                                                    Values.asPrimitiveStringArray(columnValues));
                     break;
 
                 default:
@@ -191,20 +188,26 @@ public class PinnedWriter extends Writer {
 
     protected PinnedWriter(Session session, Table[] tables) {
         super(session, tables);
-        this.currentRow = 0;
-        this.matrixByShard = new Long2ObjectOpenHashMap<PinnedMatrix>();
+        this.pinned = false;
+        this.columnTypesByTableOffset = new Int2ObjectLinkedOpenHashMap<Value.Type[]>();
+        this.shardsByTableOffset = new Int2ObjectLinkedOpenHashMap<Long2ObjectOpenHashMap<PinnedMatrix>>();
 
-        this.columnShardSizes = PinnedWriter.tablesToColumnShardSizes(tables);
-        this.columnTypes = PinnedWriter.tablesToColumnTypes(tables);
+        this.indexTables(tables);
+
+        assert(this.columnShardSizes != null);
+        assert(this.columnTypesByTableOffset.size () == tables.length);
     }
 
     protected PinnedWriter(Session session, Table[] tables, Writer.PushMode mode) {
         super(session, tables, mode);
-        this.currentRow = 0;
-        this.matrixByShard = new Long2ObjectOpenHashMap<PinnedMatrix>();
+        this.pinned = false;
+        this.columnTypesByTableOffset = new Int2ObjectLinkedOpenHashMap<Value.Type[]>();
+        this.shardsByTableOffset = new Int2ObjectLinkedOpenHashMap<Long2ObjectOpenHashMap<PinnedMatrix>>();
 
-        this.columnShardSizes = PinnedWriter.tablesToColumnShardSizes(tables);
-        this.columnTypes = PinnedWriter.tablesToColumnTypes(tables);
+        this.indexTables(tables);
+
+        assert(this.columnShardSizes != null);
+        assert(this.columnTypesByTableOffset.size () == tables.length);
     }
 
     private static long[] tablesToColumnShardSizes(Table[] tables) {
@@ -239,29 +242,29 @@ public class PinnedWriter extends Writer {
         return result;
     }
 
+    private void indexTables(Table[] tables) {
+
+        long[] newShardSizes = PinnedWriter.tablesToColumnShardSizes(tables);
+
+        if (this.columnShardSizes == null) {
+            this.columnShardSizes = newShardSizes;
+        } else {
+            this.columnShardSizes = LongStream
+                .concat(Arrays.stream(this.columnShardSizes),
+                        Arrays.stream(newShardSizes))
+                .toArray();
+        }
+
+        for (Table table : tables) {
+            int index = this.tableIndexByName(table.getName());
+            this.columnTypesByTableOffset.put(index, table.getColumnTypes());
+        }
+    }
+
     @Override
     public void extraTables(Table[] tables) {
         super.extraTables(tables);
-
-        long[] newShardSizes = PinnedWriter.tablesToColumnShardSizes(tables);
-        Value.Type[] newColumnTypes = PinnedWriter.tablesToColumnTypes(tables);
-
-        this.columnShardSizes = LongStream
-            .concat(Arrays.stream(this.columnShardSizes),
-                    Arrays.stream(newShardSizes))
-            .toArray();
-
-
-        this.columnTypes = Stream
-            .concat(Arrays.stream(this.columnTypes),
-                    Arrays.stream(newColumnTypes))
-            .toArray(Value.Type[]::new);
-
-        for (long shard : this.matrixByShard.keySet()) {
-            this.matrixByShard
-                .get(shard)
-                .extraColumns(newColumnTypes);
-        }
+        this.indexTables(tables);
     }
 
     @Override
@@ -270,48 +273,57 @@ public class PinnedWriter extends Writer {
         long shard = PinnedWriter.truncateTimespecToShard(this.columnShardSizes[offset],
                                                           timestamp.getSec());
 
-        PinnedMatrix xs = this.matrixByShard.get(shard);
-        if (xs == null) {
-
-            // We .wrap() the array, because .elements() does returns an Object[] if
-            // we don't. Javadoc for elements():
-            //
-            // "If this array list was created by wrapping a given array, it is guaranteed
-            // that the type of the returned array will be the same. Otherwise, the returned
-            // array will be of type Object[] (in spite of the declared return type)."
-            //
-            // http://fastutil.di.unimi.it/docs/it/unimi/dsi/fastutil/objects/ObjectArrayList.html#elements()
-            //
-            // I don't fully understand the reason why the internal array is represented
-            // as Object[] if we don't do this (because what's the point of template
-            // classes if it can't, right?), but this is a workable workaround.
-            xs = new PinnedMatrix(this.columnTypes);
-            this.matrixByShard.put(shard, xs);
+        Long2ObjectOpenHashMap<PinnedMatrix> shards = this.shardsByTableOffset.get(offset);
+        if (shards == null) {
+            shards = new Long2ObjectOpenHashMap<PinnedMatrix>();
+            this.shardsByTableOffset.put(offset, shards);
         }
 
-        xs.add(offset, this.calculateOffset(shard, timestamp), values);
+        PinnedMatrix xs = shards.get(shard);
+        if (xs == null) {
+            Value.Type[] columnTypes = this.columnTypesByTableOffset.get(offset);
+            assert(columnTypes != null);
+            xs = new PinnedMatrix(columnTypes);
+            shards.put(shard, xs);
+        }
+
+        xs.add(this.calculateOffset(shard, timestamp), values);
+    }
+
+    public void prepareFlush() throws IOException  {
+        Instant startPinTime = Instant.now();
+
+        IntSortedSet tableOffsets = this.shardsByTableOffset.keySet();
+        IntBidirectionalIterator iter = tableOffsets.iterator();
+
+        while (iter.hasNext()) {
+            int tableOffset = iter.nextInt();
+            Long2ObjectOpenHashMap<PinnedMatrix> shards = this.shardsByTableOffset.get(tableOffset);
+
+            LongSet shardIds = shards.keySet();
+            LongIterator iter_ = shardIds.iterator();
+            while (iter_.hasNext()) {
+                long shardId = iter_.nextLong();
+
+                PinnedMatrix xs = shards.get(shardId);
+                assert(xs != null);
+
+                xs.flush(this.session.handle(),
+                         this.batchTable,
+                         shardId,
+                         tableOffset);
+
+            }
+        }
+
+        this.pinned = true;
     }
 
     @Override
     public void flush() throws IOException {
-
-        logger.info("Flushing pinned batch writer");
-
-        Instant startPinTime = Instant.now();
-
-        for (Long shard : this.matrixByShard.keySet()) {
-            PinnedMatrix xs = this.matrixByShard.get(shard);
-            assert(xs != null);
-
-            xs.flush(this.session.handle(),
-                     this.batchTable,
-                     shard);
+        if (this.pinned == false) {
+            this.prepareFlush();
         }
-
-        Instant endPinTime = Instant.now();
-
-        logger.debug("Columns pinned in {}", Duration.between(startPinTime, endPinTime));
-
 
         Instant startFlushTime = Instant.now();
 
@@ -320,6 +332,7 @@ public class PinnedWriter extends Writer {
         Instant endFlushTime = Instant.now();
 
         logger.debug("Columns flushed in {}", Duration.between(startFlushTime, endFlushTime));
+
     }
 
     private static long calculateOffset(long shard, Timespec ts) {
