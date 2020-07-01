@@ -70,18 +70,6 @@ public class PinnedWriter extends Writer {
             return result;
         }
 
-        // void extraColumns(Value.Type[] columnTypes) {
-        //     assert(this.valuesByColumn != null);
-
-        //     this.valuesByColumn.addAll(PinnedMatrix.toValuesByColumn(columnTypes));
-
-        //     this.columnTypes = Stream
-        //         .concat(Arrays.stream(this.columnTypes),
-        //                 Arrays.stream(columnTypes))
-        //         .toArray(Value.Type[]::new);
-
-        // }
-
         void add (long timeOffset, Value[] values) {
             // Just a basic sanity check
             assert(this.valuesByColumn.length == columnTypes.length);
