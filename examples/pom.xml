@@ -6,7 +6,7 @@
   <groupId>net.quasardb</groupId>
   <artifactId>examples</artifactId>
   <packaging>jar</packaging>
-  <version>3.8.4</version>
+  <version>3.8.5-SNAPSHOT</version>
   <name>quasardb-examples</name>
 
   <description>
@@ -44,12 +44,12 @@
     <dependency>
       <groupId>net.quasardb</groupId>
       <artifactId>jni</artifactId>
-      <version>3.8.4</version>
+      <version>3.8.5-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>net.quasardb</groupId>
       <artifactId>jni</artifactId>
-      <version>3.8.4</version>
+      <version>3.8.5-SNAPSHOT</version>
       <classifier>${arch}</classifier>
       <scope>runtime</scope>
     </dependency>
