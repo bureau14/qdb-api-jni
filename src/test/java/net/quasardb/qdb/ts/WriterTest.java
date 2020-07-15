@@ -426,4 +426,50 @@ public class WriterTest {
         assertArrayEquals(rows1, readRows1);
         assertArrayEquals(rows2, readRows2);
     }
+
+    @ParameterizedTest
+    @MethodSource("pushModeAndValueTypeProvider")
+    public void canFlushTwice(Writer.PushMode mode, Value.Type valueType) throws Exception {
+        String alias = TestUtils.createUniqueAlias();
+        Column[] definition = TestUtils.generateTableColumns(valueType, 1);
+
+        Table t = TestUtils.createTable(definition);
+        Writer writer = writerByPushMode(t, mode);
+
+        int ROW_COUNT = 1000;
+
+        Timespec ts = Timespec.now();
+        WritableRow[] rows = new WritableRow[ROW_COUNT];
+        for (int i = 0; i < rows.length; ++i) {
+
+            // Because we're testing the truncate batch writer, we want to make 100% sure
+            // there are no rows with identical timestamps, otherwise a second flush may
+            // actually truncate data from a prior flush.
+            ts = ts.plusNanos(1);
+            rows[i] =
+                new WritableRow (ts,
+                                 new Value[] {
+                                     TestUtils.generateRandomValueByType(32, valueType)});
+        }
+
+        // Insert and flush the first half of the rows
+        for (int i = 0; i < 500; ++i) {
+            writer.append(rows[i]);
+        }
+        pushmodeAwareFlush(writer);
+
+        // Second half
+        for (int i = 500; i < rows.length; ++i) {
+            writer.append(rows[i]);
+        }
+        pushmodeAwareFlush(writer);
+
+        TimeRange[] ranges = {
+            new TimeRange(rows[0].getTimestamp(),
+                          new Timespec(rows[(rows.length - 1)].getTimestamp().asLocalDateTime().plusNanos(1)))
+        };
+
+        WritableRow[] readRows = Table.reader(s, t, ranges).stream().toArray(WritableRow[]::new);
+        assertArrayEquals(rows, readRows);
+    }
 }
