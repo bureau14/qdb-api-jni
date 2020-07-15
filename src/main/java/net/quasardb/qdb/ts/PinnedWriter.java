@@ -321,6 +321,16 @@ public class PinnedWriter extends Writer {
 
         logger.debug("Columns flushed in {}", Duration.between(startFlushTime, endFlushTime));
 
+
+        // Reset our internal state so that we are ready to pin the next batch of rows.
+        // We could probably re-use existing matrixes for more efficient memory management,
+        // but it's simpler to just reset it.
+        this.shardsByTableOffset = new Int2ObjectLinkedOpenHashMap<Long2ObjectOpenHashMap<PinnedMatrix>>();
+        this.pinned = false;
+
+        // Eagerly clear GC as we may have just lost references to a *lot* of objects
+        System.gc();
+
     }
 
     private static long calculateOffset(long shard, Timespec ts) {
