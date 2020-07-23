@@ -10,7 +10,7 @@ else()
     string(TOLOWER "${CMAKE_SYSTEM_NAME}" SYSTEM)
 endif()
 
-set(NATIVE_JAR_FILE "${CMAKE_SOURCE_DIR}/target/jni-3.8.6-${SYSTEM}-${ARCH}.jar")
+set(NATIVE_JAR_FILE "${CMAKE_SOURCE_DIR}/target/jni-3.8.7-${SYSTEM}-${ARCH}.jar")
 
 # Quasardb C API
 if (WIN32)
