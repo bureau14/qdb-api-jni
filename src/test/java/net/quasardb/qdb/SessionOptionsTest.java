@@ -42,7 +42,7 @@ public class SessionOptionsTest {
         // to pop up.
 
         Session s = TestUtils.createSession();
-        s.setInputBufferSize(1024);
+        s.setInputBufferSize(1500);
 
         Column[] definition =
             TestUtils.generateTableColumns(Value.Type.BLOB, 10);
