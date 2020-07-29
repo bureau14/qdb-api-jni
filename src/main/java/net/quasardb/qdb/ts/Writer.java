@@ -145,7 +145,7 @@ public class Writer implements AutoCloseable, Flushable {
      */
     public int tableIndexByName(String name) {
         Integer offset = this.tableOffsets.get(name);
-        logger.debug("Resolved trable {} to column offset {}", name, offset);
+        logger.trace("Resolved trable {} to column offset {}", name, offset);
         if (offset == null) {
             throw new InvalidArgumentException("Table not seen before: '" + name + "'. Please use extratables() to explicitly add the table to the Writer state.");
         }
