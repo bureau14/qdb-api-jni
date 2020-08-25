@@ -651,7 +651,8 @@ tableGetRanges(qdb::jni::env &env,
     timeRangesToNative(env, ranges, rangesCount, nativeRanges);
 
     jni::exception::throw_if_error(
-        handle, qdb_ts_table_get_ranges(localTable, nativeRanges, rangesCount));
+        handle,
+        qdb_ts_table_stream_ranges(localTable, nativeRanges, rangesCount));
 
     free(nativeRanges);
     return qdb_e_ok;
