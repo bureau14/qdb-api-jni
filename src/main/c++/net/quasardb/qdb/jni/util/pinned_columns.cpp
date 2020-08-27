@@ -43,11 +43,6 @@ column_pinner<double>::copy(qdb::jni::env & env,
                             qdb_size_t len) {
 
   for (qdb_size_t i = 0; i < len; ++i) {
-    if (isnan(in_data[i])) {
-      // Skip null values entirely
-      continue;
-    }
-
     out_timeoffsets[i] = in_timeoffsets[i];
     out_data[i] = in_data[i];
   }
@@ -86,11 +81,6 @@ column_pinner<jlong, qdb_int_t>::copy(qdb::jni::env & env,
                                       qdb_size_t len) {
 
   for (qdb_size_t i = 0; i < len; ++i) {
-    if (in_data[i] == (qdb_int_t)0x8000000000000000ll) {
-      // Skip null values entirely
-      continue;
-    }
-
     out_timeoffsets[i] = in_timeoffsets[i];
     out_data[i] = in_data[i];
   }
@@ -130,11 +120,11 @@ column_pinner<jni::object_array, qdb_blob_t>::copy(qdb::jni::env & env,
   for (qdb_size_t i = 0; i < len; ++i) {
     jobject bb = in_data.get(i);
 
+    out_timeoffsets[i] = in_timeoffsets[i];
+
     if (bb == NULL) {
       continue;
     }
-
-    out_timeoffsets[i] = in_timeoffsets[i];
 
     jni::byte_buffer::get_address(env,
                                   bb,
@@ -179,11 +169,11 @@ column_pinner<jni::object_array, qdb_string_t>::copy(qdb::jni::env & env,
   for (qdb_size_t i = 0; i < len; ++i) {
     jobject bb = in_data.get(i);
 
+    out_timeoffsets[i] = in_timeoffsets[i];
+
     if (bb == NULL) {
       continue;
     }
-
-    out_timeoffsets[i] = in_timeoffsets[i];
 
     jni::byte_buffer::get_address(env,
                                   bb,
@@ -227,13 +217,14 @@ column_pinner<jlong, qdb_timespec_t>::copy2(qdb::jni::env & env,
                                             qdb_size_t len) {
 
   for (qdb_size_t i = 0; i < len; ++i) {
+    out_timeoffsets[i]  = in_timeoffsets[i];
+
     if (in1_data[i] == qdb_min_time &&
         in2_data[i] == qdb_min_time) {
       // Skip null values entirely
       continue;
     }
 
-    out_timeoffsets[i]  = in_timeoffsets[i];
     out_data[i].tv_sec  = in1_data[i];
     out_data[i].tv_nsec = in2_data[i];
   }
