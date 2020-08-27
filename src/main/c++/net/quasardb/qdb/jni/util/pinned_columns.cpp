@@ -44,7 +44,12 @@ column_pinner<double>::copy(qdb::jni::env & env,
 
   for (qdb_size_t i = 0; i < len; ++i) {
     out_timeoffsets[i] = in_timeoffsets[i];
-    out_data[i] = in_data[i];
+
+    if (isnan(in_data[i])) {
+      out_data[i] = std::numeric_limits<double>::quiet_NaN();
+    } else {
+      out_data[i] = in_data[i];
+    }
   }
 }
 
