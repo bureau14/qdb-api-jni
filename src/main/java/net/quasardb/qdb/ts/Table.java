@@ -227,9 +227,9 @@ public class Table implements Serializable {
         return Tables.asyncWriter(session, new Table[] {table});
     }
 
-
     /**
-     * Initializes new, experimental high-performance pinned columns writer.
+     * Initializes new, experimental high-performance pinned columns writer
+     * with asynchronous push mode.
      *
      * @param session Active session with the QuasarDB cluster.
      * @param name Timeseries table name. Must already exist.
@@ -239,7 +239,8 @@ public class Table implements Serializable {
     }
 
     /**
-     * Initializes new, experimental high-performance pinned columns writer.
+     * Initializes new, experimental high-performance pinned columns writer
+     * with asynchronous push mode.
      *
      * @param session Active session with the QuasarDB cluster.
      * @param table Timeseries table.
@@ -272,6 +273,32 @@ public class Table implements Serializable {
      */
     public static Writer fastWriter(Session session, Table table) {
         return Tables.fastWriter(session, new Table[] {table});
+    }
+
+    /**
+     * Initializes new writer for a single table that makes use of
+     * in-place updates rather than copy-on-write. This is especially useful
+     * when you do lots of small, incremental pushes, such as streaming
+     * data.
+     *
+     * @param session Active session with the QuasarDB cluster.
+     * @param name Timeseries table name. Must already exist.
+     */
+    public static Writer pinnedFastWriter(Session session, String name) {
+        return pinnedFastWriter(session, new Table(session, name));
+    }
+
+    /**
+     * Initializes new writer for a single table that makes use of
+     * in-place updates rather than copy-on-write. This is especially useful
+     * when you do lots of small, incremental pushes, such as streaming
+     * data.
+     *
+     * @param session Active session with the QuasarDB cluster.
+     * @param table Table to insert into.
+     */
+    public static Writer pinnedFastWriter(Session session, Table table) {
+        return Tables.pinnedFastWriter(session, new Table[] {table});
     }
 
     /**

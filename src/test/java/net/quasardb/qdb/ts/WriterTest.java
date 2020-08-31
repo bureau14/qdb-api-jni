@@ -68,7 +68,14 @@ public class WriterTest {
                          Arguments.of(Writer.PushMode.FAST, Value.Type.INT64),
                          Arguments.of(Writer.PushMode.FAST, Value.Type.BLOB),
                          Arguments.of(Writer.PushMode.FAST, Value.Type.TIMESTAMP),
-                         Arguments.of(Writer.PushMode.FAST, Value.Type.STRING)
+                         Arguments.of(Writer.PushMode.FAST, Value.Type.STRING),
+
+                         Arguments.of(Writer.PushMode.PINNED_FAST, Value.Type.DOUBLE),
+                         Arguments.of(Writer.PushMode.PINNED_FAST, Value.Type.INT64),
+                         Arguments.of(Writer.PushMode.PINNED_FAST, Value.Type.TIMESTAMP),
+                         Arguments.of(Writer.PushMode.PINNED_FAST, Value.Type.BLOB),
+                         Arguments.of(Writer.PushMode.PINNED_FAST, Value.Type.STRING)
+
 
                          );
     }
@@ -120,7 +127,18 @@ public class WriterTest {
                          Arguments.of(Writer.PushMode.FAST, new Value.Type[]{Value.Type.BLOB,
                                                                              Value.Type.TIMESTAMP}),
                          Arguments.of(Writer.PushMode.FAST, new Value.Type[]{Value.Type.TIMESTAMP,
-                                                                             Value.Type.STRING})
+                                                                             Value.Type.STRING}),
+
+
+                         Arguments.of(Writer.PushMode.PINNED_FAST, new Value.Type[]{Value.Type.DOUBLE,
+                                                                                    Value.Type.INT64}),
+                         Arguments.of(Writer.PushMode.PINNED_FAST, new Value.Type[]{Value.Type.INT64,
+                                                                                    Value.Type.BLOB}),
+                         Arguments.of(Writer.PushMode.PINNED_FAST, new Value.Type[]{Value.Type.BLOB,
+                                                                                    Value.Type.TIMESTAMP}),
+                         Arguments.of(Writer.PushMode.PINNED_FAST, new Value.Type[]{Value.Type.TIMESTAMP,
+                                                                                    Value.Type.STRING})
+
 
 
                          );
@@ -134,6 +152,8 @@ public class WriterTest {
             return t.pinnedWriter(s, t);
         case FAST:
             return t.fastWriter(s, t);
+        case PINNED_FAST:
+            return t.pinnedFastWriter(s, t);
         case ASYNC:
             return t.asyncWriter(s, t);
         case TRUNCATE:
@@ -151,6 +171,8 @@ public class WriterTest {
             return t.pinnedWriter(s, t);
         case FAST:
             return t.fastWriter(s, t);
+        case PINNED_FAST:
+            return t.pinnedFastWriter(s, t);
         case ASYNC:
             return t.asyncWriter(s, t);
         case TRUNCATE:
