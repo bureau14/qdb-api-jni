@@ -221,6 +221,8 @@ public class Tables implements Serializable {
     /**
      * Initializes new, experimental pinned columns writer for timeseries tables.
      *
+     * This makes use of the experimental, high-performance 'pinned' writer API.
+     *
      * @param session Active session with the QuasarDB cluster.
      * @param tables Timeseries tables.
      */
@@ -231,6 +233,8 @@ public class Tables implements Serializable {
     /**
      * Initializes new, experimental pinned columns writer for timeseries tables.
      *
+     * This makes use of the experimental, high-performance 'pinned' writer API.
+     *
      * @param session Active session with the QuasarDB cluster.
      * @param tables Timeseries tables.
      */
@@ -240,6 +244,8 @@ public class Tables implements Serializable {
 
     /**
      * Initializes new, experimental pinned columns writer for timeseries tables.
+     *
+     * This makes use of the experimental, high-performance 'pinned' writer API.
      *
      * @param session Active session with the QuasarDB cluster.
      * @param tables Timeseries tables.
@@ -294,6 +300,36 @@ public class Tables implements Serializable {
      */
     public static Writer fastWriter (Session session, Table[] tables) {
         return new Writer(session, tables, Writer.PushMode.FAST);
+    }
+
+    /**
+     * Initializes new writer for timeseries tables that makes use of
+     * in-place updates rather than copy-on-write. This is especially useful
+     * when you do lots of small, incremental pushes, such as streaming
+     * data.
+     *
+     * This makes use of the experimental, high-performance 'pinned' writer API.
+     *
+     * @param session Active session with the QuasarDB cluster.
+     * @param tables Timeseries tables.
+     */
+    public static Writer pinnedFastWriter (Session session, Tables tables) {
+        return pinnedFastWriter(session, tables.getTables());
+    }
+
+    /**
+     * Initializes new writer for timeseries tables that makes use of
+     * in-place updates rather than copy-on-write. This is especially useful
+     * when you do lots of small, incremental pushes, such as streaming
+     * data.
+     *
+     * This makes use of the experimental, high-performance 'pinned' writer API.
+     *
+     * @param session Active session with the QuasarDB cluster.
+     * @param tables Timeseries tables.
+     */
+    public static Writer pinnedFastWriter (Session session, Table[] tables) {
+        return new PinnedWriter(session, tables, Writer.PushMode.FAST);
     }
 
 

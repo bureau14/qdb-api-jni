@@ -35,7 +35,10 @@ public class Writer implements AutoCloseable, Flushable {
         FAST,
         TRUNCATE,
 
-        PINNED_NORMAL
+        PINNED_NORMAL,
+        PINNED_FAST,
+        PINNED_ASYNC,
+        PINNED_TRUNCATE
     }
 
     private static final Logger logger = LoggerFactory.getLogger(Writer.class);
