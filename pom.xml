@@ -219,11 +219,11 @@
         <configuration>
           <trimStackTrace>false</trimStackTrace>
           <additionalClasspathElements>
-            <additionalClasspathElement>${project.basedir}/target/jni-3.11.0-linux-x86_64.jar</additionalClasspathElement>
-            <additionalClasspathElement>${project.basedir}/target/jni-3.11.0-osx-x86_64.jar</additionalClasspathElement>
-            <additionalClasspathElement>${project.basedir}/target/jni-3.11.0-freebsd-x86_64.jar</additionalClasspathElement>
-            <additionalClasspathElement>${project.basedir}/target/jni-3.11.0-windows-x86_64.jar</additionalClasspathElement>
-            <additionalClasspathElement>${project.basedir}/target/jni-3.11.0-windows-x86_32.jar</additionalClasspathElement>
+            <additionalClasspathElement>${project.basedir}/target/jni-3.11.0-SNAPSHOT-linux-x86_64.jar</additionalClasspathElement>
+            <additionalClasspathElement>${project.basedir}/target/jni-3.11.0-SNAPSHOT-osx-x86_64.jar</additionalClasspathElement>
+            <additionalClasspathElement>${project.basedir}/target/jni-3.11.0-SNAPSHOT-freebsd-x86_64.jar</additionalClasspathElement>
+            <additionalClasspathElement>${project.basedir}/target/jni-3.11.0-SNAPSHOT-windows-x86_64.jar</additionalClasspathElement>
+            <additionalClasspathElement>${project.basedir}/target/jni-3.11.0-SNAPSHOT-windows-x86_32.jar</additionalClasspathElement>
           </additionalClasspathElements>
         </configuration>
       </plugin>
@@ -242,27 +242,27 @@
             <configuration>
               <artifacts>
                 <artifact>
-                  <file>${project.basedir}/target/jni-3.11.0-linux-x86_64.jar</file>
+                  <file>${project.basedir}/target/jni-3.11.0-SNAPSHOT-linux-x86_64.jar</file>
                   <type>jar</type>
                   <classifier>linux-x86_64</classifier>
                 </artifact>
                 <artifact>
-                  <file>${project.basedir}/target/jni-3.11.0-osx-x86_64.jar</file>
+                  <file>${project.basedir}/target/jni-3.11.0-SNAPSHOT-osx-x86_64.jar</file>
                   <type>jar</type>
                   <classifier>osx-x86_64</classifier>
                 </artifact>
                 <artifact>
-                  <file>${project.basedir}/target/jni-3.11.0-freebsd-x86_64.jar</file>
+                  <file>${project.basedir}/target/jni-3.11.0-SNAPSHOT-freebsd-x86_64.jar</file>
                   <type>jar</type>
                   <classifier>freebsd-x86_64</classifier>
                 </artifact>
                 <artifact>
-                  <file>${project.basedir}/target/jni-3.11.0-windows-x86_64.jar</file>
+                  <file>${project.basedir}/target/jni-3.11.0-SNAPSHOT-windows-x86_64.jar</file>
                   <type>jar</type>
                   <classifier>windows-x86_64</classifier>
                 </artifact>
                 <artifact>
-                  <file>${project.basedir}/target/jni-3.11.0-windows-x86_32.jar</file>
+                  <file>${project.basedir}/target/jni-3.11.0-SNAPSHOT-windows-x86_32.jar</file>
                   <type>jar</type>
                   <classifier>windows-x86_32</classifier>
                 </artifact>
