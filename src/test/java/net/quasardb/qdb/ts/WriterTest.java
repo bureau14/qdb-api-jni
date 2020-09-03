@@ -344,9 +344,7 @@ public class WriterTest {
         };
 
         WritableRow[] readRows = TestUtils.readRows(s, t, ranges);
-        WritableRow[] nonNullWrittenRows = Arrays.stream(rows).filter(r -> !r.hasNullValues()).toArray(WritableRow[]::new);
-
-        assertArrayEquals(nonNullWrittenRows, readRows);
+        assertArrayEquals(rows, readRows);
     }
 
 

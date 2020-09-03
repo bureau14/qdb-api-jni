@@ -767,8 +767,14 @@ Java_net_quasardb_qdb_jni_qdb_ts_1batch_1row_1set_1blob(JNIEnv * jniEnv,
                                                         jobject bb) {
   qdb::jni::env env(jniEnv);
 
-  void * addr = env.instance().GetDirectBufferAddress(bb);
-  qdb_size_t bytes = (qdb_size_t)env.instance().GetDirectBufferCapacity(bb);
+
+  void * addr = (bb == NULL
+                 ? NULL
+                 : env.instance().GetDirectBufferAddress(bb));
+
+  qdb_size_t bytes = (addr == NULL
+                      ? 0
+                      : (qdb_size_t)env.instance().GetDirectBufferCapacity(bb));
 
   return qdb_ts_batch_row_set_blob((qdb_batch_table_t)(batchTable),
                                    index,
@@ -785,12 +791,20 @@ Java_net_quasardb_qdb_jni_qdb_ts_1batch_1row_1set_1string(JNIEnv * jniEnv,
                                                           jbyteArray bb) {
   qdb::jni::env env(jniEnv);
 
-  jni::guard::byte_array barry(jni::byte_array::get_bytes(env, bb));
+  qdb_error_t result;
+  if (bb == NULL) {
+    result = qdb_ts_batch_row_set_string((qdb_batch_table_t)(batchTable),
+                                         index,
+                                         NULL,
+                                         0);
+  } else {
+    jni::guard::byte_array barry(jni::byte_array::get_bytes(env, bb));
 
-  qdb_error_t result = qdb_ts_batch_row_set_string((qdb_batch_table_t)(batchTable),
-                                                   index,
-                                                   (char const *)barry.ptr(),
-                                                   barry.len());
+    result = qdb_ts_batch_row_set_string((qdb_batch_table_t)(batchTable),
+                                         index,
+                                         (char const *)barry.ptr(),
+                                         barry.len());
+  }
 
   return result;
 }

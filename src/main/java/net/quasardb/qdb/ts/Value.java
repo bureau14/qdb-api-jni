@@ -14,11 +14,11 @@ import net.quasardb.qdb.exception.IncompatibleTypeException;
 public class Value implements Serializable {
 
     Type type;
-    long int64Value;
-    double doubleValue;
-    Timespec timestampValue;
-    String stringValue;
-    ByteBuffer blobValue;
+    long int64Value = Constants.nullInt64;
+    double doubleValue = Constants.nullDouble;
+    Timespec timestampValue = new Timespec();
+    String stringValue = Constants.nullString;
+    ByteBuffer blobValue = Constants.nullBlob;
 
     public enum Type {
         UNINITIALIZED(qdb_ts_column_type.uninitialized),
@@ -76,8 +76,15 @@ public class Value implements Serializable {
     }
 
 
-    public void setNative(long batchTable, int offset) {
-        switch (this.type) {
+    public void setNative(long batchTable, Type columnType, int offset) {
+
+        Type t = (this.type == Type.UNINITIALIZED
+                  ? columnType
+                  : this.type);
+
+
+
+        switch (t) {
         case DOUBLE:
             qdb.ts_batch_row_set_double(batchTable, offset, this.doubleValue);
             break;
@@ -96,8 +103,13 @@ public class Value implements Serializable {
             // Convert string to ByteBuffer before passing over to JNI so that
             // we can keep the JNI code really simple (=> fast).
             qdb.ts_batch_row_set_string(batchTable, offset,
-                                        this.stringValue.getBytes(StandardCharsets.UTF_8));
+                                        (this.stringValue == Constants.nullString
+                                         ? null
+                                         : this.stringValue.getBytes(StandardCharsets.UTF_8)));
             break;
+
+        case UNINITIALIZED:
+            throw new RuntimeException("Setting null");
         }
     }
 
