@@ -304,9 +304,6 @@ Java_net_quasardb_qdb_jni_qdb_ts_1batch_1pinned_1push(JNIEnv *jniEnv,
          * that we expect.
          */
         size_t rowCount = env.instance().GetArrayLength(rows);
-
-        printf("pinned push\n");
-        fflush(stdout);
         return qdb_e_ok;
     }
     catch (jni::exception const &e)
