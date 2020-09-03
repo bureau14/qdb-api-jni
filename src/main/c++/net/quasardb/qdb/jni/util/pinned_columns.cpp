@@ -223,13 +223,6 @@ column_pinner<jlong, qdb_timespec_t>::copy2(qdb::jni::env & env,
 
   for (qdb_size_t i = 0; i < len; ++i) {
     out_timeoffsets[i]  = in_timeoffsets[i];
-
-    if (in1_data[i] == qdb_min_time &&
-        in2_data[i] == qdb_min_time) {
-      // Skip null values entirely
-      continue;
-    }
-
     out_data[i].tv_sec  = in1_data[i];
     out_data[i].tv_nsec = in2_data[i];
   }

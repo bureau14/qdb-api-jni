@@ -23,12 +23,12 @@ public class Timespec implements Serializable {
     protected long nsec;
 
     /**
-     * Construct a new Timespec without any time. Should typically not be used, as
-     * these timespec values will be rejected by the QuasarDB backend.
+     * Construct a new Timespec null value. Constants align with what is used by QuasarDB
+     * in the backend.
      */
     public Timespec(){
-        this.sec = -1;
-        this.nsec = -1;
+        this.sec = Constants.minTime;
+        this.nsec = Constants.minTime;
     }
 
     /**

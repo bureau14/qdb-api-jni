@@ -659,6 +659,19 @@ tableGetRanges(qdb::jni::env &env,
 }
 
 qdb_error_t
+tableGetRowNullValue(qdb::jni::env &env,
+                     jobject output) {
+  jclass objectClass = env.instance().GetObjectClass(output);
+  jmethodID methodId = env.instance().GetMethodID(objectClass, "setNull",
+                                                  "()V");
+  assert(methodId != NULL);
+  env.instance().CallVoidMethod(output, methodId);
+
+  return qdb_e_ok;
+}
+
+
+qdb_error_t
 tableGetRowInt64Value(qdb::jni::env &env,
                       qdb_handle_t handle,
                       qdb_local_table_t localTable,
@@ -669,31 +682,18 @@ tableGetRowInt64Value(qdb::jni::env &env,
     jni::exception::throw_if_error(
         handle, qdb_ts_row_get_int64(localTable, index, &value));
 
-    jclass objectClass = env.instance().GetObjectClass(output);
-    jmethodID methodId =
+    if (value == ((qdb_int_t)0x8000000000000000ll)) {
+      return tableGetRowNullValue(env, output);
+    } else {
+      jclass objectClass = env.instance().GetObjectClass(output);
+      jmethodID methodId =
         env.instance().GetMethodID(objectClass, "setInt64", "(J)V");
-    assert(methodId != NULL);
+      assert(methodId != NULL);
 
-    env.instance().CallVoidMethod(output, methodId, static_cast<jlong>(value));
+      env.instance().CallVoidMethod(output, methodId, static_cast<jlong>(value));
 
-    return qdb_e_ok;
-}
-
-qdb_error_t
-tableGetRowNullValue(qdb::jni::env &env,
-                     qdb_handle_t handle,
-                     qdb_local_table_t localTable,
-                     qdb_size_t index,
-                     jobject output)
-{
-    jclass objectClass = env.instance().GetObjectClass(output);
-    jmethodID methodId =
-        env.instance().GetMethodID(objectClass, "setNull", "()V");
-    assert(methodId != NULL);
-
-    env.instance().CallVoidMethod(output, methodId);
-
-    return qdb_e_ok;
+      return qdb_e_ok;
+    }
 }
 
 qdb_error_t
@@ -707,14 +707,20 @@ tableGetRowDoubleValue(qdb::jni::env &env,
     jni::exception::throw_if_error(
         handle, qdb_ts_row_get_double(localTable, index, &value));
 
-    jclass objectClass = env.instance().GetObjectClass(output);
-    jmethodID methodId =
+    if (std::isnan(value)) {
+      return tableGetRowNullValue(env, output);
+    } else {
+
+      jclass objectClass = env.instance().GetObjectClass(output);
+      jmethodID methodId =
         env.instance().GetMethodID(objectClass, "setDouble", "(D)V");
-    assert(methodId != NULL);
+      assert(methodId != NULL);
 
-    env.instance().CallVoidMethod(output, methodId, value);
+      env.instance().CallVoidMethod(output, methodId, value);
 
-    return qdb_e_ok;
+      return qdb_e_ok;
+    }
+
 }
 
 qdb_error_t
@@ -730,16 +736,22 @@ tableGetRowTimestampValue(qdb::jni::env &env,
     jni::exception::throw_if_error(
         handle, qdb_ts_row_get_timestamp(localTable, index, &value));
 
-    jclass objectClass = env.instance().GetObjectClass(output);
-    jmethodID methodId = env.instance().GetMethodID(
+    if (value.tv_sec == qdb_min_time) {
+      return tableGetRowNullValue(env, output);
+    } else {
+
+      jclass objectClass = env.instance().GetObjectClass(output);
+      jmethodID methodId = env.instance().GetMethodID(
         objectClass, "setTimestamp", "(Lnet/quasardb/qdb/ts/Timespec;)V");
-    assert(methodId != NULL);
+      assert(methodId != NULL);
 
-    env.instance().CallVoidMethod(output, methodId,
-                                  nativeToTimespec(env, value).release());
+      env.instance().CallVoidMethod(output, methodId,
+                                    nativeToTimespec(env, value).release());
 
-    return qdb_e_ok;
+      return qdb_e_ok;
+    }
 }
+
 
 qdb_error_t
 tableGetRowBlobValue(qdb::jni::env &env,
@@ -755,21 +767,26 @@ tableGetRowBlobValue(qdb::jni::env &env,
     jni::exception::throw_if_error(
         handle, qdb_ts_row_get_blob(localTable, index, &value, &length));
 
-    assert(value != NULL);
+    assert((value == NULL) == (length == 0));
 
-    jobject byteBuffer = nativeToByteBuffer(env, value, length);
-    assert(byteBuffer != NULL);
+    if (value == NULL) {
+      qdb_release(handle, value);
+      return tableGetRowNullValue(env, output);
 
-    jclass objectClass = env.instance().GetObjectClass(output);
-    jmethodID methodId = env.instance().GetMethodID(objectClass, "setSafeBlob",
-                                                    "(Ljava/nio/ByteBuffer;)V");
-    assert(methodId != NULL);
+    } else {
+      jobject byteBuffer = nativeToByteBuffer(env, value, length);
+      assert(byteBuffer != NULL);
 
-    env.instance().CallVoidMethod(output, methodId, byteBuffer);
+      jclass objectClass = env.instance().GetObjectClass(output);
+      jmethodID methodId = env.instance().GetMethodID(objectClass, "setSafeBlob",
+                                                      "(Ljava/nio/ByteBuffer;)V");
+      assert(methodId != NULL);
 
-    qdb_release(handle, value);
+      env.instance().CallVoidMethod(output, methodId, byteBuffer);
 
-    return qdb_e_ok;
+      qdb_release(handle, value);
+      return qdb_e_ok;
+    }
 }
 
 qdb_error_t
@@ -786,21 +803,26 @@ tableGetRowStringValue(qdb::jni::env &env,
     jni::exception::throw_if_error(
         handle, qdb_ts_row_get_string(localTable, index, &value, &length));
 
-    assert(value != NULL);
+    assert((value == NULL) == (length == 0));
 
-    jni::guard::local_ref<jstring> stringValue =
+    if (value == NULL) {
+      qdb_release(handle, value);
+      return tableGetRowNullValue(env, output);
+
+    } else {
+      jni::guard::local_ref<jstring> stringValue =
         nativeToString(env, value, length);
 
-    jclass objectClass = env.instance().GetObjectClass(output);
-    jmethodID methodId = env.instance().GetMethodID(objectClass, "setString",
-                                                    "(Ljava/lang/String;)V");
-    assert(methodId != NULL);
+      jclass objectClass = env.instance().GetObjectClass(output);
+      jmethodID methodId = env.instance().GetMethodID(objectClass, "setString",
+                                                      "(Ljava/lang/String;)V");
+      assert(methodId != NULL);
 
-    env.instance().CallVoidMethod(output, methodId, stringValue.release());
+      env.instance().CallVoidMethod(output, methodId, stringValue.release());
 
-    qdb_release(handle, value);
-
-    return qdb_e_ok;
+      qdb_release(handle, value);
+      return qdb_e_ok;
+    }
 }
 
 qdb_error_t
@@ -858,7 +880,7 @@ tableGetRowValues(qdb::jni::env &env,
         case qdb_ts_column_uninitialized:
             jni::exception::throw_if_error(
                 handle,
-                tableGetRowNullValue(env, handle, localTable, i, value));
+                tableGetRowNullValue(env, value));
             break;
 
         default:

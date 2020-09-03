@@ -36,9 +36,7 @@ public class Writer implements AutoCloseable, Flushable {
         TRUNCATE,
 
         PINNED_NORMAL,
-        PINNED_FAST,
-        PINNED_ASYNC,
-        PINNED_TRUNCATE
+        PINNED_FAST
     }
 
     private static final Logger logger = LoggerFactory.getLogger(Writer.class);
@@ -64,15 +62,17 @@ public class Writer implements AutoCloseable, Flushable {
      */
     public static class TableColumn {
         public String table;
+        public Value.Type type;
         public String column;
 
-        public TableColumn(String table, String column) {
+        public TableColumn(String table, Value.Type type, String column) {
             this.table = table;
+            this.type = type;
             this.column = column;
         }
 
         public String toString() {
-            return "TableColumn (table: " + this.table + ", column: " + this.column + ")";
+            return "TableColumn (table: " + this.table + ", column type: " + this.type + ", column name: " + this.column + ")";
         }
     }
 
@@ -93,7 +93,7 @@ public class Writer implements AutoCloseable, Flushable {
 
             for (Column column : table.columns) {
                 logger.debug("Initializing column {} of table {} at offset {}", column.name, table.name, this.columns.size());
-                this.columns.add(new TableColumn(table.name, column.name));
+                this.columns.add(new TableColumn(table.name, column.type, column.name));
             }
         }
 
@@ -122,8 +122,8 @@ public class Writer implements AutoCloseable, Flushable {
 
             for (Column column : table.columns) {
                 logger.debug("Initializing extra column {} of table {} at offset {}", column.name, table.name, this.columns.size());
-                this.columns.add(new TableColumn(table.name, column.name));
-                columns.add(new TableColumn(table.name, column.name));
+                this.columns.add(new TableColumn(table.name, column.type, column.name));
+                columns.add(new TableColumn(table.name, column.type, column.name));
             }
         }
 
@@ -282,8 +282,11 @@ public class Writer implements AutoCloseable, Flushable {
 
         for (int i = 0; i < values.length; ++i) {
             Value v = values[i];
+            int column_offset = offset + i;
 
-            v.setNative(this.batchTable, offset + i);
+            v.setNative(this.batchTable,
+                        this.columns.get(column_offset).type,
+                        column_offset);
         }
 
         this.pointsSinceFlush += values.length;
