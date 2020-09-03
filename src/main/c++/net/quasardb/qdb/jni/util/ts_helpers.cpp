@@ -707,7 +707,7 @@ tableGetRowDoubleValue(qdb::jni::env &env,
     jni::exception::throw_if_error(
         handle, qdb_ts_row_get_double(localTable, index, &value));
 
-    if (std::isnan(value)) {
+    if (isnan(value)) {
       return tableGetRowNullValue(env, output);
     } else {
 
