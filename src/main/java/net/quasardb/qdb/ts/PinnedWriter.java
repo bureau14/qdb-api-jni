@@ -278,6 +278,8 @@ public class PinnedWriter extends Writer {
         }
 
         xs.add(this.calculateOffset(shard, timestamp), values);
+
+        this.pointsSinceFlush += values.length;
     }
 
     public void prepareFlush() throws IOException  {
