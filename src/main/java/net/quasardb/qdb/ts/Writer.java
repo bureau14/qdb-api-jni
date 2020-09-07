@@ -42,7 +42,7 @@ public class Writer implements AutoCloseable, Flushable {
     private static final Logger logger = LoggerFactory.getLogger(Writer.class);
 
     PushMode pushMode;
-    long pointsSinceFlush = 0;
+    protected long pointsSinceFlush = 0;
     boolean async;
     Session session;
     Long batchTable;
