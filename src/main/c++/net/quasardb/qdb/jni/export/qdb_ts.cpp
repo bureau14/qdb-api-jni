@@ -828,9 +828,6 @@ Java_net_quasardb_qdb_jni_qdb_ts_1batch_1push_1truncate(JNIEnv *jniEnv,
 
         qdb::jni::log::swap_callback();
 
-        printf("flushing!!\n");
-        fflush(stdout);
-
         return jni::exception::throw_if_error(
             (qdb_handle_t)handle,
             qdb_ts_batch_push_truncate((qdb_batch_table_t)batchTable,
