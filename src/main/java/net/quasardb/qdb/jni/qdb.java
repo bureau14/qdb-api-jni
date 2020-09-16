@@ -133,6 +133,8 @@ public final class qdb
     public static native int ts_batch_push_async(long handle, long batchTable);
     public static native int ts_batch_push_fast(long handle, long batchTable);
 
+    public static native int ts_batch_release_columns_memory(long handle, long batchTable);
+
     public static native int ts_batch_push_truncate(long handle, long batchTable, TimeRange[] ranges);
 
     public static native int ts_batch_pinned_push(long handle,
