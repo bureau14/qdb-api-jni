@@ -226,6 +226,28 @@ Java_net_quasardb_qdb_jni_qdb_ts_1batch_1table_1init(JNIEnv *jniEnv,
 }
 
 JNIEXPORT jint JNICALL
+Java_net_quasardb_qdb_jni_qdb_ts_1batch_1release_1columns_1memory(JNIEnv *jniEnv,
+                                                                  jclass /*thisClass*/,
+                                                                  jlong handle,
+                                                                  jlong batchTable) {
+    qdb::jni::env env(jniEnv);
+
+    try
+    {
+      jni::exception::throw_if_error((qdb_handle_t)handle,
+                                     qdb_ts_batch_release_columns_memory((qdb_batch_table_t)batchTable));
+
+
+      return qdb_e_ok;
+    }
+    catch (jni::exception const &e)
+    {
+        e.throw_new(env);
+        return e.error();
+    }
+}
+
+JNIEXPORT jint JNICALL
 Java_net_quasardb_qdb_jni_qdb_ts_1batch_1table_1extra_1columns(
     JNIEnv *jniEnv,
     jclass /*thisClass*/,

@@ -331,6 +331,8 @@ public class PinnedWriter extends Writer {
         // but it's simpler to just reset it.
         this.shardsByTableOffset = new Int2ObjectLinkedOpenHashMap<Long2ObjectOpenHashMap<PinnedMatrix>>();
         this.pinned = false;
+        qdb.ts_batch_release_columns_memory(this.session.handle(),
+                                            this.batchTable);
     }
 
     private static long calculateOffset(long shard, Timespec ts) {
