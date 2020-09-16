@@ -610,8 +610,6 @@ Java_net_quasardb_qdb_jni_qdb_ts_1batch_1push(JNIEnv *jniEnv,
     qdb::jni::env env(jniEnv);
     try
     {
-        qdb::jni::log::swap_callback();
-
         return jni::exception::throw_if_error(
             (qdb_handle_t)handle,
             qdb_ts_batch_push((qdb_batch_table_t)batchTable));
@@ -633,8 +631,6 @@ Java_net_quasardb_qdb_jni_qdb_ts_1batch_1push_1async(JNIEnv *jniEnv,
 
     try
     {
-        qdb::jni::log::swap_callback();
-
         return jni::exception::throw_if_error(
             (qdb_handle_t)handle,
             qdb_ts_batch_push_async((qdb_batch_table_t)batchTable));
@@ -656,8 +652,6 @@ Java_net_quasardb_qdb_jni_qdb_ts_1batch_1push_1fast(JNIEnv *jniEnv,
 
     try
     {
-        qdb::jni::log::swap_callback();
-
         return jni::exception::throw_if_error(
             (qdb_handle_t)handle,
             qdb_ts_batch_push_fast((qdb_batch_table_t)batchTable));
@@ -847,8 +841,6 @@ Java_net_quasardb_qdb_jni_qdb_ts_1batch_1push_1truncate(JNIEnv *jniEnv,
         qdb_size_t rangeCount = env.instance().GetArrayLength(ranges);
         std::unique_ptr<qdb_ts_range_t> nativeTimeRanges (new qdb_ts_range_t[rangeCount]);
         timeRangesToNative(env, ranges, rangeCount, nativeTimeRanges.get());
-
-        qdb::jni::log::swap_callback();
 
         return jni::exception::throw_if_error(
             (qdb_handle_t)handle,
