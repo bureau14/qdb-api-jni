@@ -312,8 +312,6 @@ Java_net_quasardb_qdb_jni_qdb_ts_1batch_1pinned_1push(JNIEnv *jniEnv,
     qdb::jni::env env(jniEnv);
     try
     {
-        qdb::jni::log::swap_callback();
-
         // qdb_ts_column_type_t * column_types[column_count];
         // to_column_type_array(env, columns, column_types, column_count);
         auto column_types_guard = jni::primitive_array::get_array_critical<qdb_ts_column_type_t>(env, columnTypes);
