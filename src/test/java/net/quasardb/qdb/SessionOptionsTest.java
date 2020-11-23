@@ -35,6 +35,24 @@ public class SessionOptionsTest {
         assertEquals(s.getInputBufferSize(), old + 1024);
     }
 
+
+    @Test
+    public void canGetClientMaxParallelism() {
+        Session s = TestUtils.createSession();
+        assertTrue(s.getClientMaxParallelism() > 0);
+    }
+
+
+    @Test
+    public void canSetClientMaxParallelism() {
+        Session s = TestUtils.createSession();
+
+        long old = s.getClientMaxParallelism();
+        s.setClientMaxParallelism(old * 2);
+
+        assertEquals(s.getClientMaxParallelism(), old * 2);
+    }
+
     @Test
     public void throwsExceptionOnSmallBuffer() throws Exception {
         // Create a table with 100x10 blobs, set a ridiculously low input

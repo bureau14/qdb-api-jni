@@ -167,6 +167,31 @@ public class Session implements AutoCloseable {
         return qdb.option_get_client_max_in_buf_size(handle);
     }
 
+
+    /**
+     * Set maximum client parallelism for this session.
+     *
+     * @param threadCount The desired maximum number of threads to use for query execution, or 0 
+     *
+     * @throws ClusterClosedException If the connection to the cluster is currently closed.
+     */
+    public void setClientMaxParallelism(long threadCount) throws ClusterClosedException {
+        throwIfClosed();
+
+        qdb.option_set_client_max_parallelism(handle, threadCount);
+    }
+
+    /**
+     * Returns the current input buffer size (in bytes).
+     *
+     * @throws ClusterClosedException If the connection to the cluster is currently closed.
+     */
+    public long getClientMaxParallelism() throws ClusterClosedException {
+        throwIfClosed();
+
+        return qdb.option_get_client_max_parallelism(handle);
+    }
+
     /**
      * Wait for all nodes of the cluster to be stabilized.
      *
