@@ -73,6 +73,8 @@ public final class qdb
     public static native int option_set_timeout(long handle, int millis);
     public static native int option_set_client_max_in_buf_size(long handle, long size);
     public static native long option_get_client_max_in_buf_size(long handle);
+    public static native int option_set_client_max_parallelism(long handle, long threadCount);
+    public static native long option_get_client_max_parallelism(long handle);
     public static native int purge_all(long handle, int timeout);
     public static native int trim_all(long handle, int timeout);
     public static native int wait_for_stabilization(long handle, int timeout);

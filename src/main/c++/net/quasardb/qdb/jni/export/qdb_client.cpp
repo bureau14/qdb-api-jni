@@ -220,6 +220,49 @@ Java_net_quasardb_qdb_jni_qdb_option_1set_1client_1max_1in_1buf_1size(
     }
 }
 
+JNIEXPORT jlong JNICALL
+Java_net_quasardb_qdb_jni_qdb_option_1get_1client_1max_1parallelism(
+    JNIEnv *jniEnv, jclass /*thisClass*/, jlong handle)
+{
+
+    qdb::jni::env env(jniEnv);
+    try
+    {
+        qdb_size_t threadCount;
+
+        jni::exception::throw_if_error(
+            (qdb_handle_t)handle,
+            qdb_option_get_client_max_parallelism((qdb_handle_t)handle, &threadCount));
+
+        return threadCount;
+    }
+    catch (jni::exception const &e)
+    {
+        e.throw_new(env);
+        return -1;
+    }
+}
+
+JNIEXPORT jint JNICALL
+Java_net_quasardb_qdb_jni_qdb_option_1set_1client_1max_1parallelism(
+    JNIEnv *jniEnv, jclass /*thisClass*/, jlong handle, jlong threadCount)
+{
+
+    qdb::jni::env env(jniEnv);
+    try
+    {
+        return jni::exception::throw_if_error(
+            (qdb_handle_t)handle,
+            qdb_option_set_client_max_parallelism((qdb_handle_t)handle, threadCount));
+    }
+    catch (jni::exception const &e)
+    {
+        e.throw_new(env);
+        return e.error();
+    }
+}
+
+
 JNIEXPORT jint JNICALL
 Java_net_quasardb_qdb_jni_qdb_purge_1all(JNIEnv *jniEnv,
                                          jclass /*thisClass*/,
