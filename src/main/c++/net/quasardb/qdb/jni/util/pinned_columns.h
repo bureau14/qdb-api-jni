@@ -103,8 +103,6 @@ struct column_pinner<jni::object_array, qdb_blob_t>
             qdb_size_t len);
 };
 
-
-
 template <>
 struct column_pinner<jni::object_array, qdb_string_t>
 {
@@ -125,6 +123,27 @@ struct column_pinner<jni::object_array, qdb_string_t>
             qdb_size_t len);
 };
 
+struct column_symbol_pinner {};
+
+template <>
+struct column_pinner<jni::object_array, column_symbol_pinner>
+{
+  void pin(qdb::jni::env & env,
+           qdb_handle_t handle,
+           qdb_batch_table_t table,
+           qdb_size_t index,
+           qdb_size_t capacity,
+           qdb_timespec_t * timestamp,
+           qdb_time_t ** timeoffsets,
+           qdb_string_t ** data);
+
+  void copy(qdb::jni::env & env,
+            jlong const * in_timeoffsets,
+            jni::object_array const & in_data,
+            qdb_time_t * out_timeoffsets,
+            qdb_string_t * out_data,
+            qdb_size_t len);
+};
 
 template <>
 struct column_pinner<jlong, qdb_timespec_t>

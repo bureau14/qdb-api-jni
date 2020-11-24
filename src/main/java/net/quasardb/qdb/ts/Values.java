@@ -57,19 +57,36 @@ public class Values {
 
     private static ByteBuffer asString(Value in) {
         if (in == null) {
-            return Constants.nullBlob;
+            return Constants.nullString;
         }
 
         switch (in.getType()) {
         case STRING:
-            assert (in.blobValue != null);
-            assert (in.blobValue.isDirect());
-            return in.blobValue;
+            assert (in.stringValue != null);
+            assert (in.stringValue.isDirect());
+            return in.stringValue;
         case UNINITIALIZED:
-            return Constants.nullBlob;
+            return Constants.nullString;
         }
 
         throw new RuntimeException("Not a string value: " + in.toString());
+    }
+
+    private static ByteBuffer asSymbol(Value in) {
+        if (in == null) {
+            return Constants.nullSymbol;
+        }
+
+        switch (in.getType()) {
+        case SYMBOL:
+            assert (in.symbolValue != null);
+            assert (in.symbolValue.isDirect());
+            return in.symbolValue;
+        case UNINITIALIZED:
+            return Constants.nullSymbol;
+        }
+
+        throw new RuntimeException("Not a symbol value: " + in.toString());
     }
 
     public static double[] asPrimitiveDoubleArray (ObjectArrayList<Value> in) {
@@ -140,6 +157,18 @@ public class Values {
         Object[] xs = in.elements();
         for (int i = 0; i < len; ++i) {
             out[i] = asString((Value)(xs[i]));
+        }
+
+        return out;
+    }
+
+    public static ByteBuffer[] asPrimitiveSymbolArray (ObjectArrayList<Value> in) {
+        int len = in.size();
+        ByteBuffer[] out = new ByteBuffer[len];
+
+        Object[] xs = in.elements();
+        for (int i = 0; i < len; ++i) {
+            out[i] = asSymbol((Value)(xs[i]));
         }
 
         return out;

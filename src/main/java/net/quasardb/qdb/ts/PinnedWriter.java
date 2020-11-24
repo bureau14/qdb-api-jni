@@ -168,6 +168,15 @@ public class PinnedWriter extends Writer {
                                                     Values.asPrimitiveStringArray(columnValues));
                     break;
 
+                case SYMBOL:
+                    qdb.ts_batch_set_pinned_symbols(handle,
+                                                    batchTable,
+                                                    shard,
+                                                    tableOffset + columnOffset,
+                                                    timeoffsets_,
+                                                    Values.asPrimitiveSymbolArray(columnValues));
+                    break;
+
                 default:
                     throw new RuntimeException("Column type not yet implemented: " + columnType.toString());
                 };

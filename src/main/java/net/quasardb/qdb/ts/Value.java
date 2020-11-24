@@ -19,6 +19,7 @@ public class Value implements Serializable {
     Timespec timestampValue = new Timespec();
     String stringValue = Constants.nullString;
     ByteBuffer blobValue = Constants.nullBlob;
+    String symbolValue = Constants.nullSymbol;
 
     public enum Type {
         UNINITIALIZED(qdb_ts_column_type.uninitialized),
@@ -26,7 +27,8 @@ public class Value implements Serializable {
         BLOB(qdb_ts_column_type.blob),
         STRING(qdb_ts_column_type.string),
         INT64(qdb_ts_column_type.int64),
-        TIMESTAMP(qdb_ts_column_type.timestamp)
+        TIMESTAMP(qdb_ts_column_type.timestamp),
+        SYMBOL(qdb_ts_column_type.symbol)
         ;
 
         protected final int value;
@@ -54,6 +56,9 @@ public class Value implements Serializable {
 
             case qdb_ts_column_type.timestamp:
                 return Type.TIMESTAMP;
+
+            case qdb_ts_column_type.symbol:
+                return Type.SYMBOL;
             }
 
             return Type.UNINITIALIZED;
@@ -106,6 +111,14 @@ public class Value implements Serializable {
                                         (this.stringValue == Constants.nullString
                                          ? null
                                          : this.stringValue.getBytes(StandardCharsets.UTF_8)));
+            break;
+        case SYMBOL:
+            // Convert symbol to ByteBuffer before passing over to JNI so that
+            // we can keep the JNI code really simple (=> fast).
+            qdb.ts_batch_row_set_symbol(batchTable, offset,
+                                        (this.symbolValue == Constants.nullSymbol
+                                         ? null
+                                         : this.symbolValue.getBytes(StandardCharsets.UTF_8)));
             break;
 
         case UNINITIALIZED:
@@ -291,6 +304,26 @@ public class Value implements Serializable {
     }
 
     /**
+     * Update this value to be a Symbol.
+     */
+    public void setSymbol(String value) {
+        this.type = Type.SYMBOL;
+        this.symbolValue = value;
+    }
+
+    /**
+     * Create a new Symbol value.
+     *
+     * @param value Symbol representation of value.
+     */
+    public static Value createSymbol(String value) {
+        Value val = new Value(Type.SYMBOL);
+        val.symbolValue = value;
+        return val;
+
+    }
+
+    /**
      * If this Value's type is a string, ensures that it creates a
      * directly allocated ByteBuffer with a copy of the UTF-8 string representation.
      *
@@ -344,6 +377,9 @@ public class Value implements Serializable {
         case STRING:
             return this.getString().equals(rhs.getString());
 
+        case SYMBOL:
+            return this.getSymbol().equals(rhs.getSymbol());
+
         case UNINITIALIZED:
             // null == null always true
             return true;
@@ -375,6 +411,10 @@ public class Value implements Serializable {
 
         case STRING:
             stream.writeObject(this.stringValue);
+            break;
+            
+        case SYMBOL:
+            stream.writeObject(this.symbolValue);
             break;
         }
     }
@@ -416,6 +456,10 @@ public class Value implements Serializable {
 
         case STRING:
             this.stringValue = (String)(stream.readObject());
+            break;
+            
+        case SYMBOL:
+            this.symbolValue = (Symbol)(stream.readObject());
             break;
         }
     }
@@ -478,6 +522,14 @@ public class Value implements Serializable {
         return this.stringValue;
     }
 
+    public String getSymbol() {
+        if (this.type != Type.SYMBOL) {
+            throw new IncompatibleTypeException("Not a symbol: " + this.type.toString());
+        }
+
+        return this.symbolValue;
+    }
+
     public String toString() {
 
         switch (this.type) {
@@ -495,6 +547,9 @@ public class Value implements Serializable {
 
         case STRING:
             return "Value (type = STRING, value = '" + this.stringValue + "')";
+
+        case SYMBOL:
+            return "Value (type = SYMBOL, value = '" + this.symbolValue + "')";
 
         case UNINITIALIZED:
             return "Value (type = NULL)";

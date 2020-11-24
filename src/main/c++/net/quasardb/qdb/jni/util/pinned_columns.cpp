@@ -187,7 +187,52 @@ column_pinner<jni::object_array, qdb_string_t>::copy(qdb::jni::env & env,
   }
 }
 
+/**
+ * Symbol
+ */
 
+void
+column_pinner<jni::object_array, column_symbol_pinner>::pin(qdb::jni::env & env,
+                                                            qdb_handle_t handle,
+                                                            qdb_batch_table_t table,
+                                                            qdb_size_t index,
+                                                            qdb_size_t capacity,
+                                                            qdb_timespec_t * timestamp,
+                                                            qdb_time_t ** timeoffsets,
+                                                            qdb_string_t ** data) {
+  jni::exception::throw_if_error(handle,
+                                 qdb_ts_batch_pin_symbol_column(table,
+                                                                index,
+                                                                capacity,
+                                                                timestamp,
+                                                                timeoffsets,
+                                                                data));
+}
+
+void
+column_pinner<jni::object_array, column_symbol_pinner>::copy(qdb::jni::env & env,
+                                                             jlong const * in_timeoffsets,
+                                                             jni::object_array const & in_data,
+                                                             qdb_time_t * out_timeoffsets,
+                                                             qdb_string_t * out_data,
+                                                             qdb_size_t len) {
+  assert(in_data.size () == len);
+
+  for (qdb_size_t i = 0; i < len; ++i) {
+    jobject bb = in_data.get(i);
+
+    out_timeoffsets[i] = in_timeoffsets[i];
+
+    if (bb == NULL) {
+      continue;
+    }
+
+    jni::byte_buffer::get_address(env,
+                                  bb,
+                                  (void const **)(&out_data[i].data),
+                                  &out_data[i].length);
+  }
+}
 
 /**
  * Timestamp

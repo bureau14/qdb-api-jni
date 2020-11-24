@@ -12,6 +12,7 @@ import net.quasardb.qdb.jni.*;
 public class Column {
     protected String name;
     protected Value.Type type;
+    protected String symtable;
 
     /**
      * A blob column.
@@ -61,16 +62,27 @@ public class Column {
         }
     }
 
+
+    /**
+     * A blob column.
+     */
+    public static class Blob extends Column {
+        public Blob(String name) {
+            super(name, Value.Type.BLOB);
+        }
+    }
+
     /**
      * Create a column with a certain type.
      */
-    public Column(String name, Value.Type type) {
+    public Column(String name, Value.Type type, String symtable) {
         this.name = name;
         this.type = type;
+        this.symtable = symtable;
     }
 
-    protected Column(String name, int type) {
-        this(name, Value.Type.fromInt(type));
+    protected Column(String name, int type, String symtable) {
+        this(name, Value.Type.fromInt(type), symtable);
     }
 
     /**
@@ -87,6 +99,13 @@ public class Column {
         return this.type;
     }
 
+    /**
+     * Provides access to the column's symbol table name.
+     */
+    public String getSymtable() {
+        return this.symtable;
+    }
+
     @Override
     public boolean equals(Object obj) {
         if (!(obj instanceof Column)) return false;
@@ -96,6 +115,6 @@ public class Column {
     }
 
     public String toString() {
-        return "Column (name: '" + this.name + "', type: " + this.type + ")";
+        return "Column (name: '" + this.name + "', type: " + this.type + ", symtable: '" + this.symtable + "')";
     }
 }

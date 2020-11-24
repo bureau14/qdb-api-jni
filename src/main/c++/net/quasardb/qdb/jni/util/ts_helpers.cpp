@@ -250,6 +250,49 @@ columnsToNative(qdb::jni::env &env,
 }
 
 void
+columnsToNative(qdb::jni::env &env,
+                jobjectArray columns,
+                qdb_ts_column_info_ex_t *native_columns,
+                size_t column_count)
+{
+    jfieldID nameField, typeField, symtableField;
+    jclass objectClass;
+    for (size_t i = 0; i < column_count; ++i)
+    {
+        jobject object = (jobject)(env.instance().GetObjectArrayElement(
+            columns, static_cast<jsize>(i)));
+
+        objectClass = env.instance().GetObjectClass(object);
+        nameField = env.instance().GetFieldID(objectClass, "name",
+                                              "Ljava/lang/String;");
+        typeField = env.instance().GetFieldID(
+            objectClass, "type", "Lnet/quasardb/qdb/ts/Value$Type;");
+        symtableField = env.instance().GetFieldID(objectClass, "symtable",
+                                              "Ljava/lang/String;");
+
+        jstring name =
+            (jstring)env.instance().GetObjectField(object, nameField);
+
+        native_columns[i].type = columnTypeFromTypeEnum(
+            env, env.instance().GetObjectField(object, typeField));
+
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(disable : 4996) // 'strdup': The POSIX name for this item is
+                                // deprecated. Instead, use the ISO C and C++
+                                // conformant name: _strdup.
+#endif
+        // Is there a better way to do this? Because we're using strdup here, we
+        // need a separate release function which is fragile.
+        native_columns[i].name =
+            strdup(qdb::jni::string::get_chars_utf8(env, name));
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
+    }
+}
+
+void
 releaseNative(qdb_ts_column_info_t *native_columns, size_t column_count)
 {
     for (size_t i = 0; i < column_count; ++i)
@@ -450,6 +493,44 @@ nativeToStringPoints(qdb::jni::env &env,
         {
             env.instance().SetObjectArrayElement(
                 array, (jsize)i, nativeToStringPoint(env, native[i]).release());
+        }
+    }
+
+    return array;
+}
+
+jni::guard::local_ref<jstring>
+nativeToSymbol(qdb::jni::env &env,
+               char const *content,
+               qdb_size_t contentLength)
+{
+    return std::move(jni::string::create_utf8(env, content, contentLength));
+}
+
+jni::guard::local_ref<jobject>
+nativeToSymbolPoint(qdb::jni::env &env, qdb_ts_symbol_point native)
+{
+    return std::move(jni::object::create(
+        env, "net/quasardb/qdb/jni/qdb_ts_symbol_point",
+        "(Lnet/quasardb/qdb/ts/Timespec;Ljava/lang/String;)V",
+        nativeToTimespec(env, native.timestamp).release(),
+        nativeToSymbol(env, native.content, native.content_length).release()));
+}
+
+jni::guard::local_ref<jobjectArray>
+nativeToSymbolPoints(qdb::jni::env &env,
+                     qdb_ts_symbol_point *native,
+                     size_t count)
+{
+    jni::guard::local_ref<jobjectArray> array(jni::object::create_array(
+        env, count, "net/quasardb/qdb/jni/qdb_ts_symbol_point"));
+
+    for (size_t i = 0; i < count; i++)
+    {
+        if (!QDB_IS_NULL_SYMBOL(native[i]))
+        {
+            env.instance().SetObjectArrayElement(
+                array, (jsize)i, nativeToSymbolPoint(env, native[i]).release());
         }
     }
 
@@ -826,6 +907,42 @@ tableGetRowStringValue(qdb::jni::env &env,
 }
 
 qdb_error_t
+tableGetRowSymbolValue(qdb::jni::env &env,
+                       qdb_handle_t handle,
+                       qdb_local_table_t localTable,
+                       qdb_size_t index,
+                       jobject output)
+{
+
+    char const *value = NULL;
+    qdb_size_t length = 0;
+
+    jni::exception::throw_if_error(
+        handle, qdb_ts_row_get_symbol(localTable, index, &value, &length));
+
+    assert((value == NULL) == (length == 0));
+
+    if (value == NULL) {
+      qdb_release(handle, value);
+      return tableGetRowNullValue(env, output);
+
+    } else {
+      jni::guard::local_ref<jstring> symbolValue =
+        nativeToSymbol(env, value, length);
+
+      jclass objectClass = env.instance().GetObjectClass(output);
+      jmethodID methodId = env.instance().GetMethodID(objectClass, "setSymbol",
+                                                      "(Ljava/lang/Symbol;)V");
+      assert(methodId != NULL);
+
+      env.instance().CallVoidMethod(output, methodId, symbolValue.release());
+
+      qdb_release(handle, value);
+      return qdb_e_ok;
+    }
+}
+
+qdb_error_t
 tableGetRowValues(qdb::jni::env &env,
                   qdb_handle_t handle,
                   qdb_local_table_t localTable,
@@ -875,6 +992,12 @@ tableGetRowValues(qdb::jni::env &env,
             jni::exception::throw_if_error(
                 handle,
                 tableGetRowStringValue(env, handle, localTable, i, value));
+            break;
+
+        case qdb_ts_column_symbol:
+            jni::exception::throw_if_error(
+                handle,
+                tableGetRowSymbolValue(env, handle, localTable, i, value));
             break;
 
         case qdb_ts_column_uninitialized:

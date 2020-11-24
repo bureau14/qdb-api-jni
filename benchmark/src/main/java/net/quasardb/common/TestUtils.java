@@ -141,6 +141,8 @@ public class TestUtils {
                 return Value.createSafeBlob(createSampleData(complexity));
             case STRING:
                 return Value.createString(createUniqueAlias());
+            case SYMBOL:
+                return Value.createSymbol(createUniqueAlias());
             }
         }
 

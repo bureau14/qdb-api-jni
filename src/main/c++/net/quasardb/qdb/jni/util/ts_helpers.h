@@ -42,11 +42,21 @@ void columnsToNative(qdb::jni::env &env,
                      jobjectArray columns,
                      qdb_ts_column_info_t *native_columns,
                      size_t column_count);
+void columnsToNative(qdb::jni::env &env,
+                     jobjectArray columns,
+                     qdb_ts_column_info_ex_t *native_columns,
+                     size_t column_count);
+
 void releaseNative(qdb_ts_column_info_t *native_columns, size_t column_count);
+void releaseNative(qdb_ts_column_info_ex_t *native_columns, size_t column_count);
 
 qdb::jni::guard::local_ref<jobjectArray>
 nativeToColumns(qdb::jni::env &env,
                 qdb_ts_column_info_t *nativeColumns,
+                size_t column_count);
+qdb::jni::guard::local_ref<jobjectArray>
+nativeToColumns(qdb::jni::env &env,
+                qdb_ts_column_info_ex_t *nativeColumns,
                 size_t column_count);
 
 void doublePointToNative(qdb::jni::env &env,
@@ -81,6 +91,12 @@ nativeToStringPoint(qdb::jni::env &env, qdb_ts_string_point native);
 
 qdb::jni::guard::local_ref<jobjectArray> nativeToStringPoints(
     qdb::jni::env &env, qdb_ts_string_point *native, size_t count);
+
+qdb::jni::guard::local_ref<jobject>
+nativeToSymbolPoint(qdb::jni::env &env, qdb_ts_symbol_point native);
+
+qdb::jni::guard::local_ref<jobjectArray> nativeToSymbolPoints(
+    qdb::jni::env &env, qdb_ts_symbol_point *native, size_t count);
 
 void doubleAggregateToNative(qdb::jni::env &env,
                              jobject input,
