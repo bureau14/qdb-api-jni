@@ -19,7 +19,7 @@ public class Column {
      */
     public static class Blob extends Column {
         public Blob(String name) {
-            super(name, Value.Type.BLOB);
+            super(name, Value.Type.BLOB, null);
         }
     }
 
@@ -29,7 +29,7 @@ public class Column {
      */
     public static class String_ extends Column {
         public String_(String name) {
-            super(name, Value.Type.STRING);
+            super(name, Value.Type.STRING, null);
         }
     }
 
@@ -39,7 +39,7 @@ public class Column {
      */
     public static class Double extends Column {
         public Double(String name) {
-            super(name, Value.Type.DOUBLE);
+            super(name, Value.Type.DOUBLE, null);
         }
     }
 
@@ -48,7 +48,7 @@ public class Column {
      */
     public static class Int64 extends Column {
         public Int64(String name) {
-            super(name, Value.Type.INT64);
+            super(name, Value.Type.INT64, null);
         }
     }
 
@@ -58,17 +58,17 @@ public class Column {
      */
     public static class Timestamp extends Column {
         public Timestamp(String name) {
-            super(name, Value.Type.TIMESTAMP);
+            super(name, Value.Type.TIMESTAMP, null);
         }
     }
 
 
     /**
-     * A blob column.
+     * A symbol column.
      */
-    public static class Blob extends Column {
-        public Blob(String name) {
-            super(name, Value.Type.BLOB);
+    public static class Symbol extends Column {
+        public Symbol(String name, String symtable) {
+            super(name, Value.Type.SYMBOL, null);
         }
     }
 
