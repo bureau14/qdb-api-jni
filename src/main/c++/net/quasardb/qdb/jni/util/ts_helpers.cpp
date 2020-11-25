@@ -12,6 +12,7 @@
 #include <cassert>
 #include <cstdlib>
 #include <cstring>
+#include <iostream>
 
 namespace jni = qdb::jni;
 
@@ -262,6 +263,8 @@ columnsToNative(qdb::jni::env &env,
         jobject object = (jobject)(env.instance().GetObjectArrayElement(
             columns, static_cast<jsize>(i)));
 
+        std::cerr << "get column IDs...";
+
         objectClass = env.instance().GetObjectClass(object);
         nameField = env.instance().GetFieldID(objectClass, "name",
                                               "Ljava/lang/String;");
@@ -270,11 +273,15 @@ columnsToNative(qdb::jni::env &env,
         symtableField = env.instance().GetFieldID(objectClass, "symtable",
                                               "Ljava/lang/String;");
 
+        std::cerr << "...get fields...";
+
         jstring name =
             (jstring)env.instance().GetObjectField(object, nameField);
 
         jstring symtable =
             (jstring)env.instance().GetObjectField(object, symtableField);
+
+        std::cerr << "...get string...";
 
         native_columns[i].type = columnTypeFromTypeEnum(
             env, env.instance().GetObjectField(object, typeField));
@@ -291,6 +298,9 @@ columnsToNative(qdb::jni::env &env,
             strdup(qdb::jni::string::get_chars_utf8(env, name));
         native_columns[i].symtable =
             strdup(qdb::jni::string::get_chars_utf8(env, symtable));
+            
+        std::cerr << "done\n";
+
 #ifdef _MSC_VER
 #pragma warning(pop)
 #endif
@@ -344,14 +354,23 @@ nativeToColumns(qdb::jni::env &env,
         env, column_count, "net/quasardb/qdb/ts/Column");
     for (size_t i = 0; i < column_count; i++)
     {
+        auto symtable = (nativeColumns[i].symtable)
+            ? jni::string::create_utf8(env, nativeColumns[i].symtable)
+            : jni::guard::local_ref<jstring>{env};
+        if (nativeColumns[i].symtable) ? : NULL;
+
+        std::cerr << "set column...";
+
         env.instance().SetObjectArrayElement(
             columns, (jsize)i,
             jni::object::create(
                 env, "net/quasardb/qdb/ts/Column", "(Ljava/lang/String;I)V",
                 jni::string::create_utf8(env, nativeColumns[i].name).get(),
                 nativeColumns[i].type,
-                jni::string::create_utf8(env, nativeColumns[i].symtable).get())
+                symtable.get())
                 .release());
+                
+        std::cerr << "done\n";
     }
 
     return std::move(columns);
