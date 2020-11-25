@@ -60,6 +60,14 @@ public class ValueTest {
     }
 
     @Test
+    public void canCreateSymbol() throws Exception {
+        String s = TestUtils.createUniqueAlias();
+        Value value = Value.createSymbol(s);
+
+        assertEquals(s, value.getSymbol());
+    }
+
+    @Test
     public void throwsError_whenDoubleTypesDontMatch() throws Exception {
         ByteBuffer b = TestUtils.createSampleData();
         Value value = Value.createBlob(b);
