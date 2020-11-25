@@ -357,7 +357,6 @@ nativeToColumns(qdb::jni::env &env,
         auto symtable = (nativeColumns[i].symtable)
             ? jni::string::create_utf8(env, nativeColumns[i].symtable)
             : jni::guard::local_ref<jstring>{env};
-        if (nativeColumns[i].symtable) ? : NULL;
 
         std::cerr << "set column...";
 
