@@ -68,7 +68,7 @@ public class Column {
      */
     public static class Symbol extends Column {
         public Symbol(String name, String symtable) {
-            super(name, Value.Type.SYMBOL, null);
+            super(name, Value.Type.SYMBOL, symtable);
         }
     }
 
@@ -79,6 +79,8 @@ public class Column {
         this.name = name;
         this.type = type;
         this.symtable = symtable;
+
+        assert((type == Value.Type.SYMBOL) == ((symtable != null) && (!symtable.isEmpty())));
     }
 
     protected Column(String name, int type, String symtable) {

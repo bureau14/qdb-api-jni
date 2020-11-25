@@ -1,6 +1,7 @@
 package net.quasardb.qdb.ts;
 
 import java.nio.ByteBuffer;
+import java.nio.charset.Charset;
 import java.util.*;
 
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
@@ -57,16 +58,17 @@ public class Values {
 
     private static ByteBuffer asString(Value in) {
         if (in == null) {
-            return Constants.nullString;
+            return Constants.nullBlob;
         }
 
         switch (in.getType()) {
         case STRING:
-            assert (in.stringValue != null);
-            assert (in.stringValue.isDirect());
-            return in.stringValue;
+            ByteBuffer buf = ByteBuffer.wrap(in.stringValue.getBytes(Charset.defaultCharset()));
+            assert (buf != null);
+            assert (buf.isDirect());
+            return buf;
         case UNINITIALIZED:
-            return Constants.nullString;
+            return Constants.nullBlob;
         }
 
         throw new RuntimeException("Not a string value: " + in.toString());
@@ -74,16 +76,17 @@ public class Values {
 
     private static ByteBuffer asSymbol(Value in) {
         if (in == null) {
-            return Constants.nullSymbol;
+            return Constants.nullBlob;
         }
 
         switch (in.getType()) {
         case SYMBOL:
-            assert (in.symbolValue != null);
-            assert (in.symbolValue.isDirect());
-            return in.symbolValue;
+            ByteBuffer buf = ByteBuffer.wrap(in.symbolValue.getBytes(Charset.defaultCharset()));
+            assert (buf != null);
+            assert (buf.isDirect());
+            return buf;
         case UNINITIALIZED:
-            return Constants.nullSymbol;
+            return Constants.nullBlob;
         }
 
         throw new RuntimeException("Not a symbol value: " + in.toString());

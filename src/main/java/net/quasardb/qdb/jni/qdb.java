@@ -164,6 +164,9 @@ public final class qdb
     public static native int ts_batch_row_set_string(long batchTable,
                                                      long index,
                                                      byte[] value);
+    public static native int ts_batch_row_set_symbol(long batchTable,
+                                                     long index,
+                                                     byte[] value);
 
     public static native int ts_batch_set_pinned_doubles(long handle,
                                                          long batchTable,
@@ -200,6 +203,13 @@ public final class qdb
                                                          long[] timeoffsets,
                                                          ByteBuffer[] values);
 
+    public static native int ts_batch_set_pinned_symbols(long handle,
+                                                         long batchTable,
+                                                         long shard,
+                                                         int columnIndex,
+                                                         long[] timeoffsets,
+                                                         ByteBuffer[] values);
+
     public static native int ts_batch_row_set_pinned_double(long columnIndex,
                                                             long rowIndex,
                                                             double value);
@@ -218,6 +228,10 @@ public final class qdb
                                                           ByteBuffer value);
 
     public static native int ts_batch_row_set_pinned_string(long columnIndex,
+                                                            long rowIndex,
+                                                            byte[] value);
+
+    public static native int ts_batch_row_set_pinned_symbol(long columnIndex,
                                                             long rowIndex,
                                                             byte[] value);
 
@@ -254,6 +268,18 @@ public final class qdb
                                                  String column,
                                                  qdb_ts_string_aggregation[] input,
                                                  Reference<qdb_ts_string_aggregation[]> aggregations);
+
+    public static native int ts_symbol_insert(long handle,
+                                              String alias,
+                                              String column,
+                                              qdb_ts_symbol_point[] points);
+    public static native int ts_symbol_get_ranges(
+        long handle, String alias, String column, TimeRange[] ranges, Reference<qdb_ts_symbol_point[]> points);
+    public static native int ts_symbol_aggregate(long handle,
+                                                 String alias,
+                                                 String column,
+                                                 qdb_ts_symbol_aggregation[] input,
+                                                 Reference<qdb_ts_symbol_aggregation[]> aggregations);
 
     public static native int query_execute(long handle, String query, Reference<Result> result);
 

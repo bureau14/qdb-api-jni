@@ -459,7 +459,7 @@ public class Value implements Serializable {
             break;
             
         case SYMBOL:
-            this.symbolValue = (Symbol)(stream.readObject());
+            this.symbolValue = (String)(stream.readObject());
             break;
         }
     }

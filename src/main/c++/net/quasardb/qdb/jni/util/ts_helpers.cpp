@@ -273,6 +273,9 @@ columnsToNative(qdb::jni::env &env,
         jstring name =
             (jstring)env.instance().GetObjectField(object, nameField);
 
+        jstring symtable =
+            (jstring)env.instance().GetObjectField(object, symtableField);
+
         native_columns[i].type = columnTypeFromTypeEnum(
             env, env.instance().GetObjectField(object, typeField));
 
@@ -286,6 +289,8 @@ columnsToNative(qdb::jni::env &env,
         // need a separate release function which is fragile.
         native_columns[i].name =
             strdup(qdb::jni::string::get_chars_utf8(env, name));
+        native_columns[i].symtable =
+            strdup(qdb::jni::string::get_chars_utf8(env, symtable));
 #ifdef _MSC_VER
 #pragma warning(pop)
 #endif
@@ -298,6 +303,15 @@ releaseNative(qdb_ts_column_info_t *native_columns, size_t column_count)
     for (size_t i = 0; i < column_count; ++i)
     {
         free((void *)(native_columns[i].name));
+    }
+}
+void
+releaseNative(qdb_ts_column_info_ex_t *native_columns, size_t column_count)
+{
+    for (size_t i = 0; i < column_count; ++i)
+    {
+        free((void *)(native_columns[i].name));
+        free((void *)(native_columns[i].symtable));
     }
 }
 
@@ -316,6 +330,27 @@ nativeToColumns(qdb::jni::env &env,
                 env, "net/quasardb/qdb/ts/Column", "(Ljava/lang/String;I)V",
                 jni::string::create_utf8(env, nativeColumns[i].name).get(),
                 nativeColumns[i].type)
+                .release());
+    }
+
+    return std::move(columns);
+}
+jni::guard::local_ref<jobjectArray>
+nativeToColumns(qdb::jni::env &env,
+                qdb_ts_column_info_ex_t *nativeColumns,
+                size_t column_count)
+{
+    jni::guard::local_ref<jobjectArray> columns = jni::object::create_array(
+        env, column_count, "net/quasardb/qdb/ts/Column");
+    for (size_t i = 0; i < column_count; i++)
+    {
+        env.instance().SetObjectArrayElement(
+            columns, (jsize)i,
+            jni::object::create(
+                env, "net/quasardb/qdb/ts/Column", "(Ljava/lang/String;I)V",
+                jni::string::create_utf8(env, nativeColumns[i].name).get(),
+                nativeColumns[i].type,
+                jni::string::create_utf8(env, nativeColumns[i].symtable).get())
                 .release());
     }
 

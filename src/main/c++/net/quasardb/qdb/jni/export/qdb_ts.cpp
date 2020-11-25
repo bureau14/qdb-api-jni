@@ -33,45 +33,6 @@ Java_net_quasardb_qdb_jni_qdb_ts_1create(JNIEnv *jniEnv,
     try
     {
         size_t column_count = env.instance().GetArrayLength(columns);
-        qdb_ts_column_info_t *native_columns =
-            new qdb_ts_column_info_t[column_count];
-
-        columnsToNative(env, columns, native_columns, column_count);
-
-        qdb::jni::exception::throw_if_error(
-            (qdb_handle_t)handle,
-            qdb_ts_create((qdb_handle_t)handle,
-                          qdb::jni::string::get_chars_utf8(env, alias),
-                          (qdb_uint_t)shard_size, native_columns,
-                          column_count));
-        releaseNative(native_columns, column_count);
-
-        delete[] native_columns;
-        return qdb_e_ok;
-    }
-    catch (jni::exception const &e)
-    {
-
-        //! :XXX: memory leak for native_columns? use unique_ptr instead?
-
-        e.throw_new(env);
-        return e.error();
-    }
-}
-
-JNIEXPORT jint JNICALL
-Java_net_quasardb_qdb_jni_qdb_ts_1create_ex(JNIEnv *jniEnv,
-                                            jclass /*thisClass*/,
-                                            jlong handle,
-                                            jstring alias,
-                                            jlong shard_size,
-                                            jobjectArray columns)
-{
-    qdb::jni::env env(jniEnv);
-
-    try
-    {
-        size_t column_count = env.instance().GetArrayLength(columns);
         qdb_ts_column_info_ex_t *native_columns =
             new qdb_ts_column_info_ex_t[column_count];
 
@@ -79,10 +40,10 @@ Java_net_quasardb_qdb_jni_qdb_ts_1create_ex(JNIEnv *jniEnv,
 
         qdb::jni::exception::throw_if_error(
             (qdb_handle_t)handle,
-            qdb_ts_create((qdb_handle_t)handle,
-                          qdb::jni::string::get_chars_utf8(env, alias),
-                          (qdb_uint_t)shard_size, native_columns,
-                          column_count));
+            qdb_ts_create_ex((qdb_handle_t)handle,
+                             qdb::jni::string::get_chars_utf8(env, alias),
+                             (qdb_uint_t)shard_size, native_columns,
+                             column_count));
         releaseNative(native_columns, column_count);
 
         delete[] native_columns;
@@ -167,16 +128,16 @@ Java_net_quasardb_qdb_jni_qdb_ts_1insert_1columns(JNIEnv *jniEnv,
     try
     {
         size_t column_count = env.instance().GetArrayLength(columns);
-        qdb_ts_column_info_t *native_columns =
-            new qdb_ts_column_info_t[column_count];
+        qdb_ts_column_info_ex_t *native_columns =
+            new qdb_ts_column_info_ex_t[column_count];
 
         columnsToNative(env, columns, native_columns, column_count);
 
         jni::exception::throw_if_error(
             (qdb_handle_t)(handle),
-            qdb_ts_insert_columns((qdb_handle_t)handle,
-                                  qdb::jni::string::get_chars_utf8(env, alias),
-                                  native_columns, column_count));
+            qdb_ts_insert_columns_ex((qdb_handle_t)handle,
+                                     qdb::jni::string::get_chars_utf8(env, alias),
+                                     native_columns, column_count));
         releaseNative(native_columns, column_count);
 
         delete[] native_columns;
@@ -203,14 +164,14 @@ Java_net_quasardb_qdb_jni_qdb_ts_1list_1columns(JNIEnv *jniEnv,
 
     try
     {
-        qdb_ts_column_info_t *native_columns;
+        qdb_ts_column_info_ex_t *native_columns;
         qdb_size_t column_count;
 
         jni::exception::throw_if_error(
             (qdb_handle_t)(handle),
-            qdb_ts_list_columns((qdb_handle_t)handle,
-                                qdb::jni::string::get_chars_utf8(env, alias),
-                                &native_columns, &column_count));
+            qdb_ts_list_columns_ex((qdb_handle_t)handle,
+                                   qdb::jni::string::get_chars_utf8(env, alias),
+                                   &native_columns, &column_count));
 
         setReferenceValue(env, columns,
                           nativeToColumns(env, native_columns, column_count));

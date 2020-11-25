@@ -39,7 +39,7 @@ public class TestUtils {
         return Stream.generate(TestUtils::createUniqueAlias)
             .limit(count)
             .map((alias) -> {
-                    return new Column(alias, valueType);
+                    return new Column(alias, valueType, null);
                 })
             .toArray(Column[]::new);
     }
@@ -49,7 +49,8 @@ public class TestUtils {
             .limit(valueTypes.length)
             .map((valueType) -> {
                     return new Column(createUniqueAlias(),
-                                      valueType);
+                                      valueType
+                                      null);
                 })
             .toArray(Column[]::new);
     }
