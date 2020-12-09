@@ -117,7 +117,7 @@ public class Logger
         try {
             return l.getClass().getMethod("log", LoggingEvent.class);
         } catch (Exception e) {
-            System.err.println("Fatal error: unable to lookup slf4j log method: \n" + e.toString());
+            // System.err.println("Fatal error: unable to lookup slf4j log method: \n" + e.toString());
         }
 
         return null;
@@ -129,22 +129,40 @@ public class Logger
                                 hour, min, sec).toInstant(ZoneOffset.UTC);
     }
 
+
     public static void log(int level,
                            int year, int month, int day,
                            int hour, int min, int sec,
                            int pid, int tid,
                            String msg) {
+        Level logLevel = levelFromNative(level);
         try {
             logMethodCache.invoke(_delegate,
-                                  new QdbEvent(levelFromNative(level),
+                                  new QdbEvent(logLevel,
                                                toInstant(year, month, day,
                                                          hour, min, sec),
                                                pid, tid, msg));
         } catch (Exception e) {
-            _delegate.error("Internal error: unable to access slf4j logging method", e);
+            // Fallback
+            switch (logLevel) {
+            case TRACE:
+                _delegate.trace(msg);
+                break;
+            case DEBUG:
+                _delegate.debug(msg);
+                break;
+            case INFO:
+                _delegate.info(msg);
+                break;
+            case WARN:
+                _delegate.warn(msg);
+                break;
+            case ERROR:
+                _delegate.error(msg);
+                break;
+            }
         }
     }
-
 
     public static void trace(String msg) {
         _delegate.trace(msg);
