@@ -7,7 +7,7 @@ import net.quasardb.qdb.*;
 import net.quasardb.qdb.ts.*;
 import net.quasardb.qdb.jni.*;
 
-class SessionFactory {
+public class SessionFactory {
 
     private static final Logger logger = LoggerFactory.getLogger(SessionFactory.class);
 
