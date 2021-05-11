@@ -32,13 +32,14 @@ class env
 {
   private:
     JNIEnv *_env;
+    bool _flush_disabled;
 
   public:
     /**
      * Initialise an env from a JNIEnv *. This is the most commonly used
      * method of initialisation, and will ensure qdb::jni::vm is initialised.
      */
-    env(JNIEnv *e) : _env(e)
+    env(JNIEnv *e) : _env(e), _flush_disabled(false)
     {
     }
 
@@ -64,7 +65,16 @@ class env
 
     ~env()
     {
-        log::flush(*this);
+        if (false == _flush_disabled) {
+            log::flush(*this);
+        }
+    }
+
+    /**
+     * Disables flushing of logs in destructor.
+     */
+    void disable_flush() {
+        _flush_disabled = true;
     }
 
   protected:
