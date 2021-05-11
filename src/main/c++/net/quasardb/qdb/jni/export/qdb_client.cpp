@@ -128,6 +128,7 @@ Java_net_quasardb_qdb_jni_qdb_close(JNIEnv *jniEnv,
                                     jlong handle)
 {
     qdb::jni::env env(jniEnv);
+    env.disable_flush();
     try
     {
         return qdb_close((qdb_handle_t)handle);
