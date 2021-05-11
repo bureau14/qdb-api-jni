@@ -18,7 +18,13 @@ static qdb_log_callback_id local_callback_id;
 /* static */ void
 qdb::jni::log::swap_callback()
 {
-    // TODO(leon): race condition, add locks
+    // There may be race conditions in the `local_callback_id` and us adding / removing
+    // the lock.
+    //
+    // As it's unlikely that this specific function is a bottleneck, let's just acquire
+    // a unique lock here.
+    std::unique_lock unique_guard(buffer_lock);
+
     qdb_error_t error;
 
     error = qdb_log_remove_callback(local_callback_id);
