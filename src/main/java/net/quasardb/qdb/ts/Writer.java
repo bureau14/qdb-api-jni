@@ -92,7 +92,7 @@ public class Writer implements AutoCloseable, Flushable {
             this.tableOffsets.put(table.name, this.columns.size());
 
             for (Column column : table.columns) {
-                logger.debug("Initializing column {} of table {} at offset {}", column.name, table.name, this.columns.size());
+                logger.trace("Initializing column {} of table {} at offset {}", column.name, table.name, this.columns.size());
                 this.columns.add(new TableColumn(table.name, column.type, column.name));
             }
         }
@@ -151,7 +151,7 @@ public class Writer implements AutoCloseable, Flushable {
      */
     public int tableIndexByName(String name) {
         Integer offset = this.tableOffsets.get(name);
-        logger.debug("Resolved trable {} to column offset {}", name, offset);
+        logger.trace("Resolved trable {} to column offset {}", name, offset);
         if (offset == null) {
             throw new InvalidArgumentException("Table not seen before: '" + name + "'. Please use extratables() to explicitly add the table to the Writer state.");
         }
