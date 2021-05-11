@@ -40,14 +40,25 @@ public class Table implements Serializable {
      * @param name Timeseries name. Must already exist.
      */
     public Table(Session session, String name) {
+        this(Table.getColumns(session, name),
+             Table.getShardSize(session, name),
+             name);
+    }
+
+    /**
+     * Initialize a new timeseries table.
+     *
+     * @param columns Table  columns
+     * @param name Timeseries name. Must already exist.
+     */
+    public Table(Column[] columns, long shardSizeMillis, String name) {
         this.name = name;
+        this.columns = columns;
+        this.shardSizeMillis = shardSizeMillis;
 
-        logger.debug("Instantiating table {}", name);
-
-        Reference<Column[]> columns =
-            new Reference<Column[]>();
-        qdb.ts_list_columns(session.handle(), this.name, columns);
-        this.columns = columns.value;
+        // The batch writer needs the shard size by seconds a lot, specifically,
+        // so we also cache that here.
+        this.shardSizeSecs = this.shardSizeMillis / 1000;
 
         // Keep track of the columns that are part of this table, so
         // we can later look them up.
@@ -55,14 +66,19 @@ public class Table implements Serializable {
         for (int i = 0; i < this.columns.length; ++i) {
             this.columnOffsets.put(this.columns[i].name, i);
         }
+    }
 
-        // Cache our shard size for quick lookups. The (pinned) batch writer may
-        // be doing lookups of this on a frequent basis.
-        this.shardSizeMillis = Table.getShardSize(session, name);
-
-        // The batch writer needs the shard size by seconds a lot, specifically,
-        // so we also cache that here.
-        this.shardSizeSecs = this.shardSizeMillis / 1000;
+    /**
+     * Creates a new table object with the exact same structure and shard size
+     * as another table. This is an efficient way to initialize large sets of tables
+     * that all share a common shard size / schema, as no lookups with the QuasarDB
+     * cluster are performed.
+     *
+     * @param other Table to use the schema and shard size of
+     * @param name  Name of the new table to be initialized.
+     */
+    static public Table likeOther(Table other, String name) {
+        return new Table(other.columns, other.shardSizeMillis, name);
     }
 
     /**
@@ -590,6 +606,21 @@ public class Table implements Serializable {
      */
     public static long getShardSize(Session session, String tableName) {
         return qdb.ts_shard_size(session.handle(), tableName);
+    }
+
+
+    /**
+     * Returns column layout of table.
+     *
+     * @param session Active session with the QuasarDB cluster.
+     * @param name Unique identifier for this timeseries table.
+     */
+    static public Column[] getColumns(Session session, String name) {
+        Reference<Column[]> columns =
+            new Reference<Column[]>();
+        qdb.ts_list_columns(session.handle(), name, columns);
+
+        return columns.value;
     }
 
     /**
