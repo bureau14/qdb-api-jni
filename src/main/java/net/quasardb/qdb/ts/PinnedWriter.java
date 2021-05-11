@@ -116,7 +116,7 @@ public class PinnedWriter extends Writer {
 
                 long[] timeoffsets_ = this.timeoffsets.toArray(new long[this.timeoffsets.size()]);
 
-                logger.debug("pinning column with offset {}, type {} and length {}", columnOffset, columnType, columnValues.size());
+                logger.trace("pinning column with offset {}, type {} and length {}", columnOffset, columnType, columnValues.size());
 
                 switch (columnType) {
                 case DOUBLE:
