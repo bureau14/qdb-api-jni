@@ -7,6 +7,11 @@ import net.quasardb.qdb.*;
 import net.quasardb.qdb.ts.*;
 import net.quasardb.qdb.jni.*;
 
+/**
+ * Factory for Sessions.
+ *
+ * This class is thread-safe.
+ */
 public class SessionFactory {
 
     private static final Logger logger = LoggerFactory.getLogger(SessionFactory.class);
