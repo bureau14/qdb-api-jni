@@ -1,8 +1,13 @@
 package net.quasardb.qdb;
 
 import java.io.Serializable;
+import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.lang.AutoCloseable;
+import java.util.regex.Pattern;
+import java.util.regex.Matcher;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,6 +49,33 @@ public class Session implements AutoCloseable {
             this.userName = userName;
             this.userPrivateKey = userPrivateKey;
             this.clusterPublicKey = clusterPublicKey;
+        }
+
+        public static SecurityOptions ofFiles(String userSecurityFile,
+                                              String clusterPublicKeyFile) throws IOException {
+            String clusterPublicKey = Files.readString(Path.of(clusterPublicKeyFile));
+            String userSecurityJson = Files.readString(Path.of(userSecurityFile));
+
+            // Using Regex is not pretty, but since our security files are always
+            // created by us and very simple, using this avoids pulling in a third-party
+            // library just for parsing this JSON.
+            Matcher userNameMatcher =
+                Pattern.compile("\"username\"\\s*:\\s*\"([^,]*)\"").matcher(userSecurityJson);
+            Matcher userSecretKeyMatcher =
+                Pattern.compile("\"secret_key\"\\s*:\\s*\"([^,]*)\"").matcher(userSecurityJson);
+
+            if (!userNameMatcher.find() || !userSecretKeyMatcher.find()) {
+
+                throw new RuntimeException("Unable to parse user security file");
+            }
+
+            String userName = userNameMatcher.group(1);
+            String userSecretKey = userSecretKeyMatcher.group(1);
+
+            return new SecurityOptions (userName,
+                                        userSecretKey,
+                                        clusterPublicKey);
+
         }
 
         static qdb_cluster_security_options toNative(SecurityOptions options) {
