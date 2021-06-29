@@ -10,6 +10,7 @@
 #include <string.h>
 #include <time.h>
 #include <vector>
+#include <mutex>
 
 static std::vector<qdb::jni::log::message_t> buffer;
 static std::shared_mutex buffer_lock;
