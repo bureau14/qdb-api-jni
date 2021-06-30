@@ -27,8 +27,8 @@ public class SessionSecurityOptionsTest {
     @Test
     public void canCreateSecurityOptionsOfFiles () throws IOException {
         Session.SecurityOptions so =
-            Session.SecurityOptions.ofFiles("user_private.key",
-                                            "cluster_public.key");
+            Session.SecurityOptions.ofFiles("test_private.key",
+                                            "test_public.key");
 
         assertEquals(so.userName, "test-user");
         assertEquals(so.userPrivateKey, "S0huLfhqH+046Hy9UYAY6r4N2/P7Hbeq94FyAoQSlxuA=");
@@ -39,8 +39,8 @@ public class SessionSecurityOptionsTest {
     @Test
     public void canReadRelativePaths () throws IOException {
         Session.SecurityOptions so =
-            Session.SecurityOptions.ofFiles("./user_private.key",
-                                            "./cluster_public.key");
+            Session.SecurityOptions.ofFiles("./test_private.key",
+                                            "./test_public.key");
 
         assertEquals(so.userName, "test-user");
         assertEquals(so.userPrivateKey, "S0huLfhqH+046Hy9UYAY6r4N2/P7Hbeq94FyAoQSlxuA=");
@@ -50,8 +50,8 @@ public class SessionSecurityOptionsTest {
     @Test
     public void canReadComplexPaths () throws IOException {
         Session.SecurityOptions so =
-            Session.SecurityOptions.ofFiles("../qdb-api-jni/user_private.key",
-                                            "../qdb-api-jni/cluster_public.key");
+            Session.SecurityOptions.ofFiles("../qdb-api-jni/test_private.key",
+                                            "../qdb-api-jni/test_public.key");
 
         assertEquals(so.userName, "test-user");
         assertEquals(so.userPrivateKey, "S0huLfhqH+046Hy9UYAY6r4N2/P7Hbeq94FyAoQSlxuA=");
