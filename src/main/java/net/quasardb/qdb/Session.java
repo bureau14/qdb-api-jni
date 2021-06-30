@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.file.Files;
+import java.nio.file.FileSystems;
 import java.nio.file.Path;
 import java.lang.AutoCloseable;
 import java.util.regex.Pattern;
@@ -51,10 +52,16 @@ public class Session implements AutoCloseable {
             this.clusterPublicKey = clusterPublicKey;
         }
 
+        /**
+         * Create security credentials using QuasarDB's credential files as input.
+         *
+         * @param userSecurityFile Path to the user's security file, e.g. /home/myuser/myuser_private.key
+         * @param userSecurityFile Path to the cluster's public key file, e.g. /usr/share/qdb/cluster_public.key
+         */
         public static SecurityOptions ofFiles(String userSecurityFile,
                                               String clusterPublicKeyFile) throws IOException {
-            String clusterPublicKey = Files.readString(Path.of(clusterPublicKeyFile));
-            String userSecurityJson = Files.readString(Path.of(userSecurityFile));
+            String clusterPublicKey = new String(Files.readAllBytes(FileSystems.getDefault().getPath(clusterPublicKeyFile)));
+            String userSecurityJson = new String(Files.readAllBytes(FileSystems.getDefault().getPath(userSecurityFile)));
 
             // Using Regex is not pretty, but since our security files are always
             // created by us and very simple, using this avoids pulling in a third-party
