@@ -24,10 +24,14 @@ public class SessionFactory {
     }
 
     public SessionFactory(String qdbUri, String qdbUser, String qdbPrivateKey, String qdbPublicKey) {
+        this(qdbUri, new Session.SecurityOptions(qdbUser,
+                                                 qdbPrivateKey,
+                                                 qdbPublicKey));
+    }
+
+    public SessionFactory(String qdbUri, Session.SecurityOptions securityOptions) {
         this.qdbUri = qdbUri;
-        this.securityOptions = new Session.SecurityOptions(qdbUser,
-                                                           qdbPrivateKey,
-                                                           qdbPublicKey);
+        this.securityOptions = securityOptions;
     }
 
     public Session newSession() {
