@@ -72,6 +72,25 @@ public class Tutorial {
         return c;
     }
 
+    private static void poolConnect() throws ConnectionRefusedException, IOException, java.lang.InterruptedException {
+        // pool-connect-start
+        SessionFactory factory = new SessionFactory("qdb://127.0.0.1:2836");
+
+        // Create a static-sized pool with 16 connections pre-allocated
+        SessionPool pool = new SessionPool(factory, 16);
+
+        Session s = pool.acquire();
+        try {
+            // Do something with `s`
+        } finally {
+
+            // Always make sure to properly release the connection back to the pool
+            pool.release(s);
+        }
+
+        // pool-connect-end
+    }
+
     private static Table createTable(Session c) {
         // create-table-start
 
