@@ -27,6 +27,10 @@ public class SessionPool {
     private SessionFactory factory;
     private BlockingDeque<Session> stack;
 
+    /**
+     * @param factory SessionFactory instance used to create new sessions.
+     * @param size Amount of sessions to pre-allocate.
+     */
     public SessionPool(SessionFactory factory, int size) {
         this.factory             = factory;
         this.stack               = preallocate(factory, size);
@@ -71,18 +75,33 @@ public class SessionPool {
         return stack;
     }
 
+    /**
+     * Take a session from the pool. May block if no sessions are available.
+     */
     public Session acquire() throws InterruptedException, IOException {
         return this.stack.take();
     }
 
+    /**
+     * Release a session back to the pool.
+     *
+     * @param s Session previously acquired from the pool
+     */
     public void release(Session s) throws InterruptedException {
         this.stack.put(s);
     }
 
+    /**
+     * Returns the amount of sessions currently on the pool.
+     */
     public int size() {
         return this.stack.size();
     }
 
+    /**
+     * Close the pool and all sessions associated with it. Should *not* be called
+     * when there are still sessions that are not released back to the pool yet.
+     */
     public void close() throws IOException {
         for (Session s : this.stack) {
             s.close();
