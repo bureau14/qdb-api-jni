@@ -27,27 +27,16 @@ public class Tutorial {
     }
 
     private void secureConnect() {
-        String username = "";
-        String user_secret_key = "";
-        String cluster_public_key = "";
-        try {
-            String user_file_content = new String(Files.readAllBytes(Paths.get("user_private.key")));
-            JSONObject user = new JSONObject(user_file_content);
-            username = user.get("username").toString();
-            user_secret_key = user.get("secret_key").toString();
-            cluster_public_key = new String(Files.readAllBytes(Paths.get("cluster_public.key")));
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
         // secure-connect-start
         Session c;
+
         try {
-            c = Session.connect(new Session.SecurityOptions(username,
-                                                            user_secret_key,
-                                                            cluster_public_key),
+            c = Session.connect(Session.SecurityOptions.ofFiles("user_private.key",
+                                                                "cluster_public.key"),
                                 "qdb://127.0.0.1:2838");
+        } catch (IOException ex) {
+            System.err.println("Failed to read security options from disk");
+            System.exit(1);
         } catch (ConnectionRefusedException ex) {
             System.err.println("Failed to connect to cluster, make sure server is running!");
             System.exit(1);
