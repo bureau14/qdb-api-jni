@@ -148,6 +148,30 @@ native_to_label(jni::env &env, enum qdb_perf_label_t l)
         return jni::string::create_utf8(env, "affix_search_starts");
     case qdb_pl_affix_search_ends:
         return jni::string::create_utf8(env, "affix_search_ends");
+    case qdb_pl_eviction_starts:
+        return jni::string::create_utf8(env, "eviction_starts");
+    case qdb_pl_eviction_ends:
+        return jni::string::create_utf8(env, "eviction_ends");
+    case qdb_pl_time_vector_tracker_reading_starts:
+        return jni::string::create_utf8(env, "time_vector_tracker_reading_starts");
+    case qdb_pl_time_vector_tracker_reading_ends:
+        return jni::string::create_utf8(env, "time_vector_tracker_reading_ends");
+    case qdb_pl_bucket_reading_starts:
+        return jni::string::create_utf8(env, "bucket_reading_starts");
+    case qdb_pl_bucket_reading_ends:
+        return jni::string::create_utf8(env, "bucket_reading_ends");
+    case qdb_pl_entries_directory_reading_starts:
+        return jni::string::create_utf8(env, "entries_directory_reading_starts");
+    case qdb_pl_entries_directory_reading_ends:
+        return jni::string::create_utf8(env, "entries_directory_reading_ends");
+    case qdb_pl_acl_reading_starts:
+        return jni::string::create_utf8(env, "acl_reading_starts");
+    case qdb_pl_acl_reading_ends:
+        return jni::string::create_utf8(env, "acl_reading_ends");
+    case qdb_pl_time_vector_reading_starts:
+        return jni::string::create_utf8(env, "time_vector_reading_starts");
+    case qdb_pl_time_vector_reading_ends:
+        return jni::string::create_utf8(env, "time_vector_reading_ends");
     case qdb_pl_unknown:
         return jni::string::create_utf8(env, "unknown");
     }
