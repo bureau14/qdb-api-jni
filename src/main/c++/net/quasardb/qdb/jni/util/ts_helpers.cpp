@@ -50,7 +50,7 @@ columnTypeFromColumnValue(qdb::jni::env &env, jobject value)
 }
 
 void
-timespecToNative(qdb::jni::env &env, jobject input, qdb_timespec_t *output)
+timespecToNative(qdb::jni::env &env, jobject input, qdb_timespec_t & output)
 {
     // qdb_timespec -> tv_sec, tv_nsec
     jfieldID sec_field, nsec_field;
@@ -61,8 +61,14 @@ timespecToNative(qdb::jni::env &env, jobject input, qdb_timespec_t *output)
     sec_field = env.instance().GetFieldID(object_class, "sec", "J");
     nsec_field = env.instance().GetFieldID(object_class, "nsec", "J");
 
-    output->tv_sec = env.instance().GetLongField(input, sec_field);
-    output->tv_nsec = env.instance().GetLongField(input, nsec_field);
+    output.tv_sec = env.instance().GetLongField(input, sec_field);
+    output.tv_nsec = env.instance().GetLongField(input, nsec_field);
+}
+
+void
+timespecToNative(qdb::jni::env &env, jobject input, qdb_timespec_t *output)
+{
+    return timespecToNative(env, input, *output);
 }
 
 jni::guard::local_ref<jobject>
@@ -73,7 +79,7 @@ nativeToTimespec(qdb::jni::env &env, qdb_timespec_t input)
 }
 
 void
-timeRangeToNative(qdb::jni::env &env, jobject input, qdb_ts_range_t *native)
+timeRangeToNative(qdb::jni::env &env, jobject input, qdb_ts_range_t &native)
 {
     jfieldID beginField, endField;
     jclass objectClass;
@@ -86,9 +92,15 @@ timeRangeToNative(qdb::jni::env &env, jobject input, qdb_ts_range_t *native)
                                          "Lnet/quasardb/qdb/ts/Timespec;");
 
     timespecToNative(env, env.instance().GetObjectField(input, beginField),
-                     &(native->begin));
+                     native.begin);
     timespecToNative(env, env.instance().GetObjectField(input, endField),
-                     &(native->end));
+                     native.end);
+}
+
+void
+timeRangeToNative(qdb::jni::env &env, jobject input, qdb_ts_range_t *native)
+{
+    timeRangeToNative(env, input, *native);
 }
 
 void

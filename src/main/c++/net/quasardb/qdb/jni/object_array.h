@@ -49,13 +49,18 @@ class object_array
     object_array(object_array const &) = delete;
     object_array &operator=(object_array const &) = delete;
 
-    qdb_size_t size() const {
+    constexpr qdb_size_t size() const {
       return _len;
+    }
+
+    jobject operator[](qdb_size_t i) const {
+      return get(i);
     }
 
     jobject get(qdb_size_t i) const {
       return _env.instance().GetObjectArrayElement(_arr, static_cast<jsize>(i));
     }
+
 };
 
 }; // namespace jni

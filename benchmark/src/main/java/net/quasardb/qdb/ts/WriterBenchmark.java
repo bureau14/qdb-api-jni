@@ -26,10 +26,10 @@ public class WriterBenchmark {
     @Param({"FIRST", "MANY"})
     public String tableSpread;
 
-    @Param({"writer", "pinnedWriter"})
+    @Param({"pinnedWriter", "expWriter"})
     public String writerType;
 
-    @Param({"APPEND", "FLUSH", "APPEND_FLUSH"})
+    @Param({"APPEND", "FLUSH"})
     public String operationType;
 
     @Param({"10000"})
@@ -38,10 +38,10 @@ public class WriterBenchmark {
     @Param({"5"})
     public int columnCount;
 
-    @Param({"100", "1000", "10000"})
+    @Param({"10000"})
     public int rowCount;
 
-    @Param({"NORMAL", "ASYNC"})
+    @Param({"ASYNC"})
     public Writer.PushMode pushMode;
 
     @Param({"DOUBLE", "STRING"})
@@ -96,6 +96,8 @@ public class WriterBenchmark {
             this.w = Tables.writer(this.s, this.t, this.pushMode);
         } else if (this.writerType.equals("pinnedWriter")) {
             this.w = Tables.pinnedWriter(this.s, this.t, this.pushMode);
+        } else if (this.writerType.equals("expWriter")) {
+            this.w = Tables.expWriter(this.s, this.t, this.pushMode);
         } else {
             throw new RuntimeException("Unrecognized writer type: " + this.writerType);
         }
@@ -138,6 +140,9 @@ public class WriterBenchmark {
 
         if (this.writerType.equals("pinnedWriter")) {
             PinnedWriter pw = (PinnedWriter)this.w;
+            pw.prepareFlush();
+        } else if (this.writerType.equals("expWriter")) {
+            ExpWriter pw = (ExpWriter)this.w;
             pw.prepareFlush();
         }
     }

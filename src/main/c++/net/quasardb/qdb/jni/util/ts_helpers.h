@@ -14,6 +14,7 @@ class env;
 };
 }; // namespace qdb
 
+void timespecToNative(qdb::jni::env &, jobject, qdb_timespec_t &);
 void timespecToNative(qdb::jni::env &, jobject, qdb_timespec_t *);
 
 qdb::jni::guard::local_ref<jobject> nativeToTimespec(qdb::jni::env &,
@@ -22,6 +23,8 @@ qdb::jni::guard::local_ref<jobject> nativeToTimespec(qdb::jni::env &,
 jobject nativeToByteBuffer(qdb::jni::env &env,
                            void const *content,
                            qdb_size_t content_length);
+void
+timeRangeToNative(qdb::jni::env &env, jobject input, qdb_ts_range_t &native);
 void
 timeRangeToNative(qdb::jni::env &env, jobject input, qdb_ts_range_t *native);
 void timeRangesToNative(qdb::jni::env &env,

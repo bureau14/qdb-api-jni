@@ -2,6 +2,7 @@
 
 #include <jni.h>
 #include <qdb/client.h> // qdb_size_t
+#include <qdb/ts.h> // qdb_blob_t
 #include "guard/local_ref.h"
 #include "introspect.h"
 
@@ -35,6 +36,13 @@ class byte_buffer
 
     static void
     get_address(qdb::jni::env & env, jobject bb, const void ** buffer, qdb_size_t * len);
+
+
+    static void
+    as_qdb_blob(qdb::jni::env & env, jobject bb, qdb_blob_t & out);
+
+    static void
+    as_qdb_string(qdb::jni::env & env, jobject bb, qdb_string_t & out);
 
 };
 }; // namespace jni

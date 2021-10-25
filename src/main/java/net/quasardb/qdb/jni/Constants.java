@@ -13,4 +13,5 @@ public class Constants {
     public static long nullTime = minTime;
     public static ByteBuffer nullBlob = null;
     public static String nullString = null;
+    public static long nullPtr = 0;
 };

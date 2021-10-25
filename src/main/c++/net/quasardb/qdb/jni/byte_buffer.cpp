@@ -38,3 +38,43 @@ qdb::jni::byte_buffer::get_address(qdb::jni::env & env, jobject bb, const void *
   *buffer = env.instance().GetDirectBufferAddress(bb);
   *len = static_cast<qdb_size_t>(env.instance().GetDirectBufferCapacity(bb));
 }
+
+
+/* static */  void
+qdb::jni::byte_buffer::as_qdb_blob(qdb::jni::env & env, jobject bb, qdb_blob_t & out) {
+  if (bb == NULL) {
+    out.content = nullptr;
+    out.content_length = 0;
+    return;
+  }
+
+  qdb_size_t len = static_cast<qdb_size_t>(env.instance().GetDirectBufferCapacity(bb));
+  void const * src = env.instance().GetDirectBufferAddress(bb);
+  void *dest = malloc(len);
+
+  assert(dest != NULL);
+  memcpy(dest, src, len);
+
+  out.content = dest;
+  out.content_length = len;
+}
+
+
+/* static */  void
+qdb::jni::byte_buffer::as_qdb_string(qdb::jni::env & env, jobject bb, qdb_string_t & out) {
+  if (bb == NULL) {
+    out.data = nullptr;
+    out.length = 0;
+    return;
+  }
+
+  qdb_size_t len = static_cast<qdb_size_t>(env.instance().GetDirectBufferCapacity(bb));
+  void const * src = env.instance().GetDirectBufferAddress(bb);
+  void *dest = malloc(len);
+
+  assert(dest != NULL);
+  memcpy(dest, src, len);
+
+  out.data = reinterpret_cast<char const *>(dest);
+  out.length = len;
+}
