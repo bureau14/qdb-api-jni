@@ -6,6 +6,7 @@ import java.util.*;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectSet;
 import net.quasardb.qdb.jni.Constants;
+import net.quasardb.qdb.jni.qdb;
 
 /**
  * Utility functions that operate on (arrays of) values.
@@ -144,5 +145,4 @@ public class Values {
 
         return out;
     }
-
 };

@@ -30,13 +30,30 @@ public class Writer implements AutoCloseable, Flushable {
      * Determines which mode of operation to use when flushing the writer.
      */
     public enum PushMode {
-        NORMAL,
-        ASYNC,
-        FAST,
-        TRUNCATE,
+        NORMAL(0),
+        ASYNC(1),
+        FAST(2),
+        TRUNCATE(3),
 
-        PINNED_NORMAL,
-        PINNED_FAST
+        PINNED_NORMAL(4),
+        PINNED_FAST(5),
+
+        EXP_NORMAL(6),
+        EXP_FAST(7),
+        EXP_ASYNC(8),
+        EXP_TRUNCATE(9)
+
+        ;
+
+        protected final int value;
+
+        PushMode(int type) {
+            this.value = type;
+        }
+
+        public int asInt() {
+            return this.value;
+        }
     }
 
     private static final Logger logger = LoggerFactory.getLogger(Writer.class);
@@ -55,6 +72,11 @@ public class Writer implements AutoCloseable, Flushable {
      * later.
      */
     Map<String, Integer> tableOffsets;
+
+    /**
+     * Reverse function that maps offsets to table names
+     */
+    ArrayList<Table> offsetsToTable;
 
     /**
      * Helper class to represent a table and column pair, which we
@@ -84,6 +106,7 @@ public class Writer implements AutoCloseable, Flushable {
         this.pushMode = mode;
         this.session = session;
         this.tableOffsets = new HashMap<String, Integer>();
+        this.offsetsToTable = new ArrayList<Table>();
         this.columns = new ArrayList<TableColumn>();
         this.minMaxTs = null;
 
@@ -94,6 +117,7 @@ public class Writer implements AutoCloseable, Flushable {
             for (Column column : table.columns) {
                 logger.trace("Initializing column {} of table {} at offset {}", column.name, table.name, this.columns.size());
                 this.columns.add(new TableColumn(table.name, column.type, column.name));
+                this.offsetsToTable.add(table);
             }
         }
 
@@ -157,6 +181,20 @@ public class Writer implements AutoCloseable, Flushable {
         }
 
         return offset.intValue();
+    }
+
+    /**
+     * Reverse of tableIndexByName, based on a (column) index, resolves the table.
+     * May be removed in the future.
+     */
+    protected Table tableByIndex(int index) {
+        Table ret = this.offsetsToTable.get(index);
+
+        if (ret == null) {
+            throw new InvalidArgumentException("Table index not found: " + index);
+        }
+
+        return ret;
     }
 
     /**

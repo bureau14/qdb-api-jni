@@ -8,6 +8,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 
 import net.quasardb.common.TestUtils;
 import net.quasardb.qdb.ts.*;
@@ -17,51 +19,58 @@ import net.quasardb.qdb.exception.InvalidArgumentException;
 
 public class ReaderTest {
 
+
+    private Session s;
+
+    @BeforeEach
+    public void setup() {
+        this.s = TestUtils.createSession();
+    }
+
+    @AfterEach
+    public void teardown() {
+        this.s.close();
+        this.s = null;
+    }
+
     @Test
     public void canGetReader() throws Exception {
-        Session s = TestUtils.createSession();
-
         Column[] cols = TestUtils.generateTableColumns(1);
         WritableRow[] rows = TestUtils.generateTableRows(cols, 1);
-        Table table = TestUtils.seedTable(s, cols, rows);
+        Table table = TestUtils.seedTable(this.s, cols, rows);
         TimeRange[] ranges = TestUtils.rangesFromRows(rows);
 
-        Reader reader = Table.reader(s, table, ranges);
+        Reader reader = Table.reader(this.s, table, ranges);
     }
 
     @Test
     public void canCloseReader() throws Exception {
-        Session s = TestUtils.createSession();
-
         Column[] cols = TestUtils.generateTableColumns(1);
         WritableRow[] rows = TestUtils.generateTableRows(cols, 1);
-        Table table = TestUtils.seedTable(s, cols, rows);
+        Table table = TestUtils.seedTable(this.s, cols, rows);
         TimeRange[] ranges = TestUtils.rangesFromRows(rows);
 
-        Reader reader = Table.reader(s, table, ranges);
+        Reader reader = Table.reader(this.s, table, ranges);
         reader.close();
     }
 
     @Test
     public void readWithoutRanges_throwsException() throws Exception {
-        Session s = TestUtils.createSession();
-
         Column[] cols = TestUtils.generateTableColumns(1);
         WritableRow[] rows = TestUtils.generateTableRows(cols, 1);
-        Table table = TestUtils.seedTable(s, cols, rows);
+        Table table = TestUtils.seedTable(this.s, cols, rows);
         TimeRange[] ranges = {};
 
         assertThrows(InvalidArgumentException.class, () -> {
-                Table.reader(s, table, ranges);
+                Table.reader(this.s, table, ranges);
             });
     }
 
     @Test
     public void canReadEmptyResult() throws Exception {
-        Session s = TestUtils.createSession();
         Column[] cols = TestUtils.generateTableColumns(1);
         WritableRow[] rows = {};
-        Table table = TestUtils.seedTable(s, cols, rows);
+        Table table = TestUtils.seedTable(this.s, cols, rows);
 
         // These ranges should always be empty
         TimeRange[] ranges = {
@@ -69,7 +78,7 @@ public class ReaderTest {
                           Timespec.now().plusNanos(1))
         };
 
-        Reader reader = Table.reader(s, table, ranges);
+        Reader reader = Table.reader(this.s, table, ranges);
 
         assertFalse(reader.hasNext());
     }
@@ -108,8 +117,6 @@ public class ReaderTest {
 
     @Test
     public void canReadSingleValue_afterWriting() throws Exception {
-        Session s = TestUtils.createSession();
-
         Value.Type[] valueTypes = { Value.Type.INT64,
                                     Value.Type.DOUBLE,
                                     Value.Type.TIMESTAMP,
@@ -122,10 +129,10 @@ public class ReaderTest {
                 TestUtils.generateTableColumns(valueType, 1);
 
             WritableRow[] rows = TestUtils.generateTableRows(cols, 1);
-            Table table = TestUtils.seedTable(s, cols, rows);
+            Table table = TestUtils.seedTable(this.s, cols, rows);
             TimeRange[] ranges = TestUtils.rangesFromRows(rows);
 
-            Reader reader = Table.reader(s, table, ranges);
+            Reader reader = Table.reader(this.s, table, ranges);
 
             assertTrue(reader.hasNext());
 
@@ -136,8 +143,6 @@ public class ReaderTest {
 
     @Test
     public void canReadMultipleValues_afterWriting() throws Exception {
-        Session s = TestUtils.createSession();
-
         Value.Type[] valueTypes = { Value.Type.INT64,
                                     Value.Type.DOUBLE,
                                     Value.Type.TIMESTAMP,
@@ -150,10 +155,10 @@ public class ReaderTest {
             Column[] cols =
                 TestUtils.generateTableColumns(valueType, 2);
             WritableRow[] rows = TestUtils.generateTableRows(cols, 2);
-            Table table = TestUtils.seedTable(s, cols, rows);
+            Table table = TestUtils.seedTable(this.s, cols, rows);
             TimeRange[] ranges = TestUtils.rangesFromRows(rows);
 
-            Reader reader = Table.reader(s, table, ranges);
+            Reader reader = Table.reader(this.s, table, ranges);
 
             int index = 0;
             while (reader.hasNext()) {

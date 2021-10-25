@@ -209,6 +209,48 @@ public class Tables implements Serializable {
     }
 
     /**
+     * Initializes new, experimental writer for timeseries tables.
+     *
+     * @param session Active session with the QuasarDB cluster.
+     * @param tables Timeseries tables.
+     */
+    public static Writer expWriter (Session session, Tables tables) {
+        return expWriter(session, tables, Writer.PushMode.NORMAL);
+    }
+
+    /**
+     * Initializes new, experimental writer for timeseries tables.
+     *
+     * @param session Active session with the QuasarDB cluster.
+     * @param tables Timeseries tables.
+     */
+    public static Writer expWriter (Session session, Tables tables, Writer.PushMode mode) {
+        return expWriter(session, tables.getTables(), mode);
+    }
+
+    /**
+     * Initializes new, experimental writer for timeseries tables.
+     *
+     * @param session Active session with the QuasarDB cluster.
+     * @param tables Timeseries tables.
+     */
+    public static Writer expWriter (Session session, Table[] tables) {
+        return expWriter (session, tables, Writer.PushMode.NORMAL);
+    }
+
+    /**
+     * Initializes new, experimental exp columns writer for timeseries tables.
+     *
+     * @param session Active session with the QuasarDB cluster.
+     * @param tables Timeseries tables.
+     * @param mode The pushmode to use
+     */
+    public static Writer expWriter (Session session, Table[] tables, Writer.PushMode mode) {
+        return new ExpWriter (session, tables, mode);
+    }
+
+
+    /**
      * Initializes new, experimental pinned columns writer for timeseries tables.
      *
      * @param session Active session with the QuasarDB cluster.
@@ -228,6 +270,29 @@ public class Tables implements Serializable {
      */
     public static Writer pinnedTruncateWriter (Session session, Table[] tables) {
         return new PinnedWriter(session, tables, Writer.PushMode.TRUNCATE);
+    }
+
+
+    /**
+     * Initializes new, experimental exp columns writer for timeseries tables.
+     *
+     * @param session Active session with the QuasarDB cluster.
+     * @param tables Timeseries tables.
+     */
+    public static Writer expTruncateWriter (Session session, Tables tables) {
+        return expTruncateWriter(session, tables.getTables());
+    }
+
+    /**
+     * Initializes new, experimental exp columns writer for timeseries tables.
+     *
+     * This makes use of the experimental, high-performance 'exp' writer API.
+     *
+     * @param session Active session with the QuasarDB cluster.
+     * @param tables Timeseries tables.
+     */
+    public static Writer expTruncateWriter (Session session, Table[] tables) {
+        return new ExpWriter(session, tables, Writer.PushMode.TRUNCATE);
     }
 
     /**
@@ -252,6 +317,31 @@ public class Tables implements Serializable {
      */
     public static Writer pinnedAsyncWriter (Session session, Table[] tables) {
         return new PinnedWriter(session, tables, Writer.PushMode.ASYNC);
+    }
+
+
+    /**
+     * Initializes new, experimental exp columns writer for timeseries tables.
+     *
+     * This makes use of the experimental, high-performance 'exp' writer API.
+     *
+     * @param session Active session with the QuasarDB cluster.
+     * @param tables Timeseries tables.
+     */
+    public static Writer expAsyncWriter (Session session, Tables tables) {
+        return expAsyncWriter(session, tables.getTables());
+    }
+
+    /**
+     * Initializes new, experimental exp columns writer for timeseries tables.
+     *
+     * This makes use of the experimental, high-performance 'exp' writer API.
+     *
+     * @param session Active session with the QuasarDB cluster.
+     * @param tables Timeseries tables.
+     */
+    public static Writer expAsyncWriter (Session session, Table[] tables) {
+        return new ExpWriter(session, tables, Writer.PushMode.ASYNC);
     }
 
     /**
@@ -332,6 +422,35 @@ public class Tables implements Serializable {
         return new PinnedWriter(session, tables, Writer.PushMode.FAST);
     }
 
+    /**
+     * Initializes new writer for timeseries tables that makes use of
+     * in-place updates rather than copy-on-write. This is especially useful
+     * when you do lots of small, incremental pushes, such as streaming
+     * data.
+     *
+     * This makes use of the experimental, high-performance 'exp' writer API.
+     *
+     * @param session Active session with the QuasarDB cluster.
+     * @param tables Timeseries tables.
+     */
+    public static Writer expFastWriter (Session session, Tables tables) {
+        return expFastWriter(session, tables.getTables());
+    }
+
+    /**
+     * Initializes new writer for timeseries tables that makes use of
+     * in-place updates rather than copy-on-write. This is especially useful
+     * when you do lots of small, incremental pushes, such as streaming
+     * data.
+     *
+     * This makes use of the experimental, high-performance 'exp' writer API.
+     *
+     * @param session Active session with the QuasarDB cluster.
+     * @param tables Timeseries tables.
+     */
+    public static Writer expFastWriter (Session session, Table[] tables) {
+        return new ExpWriter(session, tables, Writer.PushMode.FAST);
+    }
 
     /**
      * Initializes new writer for a single table that replaces any

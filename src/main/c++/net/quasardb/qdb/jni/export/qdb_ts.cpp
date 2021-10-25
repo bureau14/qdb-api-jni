@@ -17,6 +17,9 @@
 #include "../byte_array.h"
 #include "../object_array.h"
 #include "../primitive_array.h"
+#include "../byte_buffer.h"
+
+#include "qdb_ts.h"
 
 namespace jni = qdb::jni;
 
@@ -324,6 +327,7 @@ Java_net_quasardb_qdb_jni_qdb_ts_1batch_1pinned_1push(JNIEnv *jniEnv,
          * that we expect.
          */
         size_t rowCount = env.instance().GetArrayLength(rows);
+
         return qdb_e_ok;
     }
     catch (jni::exception const &e)
@@ -1265,4 +1269,430 @@ Java_net_quasardb_qdb_jni_qdb_ts_1blob_1aggregate(JNIEnv *jniEnv,
         e.throw_new(env);
         return e.error();
     }
+}
+
+
+
+qdb_exp_batch_push_table_t &
+_table_from_tables(qdb_exp_batch_push_table_t * tables,
+                   jlong tableNum) {
+
+  return tables[tableNum];
+}
+
+
+qdb_exp_batch_push_table_t &
+_table_from_tables(jlong batchTables,
+                   jlong tableNum) {
+  return _table_from_tables(reinterpret_cast<qdb_exp_batch_push_table_t *>(batchTables),
+                            tableNum);
+}
+
+
+qdb_exp_batch_push_column_t &
+_batch_column_from_tables(qdb_exp_batch_push_table_t * tables,
+                          jlong tableNum,
+                          jlong columnNum) {
+
+  qdb_exp_batch_push_table_data_t & data = tables[tableNum].data;
+
+  assert(columnNum < data.column_count);
+
+  return const_cast<qdb_exp_batch_push_column_t &>(data.columns[columnNum]);
+}
+
+qdb_exp_batch_push_column_t &
+_batch_column_from_tables(jlong batchTables,
+                          jlong tableNum,
+                          jlong columnNum) {
+  return _batch_column_from_tables(reinterpret_cast<qdb_exp_batch_push_table_t *>(batchTables),
+                                   tableNum,
+                                   columnNum);
+}
+
+/**
+ * Batch writer
+ */
+
+
+void
+_timestamps_from_timespecs(int n,
+                           jlong * sec,
+                           jlong * nsec,
+                           qdb_timespec_t * out) {
+  // We do a fast copy and rely on this assumption
+  static_assert(sizeof(jlong) == sizeof(qdb_time_t));
+
+  for (int i = 0; i < n; ++i) {
+    out[i].tv_sec  = sec[i];
+    out[i].tv_nsec = nsec[i];
+  }
+}
+
+void
+_timestamps_from_timespecs(qdb::jni::env & env,
+                           jobject values,
+                           qdb_timespec_t * out) {
+    jclass timespecClass = jni::object::get_class(env, values);
+    jfieldID secField    = jni::introspect::lookup_field(env, timespecClass,
+                                                      "sec", "[J");
+    jfieldID nsecField   = jni::introspect::lookup_field(env, timespecClass,
+                                                       "nsec", "[J");
+    jlongArray secArray  = (jlongArray)env.instance().GetObjectField(values, secField);
+    jlongArray nsecArray = (jlongArray)env.instance().GetObjectField(values, nsecField);
+
+    auto sec_guard       = jni::primitive_array::get_array_critical<jlong>(env, secArray);
+    auto nsec_guard      = jni::primitive_array::get_array_critical<jlong>(env, nsecArray);
+
+    _timestamps_from_timespecs(sec_guard.size(),
+                               sec_guard.get(),
+                               nsec_guard.get(),
+                               out);
+
+}
+
+
+JNIEXPORT void JNICALL
+Java_net_quasardb_qdb_jni_qdb_ts_1exp_1batch_1set_1column_1from_1double(JNIEnv * jniEnv,
+                                                                        jclass /* thisClass */,
+                                                                        jlong batchTables,
+                                                                        jlong tableNum,
+                                                                        jlong columnNum,
+                                                                        jstring name,
+                                                                        jdoubleArray values)
+{
+    qdb::jni::env env(jniEnv);
+    try {
+      qdb_exp_batch_push_column_t & column = _batch_column_from_tables(batchTables,
+                                                                       tableNum,
+                                                                       columnNum);
+
+      auto arr = jni::primitive_array::get_array_critical<double>(env, values);
+      column.name = jni::string::get_chars_utf8(env, name).as_qdb();
+      column.data_type = qdb_ts_column_double;
+      column.data.doubles = arr.copy();
+
+    } catch (jni::exception const & e) {
+      e.throw_new(env);
+    }
+}
+
+JNIEXPORT void JNICALL
+Java_net_quasardb_qdb_jni_qdb_ts_1exp_1batch_1set_1column_1from_1int64(JNIEnv * jniEnv,
+                                                                       jclass /* thisClass */,
+                                                                       jlong batchTables,
+                                                                       jlong tableNum,
+                                                                       jlong columnNum,
+                                                                       jstring name,
+                                                                       jlongArray values)
+{
+    qdb::jni::env env(jniEnv);
+    try {
+      qdb_exp_batch_push_column_t & column = _batch_column_from_tables(batchTables,
+                                                                       tableNum,
+                                                                       columnNum);
+
+      auto arr = jni::primitive_array::get_array_critical<qdb_int_t>(env, values);
+
+      column.name = jni::string::get_chars_utf8(env, name).as_qdb();
+      column.data_type = qdb_ts_column_int64;
+      column.data.ints = arr.copy();
+    } catch (jni::exception const & e) {
+      e.throw_new(env);
+    }
+}
+
+JNIEXPORT void JNICALL
+Java_net_quasardb_qdb_jni_qdb_ts_1exp_1batch_1set_1column_1from_1blob(JNIEnv * jniEnv,
+                                                                      jclass /* thisClass */,
+                                                                      jlong batchTables,
+                                                                      jlong tableNum,
+                                                                      jlong columnNum,
+                                                                      jstring name,
+                                                                      jobjectArray values_)
+{
+    qdb::jni::env env(jniEnv);
+    try {
+      qdb_exp_batch_push_column_t & column = _batch_column_from_tables(batchTables,
+                                                                       tableNum,
+                                                                       columnNum);
+
+      jni::object_array values(env, values_);
+
+      column.name = jni::string::get_chars_utf8(env, name).as_qdb();
+      column.data_type = qdb_ts_column_blob;
+
+      auto ret = std::make_unique<qdb_blob_t[]>(values.size());
+
+      for (qdb_size_t i = 0; i < values.size(); ++i) {
+        jobject bb = values.get(i);
+        jni::byte_buffer::as_qdb_blob(env, bb, ret[i]);
+      }
+
+      column.data.blobs = ret.release();
+
+    } catch (jni::exception const & e) {
+      e.throw_new(env);
+    }
+}
+
+JNIEXPORT void JNICALL
+Java_net_quasardb_qdb_jni_qdb_ts_1exp_1batch_1set_1column_1from_1string(JNIEnv * jniEnv,
+                                                                        jclass /* thisClass */,
+                                                                        jlong batchTables,
+                                                                        jlong tableNum,
+                                                                        jlong columnNum,
+                                                                        jstring name,
+                                                                        jobjectArray values_)
+{
+    qdb::jni::env env(jniEnv);
+    try {
+      qdb_exp_batch_push_column_t & column = _batch_column_from_tables(batchTables,
+                                                                       tableNum,
+                                                                       columnNum);
+
+      jni::object_array values(env, values_);
+
+      column.name = jni::string::get_chars_utf8(env, name).as_qdb();
+      column.data_type = qdb_ts_column_string;
+
+      auto ret = std::make_unique<qdb_string_t[]>(values.size());
+
+      for (qdb_size_t i = 0; i < values.size(); ++i) {
+        jobject bb = values.get(i);
+        jni::byte_buffer::as_qdb_string(env, bb, ret[i]);
+      }
+
+      column.data.strings = ret.release();
+
+    } catch (jni::exception const & e) {
+      e.throw_new(env);
+    }
+}
+
+JNIEXPORT void JNICALL
+Java_net_quasardb_qdb_jni_qdb_ts_1exp_1batch_1set_1column_1from_1timestamp(JNIEnv * jniEnv,
+                                                                           jclass /* thisClass */,
+                                                                           jlong batchTables,
+                                                                           jlong tableNum,
+                                                                           jlong columnNum,
+                                                                           jstring name,
+                                                                           jobject values)
+{
+    qdb::jni::env env(jniEnv);
+    try {
+      qdb_exp_batch_push_table_t * xs    = reinterpret_cast<qdb_exp_batch_push_table_t *>(batchTables);
+      qdb_exp_batch_push_table_t & table = xs[tableNum];
+
+      qdb_size_t values_count            = table.data.row_count;
+      auto timestamps                    = std::make_unique<qdb_timespec_t[]>(values_count);
+
+      _timestamps_from_timespecs(env,
+                                 values,
+                                 timestamps.get());
+
+      qdb_exp_batch_push_column_t & column = _batch_column_from_tables(xs,
+                                                                       tableNum,
+                                                                       columnNum);
+
+      column.name = jni::string::get_chars_utf8(env, name).as_qdb();
+      column.data_type = qdb_ts_column_timestamp;
+      column.data.timestamps = timestamps.release();
+
+    } catch (jni::exception const & e) {
+      e.throw_new(env);
+    }
+}
+
+
+JNIEXPORT void JNICALL
+Java_net_quasardb_qdb_jni_qdb_ts_1exp_1batch_1set_1table_1data(JNIEnv * jniEnv,
+                                                               jclass /* thisClass */,
+                                                               jlong batchTables,
+                                                               jlong tableNum,
+                                                               jstring tableName,
+                                                               jobject timespecs_) {
+  qdb::jni::env env(jniEnv);
+  try {
+
+    qdb_exp_batch_push_table_t & table =  _table_from_tables(batchTables, tableNum);
+
+    table.name = jni::string::get_chars_utf8(env, tableName).as_qdb();
+
+    _timestamps_from_timespecs(env,
+                               timespecs_,
+                               const_cast<qdb_timespec_t *>(table.data.timestamps));
+
+  } catch (jni::exception const & e) {
+    e.throw_new(env);
+  }
+}
+
+JNIEXPORT void JNICALL
+Java_net_quasardb_qdb_jni_qdb_ts_1exp_1batch_1table_1set_1truncate_1ranges(JNIEnv * jniEnv,
+                                                                           jclass /* thisClass */,
+                                                                           jlong batchTables,
+                                                                           jlong tableNum,
+                                                                           jobjectArray ranges) {
+  qdb::jni::env env(jniEnv);
+  try {
+
+    qdb_exp_batch_push_table_t & table =  _table_from_tables(batchTables, tableNum);
+
+    jni::object_array arr(env, ranges);
+    auto ranges = std::make_unique<qdb_ts_range_t[]>(arr.size());
+    for (qdb_size_t i = 0; i < arr.size(); ++i) {
+      timeRangeToNative(env, arr[i], ranges[i]);
+    }
+
+
+    table.truncate_range_count = arr.size();
+    table.truncate_ranges = ranges.release();
+
+
+  } catch (jni::exception const & e) {
+    e.throw_new(env);
+  }
+}
+
+
+JNIEXPORT jlong JNICALL
+Java_net_quasardb_qdb_jni_qdb_ts_1exp_1batch_1prepare(JNIEnv * jniEnv,
+                                                      jclass /* thisClass */,
+                                                      jlongArray rowCount_,
+                                                      jlongArray columnCount_) {
+  qdb::jni::env env(jniEnv);
+  try {
+    auto row_guard = jni::primitive_array::get_array_critical<jlong>(env, rowCount_);
+    auto column_guard = jni::primitive_array::get_array_critical<jlong>(env, columnCount_);
+
+    assert(row_guard.size() == column_guard.size());
+
+    auto ret = std::make_unique<qdb_exp_batch_push_table_t[]>(row_guard.size());
+
+    for (qdb_size_t i = 0; i < row_guard.size(); ++i) {
+      qdb_size_t row_count        = row_guard[i];
+      qdb_size_t column_count     = column_guard[i];
+
+      ret[i].data.row_count       = row_count;
+      ret[i].data.column_count    = column_count;
+      ret[i].data.timestamps      = new qdb_timespec_t[row_count]();
+      ret[i].data.columns         = new qdb_exp_batch_push_column_t[column_count]();
+
+      ret[i].truncate_ranges      = nullptr;
+      ret[i].truncate_range_count = 0;
+    }
+
+    return reinterpret_cast<jlong>(ret.release());
+
+  } catch (jni::exception const & e) {
+    e.throw_new(env);
+    return e.error();
+  }
+}
+
+JNIEXPORT void JNICALL
+Java_net_quasardb_qdb_jni_qdb_ts_1exp_1batch_1release(JNIEnv * jniEnv,
+                                                      jclass /* thisClass */,
+                                                      jlong tables,
+                                                      jlong tables_count) {
+  qdb_exp_batch_push_table_t * xs = reinterpret_cast<qdb_exp_batch_push_table_t *>(tables);
+
+  for (jlong i = 0; i < tables_count; ++i) {
+    for (jlong j = 0; j < xs[i].data.column_count; ++j) {
+      delete xs[i].data.columns[j].name.data;
+
+      switch (xs[i].data.columns[j].data_type) {
+      case qdb_ts_column_double:
+        delete[] xs[i].data.columns[j].data.doubles;
+        break;
+      case qdb_ts_column_int64:
+        delete[] xs[i].data.columns[j].data.ints;
+        break;
+      case qdb_ts_column_blob:
+        {
+          for (jlong k = 0; k < xs[i].data.row_count; ++k) {
+            if (xs[i].data.columns[j].data.blobs[k].content != nullptr) {
+              free((void *)(xs[i].data.columns[j].data.blobs[k].content));
+            }
+          }
+          delete[] xs[i].data.columns[j].data.blobs;
+          break;
+        }
+      case qdb_ts_column_string:
+        {
+          for (jlong k = 0; k < xs[i].data.row_count; ++k) {
+            if (xs[i].data.columns[j].data.strings[k].data != nullptr) {
+              free((void *)(xs[i].data.columns[j].data.strings[k].data));
+            }
+          }
+          delete[] xs[i].data.columns[j].data.strings;
+          break;
+        }
+      case qdb_ts_column_timestamp:
+        delete[] xs[i].data.columns[j].data.timestamps;
+        break;
+      default:
+        throw new jni::exception(qdb_e_incompatible_type,
+                                 "Unrecognized column type");
+      }
+    }
+
+    if (xs[i].truncate_ranges != nullptr) {
+      delete xs[i].truncate_ranges;
+    }
+
+    delete xs[i].name.data;
+    delete[] xs[i].data.timestamps;
+    delete[] xs[i].data.columns;
+  }
+
+  delete[] xs;
+}
+
+JNIEXPORT jlong JNICALL
+Java_net_quasardb_qdb_jni_qdb_ts_1exp_1batch_1push(JNIEnv * jniEnv,
+                                                   jclass /* thisClass */,
+                                                   jlong handle,
+                                                   jint pushMode,
+                                                   jlong tables_,
+                                                   jlong tables_count) {
+  qdb::jni::env env(jniEnv);
+  try {
+    qdb_exp_batch_push_table_t * tables = reinterpret_cast<qdb_exp_batch_push_table_t *>(tables_);
+
+    qdb_exp_batch_push_mode_t push_mode = qdb_exp_batch_push_transactional;
+
+    // Needs to be kept in sync with the Writer.PushMode enum
+    switch (pushMode) {
+    case 0:
+      push_mode = qdb_exp_batch_push_transactional;
+      break;
+    case 1:
+      push_mode = qdb_exp_batch_push_async;
+      break;
+    case 2:
+      push_mode = qdb_exp_batch_push_fast;
+      break;
+    case 3:
+      push_mode = qdb_exp_batch_push_truncate;
+      break;
+    default:
+        throw new jni::exception(qdb_e_incompatible_type,
+                                 "Unrecognized push mode");
+    };
+
+    qdb::jni::exception::throw_if_error((qdb_handle_t)handle,
+                                        qdb_exp_batch_push((qdb_handle_t)handle,
+                                                           push_mode,
+                                                           tables,
+                                                           NULL,
+                                                           tables_count));
+
+    return qdb_e_ok;
+  } catch (jni::exception const & e) {
+    e.throw_new(env);
+    return e.error();
+  }
+
 }

@@ -70,6 +70,12 @@ public final class qdb
     public static native int close(long handle);
     public static native void release(long handle, ByteBuffer buffer);
 
+    /**
+     * Converts a java byte[] and returns an off-heap qdb_string_t *
+     */
+    public static native long qdb_string_from_bytes(byte[] xs);
+    public static native void release_qdb_string(long ptr);
+
     public static native int option_set_timeout(long handle, int millis);
     public static native int option_set_client_max_in_buf_size(long handle, long size);
     public static native long option_get_client_max_in_buf_size(long handle);
@@ -127,6 +133,8 @@ public final class qdb
     public static native int ts_list_columns(long handle, String alias, Reference<Column[]> columns);
     public static native int
     ts_local_table_init(long handle, String alias, Column[] columns, Reference<Long> localTable);
+
+
     public static native int ts_batch_table_init(long handle, Writer.TableColumn[] columns, Reference<Long> batchTable);
     public static native int ts_batch_table_extra_columns(long handle, long batchTable, Writer.TableColumn[] columns);
     public static native void ts_batch_table_release(long handle, long batchTable);
@@ -221,6 +229,66 @@ public final class qdb
                                                             long rowIndex,
                                                             byte[] value);
 
+    /**
+     * Allocates all data structures in one big allocation. For each table, a rowCount
+     * and a columnCount is expected.
+     *
+     * rowCount.length == columnCount.length, and pretty much defines the number of tables.
+     */
+    public static native long ts_exp_batch_prepare(long[] rowCount,
+                                                   long[] columnCount);
+
+    public static native void ts_exp_batch_set_column_from_double(long batchTables,
+                                                                  long tableNum,
+                                                                  long columnNum,
+                                                                  String name,
+                                                                  double[] values);
+
+    public static native void ts_exp_batch_set_column_from_int64(long batchTables,
+                                                                 long tableNum,
+                                                                 long columnNum,
+                                                                 String name,
+                                                                 long[] values);
+
+    public static native void ts_exp_batch_set_column_from_blob(long batchTables,
+                                                                long tableNum,
+                                                                long columnNum,
+                                                                String name,
+                                                                ByteBuffer[] values);
+
+    public static native void ts_exp_batch_set_column_from_string(long batchTables,
+                                                                  long tableNum,
+                                                                  long columnNum,
+                                                                  String name,
+                                                                  ByteBuffer[] values);
+
+    public static native void ts_exp_batch_set_column_from_timestamp(long batchTables,
+                                                                     long tableNum,
+                                                                     long columnNum,
+                                                                     String name,
+                                                                     Timespecs values);
+
+    public static native void ts_exp_batch_set_table_data(long batchTables,
+                                                          long tableNum,
+                                                          String tableName,
+                                                          Timespecs timespecs);
+
+    public static native void ts_exp_batch_table_set_truncate_ranges(long batchTables,
+                                                                     long tableNum,
+                                                                     TimeRange[] ranges);
+
+    public static native long ts_exp_batch_push(long handle,
+                                                int pushMode,
+                                                long batchTables,
+                                                long tableCount);
+
+
+    public static native void ts_exp_batch_release(long batchTables,
+                                                   long tableCount);
+
+
+    // arg: qdb_timespec_t *
+    public static native void ts_exp_batch_timestamps_release(long xs);
 
     public static native void ts_local_table_release(long handle, long localTable);
     public static native int ts_table_get_ranges(long handle, long localTable, TimeRange[] ranges);

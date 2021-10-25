@@ -2,6 +2,7 @@
 
 #include <jni.h>
 #include <memory>
+#include <cstring>
 #include <stdio.h>
 
 #include "../env.h"
@@ -78,6 +79,23 @@ class string_utf8
         char const * ptr = _ptr;
         _ptr = NULL;
         return ptr;
+    }
+
+    /**
+     */
+    char * copy() const {
+        char * ret = new char[_len + 1];
+        memcpy(ret, _ptr, _len);
+        ret[_len] = '\0';
+        return ret;
+    }
+
+    /**
+     * Creates a copy of this string and returns it as a qdb_string.
+     */
+    qdb_string_t as_qdb() const {
+      return qdb_string_t {copy(),
+                             _len};
     }
 };
 }; // namespace guard

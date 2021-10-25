@@ -209,6 +209,7 @@ public class TestUtils {
         }
 
         writer.flush();
+        writer.close();
 
         return t;
     }

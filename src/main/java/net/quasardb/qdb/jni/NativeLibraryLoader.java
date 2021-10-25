@@ -1,13 +1,16 @@
 package net.quasardb.qdb.jni;
 
+import java.lang.management.ManagementFactory;
 import java.io.*;
 import java.nio.file.*;
 import java.net.*;
 
 class NativeLibraryLoader {
   public static void load(String name) {
-    Path localFile = getResourceAsLocalFile(name);
-    loadLibrary(localFile);
+      final boolean useCritical = ManagementFactory.getRuntimeMXBean().getInputArguments().toString().indexOf("-Xcomp") > 0;
+
+      Path localFile = getResourceAsLocalFile(name);
+      loadLibrary(localFile);
   }
 
   public static Path getResourceAsLocalFile(String name) {

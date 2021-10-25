@@ -38,110 +38,91 @@ public class WriterTest {
         this.s = null;
     }
 
-    static Stream<Arguments> pushModeAndValueTypeProvider() {
-        return Stream.of(
-                         Arguments.of(Writer.PushMode.NORMAL, Value.Type.DOUBLE),
-                         Arguments.of(Writer.PushMode.NORMAL, Value.Type.INT64),
-                         Arguments.of(Writer.PushMode.NORMAL, Value.Type.BLOB),
-                         Arguments.of(Writer.PushMode.NORMAL, Value.Type.TIMESTAMP),
-                         Arguments.of(Writer.PushMode.NORMAL, Value.Type.STRING),
-
-                         Arguments.of(Writer.PushMode.PINNED_NORMAL, Value.Type.DOUBLE),
-                         Arguments.of(Writer.PushMode.PINNED_NORMAL, Value.Type.INT64),
-                         Arguments.of(Writer.PushMode.PINNED_NORMAL, Value.Type.TIMESTAMP),
-                         Arguments.of(Writer.PushMode.PINNED_NORMAL, Value.Type.BLOB),
-                         Arguments.of(Writer.PushMode.PINNED_NORMAL, Value.Type.STRING),
-
-                         Arguments.of(Writer.PushMode.TRUNCATE, Value.Type.DOUBLE),
-                         Arguments.of(Writer.PushMode.TRUNCATE, Value.Type.INT64),
-                         Arguments.of(Writer.PushMode.TRUNCATE, Value.Type.BLOB),
-                         Arguments.of(Writer.PushMode.TRUNCATE, Value.Type.TIMESTAMP),
-                         Arguments.of(Writer.PushMode.TRUNCATE, Value.Type.STRING),
-
-                         Arguments.of(Writer.PushMode.ASYNC, Value.Type.DOUBLE),
-                         Arguments.of(Writer.PushMode.ASYNC, Value.Type.INT64),
-                         Arguments.of(Writer.PushMode.ASYNC, Value.Type.BLOB),
-                         Arguments.of(Writer.PushMode.ASYNC, Value.Type.TIMESTAMP),
-                         Arguments.of(Writer.PushMode.ASYNC, Value.Type.STRING),
-
-                         Arguments.of(Writer.PushMode.FAST, Value.Type.DOUBLE),
-                         Arguments.of(Writer.PushMode.FAST, Value.Type.INT64),
-                         Arguments.of(Writer.PushMode.FAST, Value.Type.BLOB),
-                         Arguments.of(Writer.PushMode.FAST, Value.Type.TIMESTAMP),
-                         Arguments.of(Writer.PushMode.FAST, Value.Type.STRING),
-
-                         Arguments.of(Writer.PushMode.PINNED_FAST, Value.Type.DOUBLE),
-                         Arguments.of(Writer.PushMode.PINNED_FAST, Value.Type.INT64),
-                         Arguments.of(Writer.PushMode.PINNED_FAST, Value.Type.TIMESTAMP),
-                         Arguments.of(Writer.PushMode.PINNED_FAST, Value.Type.BLOB),
-                         Arguments.of(Writer.PushMode.PINNED_FAST, Value.Type.STRING)
-
+    static Stream<Arguments> pushModeProvider() {
+        return Stream.of(Arguments.of(Writer.PushMode.NORMAL),
+                         Arguments.of(Writer.PushMode.PINNED_NORMAL),
+                         Arguments.of(Writer.PushMode.EXP_NORMAL),
+                         Arguments.of(Writer.PushMode.TRUNCATE),
+                         Arguments.of(Writer.PushMode.EXP_TRUNCATE),
+                         Arguments.of(Writer.PushMode.FAST),
+                         Arguments.of(Writer.PushMode.PINNED_FAST),
+                         Arguments.of(Writer.PushMode.EXP_FAST)
+                         //Arguments.of(Writer.PushMode.ASYNC),
+                         //Arguments.of(Writer.PushMode.EXP_ASYNC)
 
                          );
     }
 
+    static Stream<Arguments> valueTypeProvider() {
+        return Stream.of(Arguments.of(Value.Type.DOUBLE),
+                         Arguments.of(Value.Type.INT64),
+                         Arguments.of(Value.Type.BLOB),
+                         Arguments.of(Value.Type.TIMESTAMP),
+                         Arguments.of(Value.Type.STRING));
+    }
+
+    static Stream<Arguments> valueTypesProvider() {
+        return Stream.of(
+
+                         // Need to wrap in Object[] because otherwise the array will be
+                         // automatically expanded.
+                         Arguments.of(new Object[]{new Value.Type[]{Value.Type.DOUBLE,
+                                                                    Value.Type.INT64}}),
+                         Arguments.of(new Object[]{new Value.Type[]{Value.Type.INT64,
+                                                                    Value.Type.BLOB}}),
+                         Arguments.of(new Object[]{new Value.Type[]{Value.Type.BLOB,
+                                                                    Value.Type.TIMESTAMP}}),
+                         Arguments.of(new Object[]{new Value.Type[]{Value.Type.TIMESTAMP,
+                                                                    Value.Type.STRING}}));
+    }
+
+    static Stream<Arguments> combineStreams(Stream<Arguments> lhs,
+                                            Stream<Arguments> rhs) {
+        Arguments[] lhsArgs = lhs.toArray(Arguments[]::new);
+        Arguments[] rhsArgs = rhs.toArray(Arguments[]::new);
+
+        ArrayList<Arguments> ret = new ArrayList<Arguments>();
+        for (Arguments lhsArg : lhsArgs) {
+            for (Arguments rhsArg : rhsArgs) {
+                ret.add(Arguments.of(lhsArg.get()[0],
+                                     rhsArg.get()[0]));
+            }
+        }
+
+        return ret.stream();
+    }
+
+    static Stream<Arguments> pushModeAndValueTypeProvider() {
+        return combineStreams(pushModeProvider(),
+                              valueTypeProvider());
+
+
+    }
+
+
+    static boolean isTruncatePushMode(Writer.PushMode mode) {
+        return mode == Writer.PushMode.TRUNCATE ||
+            mode == Writer.PushMode.EXP_TRUNCATE;
+
+    }
+
+    static boolean isTruncatePushMode(Object arg) {
+        assert(arg instanceof Writer.PushMode);
+        return isTruncatePushMode((Writer.PushMode)(arg));
+
+    }
+
+    static boolean isTruncatePushMode(Object[] args) {
+        return isTruncatePushMode(args[0]);
+    }
+
+    static Stream<Arguments> truncatePushModeAndValueTypeProvider() {
+        return pushModeAndValueTypeProvider().filter(args -> isTruncatePushMode(args.get()));
+    }
 
     static Stream<Arguments> pushModeAndValueTypesProvider() {
-        return Stream.of(
-                         Arguments.of(Writer.PushMode.NORMAL, new Value.Type[]{Value.Type.DOUBLE,
-                                                                               Value.Type.INT64}),
-                         Arguments.of(Writer.PushMode.NORMAL, new Value.Type[]{Value.Type.INT64,
-                                                                               Value.Type.BLOB}),
-                         Arguments.of(Writer.PushMode.NORMAL, new Value.Type[]{Value.Type.BLOB,
-                                                                               Value.Type.TIMESTAMP}),
-                         Arguments.of(Writer.PushMode.NORMAL, new Value.Type[]{Value.Type.TIMESTAMP,
-                                                                               Value.Type.STRING}),
-
-                         Arguments.of(Writer.PushMode.PINNED_NORMAL, new Value.Type[]{Value.Type.DOUBLE,
-                                                                                      Value.Type.INT64}),
-                         Arguments.of(Writer.PushMode.PINNED_NORMAL, new Value.Type[]{Value.Type.INT64,
-                                                                                      Value.Type.BLOB}),
-                         Arguments.of(Writer.PushMode.PINNED_NORMAL, new Value.Type[]{Value.Type.BLOB,
-                                                                                      Value.Type.TIMESTAMP}),
-                         Arguments.of(Writer.PushMode.PINNED_NORMAL, new Value.Type[]{Value.Type.TIMESTAMP,
-                                                                                      Value.Type.STRING}),
-
-                         Arguments.of(Writer.PushMode.TRUNCATE, new Value.Type[]{Value.Type.DOUBLE,
-                                                                                 Value.Type.INT64}),
-                         Arguments.of(Writer.PushMode.TRUNCATE, new Value.Type[]{Value.Type.INT64,
-                                                                                 Value.Type.BLOB}),
-                         Arguments.of(Writer.PushMode.TRUNCATE, new Value.Type[]{Value.Type.BLOB,
-                                                                                 Value.Type.TIMESTAMP}),
-                         Arguments.of(Writer.PushMode.TRUNCATE, new Value.Type[]{Value.Type.TIMESTAMP,
-                                                                                 Value.Type.STRING}),
-
-
-                         Arguments.of(Writer.PushMode.ASYNC, new Value.Type[]{Value.Type.DOUBLE,
-                                                                              Value.Type.INT64}),
-                         Arguments.of(Writer.PushMode.ASYNC, new Value.Type[]{Value.Type.INT64,
-                                                                              Value.Type.BLOB}),
-                         Arguments.of(Writer.PushMode.ASYNC, new Value.Type[]{Value.Type.BLOB,
-                                                                              Value.Type.TIMESTAMP}),
-                         Arguments.of(Writer.PushMode.ASYNC, new Value.Type[]{Value.Type.TIMESTAMP,
-                                                                              Value.Type.STRING}),
-
-                         Arguments.of(Writer.PushMode.FAST, new Value.Type[]{Value.Type.DOUBLE,
-                                                                             Value.Type.INT64}),
-                         Arguments.of(Writer.PushMode.FAST, new Value.Type[]{Value.Type.INT64,
-                                                                             Value.Type.BLOB}),
-                         Arguments.of(Writer.PushMode.FAST, new Value.Type[]{Value.Type.BLOB,
-                                                                             Value.Type.TIMESTAMP}),
-                         Arguments.of(Writer.PushMode.FAST, new Value.Type[]{Value.Type.TIMESTAMP,
-                                                                             Value.Type.STRING}),
-
-
-                         Arguments.of(Writer.PushMode.PINNED_FAST, new Value.Type[]{Value.Type.DOUBLE,
-                                                                                    Value.Type.INT64}),
-                         Arguments.of(Writer.PushMode.PINNED_FAST, new Value.Type[]{Value.Type.INT64,
-                                                                                    Value.Type.BLOB}),
-                         Arguments.of(Writer.PushMode.PINNED_FAST, new Value.Type[]{Value.Type.BLOB,
-                                                                                    Value.Type.TIMESTAMP}),
-                         Arguments.of(Writer.PushMode.PINNED_FAST, new Value.Type[]{Value.Type.TIMESTAMP,
-                                                                                    Value.Type.STRING})
-
-
-
-                         );
+        return combineStreams(pushModeProvider(),
+                              valueTypesProvider());
     }
 
     Writer writerByPushMode(Table t, Writer.PushMode mode) {
@@ -150,14 +131,22 @@ public class WriterTest {
             return t.writer(s, t);
         case PINNED_NORMAL:
             return t.pinnedWriter(s, t);
+        case EXP_NORMAL:
+            return t.expWriter(s, t);
         case FAST:
             return t.fastWriter(s, t);
         case PINNED_FAST:
             return t.pinnedFastWriter(s, t);
+        case EXP_FAST:
+            return t.expFastWriter(s, t);
         case ASYNC:
             return t.asyncWriter(s, t);
+        case EXP_ASYNC:
+            return t.expAsyncWriter(s, t);
         case TRUNCATE:
             return t.truncateWriter(s, t);
+        case EXP_TRUNCATE:
+            return t.expTruncateWriter(s, t);
         }
 
         throw new IllegalArgumentException("Invalid push mode: " + mode.toString());
@@ -169,14 +158,22 @@ public class WriterTest {
             return t.writer(s, t);
         case PINNED_NORMAL:
             return t.pinnedWriter(s, t);
+        case EXP_NORMAL:
+            return t.expWriter(s, t);
         case FAST:
             return t.fastWriter(s, t);
         case PINNED_FAST:
             return t.pinnedFastWriter(s, t);
+        case EXP_FAST:
+            return t.expFastWriter(s, t);
         case ASYNC:
             return t.asyncWriter(s, t);
+        case EXP_ASYNC:
+            return t.expAsyncWriter(s, t);
         case TRUNCATE:
             return t.truncateWriter(s, t);
+        case EXP_TRUNCATE:
+            return t.expTruncateWriter(s, t);
         }
 
         throw new IllegalArgumentException("Invalid push mode: " + mode.toString());
@@ -200,7 +197,8 @@ public class WriterTest {
         TimeRange[] ranges = TestUtils.rangesFromRows(rows);
 
         Writer w = writerByPushMode(table, mode);
-    }
+        w.close();
+   }
 
 
     @ParameterizedTest
@@ -212,7 +210,11 @@ public class WriterTest {
         TimeRange[] ranges = TestUtils.rangesFromRows(rows);
 
         Writer w = writerByPushMode(table, mode);
-        w.flush();
+        try {
+            w.flush();
+        } finally {
+            w.close();
+        }
     }
 
     @ParameterizedTest
@@ -248,8 +250,12 @@ public class WriterTest {
 
         Writer writer = writerByPushMode(tables, mode);
 
-        assertEquals(writer.tableIndexByName(table1.getName()), 0);
-        assertEquals(writer.tableIndexByName(table2.getName()), columns.length);
+        try {
+            assertEquals(writer.tableIndexByName(table1.getName()), 0);
+            assertEquals(writer.tableIndexByName(table2.getName()), columns.length);
+        } finally {
+            writer.close();
+        }
     }
 
     @ParameterizedTest
@@ -259,7 +265,6 @@ public class WriterTest {
         Column[] definition = TestUtils.generateTableColumns(valueType, 1);
 
         Table t = TestUtils.createTable(definition);
-        Writer writer = writerByPushMode(t, mode);
 
         Value[] values = {
             TestUtils.generateRandomValueByType(valueType)
@@ -268,8 +273,14 @@ public class WriterTest {
         Timespec timestamp = Timespec.now();
 
         WritableRow writeRow = new WritableRow(timestamp, values);
-        writer.append(writeRow);
-        pushmodeAwareFlush(writer);
+
+        Writer writer = writerByPushMode(t, mode);
+        try {
+            writer.append(writeRow);
+            pushmodeAwareFlush(writer);
+        } finally {
+            writer.close();
+        }
 
         TimeRange[] ranges = {
             new TimeRange(timestamp,
@@ -278,10 +289,14 @@ public class WriterTest {
 
         Reader r = Table.reader(s, t, ranges);
 
-        assertTrue(r.hasNext());
-        Row readRow = r.next();
+        try {
+            assertTrue(r.hasNext());
+            Row readRow = r.next();
 
-        assertEquals(readRow, writeRow);
+            assertEquals(readRow, writeRow);
+        } finally {
+            r.close();
+        }
     }
 
     @ParameterizedTest
@@ -293,26 +308,36 @@ public class WriterTest {
         Table t = TestUtils.createTable(definition);
         Writer writer = writerByPushMode(t, mode);
 
-        int ROW_COUNT = 1000;
+        try {
+            int ROW_COUNT = 1000;
 
-        WritableRow[] rows = new WritableRow[ROW_COUNT];
-        for (int i = 0; i < rows.length; ++i) {
-            rows[i] =
-                new WritableRow (LocalDateTime.now(),
-                                 new Value[] {
-                                     TestUtils.generateRandomValueByType(32, valueType)});
-            writer.append(rows[i]);
+            WritableRow[] rows = new WritableRow[ROW_COUNT];
+            for (int i = 0; i < rows.length; ++i) {
+                rows[i] =
+                    new WritableRow (LocalDateTime.now(),
+                                     new Value[] {
+                                         TestUtils.generateRandomValueByType(32, valueType)});
+                writer.append(rows[i]);
+            }
+
+            pushmodeAwareFlush(writer);
+
+            TimeRange[] ranges = {
+                new TimeRange(rows[0].getTimestamp(),
+                              new Timespec(rows[(rows.length - 1)].getTimestamp().asLocalDateTime().plusNanos(1)))
+            };
+
+            Reader r = Table.reader(s, t, ranges);
+            try {
+                WritableRow[] readRows = r.stream().toArray(WritableRow[]::new);
+                assertArrayEquals(rows, readRows);
+            } finally {
+                r.close();
+            }
+
+        } finally {
+            writer.close();
         }
-
-        pushmodeAwareFlush(writer);
-
-        TimeRange[] ranges = {
-            new TimeRange(rows[0].getTimestamp(),
-                          new Timespec(rows[(rows.length - 1)].getTimestamp().asLocalDateTime().plusNanos(1)))
-        };
-
-        WritableRow[] readRows = Table.reader(s, t, ranges).stream().toArray(WritableRow[]::new);
-        assertArrayEquals(rows, readRows);
     }
 
     @ParameterizedTest
@@ -325,26 +350,30 @@ public class WriterTest {
         Table t = TestUtils.createTable(definition);
         Writer writer = writerByPushMode(t, mode);
 
-        int ROW_COUNT = 1000;
+        try {
+            int ROW_COUNT = 1000;
 
-        WritableRow[] rows = new WritableRow[ROW_COUNT];
-        for (int i = 0; i < rows.length; ++i) {
-            rows[i] =
-                new WritableRow (LocalDateTime.now(),
-                                 new Value[] {
-                                     TestUtils.generateRandomValueByType(32, valueType, NULL_CHANCE)});
-            writer.append(rows[i]);
+            WritableRow[] rows = new WritableRow[ROW_COUNT];
+            for (int i = 0; i < rows.length; ++i) {
+                rows[i] =
+                    new WritableRow (LocalDateTime.now(),
+                                     new Value[] {
+                                         TestUtils.generateRandomValueByType(32, valueType, NULL_CHANCE)});
+                writer.append(rows[i]);
+            }
+
+            pushmodeAwareFlush(writer);
+
+            TimeRange[] ranges = {
+                new TimeRange(rows[0].getTimestamp(),
+                              new Timespec(rows[(rows.length - 1)].getTimestamp().asLocalDateTime().plusNanos(1)))
+            };
+
+            WritableRow[] readRows = TestUtils.readRows(s, t, ranges);
+            assertArrayEquals(rows, readRows);
+        } finally {
+            writer.close();
         }
-
-        pushmodeAwareFlush(writer);
-
-        TimeRange[] ranges = {
-            new TimeRange(rows[0].getTimestamp(),
-                          new Timespec(rows[(rows.length - 1)].getTimestamp().asLocalDateTime().plusNanos(1)))
-        };
-
-        WritableRow[] readRows = TestUtils.readRows(s, t, ranges);
-        assertArrayEquals(rows, readRows);
     }
 
 
@@ -358,94 +387,98 @@ public class WriterTest {
         Table t = TestUtils.createTable(definition);
         Writer writer = writerByPushMode(t, mode);
 
-        int ROW_COUNT = 100000;
+        try {
+            int ROW_COUNT = 100000;
 
-        WritableRow[] rows = new WritableRow[ROW_COUNT];
-        for (int i = 0; i < rows.length; ++i) {
-            Value[] vs = Arrays.stream(valueTypes)
-                .map((valueType) -> {
-                        return TestUtils.generateRandomValueByType(32, valueType);
-                    })
-                .toArray(Value[]::new);
+            WritableRow[] rows = new WritableRow[ROW_COUNT];
+            for (int i = 0; i < rows.length; ++i) {
+                Value[] vs = Arrays.stream(valueTypes)
+                    .map((valueType) -> {
+                            return TestUtils.generateRandomValueByType(32, valueType);
+                        })
+                    .toArray(Value[]::new);
 
-            rows[i] =
-                new WritableRow (LocalDateTime.now(), vs);
-            writer.append(rows[i]);
+                rows[i] =
+                    new WritableRow (LocalDateTime.now(), vs);
+                writer.append(rows[i]);
+            }
+
+            pushmodeAwareFlush(writer);
+
+            TimeRange[] ranges = {
+                new TimeRange(rows[0].getTimestamp(),
+                              new Timespec(rows[(rows.length - 1)].getTimestamp().asLocalDateTime().plusNanos(1)))
+            };
+
+            WritableRow[] readRows = TestUtils.readRows(s, t, ranges);
+            assertArrayEquals(rows, readRows);
+        } finally {
+            writer.close();
         }
-
-        pushmodeAwareFlush(writer);
-
-        TimeRange[] ranges = {
-            new TimeRange(rows[0].getTimestamp(),
-                          new Timespec(rows[(rows.length - 1)].getTimestamp().asLocalDateTime().plusNanos(1)))
-        };
-
-        WritableRow[] readRows = TestUtils.readRows(s, t, ranges);
-        assertArrayEquals(rows, readRows);
     }
 
-    @ParameterizedTest
-    @MethodSource("pushModeAndValueTypesProvider")
-    public void canAddExtraTable(Writer.PushMode mode,
-                                 Value.Type[] valueTypes) throws Exception {
-        Column[] definition = TestUtils.generateTableColumns(valueTypes);
+    // @ParameterizedTest
+    // @MethodSource("pushModeAndValueTypesProvider")
+    // public void canAddExtraTable(Writer.PushMode mode,
+    //                              Value.Type[] valueTypes) throws Exception {
+    //     Column[] definition = TestUtils.generateTableColumns(valueTypes);
 
-        Table t1 = TestUtils.createTable(definition);
-        Table t2 = TestUtils.createTable(definition);
+    //     Table t1 = TestUtils.createTable(definition);
+    //     Table t2 = TestUtils.createTable(definition);
 
-        Writer writer = writerByPushMode(t1, mode);
+    //     Writer writer = writerByPushMode(t1, mode);
 
-        int ROW_COUNT = 1000;
+    //     int ROW_COUNT = 1000;
 
-        WritableRow[] rows1 = new WritableRow[ROW_COUNT];
-        WritableRow[] rows2 = new WritableRow[ROW_COUNT];
+    //     WritableRow[] rows1 = new WritableRow[ROW_COUNT];
+    //     WritableRow[] rows2 = new WritableRow[ROW_COUNT];
 
-        for (int i = 0; i < rows1.length; ++i) {
-            Value[] vs = Arrays.stream(valueTypes)
-                .map((valueType) -> {
-                        return TestUtils.generateRandomValueByType(32, valueType);
-                    })
-                .toArray(Value[]::new);
+    //     for (int i = 0; i < rows1.length; ++i) {
+    //         Value[] vs = Arrays.stream(valueTypes)
+    //             .map((valueType) -> {
+    //                     return TestUtils.generateRandomValueByType(32, valueType);
+    //                 })
+    //             .toArray(Value[]::new);
 
-            rows1[i] =
-                new WritableRow (LocalDateTime.now(), vs);
-            writer.append(t1.getName(), rows1[i]);
-        }
+    //         rows1[i] =
+    //             new WritableRow (LocalDateTime.now(), vs);
+    //         writer.append(t1.getName(), rows1[i]);
+    //     }
 
-        // This is the crucial test: add additional state in the middle of the flush
-        writer.extraTables(t2);
+    //     // This is the crucial test: add additional state in the middle of the flush
+    //     writer.extraTables(t2);
 
-        for (int i = 0; i < rows2.length; ++i) {
-            Value[] vs = Arrays.stream(valueTypes)
-                .map((valueType) -> {
-                        return TestUtils.generateRandomValueByType(32, valueType);
-                    })
-                .toArray(Value[]::new);
+    //     for (int i = 0; i < rows2.length; ++i) {
+    //         Value[] vs = Arrays.stream(valueTypes)
+    //             .map((valueType) -> {
+    //                     return TestUtils.generateRandomValueByType(32, valueType);
+    //                 })
+    //             .toArray(Value[]::new);
 
-            rows2[i] =
-                new WritableRow (LocalDateTime.now(), vs);
-            writer.append(t2.getName(), rows2[i]);
-        }
+    //         rows2[i] =
+    //             new WritableRow (LocalDateTime.now(), vs);
+    //         writer.append(t2.getName(), rows2[i]);
+    //     }
 
-        // Do note we actually need to flush, as the pinned writer does most of its
-        // complex operations in the flush operation.
-        pushmodeAwareFlush(writer);
+    //     // Do note we actually need to flush, as the pinned writer does most of its
+    //     // complex operations in the flush operation.
+    //     pushmodeAwareFlush(writer);
 
-        TimeRange[] ranges1 = {
-            new TimeRange(rows1[0].getTimestamp(),
-                          new Timespec(rows1[(rows1.length - 1)].getTimestamp().asLocalDateTime().plusNanos(1)))
-        };
+    //     TimeRange[] ranges1 = {
+    //         new TimeRange(rows1[0].getTimestamp(),
+    //                       new Timespec(rows1[(rows1.length - 1)].getTimestamp().asLocalDateTime().plusNanos(1)))
+    //     };
 
-        TimeRange[] ranges2 = {
-            new TimeRange(rows2[0].getTimestamp(),
-                          new Timespec(rows2[(rows2.length - 1)].getTimestamp().asLocalDateTime().plusNanos(1)))
-        };
+    //     TimeRange[] ranges2 = {
+    //         new TimeRange(rows2[0].getTimestamp(),
+    //                       new Timespec(rows2[(rows2.length - 1)].getTimestamp().asLocalDateTime().plusNanos(1)))
+    //     };
 
-        WritableRow[] readRows1 = TestUtils.readRows(s, t1, ranges1);
-        WritableRow[] readRows2 = TestUtils.readRows(s, t2, ranges2);
-        assertArrayEquals(rows1, readRows1);
-        assertArrayEquals(rows2, readRows2);
-    }
+    //     WritableRow[] readRows1 = TestUtils.readRows(s, t1, ranges1);
+    //     WritableRow[] readRows2 = TestUtils.readRows(s, t2, ranges2);
+    //     assertArrayEquals(rows1, readRows1);
+    //     assertArrayEquals(rows2, readRows2);
+    // }
 
     @ParameterizedTest
     @MethodSource("pushModeAndValueTypeProvider")
@@ -456,40 +489,99 @@ public class WriterTest {
         Table t = TestUtils.createTable(definition);
         Writer writer = writerByPushMode(t, mode);
 
-        int ROW_COUNT = 1000;
+        try {
+            int ROW_COUNT = 1000;
 
-        Timespec ts = Timespec.now();
-        WritableRow[] rows = new WritableRow[ROW_COUNT];
-        for (int i = 0; i < rows.length; ++i) {
+            Timespec ts = Timespec.now();
+            WritableRow[] rows = new WritableRow[ROW_COUNT];
+            for (int i = 0; i < rows.length; ++i) {
 
-            // Because we're testing the truncate batch writer, we want to make 100% sure
-            // there are no rows with identical timestamps, otherwise a second flush may
-            // actually truncate data from a prior flush.
-            ts = ts.plusNanos(1);
-            rows[i] =
-                new WritableRow (ts,
-                                 new Value[] {
-                                     TestUtils.generateRandomValueByType(32, valueType)});
+                // Because we're testing the truncate batch writer, we want to make 100% sure
+                // there are no rows with identical timestamps, otherwise a second flush may
+                // actually truncate data from a prior flush.
+                ts = ts.plusNanos(1);
+                rows[i] =
+                    new WritableRow (ts,
+                                     new Value[] {
+                                         TestUtils.generateRandomValueByType(32, valueType)});
+            }
+
+            // Insert and flush the first half of the rows
+            for (int i = 0; i < 500; ++i) {
+                writer.append(rows[i]);
+            }
+            pushmodeAwareFlush(writer);
+
+            // Second half
+            for (int i = 500; i < rows.length; ++i) {
+                writer.append(rows[i]);
+            }
+            pushmodeAwareFlush(writer);
+
+            TimeRange[] ranges = {
+                new TimeRange(rows[0].getTimestamp(),
+                              new Timespec(rows[(rows.length - 1)].getTimestamp().asLocalDateTime().plusNanos(1)))
+            };
+
+            Reader r = Table.reader(s, t, ranges);
+            try {
+                WritableRow[] readRows = r.stream().toArray(WritableRow[]::new);
+                assertArrayEquals(rows, readRows);
+            } finally {
+                r.close();
+            }
+        } finally {
+            writer.close();
         }
-
-        // Insert and flush the first half of the rows
-        for (int i = 0; i < 500; ++i) {
-            writer.append(rows[i]);
-        }
-        pushmodeAwareFlush(writer);
-
-        // Second half
-        for (int i = 500; i < rows.length; ++i) {
-            writer.append(rows[i]);
-        }
-        pushmodeAwareFlush(writer);
-
-        TimeRange[] ranges = {
-            new TimeRange(rows[0].getTimestamp(),
-                          new Timespec(rows[(rows.length - 1)].getTimestamp().asLocalDateTime().plusNanos(1)))
-        };
-
-        WritableRow[] readRows = Table.reader(s, t, ranges).stream().toArray(WritableRow[]::new);
-        assertArrayEquals(rows, readRows);
     }
+
+
+    @ParameterizedTest
+    @MethodSource("truncatePushModeAndValueTypeProvider")
+    public void canTruncate(Writer.PushMode mode, Value.Type valueType) throws Exception {
+        String alias = TestUtils.createUniqueAlias();
+        Column[] definition = TestUtils.generateTableColumns(valueType, 1);
+
+        Table t = TestUtils.createTable(definition);
+        Writer writer = writerByPushMode(t, mode);
+
+        try {
+            int ROW_COUNT = 1000;
+
+            Timespec ts = Timespec.now();
+            WritableRow[] rows = new WritableRow[ROW_COUNT];
+            for (int i = 0; i < rows.length; ++i) {
+
+                // Because we're testing the truncate batch writer, we want to make 100% sure
+                // there are no rows with identical timestamps, otherwise a second flush may
+                // actually truncate data from a prior flush.
+                ts = ts.plusNanos(1);
+                rows[i] =
+                    new WritableRow (ts,
+                                     new Value[] {
+                                         TestUtils.generateRandomValueByType(32, valueType)});
+            }
+
+            // Insert and flush the time
+            for (WritableRow row : rows) {
+                writer.append(row);
+            }
+            pushmodeAwareFlush(writer);
+
+            // Second time is the *exact* same rows
+            for (WritableRow row : rows) {
+                writer.append(row);
+            }
+            pushmodeAwareFlush(writer);
+
+            TimeRange[] ranges = {
+                new TimeRange(rows[0].getTimestamp(),
+                              new Timespec(rows[(rows.length - 1)].getTimestamp().asLocalDateTime().plusNanos(1)))
+            };
+        } finally {
+            writer.close();
+        }
+
+    }
+
 }
