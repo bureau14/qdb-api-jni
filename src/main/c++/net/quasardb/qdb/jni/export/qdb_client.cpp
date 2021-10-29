@@ -52,7 +52,7 @@ Java_net_quasardb_qdb_jni_qdb_connect(JNIEnv *jniEnv,
 
     try
     {
-        qdb::jni::log::swap_callback();
+        // qdb::jni::log::swap_callback();
 
         return jni::exception::throw_if_error(
             (qdb_handle_t)handle,
@@ -76,7 +76,7 @@ Java_net_quasardb_qdb_jni_qdb_secure_1connect(JNIEnv *jniEnv,
     qdb::jni::env env(jniEnv);
     try
     {
-        qdb::jni::log::swap_callback();
+        // qdb::jni::log::swap_callback();
 
         qdb_error_t err;
         jclass objectClass;
