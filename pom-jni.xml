@@ -5,7 +5,7 @@ xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <groupId>net.quasardb</groupId>
   <artifactId>jni</artifactId>
   <packaging>jar</packaging>
-  <version>3.10.1-SNAPSHOT</version>
+  <version>3.10.2-SNAPSHOT</version>
 
   <description>
     POM file
@@ -14,9 +14,9 @@ xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <properties>
     <groupId>net.quasardb</groupId>
     <artifactId>jni</artifactId>
-    <version>3.10.1-SNAPSHOT</version>
+    <version>3.10.2-SNAPSHOT</version>
     <packaging>jar</packaging>
-    <file>target/jni-3.10.1-SNAPSHOT.jar</file>
+    <file>target/jni-3.10.2-SNAPSHOT.jar</file>
 
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
