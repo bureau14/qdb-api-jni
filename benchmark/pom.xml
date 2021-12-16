@@ -72,12 +72,7 @@ THE POSSIBILITY OF SUCH DAMAGE.
         <dependency>
           <groupId>org.slf4j</groupId>
           <artifactId>slf4j-api</artifactId>
-          <version>1.7.28</version>
-        </dependency>
-        <dependency>
-          <groupId>org.slf4j</groupId>
-          <artifactId>slf4j-log4j12</artifactId>
-          <version>1.7.28</version>
+          <version>1.7.32</version>
         </dependency>
         <dependency>
           <groupId>it.unimi.dsi</groupId>
