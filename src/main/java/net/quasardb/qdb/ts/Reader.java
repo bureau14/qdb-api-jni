@@ -28,7 +28,7 @@ public class Reader implements AutoCloseable, Iterator<WritableRow> {
     Session session;
     Table table;
     Long localTable;
-    Reference<WritableRow> next;
+    WritableRow next;
 
     protected Reader(Session session, Table table, TimeRange[] ranges) {
         logger.info("Initializing bulk reader for table {}", table.name);
@@ -38,7 +38,7 @@ public class Reader implements AutoCloseable, Iterator<WritableRow> {
 
         this.session = session;
         this.table = table;
-        this.next = new Reference<WritableRow>();
+        this.next = null;
 
         Reference<Long> theLocalTable = new Reference<Long>();
         qdb.ts_local_table_init(this.session.handle(), table.getName(), table.getColumns(), theLocalTable);
@@ -72,14 +72,14 @@ public class Reader implements AutoCloseable, Iterator<WritableRow> {
      * reference to the internal row.
      */
     private void readNext() {
-        qdb.ts_table_next_row(this.session.handle(), this.localTable, this.table.getColumns(), this.next);
+        this.next = qdb.ts_table_next_row(this.session.handle(), this.localTable, this.table.getColumns());
     }
 
     /**
      * Reads the next row from local table when appropriate.
      */
     private void maybeReadNext() {
-        if (this.next.isEmpty()) {
+        if (this.next == null) {
             this.readNext();
         }
     }
@@ -90,6 +90,7 @@ public class Reader implements AutoCloseable, Iterator<WritableRow> {
     public void close() throws IOException {
         qdb.ts_local_table_release(this.session.handle(), this.localTable);
         this.localTable = null;
+        this.next = null;
     }
 
     /**
@@ -102,7 +103,7 @@ public class Reader implements AutoCloseable, Iterator<WritableRow> {
     public boolean hasNext() {
         this.maybeReadNext();
 
-        return !(this.next.isEmpty());
+        return this.next != null;
     }
 
     /**
@@ -121,7 +122,9 @@ public class Reader implements AutoCloseable, Iterator<WritableRow> {
             throw new InvalidIteratorException("Attempted to read next but has no next rows");
         }
 
-        return this.next.pop();
+        WritableRow ret = this.next;
+        this.next = null;
+        return ret;
     }
 
     /**

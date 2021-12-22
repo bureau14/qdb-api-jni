@@ -156,12 +156,11 @@ Java_net_quasardb_qdb_jni_qdb_ts_1insert_1columns(JNIEnv *jniEnv,
     }
 }
 
-JNIEXPORT jint JNICALL
+JNIEXPORT jobjectArray JNICALL
 Java_net_quasardb_qdb_jni_qdb_ts_1list_1columns(JNIEnv *jniEnv,
                                                 jclass /*thisClass*/,
                                                 jlong handle,
-                                                jstring alias,
-                                                jobject columns)
+                                                jstring alias)
 {
     qdb::jni::env env(jniEnv);
 
@@ -176,29 +175,21 @@ Java_net_quasardb_qdb_jni_qdb_ts_1list_1columns(JNIEnv *jniEnv,
                                 qdb::jni::string::get_chars_utf8(env, alias),
                                 &native_columns, &column_count));
 
-        setReferenceValue(env, columns,
-                          nativeToColumns(env, native_columns, column_count));
-
-        qdb_release((qdb_handle_t)handle, native_columns);
-
-        return qdb_e_ok;
+        return nativeToColumns(env, native_columns, column_count).release();
     }
     catch (jni::exception const &e)
     {
-
         //! :XXX: memory leak for native_columns? use unique_ptr instead?
-
         e.throw_new(env);
-        return e.error();
+        return NULL;
     }
 }
 
-JNIEXPORT jint JNICALL
+JNIEXPORT jlong JNICALL
 Java_net_quasardb_qdb_jni_qdb_ts_1batch_1table_1init(JNIEnv *jniEnv,
                                                      jclass /*thisClass*/,
                                                      jlong handle,
-                                                     jobjectArray tableColumns,
-                                                     jobject batchTable)
+                                                     jobjectArray tableColumns)
 {
     qdb::jni::env env(jniEnv);
 
@@ -215,16 +206,12 @@ Java_net_quasardb_qdb_jni_qdb_ts_1batch_1table_1init(JNIEnv *jniEnv,
             qdb_ts_batch_table_init((qdb_handle_t)handle, columnInfo,
                                     columnInfoCount, &nativeBatchTable));
 
-        batchColumnRelease(columnInfo, columnInfoCount);
-
-        setLong(env, batchTable, reinterpret_cast<long>(nativeBatchTable));
-
-        return qdb_e_ok;
+        return (jlong)(nativeBatchTable);
     }
     catch (jni::exception const &e)
     {
         e.throw_new(env);
-        return e.error();
+        return -1;
     }
 }
 
@@ -945,13 +932,12 @@ Java_net_quasardb_qdb_jni_qdb_ts_1table_1get_1ranges(JNIEnv *jniEnv,
     }
 }
 
-JNIEXPORT jint JNICALL
+JNIEXPORT jobject JNICALL
 Java_net_quasardb_qdb_jni_qdb_ts_1table_1next_1row(JNIEnv *jniEnv,
                                                    jclass /*thisClass*/,
                                                    jlong handle,
                                                    jlong localTable,
-                                                   jobjectArray columns,
-                                                   jobject output)
+                                                   jobjectArray columns)
 {
     qdb::jni::env env(jniEnv);
 
@@ -963,28 +949,16 @@ Java_net_quasardb_qdb_jni_qdb_ts_1table_1next_1row(JNIEnv *jniEnv,
 
         columnsToNative(env, columns, nativeColumns, columnCount);
 
-        jobject row;
+        return tableGetRow(env, (qdb_handle_t)handle,
+                           (qdb_local_table_t)localTable,
+                           nativeColumns,
+                           columnCount);
 
-        qdb_error_t err = jni::exception::throw_if_error(
-            (qdb_handle_t)handle,
-            tableGetRow(env, (qdb_handle_t)handle,
-                        (qdb_local_table_t)localTable, nativeColumns,
-                        columnCount, &row));
-
-        if (err == qdb_e_iterator_end)
-        {
-            return err;
-        }
-
-        assert(row != NULL);
-        setReferenceValue(env, output, row);
-
-        return err;
     }
     catch (jni::exception const &e)
     {
         e.throw_new(env);
-        return e.error();
+        return NULL;
     }
 }
 
