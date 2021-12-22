@@ -127,8 +127,11 @@ public final class qdb
 
     public static native int ts_insert_columns(long handle, String alias, Column[] columns);
     public static native Column[] ts_list_columns(long handle, String alias);
-    public static native int
-    ts_local_table_init(long handle, String alias, Column[] columns, Reference<Long> localTable);
+
+    // Returns qdb_ts_table_t
+    public static native long ts_local_table_init(long handle,
+                                                  String alias,
+                                                  Column[] columns);
 
 
     // Returns qdb_ts_batch_table_t

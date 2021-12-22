@@ -27,7 +27,7 @@ public class Reader implements AutoCloseable, Iterator<WritableRow> {
     private static final Logger logger = LoggerFactory.getLogger(Writer.class);
     Session session;
     Table table;
-    Long localTable;
+    long localTable;
     WritableRow next;
 
     protected Reader(Session session, Table table, TimeRange[] ranges) {
@@ -40,12 +40,17 @@ public class Reader implements AutoCloseable, Iterator<WritableRow> {
         this.table = table;
         this.next = null;
 
-        Reference<Long> theLocalTable = new Reference<Long>();
-        qdb.ts_local_table_init(this.session.handle(), table.getName(), table.getColumns(), theLocalTable);
+        this.localTable = qdb.ts_local_table_init(this.session.handle(),
+                                                  table.getName(),
+                                                  table.getColumns());
 
-        this.localTable = theLocalTable.get();
+        System.out.printf("A local table = %d%n", this.localTable);
+        // Verify pointer validity
+        // assert (this.localTable > 0);
 
         qdb.ts_table_get_ranges(this.session.handle(), this.localTable, ranges);
+
+        System.out.println("B retrieved ranges...");
     }
 
     /**
@@ -72,7 +77,9 @@ public class Reader implements AutoCloseable, Iterator<WritableRow> {
      * reference to the internal row.
      */
     private void readNext() {
-        this.next = qdb.ts_table_next_row(this.session.handle(), this.localTable, this.table.getColumns());
+        this.next = qdb.ts_table_next_row(this.session.handle(),
+                                          this.localTable,
+                                          this.table.getColumns());
     }
 
     /**
@@ -89,7 +96,7 @@ public class Reader implements AutoCloseable, Iterator<WritableRow> {
      */
     public void close() throws IOException {
         qdb.ts_local_table_release(this.session.handle(), this.localTable);
-        this.localTable = null;
+        this.localTable = 0;
         this.next = null;
     }
 

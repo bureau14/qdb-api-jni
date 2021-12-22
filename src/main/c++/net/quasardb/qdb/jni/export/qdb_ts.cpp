@@ -863,13 +863,12 @@ Java_net_quasardb_qdb_jni_qdb_ts_1batch_1row_1set_1pinned_1double(JNIEnv * jniEn
 
 
 
-JNIEXPORT jint JNICALL
+JNIEXPORT jlong JNICALL
 Java_net_quasardb_qdb_jni_qdb_ts_1local_1table_1init(JNIEnv *jniEnv,
                                                      jclass /*thisClass*/,
                                                      jlong handle,
                                                      jstring alias,
-                                                     jobjectArray columns,
-                                                     jobject localTable)
+                                                     jobjectArray columns)
 {
     qdb::jni::env env(jniEnv);
 
@@ -881,22 +880,24 @@ Java_net_quasardb_qdb_jni_qdb_ts_1local_1table_1init(JNIEnv *jniEnv,
 
         columnsToNative(env, columns, nativeColumns, columnCount);
 
-        qdb_local_table_t nativeLocalTable;
+        qdb_local_table_t nativeLocalTable = NULL;
 
-        qdb::jni::exception::throw_if_error(
-            (qdb_handle_t)handle,
-            qdb_ts_local_table_init(
-                (qdb_handle_t)handle,
-                qdb::jni::string::get_chars_utf8(env, alias), nativeColumns,
-                columnCount, &nativeLocalTable));
-        setLong(env, localTable, reinterpret_cast<long>(nativeLocalTable));
+        qdb::jni::exception::throw_if_error((qdb_handle_t)handle,
+                                            qdb_ts_local_table_init((qdb_handle_t)handle,
+                                                                    qdb::jni::string::get_chars_utf8(env, alias), nativeColumns,
+                                                                    columnCount,
+                                                                    &nativeLocalTable));
 
-        return qdb_e_ok;
+        printf("1 native local table = %p (%d)\n", nativeLocalTable, (long)nativeLocalTable);
+        fflush(stdout);
+
+
+        return (long)nativeLocalTable;
     }
     catch (jni::exception const &e)
     {
         e.throw_new(env);
-        return e.error();
+        return -1;
     }
 }
 
@@ -906,6 +907,8 @@ Java_net_quasardb_qdb_jni_qdb_ts_1local_1table_1release(JNIEnv * /*env*/,
                                                         jlong handle,
                                                         jlong localTable)
 {
+    printf("3 release localTable = %d\n", localTable);
+    fflush(stdout);
     qdb_release((qdb_handle_t)handle, (qdb_local_table_t)localTable);
 }
 
@@ -920,6 +923,8 @@ Java_net_quasardb_qdb_jni_qdb_ts_1table_1get_1ranges(JNIEnv *jniEnv,
 
     try
     {
+        printf("2 get ranges, localTable = %d\n", localTable);
+        fflush(stdout);
         return jni::exception::throw_if_error(
             (qdb_handle_t)handle,
             tableGetRanges(env, (qdb_handle_t)handle,
