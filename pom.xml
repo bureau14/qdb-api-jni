@@ -213,6 +213,7 @@
           </dependency>
         </dependencies>
         <configuration>
+          <redirectTestOutputToFile>false</redirectTestOutputToFile>
           <trimStackTrace>false</trimStackTrace>
           <additionalClasspathElements>
             <additionalClasspathElement>${project.basedir}/target/jni-3.13.1-SNAPSHOT-linux-x86_64.jar</additionalClasspathElement>

@@ -906,13 +906,12 @@ tableGetRowValues(qdb::jni::env &env,
     return qdb_e_ok;
 }
 
-qdb_error_t
+jobject
 tableGetRow(qdb::jni::env &env,
             qdb_handle_t handle,
             qdb_local_table_t localTable,
             qdb_ts_column_info_t *columns,
-            qdb_size_t columnCount,
-            jobject *output)
+            qdb_size_t columnCount)
 {
 
     qdb_timespec_t timestamp;
@@ -920,7 +919,7 @@ tableGetRow(qdb::jni::env &env,
 
     if (err == qdb_e_iterator_end)
     {
-        return err;
+        return NULL;
     }
 
     jni::exception::throw_if_error(handle, err);
@@ -932,12 +931,9 @@ tableGetRow(qdb::jni::env &env,
         handle, tableGetRowValues(env, handle, localTable, columns, columnCount,
                                   values));
 
-    *output =
-        jni::object::create(
-            env, "net/quasardb/qdb/ts/WritableRow",
-            "(Lnet/quasardb/qdb/ts/Timespec;[Lnet/quasardb/qdb/ts/Value;)V",
-            nativeToTimespec(env, timestamp).release(), values.release())
-            .release();
+    return jni::object::create(env,
+                               "net/quasardb/qdb/ts/WritableRow",
+                               "(Lnet/quasardb/qdb/ts/Timespec;[Lnet/quasardb/qdb/ts/Value;)V",
+                               nativeToTimespec(env, timestamp).release(), values.release()).release();
 
-    return qdb_e_ok;
 }

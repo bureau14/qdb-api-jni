@@ -126,12 +126,16 @@ public final class qdb
     public static native long ts_shard_size(long handle, String alias);
 
     public static native int ts_insert_columns(long handle, String alias, Column[] columns);
-    public static native int ts_list_columns(long handle, String alias, Reference<Column[]> columns);
-    public static native int
-    ts_local_table_init(long handle, String alias, Column[] columns, Reference<Long> localTable);
+    public static native Column[] ts_list_columns(long handle, String alias);
+
+    // Returns qdb_ts_table_t
+    public static native long ts_local_table_init(long handle,
+                                                  String alias,
+                                                  Column[] columns);
 
 
-    public static native int ts_batch_table_init(long handle, Writer.TableColumn[] columns, Reference<Long> batchTable);
+    // Returns qdb_ts_batch_table_t
+    public static native long ts_batch_table_init(long handle, Writer.TableColumn[] columns);
     public static native int ts_batch_table_extra_columns(long handle, long batchTable, Writer.TableColumn[] columns);
     public static native void ts_batch_table_release(long handle, long batchTable);
 
@@ -288,7 +292,7 @@ public final class qdb
 
     public static native void ts_local_table_release(long handle, long localTable);
     public static native int ts_table_get_ranges(long handle, long localTable, TimeRange[] ranges);
-    public static native int ts_table_next_row(long handle, long localTable, Column[] columns, Reference<WritableRow> output);
+    public static native WritableRow ts_table_next_row(long handle, long localTable, Column[] columns);
 
     public static native int ts_double_insert(long handle, String alias, String column, qdb_ts_double_point[] points);
     public static native int ts_double_get_ranges(

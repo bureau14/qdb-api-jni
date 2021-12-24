@@ -118,9 +118,8 @@ qdb_error_t tableGetRanges(qdb::jni::env &env,
                            qdb_local_table_t localTable,
                            jobjectArray ranges);
 
-qdb_error_t tableGetRow(qdb::jni::env &env,
-                        qdb_handle_t handle,
-                        qdb_local_table_t localTable,
-                        qdb_ts_column_info_t *columns,
-                        qdb_size_t columnCount,
-                        jobject *output);
+jobject tableGetRow(qdb::jni::env &env,
+                    qdb_handle_t handle,
+                    qdb_local_table_t localTable,
+                    qdb_ts_column_info_t *columns,
+                    qdb_size_t columnCount);
