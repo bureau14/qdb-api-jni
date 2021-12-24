@@ -43,14 +43,9 @@ public class Reader implements AutoCloseable, Iterator<WritableRow> {
         this.localTable = qdb.ts_local_table_init(this.session.handle(),
                                                   table.getName(),
                                                   table.getColumns());
-
-        System.out.printf("A local table = %d%n", this.localTable);
-        // Verify pointer validity
-        // assert (this.localTable > 0);
+        assert (this.localTable > 0);
 
         qdb.ts_table_get_ranges(this.session.handle(), this.localTable, ranges);
-
-        System.out.println("B retrieved ranges...");
     }
 
     /**

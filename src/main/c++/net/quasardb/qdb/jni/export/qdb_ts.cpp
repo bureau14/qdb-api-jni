@@ -903,9 +903,6 @@ Java_net_quasardb_qdb_jni_qdb_ts_1local_1table_1init(JNIEnv *jniEnv,
                                                                     columnCount,
                                                                     &ret));
 
-        printf("1 native local table = %p (%d)\n", nativeLocalTable, (long)nativeLocalTable);
-        fflush(stdout);
-
         return jni::native_ptr::to_java(ret);
     }
     catch (jni::exception const &e)
@@ -921,8 +918,6 @@ Java_net_quasardb_qdb_jni_qdb_ts_1local_1table_1release(JNIEnv * /*env*/,
                                                         jlong handle,
                                                         jlong localTable)
 {
-    printf("3 release localTable = %d\n", localTable);
-    fflush(stdout);
     qdb_release((qdb_handle_t)handle, (qdb_local_table_t)localTable);
 }
 
@@ -937,8 +932,6 @@ Java_net_quasardb_qdb_jni_qdb_ts_1table_1get_1ranges(JNIEnv *jniEnv,
 
     try
     {
-        printf("2 get ranges, localTable = %d\n", localTable);
-        fflush(stdout);
         return jni::exception::throw_if_error(
             (qdb_handle_t)handle,
             tableGetRanges(env, (qdb_handle_t)handle,
