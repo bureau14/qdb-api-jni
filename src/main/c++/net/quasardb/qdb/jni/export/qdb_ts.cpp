@@ -892,8 +892,7 @@ Java_net_quasardb_qdb_jni_qdb_ts_1local_1table_1init(JNIEnv *jniEnv,
     try
     {
         size_t columnCount = env.instance().GetArrayLength(columns);
-        qdb_ts_column_info_t *nativeColumns =
-            new qdb_ts_column_info_t[columnCount];
+        std::unique_ptr<qdb_ts_column_info_t> nativeColumns{new qdb_ts_column_info_t[columnCount]};
 
         columnsToNative(env, columns, nativeColumns.get(), columnCount);
 
@@ -964,14 +963,14 @@ Java_net_quasardb_qdb_jni_qdb_ts_1table_1next_1row(JNIEnv *jniEnv,
     try
     {
         size_t columnCount = env.instance().GetArrayLength(columns);
-        qdb_ts_column_info_t *nativeColumns = (qdb_ts_column_info_t *)(malloc(
-            columnCount * sizeof(qdb_ts_column_info_t)));
 
-        columnsToNative(env, columns, nativeColumns, columnCount);
+        std::unique_ptr<qdb_ts_column_info_t> nativeColumns{new qdb_ts_column_info_t[columnCount]};
+
+        columnsToNative(env, columns, nativeColumns.get(), columnCount);
 
         return tableGetRow(env, (qdb_handle_t)handle,
                            (qdb_local_table_t)localTable,
-                           nativeColumns,
+                           nativeColumns.get(),
                            columnCount);
 
     }
