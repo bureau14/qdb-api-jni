@@ -52,6 +52,8 @@ public class Table implements Serializable {
      * @param name Timeseries name. Must already exist.
      */
     public Table(Column[] columns, long shardSizeMillis, String name) {
+        assert(columns != null);
+
         this.name = name;
         this.columns = columns;
         this.shardSizeMillis = shardSizeMillis;
@@ -707,17 +709,16 @@ public class Table implements Serializable {
      * @param name Unique identifier for this timeseries table.
      */
     static public Column[] getColumns(Session session, String name) {
-        Reference<Column[]> columns =
-            new Reference<Column[]>();
-        qdb.ts_list_columns(session.handle(), name, columns);
-
-        return columns.value;
+        Column[] ret = qdb.ts_list_columns(session.handle(), name);
+        assert(ret != null);
+        return ret;
     }
 
     /**
      * Returns column representation of this table.
      */
     public Column[] getColumns() {
+        assert(this.columns != null);
         return this.columns;
     }
 

@@ -62,7 +62,7 @@ public class Writer implements AutoCloseable, Flushable {
     protected long pointsSinceFlush = 0;
     boolean async;
     Session session;
-    Long batchTable;
+    long batchTable;
     protected List<TableColumn> columns;
 
     TimeRange minMaxTs;
@@ -123,12 +123,13 @@ public class Writer implements AutoCloseable, Flushable {
 
         TableColumn[] tableColumns = this.columns.toArray(new TableColumn[columns.size()]);
         Reference<Long> theBatchTable = new Reference<Long>();
-        qdb.ts_batch_table_init(this.session.handle(),
-                                tableColumns,
-                                theBatchTable);
+        this.batchTable = qdb.ts_batch_table_init(this.session.handle(),
+                                                  tableColumns);
+
+        // Crude check for pointer validity
+        assert(this.batchTable > 0);
 
         logger.info("Successfully initialized Writer with {} columns for {} tables to Writer state", this.columns.size(), tables.length);
-        this.batchTable = theBatchTable.value;
     }
 
     /**
@@ -219,7 +220,7 @@ public class Writer implements AutoCloseable, Flushable {
         //this.flush();
         qdb.ts_batch_table_release(this.session.handle(), this.batchTable);
 
-        this.batchTable = null;
+        this.batchTable = -1;
     }
 
     public Writer.PushMode pushMode() {

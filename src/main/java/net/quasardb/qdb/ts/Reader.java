@@ -27,8 +27,8 @@ public class Reader implements AutoCloseable, Iterator<WritableRow> {
     private static final Logger logger = LoggerFactory.getLogger(Writer.class);
     Session session;
     Table table;
-    Long localTable;
-    Reference<WritableRow> next;
+    long localTable;
+    WritableRow next;
 
     protected Reader(Session session, Table table, TimeRange[] ranges) {
         logger.info("Initializing bulk reader for table {}", table.name);
@@ -38,12 +38,12 @@ public class Reader implements AutoCloseable, Iterator<WritableRow> {
 
         this.session = session;
         this.table = table;
-        this.next = new Reference<WritableRow>();
+        this.next = null;
 
-        Reference<Long> theLocalTable = new Reference<Long>();
-        qdb.ts_local_table_init(this.session.handle(), table.getName(), table.getColumns(), theLocalTable);
-
-        this.localTable = theLocalTable.get();
+        this.localTable = qdb.ts_local_table_init(this.session.handle(),
+                                                  table.getName(),
+                                                  table.getColumns());
+        assert (this.localTable > 0);
 
         qdb.ts_table_get_ranges(this.session.handle(), this.localTable, ranges);
     }
@@ -72,14 +72,16 @@ public class Reader implements AutoCloseable, Iterator<WritableRow> {
      * reference to the internal row.
      */
     private void readNext() {
-        qdb.ts_table_next_row(this.session.handle(), this.localTable, this.table.getColumns(), this.next);
+        this.next = qdb.ts_table_next_row(this.session.handle(),
+                                          this.localTable,
+                                          this.table.getColumns());
     }
 
     /**
      * Reads the next row from local table when appropriate.
      */
     private void maybeReadNext() {
-        if (this.next.isEmpty()) {
+        if (this.next == null) {
             this.readNext();
         }
     }
@@ -89,7 +91,8 @@ public class Reader implements AutoCloseable, Iterator<WritableRow> {
      */
     public void close() throws IOException {
         qdb.ts_local_table_release(this.session.handle(), this.localTable);
-        this.localTable = null;
+        this.localTable = 0;
+        this.next = null;
     }
 
     /**
@@ -102,7 +105,7 @@ public class Reader implements AutoCloseable, Iterator<WritableRow> {
     public boolean hasNext() {
         this.maybeReadNext();
 
-        return !(this.next.isEmpty());
+        return this.next != null;
     }
 
     /**
@@ -121,7 +124,9 @@ public class Reader implements AutoCloseable, Iterator<WritableRow> {
             throw new InvalidIteratorException("Attempted to read next but has no next rows");
         }
 
-        return this.next.pop();
+        WritableRow ret = this.next;
+        this.next = null;
+        return ret;
     }
 
     /**
