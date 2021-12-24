@@ -7,6 +7,7 @@
 #include "net_quasardb_qdb_jni_qdb.h"
 
 #include "../env.h"
+#include "../detail/native_ptr.hpp"
 #include "../object.h"
 #include "../exception.h"
 #include "../log.h"
@@ -156,12 +157,11 @@ Java_net_quasardb_qdb_jni_qdb_ts_1insert_1columns(JNIEnv *jniEnv,
     }
 }
 
-JNIEXPORT jint JNICALL
+JNIEXPORT jobjectArray JNICALL
 Java_net_quasardb_qdb_jni_qdb_ts_1list_1columns(JNIEnv *jniEnv,
                                                 jclass /*thisClass*/,
                                                 jlong handle,
-                                                jstring alias,
-                                                jobject columns)
+                                                jstring alias)
 {
     qdb::jni::env env(jniEnv);
 
@@ -176,69 +176,69 @@ Java_net_quasardb_qdb_jni_qdb_ts_1list_1columns(JNIEnv *jniEnv,
                                 qdb::jni::string::get_chars_utf8(env, alias),
                                 &native_columns, &column_count));
 
-        setReferenceValue(env, columns,
-                          nativeToColumns(env, native_columns, column_count));
-
-        qdb_release((qdb_handle_t)handle, native_columns);
-
-        return qdb_e_ok;
+        return nativeToColumns(env, native_columns, column_count).release();
     }
     catch (jni::exception const &e)
     {
-
         //! :XXX: memory leak for native_columns? use unique_ptr instead?
-
         e.throw_new(env);
-        return e.error();
+        return NULL;
     }
 }
 
-JNIEXPORT jint JNICALL
+JNIEXPORT jlong JNICALL
 Java_net_quasardb_qdb_jni_qdb_ts_1batch_1table_1init(JNIEnv *jniEnv,
                                                      jclass /*thisClass*/,
-                                                     jlong handle,
-                                                     jobjectArray tableColumns,
-                                                     jobject batchTable)
+                                                     jlong handle_,
+                                                     jobjectArray tableColumns)
 {
     qdb::jni::env env(jniEnv);
+
+    qdb_handle_t handle   = reinterpret_cast<qdb_handle_t>(handle_);
+    qdb_batch_table_t ret {nullptr};
 
     try
     {
         size_t columnInfoCount = env.instance().GetArrayLength(tableColumns);
-        qdb_ts_batch_column_info_t *columnInfo =
-            batchColumnInfo(env, tableColumns);
-
-        qdb_batch_table_t nativeBatchTable;
+        std::unique_ptr<qdb_ts_batch_column_info_t> columnInfo {batchColumnInfo(env,
+                                                                                tableColumns)};
 
         qdb::jni::exception::throw_if_error(
             (qdb_handle_t)handle,
-            qdb_ts_batch_table_init((qdb_handle_t)handle, columnInfo,
-                                    columnInfoCount, &nativeBatchTable));
+            qdb_ts_batch_table_init(handle,
+                                    columnInfo.get(),
+                                    columnInfoCount,
+                                    &ret));
 
-        batchColumnRelease(columnInfo, columnInfoCount);
+        assert(ret != nullptr);
 
-        setLong(env, batchTable, reinterpret_cast<long>(nativeBatchTable));
-
-        return qdb_e_ok;
+        return jni::native_ptr::to_java(ret);
     }
     catch (jni::exception const &e)
     {
+        if (ret != nullptr) {
+          qdb_release(handle, ret);
+        }
         e.throw_new(env);
-        return e.error();
+        return -1;
     }
 }
 
 JNIEXPORT jint JNICALL
 Java_net_quasardb_qdb_jni_qdb_ts_1batch_1release_1columns_1memory(JNIEnv *jniEnv,
                                                                   jclass /*thisClass*/,
-                                                                  jlong handle,
-                                                                  jlong batchTable) {
+                                                                  jlong handle_,
+                                                                  jlong batchTable_) {
     qdb::jni::env env(jniEnv);
+
+    qdb_handle_t handle          = reinterpret_cast<qdb_handle_t>(handle_);
+    qdb_batch_table_t batchTable = reinterpret_cast<qdb_batch_table_t>(batchTable_);;
 
     try
     {
-      jni::exception::throw_if_error((qdb_handle_t)handle,
-                                     qdb_ts_batch_release_columns_memory((qdb_batch_table_t)batchTable));
+
+      jni::exception::throw_if_error(handle,
+                                     qdb_ts_batch_release_columns_memory(batchTable));
 
 
       return qdb_e_ok;
@@ -876,40 +876,39 @@ Java_net_quasardb_qdb_jni_qdb_ts_1batch_1row_1set_1pinned_1double(JNIEnv * jniEn
 
 
 
-JNIEXPORT jint JNICALL
+JNIEXPORT jlong JNICALL
 Java_net_quasardb_qdb_jni_qdb_ts_1local_1table_1init(JNIEnv *jniEnv,
                                                      jclass /*thisClass*/,
-                                                     jlong handle,
+                                                     jlong handle_,
                                                      jstring alias,
-                                                     jobjectArray columns,
-                                                     jobject localTable)
+                                                     jobjectArray columns)
 {
     qdb::jni::env env(jniEnv);
+
+
+    qdb_handle_t handle = jni::native_ptr::from_java<qdb_handle_t>(handle_);
+    qdb_local_table_t ret{nullptr};
 
     try
     {
         size_t columnCount = env.instance().GetArrayLength(columns);
-        qdb_ts_column_info_t *nativeColumns =
-            new qdb_ts_column_info_t[columnCount];
+        std::unique_ptr<qdb_ts_column_info_t> nativeColumns{new qdb_ts_column_info_t[columnCount]};
 
-        columnsToNative(env, columns, nativeColumns, columnCount);
+        columnsToNative(env, columns, nativeColumns.get(), columnCount);
 
-        qdb_local_table_t nativeLocalTable;
+        qdb::jni::exception::throw_if_error((qdb_handle_t)handle,
+                                            qdb_ts_local_table_init((qdb_handle_t)handle,
+                                                                    qdb::jni::string::get_chars_utf8(env, alias),
+                                                                    nativeColumns.get(),
+                                                                    columnCount,
+                                                                    &ret));
 
-        qdb::jni::exception::throw_if_error(
-            (qdb_handle_t)handle,
-            qdb_ts_local_table_init(
-                (qdb_handle_t)handle,
-                qdb::jni::string::get_chars_utf8(env, alias), nativeColumns,
-                columnCount, &nativeLocalTable));
-        setLong(env, localTable, reinterpret_cast<long>(nativeLocalTable));
-
-        return qdb_e_ok;
+        return jni::native_ptr::to_java(ret);
     }
     catch (jni::exception const &e)
     {
         e.throw_new(env);
-        return e.error();
+        return -1;
     }
 }
 
@@ -945,46 +944,33 @@ Java_net_quasardb_qdb_jni_qdb_ts_1table_1get_1ranges(JNIEnv *jniEnv,
     }
 }
 
-JNIEXPORT jint JNICALL
+JNIEXPORT jobject JNICALL
 Java_net_quasardb_qdb_jni_qdb_ts_1table_1next_1row(JNIEnv *jniEnv,
                                                    jclass /*thisClass*/,
                                                    jlong handle,
                                                    jlong localTable,
-                                                   jobjectArray columns,
-                                                   jobject output)
+                                                   jobjectArray columns)
 {
     qdb::jni::env env(jniEnv);
 
     try
     {
         size_t columnCount = env.instance().GetArrayLength(columns);
-        qdb_ts_column_info_t *nativeColumns = (qdb_ts_column_info_t *)(malloc(
-            columnCount * sizeof(qdb_ts_column_info_t)));
 
-        columnsToNative(env, columns, nativeColumns, columnCount);
+        std::unique_ptr<qdb_ts_column_info_t> nativeColumns{new qdb_ts_column_info_t[columnCount]};
 
-        jobject row;
+        columnsToNative(env, columns, nativeColumns.get(), columnCount);
 
-        qdb_error_t err = jni::exception::throw_if_error(
-            (qdb_handle_t)handle,
-            tableGetRow(env, (qdb_handle_t)handle,
-                        (qdb_local_table_t)localTable, nativeColumns,
-                        columnCount, &row));
+        return tableGetRow(env, (qdb_handle_t)handle,
+                           (qdb_local_table_t)localTable,
+                           nativeColumns.get(),
+                           columnCount);
 
-        if (err == qdb_e_iterator_end)
-        {
-            return err;
-        }
-
-        assert(row != NULL);
-        setReferenceValue(env, output, row);
-
-        return err;
     }
     catch (jni::exception const &e)
     {
         e.throw_new(env);
-        return e.error();
+        return NULL;
     }
 }
 
