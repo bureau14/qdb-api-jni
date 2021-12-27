@@ -78,7 +78,6 @@ Java_net_quasardb_qdb_jni_qdb_secure_1connect(JNIEnv *jniEnv,
     {
         // qdb::jni::log::swap_callback();
 
-        qdb_error_t err;
         jclass objectClass;
         jfieldID userNameField, userPrivateKeyField, clusterPublicKeyField;
 

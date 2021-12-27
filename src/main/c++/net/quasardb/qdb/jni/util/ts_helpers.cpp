@@ -33,9 +33,7 @@ qdb_ts_column_type_t
 columnTypeFromColumnValue(qdb::jni::env &env, jobject value)
 {
     jclass objectClass;
-    jobject typeObject;
     // jfieldID typeField;
-    jfieldID typeValueField;
     jmethodID methodId;
 
     objectClass = env.instance().GetObjectClass(value);
@@ -74,8 +72,8 @@ timespecToNative(qdb::jni::env &env, jobject input, qdb_timespec_t *output)
 jni::guard::local_ref<jobject>
 nativeToTimespec(qdb::jni::env &env, qdb_timespec_t input)
 {
-    return std::move(jni::object::create(env, "net/quasardb/qdb/ts/Timespec",
-                                         "(JJ)V", input.tv_sec, input.tv_nsec));
+    return jni::object::create(env, "net/quasardb/qdb/ts/Timespec",
+                               "(JJ)V", input.tv_sec, input.tv_nsec);
 }
 
 void
@@ -123,11 +121,11 @@ timeRangesToNative(qdb::jni::env &env,
 jni::guard::local_ref<jobject>
 nativeToTimeRange(qdb::jni::env &env, qdb_ts_range_t native)
 {
-    return std::move(jni::object::create(
-        env, "net/quasardb/qdb/ts/TimeRange",
-        "(Lnet/quasardb/qdb/ts/Timespec;Lnet/quasardb/qdb/ts/Timespec;)V",
-        nativeToTimespec(env, native.begin).release(),
-        nativeToTimespec(env, native.end).release()));
+    return jni::object::create(env,
+                               "net/quasardb/qdb/ts/TimeRange",
+                               "(Lnet/quasardb/qdb/ts/Timespec;Lnet/quasardb/qdb/ts/Timespec;)V",
+                               nativeToTimespec(env, native.begin).release(),
+                               nativeToTimespec(env, native.end).release());
 }
 
 qdb_ts_batch_column_info_t *
@@ -288,7 +286,7 @@ nativeToColumns(qdb::jni::env &env,
                 .release());
     }
 
-    return std::move(columns);
+    return columns;
 }
 
 void
@@ -329,10 +327,12 @@ doublePointsToNative(qdb::jni::env &env,
 jni::guard::local_ref<jobject>
 nativeToDoublePoint(qdb::jni::env &env, qdb_ts_double_point native)
 {
-    return std::move(jni::object::create(
-        env, "net/quasardb/qdb/jni/qdb_ts_double_point",
-        "(Lnet/quasardb/qdb/ts/Timespec;D)V",
-        nativeToTimespec(env, native.timestamp).release(), native.value));
+    return jni::object::create(env,
+                               "net/quasardb/qdb/jni/qdb_ts_double_point",
+                               "(Lnet/quasardb/qdb/ts/Timespec;D)V",
+                               nativeToTimespec(env,
+                                                native.timestamp).release(),
+                               native.value);
 }
 
 jni::guard::local_ref<jobjectArray>
@@ -353,7 +353,7 @@ nativeToDoublePoints(qdb::jni::env &env,
         }
     }
 
-    return std::move(output);
+    return output;
 }
 
 void
@@ -405,11 +405,11 @@ nativeToByteBuffer(qdb::jni::env &env,
 jni::guard::local_ref<jobject>
 nativeToBlobPoint(qdb::jni::env &env, qdb_ts_blob_point native)
 {
-    return std::move(jni::object::create(
-        env, "net/quasardb/qdb/jni/qdb_ts_blob_point",
-        "(Lnet/quasardb/qdb/ts/Timespec;Ljava/nio/ByteBuffer;)V",
-        nativeToTimespec(env, native.timestamp).release(),
-        nativeToByteBuffer(env, native.content, native.content_length)));
+    return jni::object::create(env,
+                               "net/quasardb/qdb/jni/qdb_ts_blob_point",
+                               "(Lnet/quasardb/qdb/ts/Timespec;Ljava/nio/ByteBuffer;)V",
+                               nativeToTimespec(env, native.timestamp).release(),
+                               nativeToByteBuffer(env, native.content, native.content_length));
 }
 
 jni::guard::local_ref<jobjectArray>
@@ -435,17 +435,19 @@ nativeToString(qdb::jni::env &env,
                char const *content,
                qdb_size_t contentLength)
 {
-    return std::move(jni::string::create_utf8(env, content, contentLength));
+    return jni::string::create_utf8(env,
+                                    content,
+                                    contentLength);
 }
 
 jni::guard::local_ref<jobject>
 nativeToStringPoint(qdb::jni::env &env, qdb_ts_string_point native)
 {
-    return std::move(jni::object::create(
-        env, "net/quasardb/qdb/jni/qdb_ts_string_point",
-        "(Lnet/quasardb/qdb/ts/Timespec;Ljava/lang/String;)V",
-        nativeToTimespec(env, native.timestamp).release(),
-        nativeToString(env, native.content, native.content_length).release()));
+    return jni::object::create(env,
+                               "net/quasardb/qdb/jni/qdb_ts_string_point",
+                               "(Lnet/quasardb/qdb/ts/Timespec;Ljava/lang/String;)V",
+                               nativeToTimespec(env, native.timestamp).release(),
+                               nativeToString(env, native.content, native.content_length).release());
 }
 
 jni::guard::local_ref<jobjectArray>
@@ -518,13 +520,18 @@ doubleAggregatesToNative(qdb::jni::env &env,
 jni::guard::local_ref<jobject>
 nativeToDoubleAggregate(qdb::jni::env &env, qdb_ts_double_aggregation_t native)
 {
-    return std::move(jni::object::create(
-        env, "net/quasardb/qdb/jni/qdb_ts_double_aggregation",
-        "(Lnet/quasardb/qdb/ts/TimeRange;JJLnet/quasardb/qdb/jni/"
-        "qdb_ts_double_point;)V",
-        nativeToTimeRange(env, native.range).release(), (jlong)native.type,
-        (jlong)native.count,
-        nativeToDoublePoint(env, native.result).release()));
+    static_assert(sizeof(jlong) >= sizeof(native.type));
+    static_assert(sizeof(jlong) >= sizeof(native.count));
+
+    return jni::object::create(env,
+                               "net/quasardb/qdb/jni/qdb_ts_double_aggregation",
+                               "(Lnet/quasardb/qdb/ts/TimeRange;JJLnet/quasardb/qdb/jni/"
+                               "qdb_ts_double_point;)V",
+                               nativeToTimeRange(env,
+                                                 native.range).release(),
+                               (jlong)native.type,
+                               (jlong)native.count,
+                               nativeToDoublePoint(env, native.result).release());
 }
 
 jni::guard::local_ref<jobjectArray>
@@ -542,7 +549,7 @@ nativeToDoubleAggregates(qdb::jni::env &env,
             nativeToDoubleAggregate(env, native[i]).release());
     }
 
-    return std::move(output);
+    return output;
 }
 
 void
@@ -595,12 +602,19 @@ blobAggregatesToNative(qdb::jni::env &env,
 jni::guard::local_ref<jobject>
 nativeToBlobAggregate(qdb::jni::env &env, qdb_ts_blob_aggregation_t native)
 {
-    return std::move(jni::object::create(
-        env, "net/quasardb/qdb/jni/qdb_ts_blob_aggregation",
-        "(Lnet/quasardb/qdb/ts/TimeRange;JJLnet/quasardb/qdb/jni/"
-        "qdb_ts_blob_point;)V",
-        nativeToTimeRange(env, native.range).release(), (jlong)native.type,
-        (jlong)native.count, nativeToBlobPoint(env, native.result).release()));
+    static_assert(sizeof(jlong) >= sizeof(native.type));
+    static_assert(sizeof(jlong) >= sizeof(native.count));
+
+    return jni::object::create(env,
+                               "net/quasardb/qdb/jni/qdb_ts_blob_aggregation",
+                               "(Lnet/quasardb/qdb/ts/TimeRange;JJLnet/quasardb/qdb/jni/"
+                               "qdb_ts_blob_point;)V",
+                               nativeToTimeRange(env,
+                                                 native.range).release(),
+                               (jlong)native.type,
+                               (jlong)native.count,
+                               nativeToBlobPoint(env,
+                                                 native.result).release());
 }
 
 jni::guard::local_ref<jobjectArray>
@@ -618,7 +632,7 @@ nativeToBlobAggregates(qdb::jni::env &env,
             output, (jsize)i, nativeToBlobAggregate(env, native[i]).release());
     }
 
-    return std::move(output);
+    return output;
 }
 
 void

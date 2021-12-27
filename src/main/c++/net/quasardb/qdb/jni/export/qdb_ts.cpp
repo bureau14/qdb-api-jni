@@ -292,17 +292,6 @@ Java_net_quasardb_qdb_jni_qdb_ts_1batch_1table_1release(JNIEnv * /*env*/,
     qdb_release((qdb_handle_t)handle, (qdb_batch_table_t)batchTable);
 }
 
-
-
-/**
- * Cast a java array of Writer.TableColumn[] to a native array of column types.
- * `out` is assumed to be pre-allocated and should be as long as the `in` length.
- */
-void
-pin_columns(qdb_batch_table_t table,
-            qdb_ts_column_type_t * types) {
-}
-
 JNIEXPORT jint JNICALL
 Java_net_quasardb_qdb_jni_qdb_ts_1batch_1pinned_1push(JNIEnv *jniEnv,
                                                       jclass /*thisClass*/,
@@ -326,8 +315,9 @@ Java_net_quasardb_qdb_jni_qdb_ts_1batch_1pinned_1push(JNIEnv *jniEnv,
          * Push a single shard using pinned columns. We first pin all the columns
          * that we expect.
          */
-        size_t rowCount = env.instance().GetArrayLength(rows);
+        // size_t rowCount = env.instance().GetArrayLength(rows);
 
+        // XXX(leon): nothing here?!
         return qdb_e_ok;
     }
     catch (jni::exception const &e)

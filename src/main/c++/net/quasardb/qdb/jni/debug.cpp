@@ -5,7 +5,7 @@
 /* static */ void
 qdb::jni::debug::hexdump(env &env, void const *buf_, size_t len)
 {
-    char const *buf = (char const *)(buf);
+    char const *buf = (char const *)(buf_);
     char const *const lut = "0123456789ABCDEF";
 
     std::string output;
