@@ -44,9 +44,10 @@ class object
         assert(objectClass != NULL);
         assert(constructor != NULL);
 
-        return std::move(jni::guard::local_ref<jobject>(
-            env,
-            env.instance().NewObject(objectClass, constructor, params...)));
+        return jni::guard::local_ref<jobject>(env,
+                                              env.instance().NewObject(objectClass,
+                                                                       constructor,
+                                                                       params...));
     }
 
     /**
@@ -65,10 +66,10 @@ class object
     {
         assert(objectClass != NULL);
 
-        return create(
-            env, objectClass,
-            introspect::lookup_method(env, objectClass, "<init>", signature),
-            params...);
+        return create(env,
+                      objectClass,
+                      introspect::lookup_method(env, objectClass, "<init>", signature),
+                      params...);
     }
 
     /**
@@ -97,8 +98,10 @@ class object
     {
         assert(objectClass != NULL);
 
-        return std::move(jni::guard::local_ref<jobjectArray>(
-            env, env.instance().NewObjectArray(size, objectClass, NULL)));
+        return jni::guard::local_ref<jobjectArray>(env,
+                                                   env.instance().NewObjectArray(size,
+                                                                                 objectClass,
+                                                                                 NULL));
     }
 
     /**
@@ -130,9 +133,10 @@ class object
         assert(objectClass != NULL);
         assert(method != NULL);
 
-        return std::move(jni::guard::local_ref<jobject>(
-            env, env.instance().CallStaticObjectMethod(objectClass, method,
-                                                       params...)));
+        return jni::guard::local_ref<jobject>(env,
+                                              env.instance().CallStaticObjectMethod(objectClass,
+                                                                                    method,
+                                                                                    params...));
     }
 
     /**
@@ -178,8 +182,9 @@ class object
         assert(objectClass != NULL);
         assert(field != NULL);
 
-        return std::move(jni::guard::local_ref<jobject>(
-            env, env.instance().GetStaticObjectField(objectClass, field)));
+        return jni::guard::local_ref<jobject>(env,
+                                              env.instance().GetStaticObjectField(objectClass,
+                                                                                  field));
     }
 };
 }; // namespace jni

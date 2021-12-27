@@ -7,6 +7,7 @@ std::string
 _error_code_to_exception_class_name(qdb_error_t e)
 {
 
+#pragma GCC diagnostic ignored "-Wswitch"
     switch (e)
     {
     case qdb_e_connection_refused:

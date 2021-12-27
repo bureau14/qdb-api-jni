@@ -10,8 +10,9 @@ qdb::jni::byte_buffer::create(qdb::jni::env &env, void *buffer, jsize len)
     assert(buffer != NULL);
     assert(len > 0);
 
-    return std::move(qdb::jni::guard::local_ref<jobject>(
-        env, env.instance().NewDirectByteBuffer(buffer, len)));
+    return qdb::jni::guard::local_ref<jobject>(env,
+                                               env.instance().NewDirectByteBuffer(buffer,
+                                                                                  len));
 }
 
 /* static */ qdb::jni::guard::local_ref<jobject>
