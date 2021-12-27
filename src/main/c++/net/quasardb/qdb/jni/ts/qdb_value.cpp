@@ -37,6 +37,10 @@ qdb::jni::ts::value::from_native(qdb::jni::env &env,
         return _from_native_string(env, input);
         break;
 
+    case qdb_query_result_symbol:
+        return _from_native_symbol(env, input);
+        break;
+
     case qdb_query_result_count:
         return _from_native_count(env, input);
         break;
@@ -108,6 +112,17 @@ qdb::jni::ts::value::_from_native_string(qdb::jni::env &env,
                                            jni::string::create_utf8(env,
                                                                     input.payload.string.content,
                                                                     input.payload.string.content_length).release());
+}
+
+/* static */ qdb::jni::guard::local_ref<jobject>
+qdb::jni::ts::value::_from_native_symbol(qdb::jni::env &env,
+                                         qdb_point_result_t const &input)
+{
+    return jni::object::call_static_method(env, "net/quasardb/qdb/ts/Value", "createString",
+                                           "(Ljava/lang/String;)Lnet/quasardb/qdb/ts/Value;",
+                                           jni::string::create_utf8(env,
+                                                                    input.payload.symbol.content,
+                                                                    input.payload.symbol.content_length).release());
 }
 
 /* static */ qdb::jni::guard::local_ref<jobject>
