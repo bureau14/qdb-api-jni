@@ -36,7 +36,7 @@ nativeToValues(qdb::jni::env &env,
             qdb::jni::ts::value::from_native(env, values[i]).release());
     }
 
-    return std::move(lf.pop(output.release()));
+    return lf.pop(output.release());
 }
 
 jni::guard::local_ref<jobjectArray>
@@ -54,7 +54,7 @@ nativeToColumnNames(qdb::jni::env &env,
             output, i, jni::string::create_utf8(env, columns[i].data));
     }
 
-    return std::move(output);
+    return output;
 }
 
 jni::guard::local_ref<jobject>
@@ -78,11 +78,14 @@ nativeToResult(qdb::jni::env &env,
         env.instance().SetObjectArrayElement(rows, i, row.release());
     }
 
-    return std::move(jni::object::create(
-        env, resultClass, "([Ljava/lang/String;[Lnet/quasardb/qdb/ts/Row;)V",
-        nativeToColumnNames(env, input.column_names, input.column_count)
-            .release(),
-        rows.release()));
+    return jni::object::create(env,
+                               resultClass,
+                               "([Ljava/lang/String;[Lnet/quasardb/qdb/ts/Row;)V",
+                               nativeToColumnNames(env,
+                                                   input.column_names,
+                                                   input.column_count)
+                               .release(),
+                               rows.release());
 }
 
 JNIEXPORT jint JNICALL

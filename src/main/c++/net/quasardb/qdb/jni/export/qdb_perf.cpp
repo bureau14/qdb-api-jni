@@ -76,7 +76,7 @@ native_to_trace(jni::env &env,
                                 (jint)(0), (jlong)(m.elapsed)));
     }
 
-    return std::move(output);
+    return output;
 }
 
 jni::guard::local_ref<jstring>
@@ -204,7 +204,7 @@ native_to_measurements(jni::env &env,
                 .release());
     }
 
-    return std::move(output);
+    return output;
 }
 
 JNIEXPORT jint JNICALL
