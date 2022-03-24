@@ -202,16 +202,10 @@
         <version>2.8.2</version>
       </plugin>
 
+
       <plugin>
         <artifactId>maven-surefire-plugin</artifactId>
         <version>3.0.0-M5</version>
-        <dependencies>
-          <dependency>
-            <groupId>org.junit.platform</groupId>
-            <artifactId>junit-platform-surefire-provider</artifactId>
-            <version>1.2.0</version>
-          </dependency>
-        </dependencies>
         <configuration>
           <redirectTestOutputToFile>false</redirectTestOutputToFile>
           <forkCount>0</forkCount>
