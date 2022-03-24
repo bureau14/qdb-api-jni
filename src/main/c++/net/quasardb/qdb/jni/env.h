@@ -5,9 +5,7 @@
 #include <jni.h>
 #include <utility>
 
-namespace qdb
-{
-namespace jni
+namespace qdb::jni
 {
 
 class vm;
@@ -30,18 +28,22 @@ class vm;
  */
 class env
 {
-  private:
-    JNIEnv *_env;
+private:
+    JNIEnv * _env;
     bool _flush_disabled;
 
-  public:
+public:
     /**
      * Initialise an env from a JNIEnv *. This is the most commonly used
      * method of initialisation, and will ensure qdb::jni::vm is initialised.
      */
-    env(JNIEnv *e) : _env(e), _flush_disabled(false)
-    {
-    }
+    env(JNIEnv * e)
+        : _env(e)
+        , _flush_disabled(false)
+    {}
+
+    env(env const & e)  = delete;
+    env(env const && e) = delete;
 
     /**
      * Initialise an env from a JavaVM &. This can be used in cases where
@@ -50,14 +52,16 @@ class env
      *
      * \warning Requires the current thread to be attached to the JVM.
      */
-    env(JavaVM &vm);
+    env(JavaVM & vm);
+
+    env & operator=(env const & e) = delete;
+    env & operator=(env const && e) = delete;
 
     /**
      * Initialise an env from a global JavaVM.
      */
 
-    JNIEnv &
-    instance()
+    JNIEnv & instance()
     {
         assert(_env != NULL);
         return *_env;
@@ -65,7 +69,8 @@ class env
 
     ~env()
     {
-        if (false == _flush_disabled) {
+        if (false == _flush_disabled)
+        {
             log::flush(*this);
         }
     }
@@ -73,15 +78,10 @@ class env
     /**
      * Disables flushing of logs in destructor.
      */
-    void disable_flush() {
+    void disable_flush()
+    {
         _flush_disabled = true;
     }
-
-  protected:
-    env(env const &) = delete;
-    env(env const &&) = delete;
-    env &operator=(env const &) = delete;
-    env &operator=(env const &&) = delete;
 };
-}; // namespace jni
-}; // namespace qdb
+
+}; // namespace qdb::jni

@@ -7,6 +7,12 @@ import net.quasardb.qdb.jni.*;
 
 public class TimeRange implements Serializable {
 
+    /**
+     * Timerange that spans the universal set of all representable time.
+     */
+    public static final TimeRange UNIVERSE_RANGE = new TimeRange(Timespec.MIN_VALUE,
+                                                                 Timespec.MAX_VALUE);
+
     protected Timespec begin;
     protected Timespec end;
 

@@ -116,7 +116,9 @@ public class Writer implements AutoCloseable, Flushable {
 
             for (Column column : table.columns) {
                 logger.trace("Initializing column {} of table {} at offset {}", column.name, table.name, this.columns.size());
-                this.columns.add(new TableColumn(table.name, column.type, column.name));
+                this.columns.add(new TableColumn(table.name,
+                                                 column.type.asValueType(),
+                                                 column.name));
                 this.offsetsToTable.add(table);
             }
         }
@@ -147,8 +149,12 @@ public class Writer implements AutoCloseable, Flushable {
 
             for (Column column : table.columns) {
                 logger.debug("Initializing extra column {} of table {} at offset {}", column.name, table.name, this.columns.size());
-                this.columns.add(new TableColumn(table.name, column.type, column.name));
-                columns.add(new TableColumn(table.name, column.type, column.name));
+                this.columns.add(new TableColumn(table.name,
+                                                 column.type.asValueType(),
+                                                 column.name));
+                columns.add(new TableColumn(table.name,
+                                            column.type.asValueType(),
+                                            column.name));
             }
         }
 

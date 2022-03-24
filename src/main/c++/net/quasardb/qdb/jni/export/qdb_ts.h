@@ -5,10 +5,9 @@ namespace qdb
 {
 namespace jni
 {
-    class ts {
-    public:
-      static jint register_natives(JNIEnv * env, jclass c);
-    };
-
+namespace ts
+{
+jint register_natives(JNIEnv * env, jclass c);
 };
-};
+}; // namespace jni
+}; // namespace qdb

@@ -1,9 +1,8 @@
 #pragma once
 
-#include <jni.h>
-
-#include "guard/byte_array.h"
 #include "introspect.h"
+#include "guard/byte_array.h"
+#include <jni.h>
 
 namespace qdb
 {
@@ -17,14 +16,13 @@ class env;
  */
 class byte_array
 {
-  public:
-
+public:
     /**
      * Get a reference to the underlying byte array.
      */
-    static jni::guard::byte_array
-    get_bytes(qdb::jni::env & env, jbyteArray bb) {
-      return guard::byte_array(env, bb);
+    static jni::guard::byte_array get_bytes(qdb::jni::env & env, jbyteArray bb)
+    {
+        return guard::byte_array(env, bb);
     }
 };
 }; // namespace jni

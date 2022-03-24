@@ -210,7 +210,7 @@ public class Session implements AutoCloseable {
     /**
      * Set maximum client parallelism for this session.
      *
-     * @param threadCount The desired maximum number of threads to use for query execution, or 0 
+     * @param threadCount The desired maximum number of threads to use for query execution, or 0
      *
      * @throws ClusterClosedException If the connection to the cluster is currently closed.
      */
@@ -241,5 +241,18 @@ public class Session implements AutoCloseable {
     public void waitForStabilization(int timeoutMillis) throws ClusterClosedException {
         throwIfClosed();
         qdb.wait_for_stabilization(handle, timeoutMillis);
+    }
+
+    /**
+     * Purge all data from cluster. Useful for integration testing.
+     *
+     * @param timeoutMillis The timeout of the operation, in milliseconds
+     *
+     * @throws ClusterClosedException If the connection to the cluster is currently closed.
+     */
+    public void purgeAll(int timeoutMillis) throws ClusterClosedException {
+        logger.warn("Purging entire cluster");
+        throwIfClosed();
+        qdb.purge_all(handle, timeoutMillis);
     }
 }

@@ -23,10 +23,12 @@ import net.quasardb.qdb.exception.InvalidArgumentException;
 @Threads(1)
 public class WriterBenchmark {
 
-    @Param({"FIRST", "MANY"})
+    // @Param({"FIRST", "MANY"})
+    @Param({"FIRST"})
     public String tableSpread;
 
-    @Param({"pinnedWriter", "expWriter"})
+    // @Param({"pinnedWriter", "expWriter"})
+    @Param({"expWriter"})
     public String writerType;
 
     @Param({"APPEND", "FLUSH"})
@@ -58,7 +60,7 @@ public class WriterBenchmark {
 
     public WriterBenchmark() {
         for (int i = 0; i < this.columnCount; ++i) {
-            this.v[i] = TestUtils.generateRandomValueByType(this.valueType);
+            this.v[i] = TestUtils.generateRandomValueByType(this.columnType);
         }
 
     }
@@ -70,7 +72,7 @@ public class WriterBenchmark {
 
         this.v = new Value[this.columnCount];
         for (int i = 0; i < this.columnCount; ++i) {
-            this.v[i] = TestUtils.generateRandomValueByType(this.valueType);
+            this.v[i] = TestUtils.generateRandomValueByType(this.columnType);
         }
     }
 
@@ -82,9 +84,9 @@ public class WriterBenchmark {
 
     @Setup(Level.Invocation)
     public void setupInvocation() throws Exception {
-        TestUtils.purgeAll(this.s);
+        this.s.purgeAll(300000);
 
-        Column[] c = TestUtils.generateTableColumns(this.valueType, this.columnCount);
+        Column[] c = TestUtils.generateTableColumns(this.columnType, this.columnCount);
 
         this.t = new Table[this.tableCount];
         for (int i = 0; i < this.tableCount; ++i) {
@@ -156,9 +158,9 @@ public class WriterBenchmark {
 
     @Benchmark
     @BenchmarkMode(Mode.AverageTime)
-    @Fork(1)
-    @Warmup(iterations = 5)
-    @Measurement(batchSize = -1, iterations = 3, time = 1, timeUnit = TimeUnit.MILLISECONDS)
+    @Fork(0)
+    @Warmup(iterations = 0)
+    @Measurement(batchSize = -1, iterations = 5, time = 1, timeUnit = TimeUnit.MILLISECONDS)
     @OutputTimeUnit(TimeUnit.MILLISECONDS)
     public void benchmark() throws Exception {
         if (!this.operationType.equals("FLUSH")) {

@@ -119,6 +119,9 @@ public class ExpWriter extends Writer {
                                                       c.getName(),
                                                       Values.asPrimitiveBlobArray(xs));
                 break;
+
+            case SYMBOL:
+                //! FALLTHROUGH
             case STRING:
                 qdb.ts_exp_batch_set_column_from_string(prepped,
                                                         tableNum,

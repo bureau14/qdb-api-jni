@@ -21,12 +21,12 @@ public class Value implements Serializable {
     ByteBuffer blobValue = Constants.nullBlob;
 
     public enum Type {
-        UNINITIALIZED(qdb_ts_column_type.uninitialized),
-        DOUBLE(qdb_ts_column_type.double_),
-        BLOB(qdb_ts_column_type.blob),
-        STRING(qdb_ts_column_type.string),
-        INT64(qdb_ts_column_type.int64),
-        TIMESTAMP(qdb_ts_column_type.timestamp)
+        UNINITIALIZED(Constants.qdb_ts_column_uninitialized),
+        DOUBLE(Constants.qdb_ts_column_double),
+        BLOB(Constants.qdb_ts_column_blob),
+        STRING(Constants.qdb_ts_column_string),
+        INT64(Constants.qdb_ts_column_int64),
+        TIMESTAMP(Constants.qdb_ts_column_timestamp)
         ;
 
         protected final int value;
@@ -40,21 +40,22 @@ public class Value implements Serializable {
 
         public static Type fromInt(int type) {
             switch(type) {
-            case qdb_ts_column_type.double_:
+            case Constants.qdb_ts_column_double:
                 return Type.DOUBLE;
 
-            case qdb_ts_column_type.blob:
+            case Constants.qdb_ts_column_blob:
                 return Type.BLOB;
 
-            case qdb_ts_column_type.string:
+            case Constants.qdb_ts_column_string:
                 return Type.STRING;
 
-            case qdb_ts_column_type.int64:
+            case Constants.qdb_ts_column_int64:
                 return Type.INT64;
 
-            case qdb_ts_column_type.timestamp:
+            case Constants.qdb_ts_column_timestamp:
                 return Type.TIMESTAMP;
             }
+
 
             return Type.UNINITIALIZED;
         }
