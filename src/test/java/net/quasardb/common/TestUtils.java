@@ -22,25 +22,45 @@ public class TestUtils {
         return Session.connect(CLUSTER_URI);
     }
 
-    public static Column[] generateTableColumns(int count) {
-        return generateTableColumns(Value.Type.DOUBLE, count);
+    public static Column generateTableColumn(Column.Type columnType) {
+        if (columnType == Column.Type.SYMBOL) {
+            return new Column(createUniqueAlias(), columnType, createUniqueAlias());
+        } else {
+            return new Column(createUniqueAlias(), columnType);
+        }
     }
 
-    public static Column[] generateTableColumns(Value.Type valueType, int count) {
+    public static Column[] generateTableColumns(int count) {
+        return generateTableColumns(Column.Type.DOUBLE, count);
+    }
+
+    public static Column[] generateTableColumns(Column.Type columnType) {
+        return generateTableColumns(columnType, 1);
+    }
+
+    public static Column[] generateTableColumns(Column.Type columnType, int count) {
         return Stream.generate(TestUtils::createUniqueAlias)
             .limit(count)
             .map((alias) -> {
-                    return new Column(alias, valueType);
+                    if (columnType == Column.Type.SYMBOL) {
+                        return new Column(alias, columnType, createUniqueAlias());
+                    } else {
+                        return new Column(alias, columnType);
+                    }
                 })
             .toArray(Column[]::new);
     }
 
-    public static Column[] generateTableColumns(Value.Type[] valueTypes) {
-        return Arrays.stream(valueTypes)
-            .limit(valueTypes.length)
-            .map((valueType) -> {
-                    return new Column(createUniqueAlias(),
-                                      valueType);
+    public static Column[] generateTableColumns(Column.Type[] columnTypes) {
+        return Arrays.stream(columnTypes)
+            .limit(columnTypes.length)
+            .map((columnType) -> {
+                    if (columnType == Column.Type.SYMBOL) {
+                        return new Column(createUniqueAlias(), columnType, createUniqueAlias());
+                    } else {
+                        return new Column(createUniqueAlias(),
+                                          columnType);
+                    }
                 })
             .toArray(Column[]::new);
     }
@@ -90,31 +110,146 @@ public class TestUtils {
         new Random(n++).nextBytes(b);
     }
 
+    public static String randomString() {
+        return createUniqueAlias();
+    }
+
+    public static String[] randomStrings() {
+        return randomStrings(100);
+    }
+
+    public static String[] randomStrings(int n) {
+        String[] ret = new String[n];
+        for (int i = 0; i < n; ++i) {
+            ret[i] = randomString();
+        }
+
+        return ret;
+    }
+
+    public static ByteBuffer randomBlob() {
+        return createSampleData();
+    }
+
+    public static ByteBuffer[] randomBlobs() {
+        return randomBlobs(100);
+    }
+
+    public static ByteBuffer[] randomBlobs(int n) {
+        ByteBuffer[] ret = new ByteBuffer[n];
+
+        for (int i = 0; i < n; ++i) {
+            ret[i] = randomBlob();
+        }
+
+        return ret;
+    }
+
     public static double randomDouble() {
         return new Random(n++).nextDouble();
+    }
+
+    public static double[] randomDoubles() {
+        return randomDoubles(100);
+    }
+
+    public static double[] randomDoubles(int n) {
+        double[] ret = new double[n];
+        for (int i = 0; i < n; ++i) {
+            ret[i] = randomDouble();
+        }
+
+        return ret;
     }
 
     public static long randomInt64() {
         return new Random(n++).nextLong();
     }
 
+    public static long[] randomInt64s() {
+        return randomInt64s(100);
+    }
+
+    public static long[] randomInt64s(int n) {
+        long[] ret = new long[n];
+        for (int i = 0; i < n; ++i) {
+            ret[i] = randomInt64();
+        }
+
+        return ret;
+    }
+
     public static Timespec randomTimespec() {
         return randomTimestamp();
+    }
+
+    public static Timespecs randomTimespecs() {
+        return randomTimespecs(100);
+    }
+
+    public static Timespecs randomTimespecs(int n) {
+        Timespec[] ret = new Timespec[n];
+        for (int i = 0; i < n; ++i) {
+            ret[i] = randomTimespec();
+        }
+
+        return Timespecs.ofArray(ret);
+    }
+
+
+    public static Timespec randomTimestamp() {
+        return randomTimestamp(Timespec.now());
+    }
+
+    public static Timespec randomTimestamp(Timespec baseTime) {
+        return baseTime.plusSeconds(n++);
+    }
+
+    public static Points generatePointsByColumnType(Column.Type columnType) throws RuntimeException {
+        return generatePointsByColumnType(columnType, 100);
+    }
+
+    public static Points generatePointsByColumnType(Column.Type columnType, int n) throws RuntimeException {
+        Timespecs timespecs = randomTimespecs(n);
+
+        switch (columnType) {
+        case BLOB:
+            return Points.ofBlobs(timespecs, randomBlobs(n));
+        case SYMBOL:
+            //! FALLTHROUGH
+        case STRING:
+            return Points.ofStrings(timespecs, randomStrings(n));
+        case DOUBLE:
+            return Points.ofDoubles(timespecs, randomDoubles(n));
+        case INT64:
+            return Points.ofInt64s(timespecs, randomInt64s(n));
+        case TIMESTAMP:
+            return Points.ofTimestamps(timespecs, randomTimespecs(n));
+        }
+
+        throw new RuntimeException("Unsupported column type for generating points: " + columnType.toString());
 
     }
 
-    public static Timespec randomTimestamp() {
-        return new Timespec(new Random(n++).nextInt(),
-                            new Random(n++).nextInt());
-
+    public static Value generateRandomValueByType(Column.Type columnType) {
+        return generateRandomValueByType(columnType.asValueType());
     }
 
     public static Value generateRandomValueByType(Value.Type valueType) {
         return generateRandomValueByType(32, valueType);
     }
 
+    public static Value generateRandomValueByType(int complexity, Column.Type columnType) {
+        return generateRandomValueByType(complexity, columnType.asValueType());
+    }
+
     public static Value generateRandomValueByType(int complexity, Value.Type valueType) {
         return generateRandomValueByType(complexity, valueType, 0.0);
+    }
+
+    public static Value generateRandomValueByType(int complexity, Column.Type columnType, double nullChance) {
+        return generateRandomValueByType(complexity, columnType.asValueType(), nullChance);
+
     }
 
     public static Value generateRandomValueByType(int complexity, Value.Type valueType, double nullChance) {
@@ -171,7 +306,7 @@ public class TestUtils {
             (() ->
              Arrays.stream(cols)
              .map(Column::getType)
-             .map((Value.Type valueType) -> {
+             .map((Column.Type valueType) -> {
                      return TestUtils.generateRandomValueByType(complexity, valueType, nullChance);
                  })
              .toArray(Value[]::new));

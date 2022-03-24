@@ -51,12 +51,24 @@ endif()
 if(CMAKE_CXX_COMPILER_ID MATCHES "(GNU|Clang)")
     add_compile_options(
         -fPIC
-        -Wall
-        -Werror
         -Wno-strict-aliasing
         -Wno-sign-compare
     )
 endif()
+
+if(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
+    add_compile_options(
+      -fconcepts-diagnostics-depth=3
+    )
+endif()
+
+if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+    add_compile_options(
+      -ftemplate-backtrace-limit=0
+    )
+endif()
+
+
 
 # link flags
 
@@ -110,3 +122,10 @@ if(CMAKE_COMPILER_IS_GNUCXX)
         -Wl,--gc-sections # remove dead code
     )
 endif()
+
+# Colorize output
+if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+  add_compile_options (-fdiagnostics-color=always)
+elseif ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+  add_compile_options (-fcolor-diagnostics)
+endif ()

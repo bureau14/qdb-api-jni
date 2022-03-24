@@ -54,15 +54,15 @@ public class QueryTest {
 
     @Test
     public void canExecuteValidQuery() throws Exception {
-        Value.Type[] valueTypes = { Value.Type.INT64,
-                                    Value.Type.DOUBLE,
-                                    Value.Type.TIMESTAMP,
-                                    Value.Type.BLOB,
-                                    Value.Type.STRING };
+        Column.Type[] columnTypes = { Column.Type.INT64,
+                                      Column.Type.DOUBLE,
+                                      Column.Type.TIMESTAMP,
+                                      Column.Type.BLOB,
+                                      Column.Type.STRING };
 
-        for (Value.Type valueType : valueTypes) {
+        for (Column.Type columnType : columnTypes) {
             Column[] definition =
-                TestUtils.generateTableColumns(valueType, 1);
+                TestUtils.generateTableColumns(columnType, 1);
 
             WritableRow[] rows = TestUtils.generateTableRows(definition, 1);
 
@@ -90,15 +90,15 @@ public class QueryTest {
 
     @Test
     public void canAccessResultAsStream() throws Exception {
-        Value.Type[] valueTypes = { Value.Type.INT64,
-                                    Value.Type.DOUBLE,
-                                    Value.Type.TIMESTAMP,
-                                    Value.Type.BLOB,
-                                    Value.Type.STRING };
+        Column.Type[] columnTypes = { Column.Type.INT64,
+                                      Column.Type.DOUBLE,
+                                      Column.Type.TIMESTAMP,
+                                      Column.Type.BLOB,
+                                      Column.Type.STRING };
 
-        for (Value.Type valueType : valueTypes) {
+        for (Column.Type columnType : columnTypes) {
             Column[] definition =
-                TestUtils.generateTableColumns(valueType, 2);
+                TestUtils.generateTableColumns(columnType, 1);
 
             WritableRow[] rows = TestUtils.generateTableRows(definition, 10);
             Table t = TestUtils.seedTable(this.s, definition, rows);
@@ -121,15 +121,15 @@ public class QueryTest {
     public void nullValuesInResultsTest() throws Exception {
         Session s = TestUtils.createSession();
 
-        Value.Type[] valueTypes = { Value.Type.INT64,
-                                    Value.Type.DOUBLE,
-                                    Value.Type.TIMESTAMP,
-                                    Value.Type.BLOB,
-                                    Value.Type.STRING };
+        Column.Type[] columnTypes = { Column.Type.INT64,
+                                      Column.Type.DOUBLE,
+                                      Column.Type.TIMESTAMP,
+                                      Column.Type.BLOB,
+                                      Column.Type.STRING };
 
-        for (Value.Type valueType : valueTypes) {
+        for (Column.Type columnType : columnTypes) {
             Column[] definition =
-                TestUtils.generateTableColumns(valueType, 5);
+                TestUtils.generateTableColumns(columnType, 1);
 
             WritableRow[] rows = TestUtils.generateTableRows(definition, 32, 10, 0.5);
             Table t = TestUtils.seedTable(this.s, definition, rows);
@@ -146,7 +146,6 @@ public class QueryTest {
                 }
 
                 b = b.add(c.getName());
-
             }
 
             Result r = b.add(" from ")

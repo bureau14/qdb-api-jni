@@ -63,7 +63,7 @@ public class SessionOptionsTest {
         s.setInputBufferSize(1500);
 
         Column[] definition =
-            TestUtils.generateTableColumns(Value.Type.BLOB, 10);
+            TestUtils.generateTableColumns(Column.Type.BLOB, 10);
 
         WritableRow[] rows = TestUtils.generateTableRows(definition, 100);
         Table t = TestUtils.seedTable(s, definition, rows);

@@ -11,6 +11,7 @@ import net.quasardb.qdb.ts.Table;
 import net.quasardb.qdb.ts.TimeRange;
 import net.quasardb.qdb.ts.Timespec;
 import net.quasardb.qdb.ts.Timespecs;
+import net.quasardb.qdb.ts.Points;
 import net.quasardb.qdb.ts.Value;
 import net.quasardb.qdb.ts.Writer;
 import net.quasardb.qdb.ts.PinnedWriter;
@@ -208,27 +209,6 @@ public final class qdb
                                                          long[] timeoffsets,
                                                          ByteBuffer[] values);
 
-    public static native int ts_batch_row_set_pinned_double(long columnIndex,
-                                                            long rowIndex,
-                                                            double value);
-
-    public static native int ts_batch_row_set_pinned_int64(long columnIndex,
-                                                           long rowIndex,
-                                                           long value);
-
-    public static native int ts_batch_row_set_pinned_timestamp(long columnIndex,
-                                                               long rowIndex,
-                                                               long sec,
-                                                               long nsec);
-
-    public static native int ts_batch_row_set_pinned_blob(long columnIndex,
-                                                          long rowIndex,
-                                                          ByteBuffer value);
-
-    public static native int ts_batch_row_set_pinned_string(long columnIndex,
-                                                            long rowIndex,
-                                                            byte[] value);
-
     /**
      * Allocates all data structures in one big allocation. For each table, a rowCount
      * and a columnCount is expected.
@@ -302,6 +282,52 @@ public final class qdb
                                                  String column,
                                                  qdb_ts_double_aggregation[] input,
                                                  Reference<qdb_ts_double_aggregation[]> aggregations);
+
+    public static native int ts_point_insert(long handle,
+                                             String tableName,
+                                             String columnName,
+                                             Timespecs timespecs,
+                                             int valueType,
+                                             Object values);
+
+    public static native Points.Data ts_point_get_ranges(long handle,
+                                                         String tableName,
+                                                         String columnName,
+                                                         int valueType,
+                                                         TimeRange[] ranges);
+
+    public static native int ts_blob_point_insert(long handle,
+                                                  String tableName,
+                                                  String columnName,
+                                                  Timespecs timespecs,
+                                                  ByteBuffer[] values);
+
+    public static native int ts_string_point_insert(long handle,
+                                                    String tableName,
+                                                    String columnName,
+                                                    Timespecs timespecs,
+                                                    String[] values);
+
+    public static native int ts_double_point_insert(long handle,
+                                                    String tableName,
+                                                    String columnName,
+                                                    Timespecs timespecs,
+                                                    double[] values);
+
+    public static native int ts_int64_point_insert(long handle,
+                                                   String tableName,
+                                                   String columnName,
+                                                   Timespecs timespecs,
+                                                   long[] values);
+
+
+    public static native int ts_timestamp_point_insert(long handle,
+                                                       String tableName,
+                                                       String columnName,
+                                                       Timespecs timespecs,
+                                                       Timespecs values);
+
+
     public static native int ts_blob_insert(long handle, String alias, String column, qdb_ts_blob_point[] points);
     public static native int ts_blob_get_ranges(
         long handle, String alias, String column, TimeRange[] ranges, Reference<qdb_ts_blob_point[]> points);

@@ -225,7 +225,7 @@ public class PinnedWriter extends Writer {
 
         for (Table t : tables) {
             for (Column c : t.columns) {
-                result[i++] = c.getType();
+                result[i++] = c.getType().asValueType();
             }
         }
 
@@ -247,7 +247,7 @@ public class PinnedWriter extends Writer {
 
         for (Table table : tables) {
             int index = this.tableIndexByName(table.getName());
-            this.columnTypesByTableOffset.put(index, table.getColumnTypes());
+            this.columnTypesByTableOffset.put(index, table.getColumnTypesAsValueTypes());
         }
     }
 

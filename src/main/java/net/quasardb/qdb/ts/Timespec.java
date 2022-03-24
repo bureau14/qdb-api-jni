@@ -18,6 +18,16 @@ import net.quasardb.qdb.exception.InvalidArgumentException;
  * @see Row
  */
 public class Timespec implements Serializable {
+    /**
+     * Lowest possible representable time (identical to epoch).
+     */
+    public static final Timespec MIN_VALUE = new Timespec(0, 0);
+    /**
+     * Largest possible representable time.
+     */
+    public static final Timespec MAX_VALUE = new Timespec(Long.MAX_VALUE, Long.MAX_VALUE);
+
+
     private static Clock clock = new NanoClock();
     protected long sec;
     protected long nsec;
@@ -35,11 +45,16 @@ public class Timespec implements Serializable {
      * Construct a new timespec from milliseconds.
      */
     public Timespec(long msec) {
+        assert(msec >= 0);
+
         this.sec = msec / 1000;
         this.nsec = (msec % 1000) * 1000000;
     }
 
     public Timespec(long sec, long nsec){
+        assert (sec >= 0);
+        assert (nsec >= 0);
+
         this.sec = sec;
         this.nsec = nsec;
     }
@@ -78,7 +93,7 @@ public class Timespec implements Serializable {
     }
 
     public boolean isEmpty() {
-        return this.sec == -1 && this.nsec == -1;
+        return this.sec == Constants.minTime && this.nsec == Constants.minTime;
     }
 
     /**
@@ -186,14 +201,14 @@ public class Timespec implements Serializable {
      * towards the earliest point in time.
      */
     public static Timespec min(Timespec lhs, Timespec rhs) {
-        if (lhs.sec == -1 && rhs.sec != -1) {
+        if (lhs.sec == Constants.minTime && rhs.sec != Constants.minTime) {
             return rhs;
         }
-        if (rhs.sec == -1 && lhs.sec != -1) {
+        if (rhs.sec == Constants.minTime && lhs.sec != Constants.minTime) {
             return lhs;
         }
 
-        if (rhs.sec == -1 && lhs.sec == -1) {
+        if (rhs.sec == Constants.minTime && lhs.sec == Constants.minTime) {
             throw new InvalidArgumentException("Both time ranges are null.");
         }
 
@@ -218,14 +233,14 @@ public class Timespec implements Serializable {
      * towards the latest point in time.
      */
     public static Timespec max(Timespec lhs, Timespec rhs) {
-        if (lhs.sec == -1 && rhs.sec != -1) {
+        if (lhs.sec == Constants.minTime && rhs.sec != Constants.minTime) {
             return rhs;
         }
-        if (rhs.sec == -1 && lhs.sec != -1) {
+        if (rhs.sec == Constants.minTime && lhs.sec != Constants.minTime) {
             return lhs;
         }
 
-        if (rhs.sec == -1 && lhs.sec == -1) {
+        if (rhs.sec == Constants.minTime && lhs.sec == Constants.minTime) {
             throw new InvalidArgumentException("Both time ranges are null.");
         }
 

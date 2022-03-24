@@ -1,8 +1,8 @@
 #include "introspect.h"
 #include "env.h"
+#include <iostream>
 
-/* static */ jclass
-qdb::jni::introspect::lookup_class(env &env, char const *alias)
+/* static */ jclass qdb::jni::introspect::lookup_class(env & env, char const * alias)
 {
     jclass c = env.instance().FindClass(alias);
     if (c == NULL)
@@ -11,21 +11,20 @@ qdb::jni::introspect::lookup_class(env &env, char const *alias)
         fflush(stderr);
     }
     assert(c != NULL);
+
     return c;
 }
 
-/* static */ jfieldID
-qdb::jni::introspect::lookup_field(env &env,
-                                   jclass objectClass,
-                                   char const *alias,
-                                   char const *signature)
+/* static */ jfieldID qdb::jni::introspect::lookup_field(
+    env & env, jclass objectClass, char const * alias, char const * signature)
 {
     assert(objectClass != NULL);
     jfieldID field = env.instance().GetFieldID(objectClass, alias, signature);
 
     if (field == NULL)
     {
-        fprintf(stderr, "*** Unable to find field with signature: %s\n", alias);
+        fprintf(stderr, "*** Unable to find field with alias '%s' and signature '%s'\n", alias,
+            signature);
         fflush(stderr);
     }
 
@@ -33,20 +32,16 @@ qdb::jni::introspect::lookup_field(env &env,
     return field;
 }
 
-/* static */ jfieldID
-qdb::jni::introspect::lookup_static_field(env &env,
-                                          jclass objectClass,
-                                          char const *alias,
-                                          char const *signature)
+/* static */ jfieldID qdb::jni::introspect::lookup_static_field(
+    env & env, jclass objectClass, char const * alias, char const * signature)
 {
     assert(objectClass != NULL);
-    jfieldID field =
-        env.instance().GetStaticFieldID(objectClass, alias, signature);
+    jfieldID field = env.instance().GetStaticFieldID(objectClass, alias, signature);
 
     if (field == NULL)
     {
-        fprintf(stderr, "*** Unable to find static field with signature: %s\n",
-                alias);
+        fprintf(stderr, "*** Unable to find static field with alias %s and signature: %s\n", alias,
+            signature);
         fflush(stderr);
     }
 
@@ -54,20 +49,16 @@ qdb::jni::introspect::lookup_static_field(env &env,
     return field;
 }
 
-/* static */ jmethodID
-qdb::jni::introspect::lookup_method(env &env,
-                                    jclass objectClass,
-                                    char const *alias,
-                                    char const *signature)
+/* static */ jmethodID qdb::jni::introspect::lookup_method(
+    env & env, jclass objectClass, char const * alias, char const * signature)
 {
     assert(objectClass != NULL);
-    jmethodID method =
-        env.instance().GetMethodID(objectClass, alias, signature);
+    jmethodID method = env.instance().GetMethodID(objectClass, alias, signature);
 
     if (method == NULL)
     {
-        fprintf(stderr, "*** Unable to find method with signature: %s\n",
-                alias);
+        fprintf(stderr, "*** Unable to find method with alias %s and signature: %s\n", alias,
+            signature);
         fflush(stderr);
     }
 
@@ -75,20 +66,15 @@ qdb::jni::introspect::lookup_method(env &env,
     return method;
 }
 
-/* static */ jmethodID
-qdb::jni::introspect::lookup_static_method(env &env,
-                                           jclass objectClass,
-                                           char const *alias,
-                                           char const *signature)
+/* static */ jmethodID qdb::jni::introspect::lookup_static_method(
+    env & env, jclass objectClass, char const * alias, char const * signature)
 {
     assert(objectClass != NULL);
-    jmethodID method =
-        env.instance().GetStaticMethodID(objectClass, alias, signature);
+    jmethodID method = env.instance().GetStaticMethodID(objectClass, alias, signature);
 
     if (method == NULL)
     {
-        fprintf(stderr, "*** Unable to find method with signature: %s\n",
-                alias);
+        fprintf(stderr, "*** Unable to find method with signature: %s\n", alias);
         fflush(stderr);
     }
 

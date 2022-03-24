@@ -24,10 +24,9 @@ set(QDB_JNI_SOURCES
   src/main/c++/net/quasardb/qdb/jni/vm.cpp
   src/main/c++/net/quasardb/qdb/jni/log.cpp
   src/main/c++/net/quasardb/qdb/jni/load.cpp
-  src/main/c++/net/quasardb/qdb/jni/ts/qdb_value.cpp
-  src/main/c++/net/quasardb/qdb/jni/util/helpers.cpp
-  src/main/c++/net/quasardb/qdb/jni/util/pinned_columns.cpp
-  src/main/c++/net/quasardb/qdb/jni/util/ts_helpers.cpp
+  src/main/c++/net/quasardb/qdb/jni/adapt/column.cpp
+  src/main/c++/net/quasardb/qdb/jni/adapt/local_table.cpp
+  src/main/c++/net/quasardb/qdb/jni/adapt/value.cpp
   src/main/c++/net/quasardb/qdb/jni/export/qdb_batch.cpp
   src/main/c++/net/quasardb/qdb/jni/export/qdb_blob.cpp
   src/main/c++/net/quasardb/qdb/jni/export/qdb_client.cpp
@@ -37,6 +36,10 @@ set(QDB_JNI_SOURCES
   src/main/c++/net/quasardb/qdb/jni/export/qdb_node.cpp
   src/main/c++/net/quasardb/qdb/jni/export/qdb_ts.cpp
   src/main/c++/net/quasardb/qdb/jni/export/qdb_query.cpp
+  src/main/c++/net/quasardb/qdb/jni/export/ts/point.cpp
+  src/main/c++/net/quasardb/qdb/jni/util/helpers.cpp
+  src/main/c++/net/quasardb/qdb/jni/util/pinned_columns.cpp
+  src/main/c++/net/quasardb/qdb/jni/util/ts_helpers.cpp
 )
 
 add_library(qdb_api_jni SHARED
@@ -45,10 +48,12 @@ add_library(qdb_api_jni SHARED
 
 target_include_directories(qdb_api_jni
     PRIVATE
-    qdb/include
+    qdb/include/
     ${JNI_INCLUDE_DIRS}
     target/headers/
     ${CMAKE_BINARY_DIR}
+
+    thirdparty/range-v3/include/
 )
 
 find_library(QDB_API
@@ -58,8 +63,11 @@ find_library(QDB_API
 
 link_directories(qdb/lib)
 target_link_libraries(qdb_api_jni
+    PRIVATE
     ${QDB_API}
     ${JAVA_JVM_LIBRARY}
+
+    range-v3
 )
 
 include(native_jar.cmake)
@@ -69,3 +77,5 @@ install(TARGETS qdb_api_jni
 
 install(FILES ${NATIVE_JAR_FILE}
         DESTINATION lib)
+
+add_subdirectory(thirdparty)

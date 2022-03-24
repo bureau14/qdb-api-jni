@@ -2,11 +2,10 @@
 #include "env.h"
 #include "introspect.h"
 #include "string.h"
+#include <iostream>
 
-std::string
-_error_code_to_exception_class_name(qdb_error_t e)
+std::string _error_code_to_exception_class_name(qdb_error_t e)
 {
-
 #pragma GCC diagnostic ignored "-Wswitch"
     switch (e)
     {
@@ -77,12 +76,11 @@ _error_code_to_exception_class_name(qdb_error_t e)
     return "net/quasardb/qdb/exception/Exception";
 }
 
-void
-qdb::jni::exception::throw_new(jni::env &env) const noexcept
+void qdb::jni::exception::throw_new(jni::env & env) const noexcept
 {
     // Convert our error code to a pretty Java exception class
-    jclass exception_class = introspect::lookup_class(
-        env, _error_code_to_exception_class_name(_error).c_str());
+    jclass exception_class =
+        introspect::lookup_class(env, _error_code_to_exception_class_name(_error).c_str());
 
     // And put it on the stack!
     env.instance().ThrowNew(exception_class, _msg.c_str());
@@ -90,13 +88,10 @@ qdb::jni::exception::throw_new(jni::env &env) const noexcept
     // Note that execution just continues as normal,
 }
 
-qdb_error_t
-qdb::jni::exception::throw_if_error(qdb_handle_t h, qdb_error_t e)
+qdb_error_t qdb::jni::exception::throw_if_error(qdb_handle_t h, qdb_error_t e)
 {
-
     if (QDB_FAILURE(e))
     {
-
         qdb_string_t what;
         qdb_error_t err;
         qdb_get_last_error(h, &err, &what);

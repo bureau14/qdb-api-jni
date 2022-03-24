@@ -85,12 +85,12 @@ public class ReaderTest {
 
     @Test
     public void helpersRowGen_generatesDoubleRows() throws Exception {
-        Column[] cols = TestUtils.generateTableColumns(Value.Type.DOUBLE, 1);
+        Column[] cols = TestUtils.generateTableColumns(Column.Type.DOUBLE, 1);
         WritableRow[] rows = TestUtils.generateTableRows(cols, 1);
 
         Arrays.stream(cols)
             .forEach((col) ->
-                     assertEquals(col.getType(), Value.Type.DOUBLE));
+                     assertEquals(col.getType(), Column.Type.DOUBLE));
 
         Arrays.stream(rows)
             .forEach((row) ->
@@ -101,12 +101,12 @@ public class ReaderTest {
 
     @Test
     public void helpersRowGen_generatesBlobRows() throws Exception {
-        Column[] cols = TestUtils.generateTableColumns(Value.Type.BLOB, 1);
+        Column[] cols = TestUtils.generateTableColumns(Column.Type.BLOB, 1);
         WritableRow[] rows = TestUtils.generateTableRows(cols, 1);
 
         Arrays.stream(cols)
             .forEach((col) ->
-                     assertEquals(col.getType(), Value.Type.BLOB));
+                     assertEquals(col.getType(), Column.Type.BLOB));
 
         Arrays.stream(rows)
             .forEach((row) ->
@@ -117,16 +117,16 @@ public class ReaderTest {
 
     @Test
     public void canReadSingleValue_afterWriting() throws Exception {
-        Value.Type[] valueTypes = { Value.Type.INT64,
-                                    Value.Type.DOUBLE,
-                                    Value.Type.TIMESTAMP,
-                                    Value.Type.BLOB,
-                                    Value.Type.STRING };
+        Column.Type[] columnTypes = { Column.Type.INT64,
+                                      Column.Type.DOUBLE,
+                                      Column.Type.TIMESTAMP,
+                                      Column.Type.BLOB,
+                                      Column.Type.STRING };
 
-        for (Value.Type valueType : valueTypes) {
+        for (Column.Type columnType : columnTypes) {
             // Generate a 1x1 test dataset
             Column[] cols =
-                TestUtils.generateTableColumns(valueType, 1);
+                TestUtils.generateTableColumns(columnType, 1);
 
             WritableRow[] rows = TestUtils.generateTableRows(cols, 1);
             Table table = TestUtils.seedTable(this.s, cols, rows);
@@ -143,17 +143,16 @@ public class ReaderTest {
 
     @Test
     public void canReadMultipleValues_afterWriting() throws Exception {
-        Value.Type[] valueTypes = { Value.Type.INT64,
-                                    Value.Type.DOUBLE,
-                                    Value.Type.TIMESTAMP,
-                                    Value.Type.BLOB,
-                                    Value.Type.STRING };
+        Column.Type[] columnTypes = { Column.Type.INT64,
+                                      Column.Type.DOUBLE,
+                                      Column.Type.TIMESTAMP,
+                                      Column.Type.BLOB,
+                                      Column.Type.STRING };
 
-        for (Value.Type valueType : valueTypes) {
+        for (Column.Type columnType : columnTypes) {
             // Generate a 2x2 test dataset
-
             Column[] cols =
-                TestUtils.generateTableColumns(valueType, 2);
+                TestUtils.generateTableColumns(columnType, 2);
             WritableRow[] rows = TestUtils.generateTableRows(cols, 2);
             Table table = TestUtils.seedTable(this.s, cols, rows);
             TimeRange[] ranges = TestUtils.rangesFromRows(rows);

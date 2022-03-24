@@ -1,9 +1,8 @@
 #pragma once
 
-#include <jni.h>
-
 #include "env.h"
 #include "guard/local_ref.h"
+#include <jni.h>
 
 namespace qdb
 {
@@ -35,20 +34,22 @@ class env;
  */
 class local_frame
 {
-  private:
-    jni::env &_env;
+private:
+    jni::env & _env;
     bool _popped;
 
-  public:
-    local_frame(jni::env &env) : _env(env), _popped(false)
-    {
-    }
+public:
+    local_frame(jni::env & env)
+        : _env(env)
+        , _popped(false)
+    {}
 
     ~local_frame()
     {
         if (_popped == false)
         {
             _env.instance().PopLocalFrame(NULL);
+            _popped = true;
         }
     }
 
@@ -60,8 +61,7 @@ class local_frame
      * frame.
      */
     template <typename JNIType>
-    jni::guard::local_ref<JNIType>
-    pop(JNIType result)
+    jni::guard::local_ref<JNIType> pop(JNIType result)
     {
         assert(_popped == false); // can't pop the same frame twice
         _popped = true;
@@ -70,14 +70,13 @@ class local_frame
         // the previous frame here -- both `result` and the return value
         // of this function refer to the same object in the JVM, but both
         // from different frames.
-        return std::move(jni::guard::local_ref<JNIType>(
-            _env, (JNIType)(_env.instance().PopLocalFrame(result))));
+        return std::move(
+            jni::guard::local_ref<JNIType>(_env, (JNIType)(_env.instance().PopLocalFrame(result))));
     }
 
-    static local_frame
-    push(jni::env &env, jsize size)
+    static local_frame push(jni::env & env, jsize size)
     {
-        jint err = env.instance().PushLocalFrame(size);
+        [[maybe_unused]] jint err = env.instance().PushLocalFrame(size);
         assert(err == 0);
 
         return local_frame(env);

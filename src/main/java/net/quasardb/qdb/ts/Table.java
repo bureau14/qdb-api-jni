@@ -54,6 +54,9 @@ public class Table implements Serializable {
     public Table(Column[] columns, long shardSizeMillis, String name) {
         assert(columns != null);
 
+        logger.debug("Table constructor, columns.length = {}", columns.length);
+        logger.debug("Table constructor, columns = {}", Arrays.toString(columns));
+
         this.name = name;
         this.columns = columns;
         this.shardSizeMillis = shardSizeMillis;
@@ -66,6 +69,7 @@ public class Table implements Serializable {
         // we can later look them up.
         this.columnOffsets = new HashMap(this.columns.length);
         for (int i = 0; i < this.columns.length; ++i) {
+            assert(this.columns[i] != null);
             this.columnOffsets.put(this.columns[i].name, i);
         }
     }
@@ -138,6 +142,8 @@ public class Table implements Serializable {
                       name,
                       shardSize,
                       columns);
+
+        logger.debug("created, columns: {}", Arrays.toString(columns));
 
         return new Table(session, name);
     }
@@ -710,6 +716,7 @@ public class Table implements Serializable {
      */
     static public Column[] getColumns(Session session, String name) {
         Column[] ret = qdb.ts_list_columns(session.handle(), name);
+
         assert(ret != null);
         return ret;
     }
@@ -723,17 +730,55 @@ public class Table implements Serializable {
     }
 
     /**
+     * Returns reference to Column object for column with a certain name.
+     *
+     * @param name The name to search for.
+     */
+    public Column getColumnByName(String name) {
+        for (int i = 0; i < this.columns.length; ++i) {
+            if (this.columns[i].getName().equals(name)) {
+                return this.columns[i];
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Returns `true` if table has a column with the name.
+     *
+     * @param name The name to search for.
+     */
+    public boolean hasColumnWithName(String name) {
+        return getColumnByName(name) != null;
+    }
+
+    /**
      * Returns the types of each of the columns.
      */
-    public Value.Type[] getColumnTypes() {
+    public Column.Type[] getColumnTypes() {
         Column[] columns = this.getColumns();
 
-        Value.Type[] columnTypes = new Value.Type[columns.length];
+        Column.Type[] columnTypes = new Column.Type[columns.length];
         for (int i = 0; i < columns.length; ++i) {
             columnTypes[i] = columns[i].getType();
         }
 
         return columnTypes;
+    }
+
+    /**
+     * Returns the types of the values that are used to represent data for each column.
+     */
+    public Value.Type[] getColumnTypesAsValueTypes() {
+        Column.Type[] xs = getColumnTypes();
+        Value.Type[] ret = new Value.Type[xs.length];
+
+        for (int i = 0; i < xs.length; ++i) {
+            ret[i] = xs[i].asValueType();
+        }
+
+        return ret;
     }
 
     /**

@@ -1,14 +1,82 @@
+# http://clang.llvm.org/docs/ClangFormatStyleOptions.html
+
+BasedOnStyle: LLVM
+
+AlignAfterOpenBracket: DontAlign
+AccessModifierOffset: -4
+AlignConsecutiveAssignments: true
+#AlignConsecutiveDeclarations: true
+AlignEscapedNewlinesLeft: true
+AllowShortBlocksOnASingleLine: false
+AllowShortCaseLabelsOnASingleLine: false
 AllowShortFunctionsOnASingleLine: false
 AllowShortIfStatementsOnASingleLine: true
+AllowShortLambdasOnASingleLine: Empty     # clang-format 9
 AllowShortLoopsOnASingleLine: false
 AlwaysBreakTemplateDeclarations: true
+
 BinPackArguments: true
 BinPackParameters: false
-BreakBeforeBraces: Allman
+
+BreakBeforeBraces: Custom
+BraceWrapping:
+  AfterCaseLabel:        true           # clang-format 9
+  AfterClass:            true
+  AfterControlStatement: true
+  AfterEnum:             true
+  AfterFunction:         true
+  AfterNamespace:        true
+  AfterObjCDeclaration:  true
+  AfterStruct:           true
+  AfterUnion:            true
+  AfterExternBlock:      true             # clang-format 6
+  BeforeCatch:           true
+  BeforeElse:            true
+  IndentBraces:          false
+  SplitEmptyFunction:    false            # clang-format 5
+  SplitEmptyRecord:      false            # clang-format 5
+  SplitEmptyNamespace:   false            # clang-format 5
+BreakBeforeBinaryOperators: NonAssignment
+BreakBeforeInheritanceComma: true         # clang-format 5
+BreakConstructorInitializers: BeforeComma # clang-format 5
+
+ColumnLimit: 100
+IndentPPDirectives: AfterHash
 IndentWidth: 4
----
-Language: Cpp
-AlwaysBreakAfterDefinitionReturnType: All
----
-Language: Java
-ColumnLimit: 120
+KeepEmptyLinesAtTheStartOfBlocks: false
+
+IncludeBlocks: Merge
+IncludeCategories:
+  - Regex:      '^(<|")api/'
+    Priority:   3
+  - Regex:      '^(<|")apps/'
+    Priority:   3
+  - Regex:      '^(<|")qdb/'
+    Priority:   3
+  - Regex:      '^(<|")tests/'
+    Priority:   3
+  - Regex:      '^(<|")[a-zA-Z0-9_]*.hpp'
+    Priority:   2
+  - Regex:      '^(<|")(mach|linux|sys)/'
+    Priority:   6
+  - Regex:      '^(<|")windows\.h'
+    Priority:   6
+  - Regex:      '^(<|")win'
+    Priority:   7
+  - Regex:      '^<experimental/'
+    Priority:   8
+  - Regex:      '^(<|")[-a-zA-Z0-9_]+/'
+    Priority:   5
+  - Regex:      '^<'
+    Priority:   9
+  - Regex:      '^"[^/]*'
+    Priority:   1
+
+NamespaceIndentation: None
+
+PointerAlignment: Middle
+# SpaceBeforeAssignmentOperators: true
+SpacesInAngles: false
+
+TabWidth: 4
+UseTab: Never

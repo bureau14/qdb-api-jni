@@ -40,15 +40,15 @@ typedef struct
  */
 class flush_guard
 {
-  public:
-    flush_guard(qdb::jni::env &env) : env_(env)
-    {
-    }
+public:
+    flush_guard(qdb::jni::env & env)
+        : env_(env)
+    {}
 
     ~flush_guard();
 
-  private:
-    qdb::jni::env &env_;
+private:
+    qdb::jni::env & env_;
 };
 
 /**
@@ -81,31 +81,30 @@ class flush_guard
  */
 void swap_callback();
 
-void flush(qdb::jni::env &env);
+void flush(qdb::jni::env & env);
 
 void _do_log(qdb_log_level_t log_level,
-             const unsigned long *date,
-             unsigned long pid,
-             unsigned long tid,
-             std::string const &msg);
+    const unsigned long * date,
+    unsigned long pid,
+    unsigned long tid,
+    std::string const & msg);
 
-void _callback(                 //
-    qdb_log_level_t log_level,  // qdb log level
-    const unsigned long *date,  // [years, months, day, hours, minute, seconds]
-                                // (valid only in the context of the callback)
-    unsigned long pid,          // process id
-    unsigned long tid,          // thread id
-    const char *message_buffer, // message buffer (valid only in the context of
-                                // the callback)
-    size_t message_size);       // message buffer size
-void _current_date(unsigned long *date);
+void _callback(                  //
+    qdb_log_level_t log_level,   // qdb log level
+    const unsigned long * date,  // [years, months, day, hours, minute, seconds]
+                                 // (valid only in the context of the callback)
+    unsigned long pid,           // process id
+    unsigned long tid,           // thread id
+    const char * message_buffer, // message buffer (valid only in the context of
+                                 // the callback)
+    size_t message_size);        // message buffer size
+void _current_date(unsigned long * date);
 
 /**
  * Convenience function that is used by trace(), debug(), etc
  */
 template <typename... Args>
-void
-_wrap_callback(qdb_log_level_t lvl, Args &&... args)
+void _wrap_callback(qdb_log_level_t lvl, Args &&... args)
 {
     unsigned long date[6];
     _current_date(date);
@@ -121,15 +120,14 @@ _wrap_callback(qdb_log_level_t lvl, Args &&... args)
  * Implementation function of flush(), which assumes that locks have been
  * acquired and buffer actually contains logs.
  */
-void _do_flush(qdb::jni::env &env);
+void _do_flush(qdb::jni::env & env);
 
 /**
  * Wraps logger.trace. Asynchronous, as to avoid context switches. Ideally the
  * caller calls flush() just before their function returns back to the JVM.
  */
 template <typename... Args>
-void
-trace(Args &&... args)
+void trace(Args &&... args)
 {
     _wrap_callback(qdb_log_detailed, std::forward<Args>(args)...);
 }
@@ -139,8 +137,7 @@ trace(Args &&... args)
  * caller calls flush() just before their function returns back to the JVM.
  */
 template <typename... Args>
-void
-debug(Args &&... args)
+void debug(Args &&... args)
 {
     _wrap_callback(qdb_log_debug, std::forward<Args>(args)...);
 }
@@ -150,8 +147,7 @@ debug(Args &&... args)
  * caller calls flush() just before their function returns back to the JVM.
  */
 template <typename... Args>
-void
-info(Args &&... args)
+void info(Args &&... args)
 {
     _wrap_callback(qdb_log_info, std::forward<Args>(args)...);
 }
@@ -161,8 +157,7 @@ info(Args &&... args)
  * caller calls flush() just before their function returns back to the JVM.
  */
 template <typename... Args>
-void
-warn(Args &&... args)
+void warn(Args &&... args)
 {
     _wrap_callback(qdb_log_warning, std::forward<Args>(args)...);
 }
@@ -172,8 +167,7 @@ warn(Args &&... args)
  * caller calls flush() just before their function returns back to the JVM.
  */
 template <typename... Args>
-void
-error(Args &&... args)
+void error(Args &&... args)
 {
     _wrap_callback(qdb_log_error, std::forward<Args>(args)...);
 }
