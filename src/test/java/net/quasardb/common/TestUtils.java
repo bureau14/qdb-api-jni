@@ -205,29 +205,29 @@ public class TestUtils {
         return baseTime.plusSeconds(n++);
     }
 
-    public static Points generatePointsByColumnType(Column.Type columnType) throws RuntimeException {
-        return generatePointsByColumnType(columnType, 100);
+    public static Series generateSeriesByColumnType(Column.Type columnType) throws RuntimeException {
+        return generateSeriesByColumnType(columnType, 100);
     }
 
-    public static Points generatePointsByColumnType(Column.Type columnType, int n) throws RuntimeException {
+    public static Series generateSeriesByColumnType(Column.Type columnType, int n) throws RuntimeException {
         Timespecs timespecs = randomTimespecs(n);
 
         switch (columnType) {
         case BLOB:
-            return Points.ofBlobs(timespecs, randomBlobs(n));
+            return Series.ofBlobs(timespecs, randomBlobs(n));
         case SYMBOL:
             //! FALLTHROUGH
         case STRING:
-            return Points.ofStrings(timespecs, randomStrings(n));
+            return Series.ofStrings(timespecs, randomStrings(n));
         case DOUBLE:
-            return Points.ofDoubles(timespecs, randomDoubles(n));
+            return Series.ofDoubles(timespecs, randomDoubles(n));
         case INT64:
-            return Points.ofInt64s(timespecs, randomInt64s(n));
+            return Series.ofInt64s(timespecs, randomInt64s(n));
         case TIMESTAMP:
-            return Points.ofTimestamps(timespecs, randomTimespecs(n));
+            return Series.ofTimestamps(timespecs, randomTimespecs(n));
         }
 
-        throw new RuntimeException("Unsupported column type for generating points: " + columnType.toString());
+        throw new RuntimeException("Unsupported column type for generating series: " + columnType.toString());
 
     }
 

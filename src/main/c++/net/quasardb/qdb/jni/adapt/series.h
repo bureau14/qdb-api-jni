@@ -6,13 +6,13 @@
 #include "value.h"
 #include "value_traits.h"
 #include <qdb/query.h>
-#include "detail/point.h"
+#include "detail/series.h"
 #include <cassert>
 #include <functional>
 #include <iostream>
 #include <jni.h>
 
-namespace qdb::jni::adapt::point
+namespace qdb::jni::adapt::series
 {
 
 template <ranges::input_range R>
@@ -40,7 +40,7 @@ inline decltype(auto) as_range(T const & input)
  *     them into a single qdb_ts_int64_point vector).
  *
  * No modifications _should_ be necessary to implement additional types. To
- * implement additional types, detail::xform_point and _xform_input should be
+ * implement additional types, detail::xform_series and _xform_input should be
  * used.
  *
  * The `template <typename From>` is used to look up the value traits through
@@ -72,7 +72,7 @@ inline void to_qdb(qdb::jni::env & env,
 
     auto callback = [&env](auto iter) -> point_type {
         point_type ret{std::get<0>(iter)};
-        detail::xform_point<From>(env, std::get<1>(iter), ret);
+        detail::xform_series<From>(env, std::get<1>(iter), ret);
         return ret;
     };
 
@@ -119,4 +119,4 @@ requires(std::is_same<ranges::range_value_t<R>, typename value_traits<From>::poi
     return detail::create<From>(env, std::move(timestamps_), std::move(values_));
 }
 
-}; // namespace qdb::jni::adapt::point
+}; // namespace qdb::jni::adapt::series
