@@ -27,7 +27,7 @@ struct signature_util<jlongArray>
 
     static inline constexpr char const * points_subtype()
     {
-        return "net/quasardb/qdb/ts/Points$Int64Data";
+        return "net/quasardb/qdb/ts/Series$Int64Data";
     }
 };
 
@@ -50,7 +50,7 @@ struct signature_util<jdoubleArray>
 
     static inline constexpr char const * points_subtype()
     {
-        return "net/quasardb/qdb/ts/Points$DoubleData";
+        return "net/quasardb/qdb/ts/Series$DoubleData";
     }
 };
 
