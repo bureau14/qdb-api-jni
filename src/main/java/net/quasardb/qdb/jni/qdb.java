@@ -11,7 +11,7 @@ import net.quasardb.qdb.ts.Table;
 import net.quasardb.qdb.ts.TimeRange;
 import net.quasardb.qdb.ts.Timespec;
 import net.quasardb.qdb.ts.Timespecs;
-import net.quasardb.qdb.ts.Points;
+import net.quasardb.qdb.ts.Series;
 import net.quasardb.qdb.ts.Value;
 import net.quasardb.qdb.ts.Writer;
 import net.quasardb.qdb.ts.PinnedWriter;
@@ -290,11 +290,11 @@ public final class qdb
                                              int valueType,
                                              Object values);
 
-    public static native Points.Data ts_point_get_ranges(long handle,
-                                                         String tableName,
-                                                         String columnName,
-                                                         int valueType,
-                                                         TimeRange[] ranges);
+    public static native Series.Data ts_series_get_ranges(long handle,
+                                                          String tableName,
+                                                          String columnName,
+                                                          int valueType,
+                                                          TimeRange[] ranges);
 
     public static native int ts_blob_point_insert(long handle,
                                                   String tableName,

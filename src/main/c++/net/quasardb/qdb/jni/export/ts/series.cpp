@@ -1,4 +1,4 @@
-#include "../../adapt/point.h"
+#include "../../adapt/series.h"
 #include "../../adapt/timerange.h"
 #include "../../exception.h"
 #include "../../guard/qdb_resource.h"
@@ -10,10 +10,10 @@ namespace jni = qdb::jni;
 
 /**
  * Utility struct that handles the boilerplate of adapting all input values
- * before dispatching to the jni::adapt::point::to_qdb.
+ * before dispatching to the jni::adapt::series::to_qdb.
  */
 template <typename From>
-struct point_inserter
+struct series_inserter
 {
     // Low level 'point' type, a pair of timespec/value, e.g.
     // qdb_ts_double_point.
@@ -55,7 +55,7 @@ struct point_inserter
             std::vector<qdb_timespec_t> timestamps_ =
                 jni::adapt::timespecs::to_qdb(env, timestamps);
 
-            std::vector<point_type> xs = jni::adapt::point::to_qdb<From>(env, timestamps_, values);
+            std::vector<point_type> xs = jni::adapt::series::to_qdb<From>(env, timestamps_, values);
 
             /**
              * All data is in the correct shape now, invoke the actual insertion
@@ -77,10 +77,10 @@ struct point_inserter
 
 /**
  * Utility struct that handles the boilerplate of dispatching to
- * the jni::adapt::point::to_java function.
+ * the jni::adapt::series::to_java function.
  */
 template <typename From>
-struct point_retriever
+struct series_retriever
 {
     using point_type        = typename jni::adapt::value_traits<From>::point_type;
     using jarray_type       = typename jni::adapt::value_traits<From>::jarray_type;
@@ -123,7 +123,7 @@ struct point_retriever
 
             assert(xs != nullptr);
 
-            return jni::adapt::point::to_java<From>(env, ranges::views::counted(xs.get(), n))
+            return jni::adapt::series::to_java<From>(env, ranges::views::counted(xs.get(), n))
                 .release();
         }
         catch (jni::exception const & e)
@@ -135,10 +135,10 @@ struct point_retriever
 };
 
 /**
- * JNI export function. Sole purpose is to dispatch to `point_retriever`, no
+ * JNI export function. Sole purpose is to dispatch to `series_retriever`, no
  * conversions or actual logic should be done in this function.
  */
-JNIEXPORT jobject JNICALL Java_net_quasardb_qdb_jni_qdb_ts_1point_1get_1ranges(JNIEnv * jniEnv,
+JNIEXPORT jobject JNICALL Java_net_quasardb_qdb_jni_qdb_ts_1series_1get_1ranges(JNIEnv * jniEnv,
     jclass /*thisClass*/,
     jlong handle,
     jstring table,
@@ -157,7 +157,7 @@ JNIEXPORT jobject JNICALL Java_net_quasardb_qdb_jni_qdb_ts_1point_1get_1ranges(J
                                                                                           \
         static_assert(std::is_same<x, value_type_t>());                                   \
                                                                                           \
-        return point_retriever<value_type_t>()(jniEnv, handle, table, column, ranges, f); \
+        return series_retriever<value_type_t>()(jniEnv, handle, table, column, ranges, f); \
     };
 
         CASE(double, qdb_ts_double_get_ranges);
@@ -173,10 +173,10 @@ JNIEXPORT jobject JNICALL Java_net_quasardb_qdb_jni_qdb_ts_1point_1get_1ranges(J
 }
 
 /**
- * JNI export function. Sole purpose is to dispatch to `point_inserter`, no
+ * JNI export function. Sole purpose is to dispatch to `series_inserter`, no
  * conversions or actual logic should be done in this function.
  */
-JNIEXPORT jint JNICALL Java_net_quasardb_qdb_jni_qdb_ts_1point_1insert(JNIEnv * jniEnv,
+JNIEXPORT jint JNICALL Java_net_quasardb_qdb_jni_qdb_ts_1series_1insert(JNIEnv * jniEnv,
     jclass /*thisClass*/,
     jlong handle,
     jstring table,
@@ -198,7 +198,7 @@ JNIEXPORT jint JNICALL Java_net_quasardb_qdb_jni_qdb_ts_1point_1insert(JNIEnv * 
         static_assert(std::is_same<x, value_type_t>());                         \
                                                                                 \
         jarray_type values_ = reinterpret_cast<jarray_type>(values);            \
-        return point_inserter<value_type_t>()(                                  \
+        return series_inserter<value_type_t>()(                                  \
             jniEnv, handle, table, column, timestamps, values_, f);             \
     };
 

@@ -23,7 +23,7 @@ import net.quasardb.qdb.*;
 import net.quasardb.qdb.exception.InvalidIteratorException;
 import net.quasardb.qdb.exception.InvalidArgumentException;
 
-public class PointsTest {
+public class SeriesTest {
 
     private Session s;
 
@@ -57,9 +57,9 @@ public class PointsTest {
     public void canInsert(Column.Type columnType) throws Exception {
         Column column = TestUtils.generateTableColumn(columnType);
         Table table = TestUtils.createTable(this.s, new Column[]{ column });
-        Points values = TestUtils.generatePointsByColumnType(columnType);
+        Series values = TestUtils.generateSeriesByColumnType(columnType);
 
-        Points.insert(this.s, table, column, values);
+        Series.insert(this.s, table, column, values);
     }
 
     @ParameterizedTest
@@ -67,11 +67,11 @@ public class PointsTest {
     public void canInsertAndRetrieve(Column.Type columnType) throws Exception {
         Column column = TestUtils.generateTableColumn(columnType);
         Table table = TestUtils.createTable(this.s, new Column[]{ column });
-        Points values = TestUtils.generatePointsByColumnType(columnType);
+        Series values = TestUtils.generateSeriesByColumnType(columnType);
 
-        Points.insert(this.s, table.getName(), column, values);
+        Series.insert(this.s, table.getName(), column, values);
 
-        Points ret = Points.get(this.s,
+        Series ret = Series.get(this.s,
                                 table.getName(),
                                 column);
 

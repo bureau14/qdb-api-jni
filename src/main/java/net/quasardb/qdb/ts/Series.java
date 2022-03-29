@@ -20,8 +20,8 @@ import net.quasardb.qdb.Session;
  * Point-based (or column-oriented) API, which can be used for high-speed
  * reading / writing of single-column timeseries data.
  */
-public class Points {
-    private static final Logger logger = LoggerFactory.getLogger(Points.class);
+public class Series {
+    private static final Logger logger = LoggerFactory.getLogger(Series.class);
 
     public abstract static class Data {
         public Timespecs timespecs;
@@ -53,13 +53,13 @@ public class Points {
         }
 
         public String toString() {
-            String ret = "<Points.Data>";
+            String ret = "<Series.Data>";
             ret += this.timespecs.toString();
 
             ret += "<Values>";
             ret += this.values.toString();
             ret += "</Values>";
-            ret += "</Points.Data>";
+            ret += "</Series.Data>";
             return ret;
         }
     };
@@ -120,14 +120,14 @@ public class Points {
 
         @Override
         public String toString() {
-            String ret = "<Points.DoubleData>";
+            String ret = "<Series.DoubleData>";
             ret += this.timespecs.toString();
             double[] values_ = (double[])this.values;
 
             ret += "<Values>";
             ret += Arrays.toString(values_);
             ret += "</Values>";
-            ret += "</Points.DoubleData>";
+            ret += "</Series.DoubleData>";
             return ret;
         }
 
@@ -157,49 +157,49 @@ public class Points {
     private Value.Type valueType;
     private Data values;
 
-    public Points(Value.Type valueType, Data values) {
+    public Series(Value.Type valueType, Data values) {
         this.valueType = valueType;
         this.values = values;
     }
 
-    public static Points ofBlobs(Timespecs xs, ByteBuffer[] ys) {
+    public static Series ofBlobs(Timespecs xs, ByteBuffer[] ys) {
         return ofBlobs(new BlobData(xs, ys));
     }
 
-    public static Points ofBlobs(BlobData xs) {
-        return new Points(Value.Type.BLOB, xs);
+    public static Series ofBlobs(BlobData xs) {
+        return new Series(Value.Type.BLOB, xs);
     }
 
-    public static Points ofStrings(Timespecs xs, String[] ys) {
+    public static Series ofStrings(Timespecs xs, String[] ys) {
         return ofStrings(new StringData(xs, ys));
     }
 
-    public static Points ofStrings(StringData xs) {
-        return new Points(Value.Type.STRING, xs);
+    public static Series ofStrings(StringData xs) {
+        return new Series(Value.Type.STRING, xs);
     }
 
-    public static Points ofDoubles(Timespecs xs, double[] ys) {
+    public static Series ofDoubles(Timespecs xs, double[] ys) {
         return ofDoubles(new DoubleData(xs, ys));
     }
 
-    public static Points ofDoubles(DoubleData xs) {
-        return new Points(Value.Type.DOUBLE, xs);
+    public static Series ofDoubles(DoubleData xs) {
+        return new Series(Value.Type.DOUBLE, xs);
     }
 
-    public static Points ofInt64s(Timespecs xs, long[] ys) {
+    public static Series ofInt64s(Timespecs xs, long[] ys) {
         return ofInt64s(new Int64Data(xs, ys));
     }
 
-    public static Points ofInt64s(Int64Data xs) {
-        return new Points(Value.Type.INT64, xs);
+    public static Series ofInt64s(Int64Data xs) {
+        return new Series(Value.Type.INT64, xs);
     }
 
-    public static Points ofTimestamps(Timespecs xs, Timespecs ys) {
+    public static Series ofTimestamps(Timespecs xs, Timespecs ys) {
         return ofTimestamps(new TimestampData(xs, ys));
     }
 
-    public static Points ofTimestamps(TimestampData xs) {
-        return new Points(Value.Type.TIMESTAMP, xs);
+    public static Series ofTimestamps(TimestampData xs) {
+        return new Series(Value.Type.TIMESTAMP, xs);
     }
 
     public BlobData  blobs() {
@@ -230,21 +230,21 @@ public class Points {
     public static void insert(Session session,
                               Table table,
                               Column column,
-                              Points xs) {
+                              Series xs) {
         insert(session, table, column.getName(), xs);
     }
 
     public static void insert(Session session,
                               String tableName,
                               Column column,
-                              Points xs) {
+                              Series xs) {
         insert(session, tableName, column.getName(), xs);
     }
 
     public static void insert(Session session,
                               Table table,
                               String columnName,
-                              Points xs) {
+                              Series xs) {
         assert(table.hasColumnWithName(columnName) == true);
         insert(session, table.getName(), columnName, xs);
     }
@@ -252,7 +252,7 @@ public class Points {
     public static void insert(Session session,
                               String tableName,
                               String columnName,
-                              Points xs) {
+                              Series xs) {
         logger.debug("Inserting points");
 
         qdb.ts_point_insert(session.handle(),
@@ -265,7 +265,7 @@ public class Points {
         logger.debug("inserted points");
     }
 
-    public static Points get(Session session,
+    public static Series get(Session session,
                              String tableName,
                              Column column) {
         return get(session,
@@ -274,7 +274,7 @@ public class Points {
                    column.getType());
     }
 
-    public static Points get(Session session,
+    public static Series get(Session session,
                              String tableName,
                              Column column,
                              TimeRange range) {
@@ -285,7 +285,7 @@ public class Points {
                    range);
     }
 
-    public static Points get(Session session,
+    public static Series get(Session session,
                              String tableName,
                              Column column,
                              TimeRange[] ranges) {
@@ -296,7 +296,7 @@ public class Points {
                    ranges);
     }
 
-    public static Points get(Session session,
+    public static Series get(Session session,
                              String tableName,
                              String columnName,
                              Column.Type columnType) {
@@ -306,7 +306,7 @@ public class Points {
                    columnType.asValueType());
     }
 
-    public static Points get(Session session,
+    public static Series get(Session session,
                              String tableName,
                              String columnName,
                              Value.Type valueType) {
@@ -316,7 +316,7 @@ public class Points {
                    valueType,
                    TimeRange.UNIVERSE_RANGE);
     }
-    public static Points get(Session session,
+    public static Series get(Session session,
                              String tableName,
                              String columnName,
                              Column.Type columnType,
@@ -328,7 +328,7 @@ public class Points {
                    range);
     }
 
-    public static Points get(Session session,
+    public static Series get(Session session,
                              String tableName,
                              String columnName,
                              Value.Type valueType,
@@ -340,7 +340,7 @@ public class Points {
                    new TimeRange[]{range});
     }
 
-    public static Points get(Session session,
+    public static Series get(Session session,
                              String tableName,
                              String columnName,
                              Column.Type columnType,
@@ -352,39 +352,39 @@ public class Points {
                    ranges);
     }
 
-    public static Points get(Session session,
+    public static Series get(Session session,
                              String tableName,
                              String columnName,
                              Value.Type valueType,
                              TimeRange[] ranges) {
         Instant start = Instant.now();
 
-        Points.Data data = qdb.ts_point_get_ranges(session.handle(),
-                                                   tableName,
-                                                   columnName,
-                                                   valueType.asInt(),
-                                                   ranges);
+        Series.Data data = qdb.ts_series_get_ranges(session.handle(),
+                                                    tableName,
+                                                    columnName,
+                                                    valueType.asInt(),
+                                                    ranges);
 
         Instant stop = Instant.now();
         logger.debug("Retrieved {} points in {}", data.size(), Duration.between(start, stop));
 
-        return new Points(valueType, data);
+        return new Series(valueType, data);
     }
 
     @Override public boolean equals(Object o) {
-        if (!(o instanceof Points)) {
+        if (!(o instanceof Series)) {
             return false;
         }
 
-        Points o_ = (Points) o;
+        Series o_ = (Series) o;
 
         return this.valueType == o_.valueType && this.values.equals(o_.values);
     }
 
     public String toString() {
-        String ret = "<Points valueType=" + this.valueType + ">";
+        String ret = "<Series valueType=" + this.valueType + ">";
         ret += this.values.toString();
-        ret += "</Points>";
+        ret += "</Series>";
         return ret;
     }
 
