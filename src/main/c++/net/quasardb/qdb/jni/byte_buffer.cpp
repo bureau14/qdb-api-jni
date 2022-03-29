@@ -25,9 +25,16 @@
 
     memcpy(dest, src, len);
 
-    // We do not free because ownership of the memory area is moved to the
-    // ByteBuffer, which automatically frees the area when the GC decides
-    // to clean it up.
+
+    // XXX(leon): ownership of the memory area is "moved" from native to JVM. I believe
+    //            that the ByteBuffer supports some kind of 'cleaner'; this is a utility
+    //            object which is run when the object is garbage collected.
+    //
+    //            we may need to explore this further, see:
+    //
+    //            * https://stackoverflow.com/a/35364247/1764661
+    //            * https://stackoverflow.com/a/6699007/1764661
+    //            * https://docs.oracle.com/javase/6/docs/api/java/lang/ref/PhantomReference.html
     return create(env, dest, len);
 }
 
