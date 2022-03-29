@@ -71,40 +71,6 @@ public:
     {
         return _len;
     }
-
-    /**
-     */
-    jbyte * copy() const
-    {
-        jbyte * ret = new jbyte[_len];
-        memcpy(ret, _ptr, _len);
-        return ret;
-    }
-
-    jbyte * copy_nullterminated() const
-    {
-        jbyte * ret = new jbyte[_len + 1];
-        memcpy(ret, _ptr, _len);
-        ret[_len] = '\0';
-        return ret;
-    }
-
-    /**
-     * Creates a copy of this byte array and returns it as a qdb_blob.
-     */
-    void as_qdb_blob(qdb_blob_t & out) const
-    {
-        out.content        = copy();
-        out.content_length = _len;
-    }
-
-    /**
-     * Creates a copy of this byte array and returns it as a qdb_string_t.
-     */
-    qdb_string_t * as_qdb_string_ptr() const
-    {
-        return new qdb_string_t{(char *)(copy_nullterminated()), _len};
-    }
 };
 }; // namespace guard
 }; // namespace jni
