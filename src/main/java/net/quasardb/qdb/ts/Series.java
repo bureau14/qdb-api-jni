@@ -253,16 +253,18 @@ public class Series {
                               String tableName,
                               String columnName,
                               Series xs) {
-        logger.debug("Inserting points");
+        logger.debug("Inserting timeseries");
+        Instant start = Instant.now();
 
-        qdb.ts_point_insert(session.handle(),
-                            tableName,
-                            columnName,
-                            xs.values.timespecs,
-                            xs.valueType.asInt(),
-                            xs.values.values);
+        qdb.ts_series_insert(session.handle(),
+                             tableName,
+                             columnName,
+                             xs.values.timespecs,
+                             xs.valueType.asInt(),
+                             xs.values.values);
 
-        logger.debug("inserted points");
+        Instant stop = Instant.now();
+        logger.debug("Inserted {} points in {}", xs.values.size(), Duration.between(start, stop));
     }
 
     public static Series get(Session session,
