@@ -274,21 +274,6 @@ public final class qdb
     public static native int ts_table_get_ranges(long handle, long localTable, TimeRange[] ranges);
     public static native WritableRow ts_table_next_row(long handle, long localTable, Column[] columns);
 
-    public static native int ts_double_insert(long handle, String alias, String column, qdb_ts_double_point[] points);
-    public static native int ts_double_get_ranges(
-        long handle, String alias, String column, TimeRange[] ranges, Reference<qdb_ts_double_point[]> points);
-    public static native int ts_double_aggregate(long handle,
-                                                 String alias,
-                                                 String column,
-                                                 qdb_ts_double_aggregation[] input,
-                                                 Reference<qdb_ts_double_aggregation[]> aggregations);
-
-    public static native int ts_point_insert(long handle,
-                                             String tableName,
-                                             String columnName,
-                                             Timespecs timespecs,
-                                             int valueType,
-                                             Object values);
 
     public static native Series.Data ts_series_get_ranges(long handle,
                                                           String tableName,
@@ -296,58 +281,12 @@ public final class qdb
                                                           int valueType,
                                                           TimeRange[] ranges);
 
-    public static native int ts_blob_point_insert(long handle,
-                                                  String tableName,
-                                                  String columnName,
-                                                  Timespecs timespecs,
-                                                  ByteBuffer[] values);
-
-    public static native int ts_string_point_insert(long handle,
-                                                    String tableName,
-                                                    String columnName,
-                                                    Timespecs timespecs,
-                                                    String[] values);
-
-    public static native int ts_double_point_insert(long handle,
-                                                    String tableName,
-                                                    String columnName,
-                                                    Timespecs timespecs,
-                                                    double[] values);
-
-    public static native int ts_int64_point_insert(long handle,
-                                                   String tableName,
-                                                   String columnName,
-                                                   Timespecs timespecs,
-                                                   long[] values);
-
-
-    public static native int ts_timestamp_point_insert(long handle,
-                                                       String tableName,
-                                                       String columnName,
-                                                       Timespecs timespecs,
-                                                       Timespecs values);
-
-
-    public static native int ts_blob_insert(long handle, String alias, String column, qdb_ts_blob_point[] points);
-    public static native int ts_blob_get_ranges(
-        long handle, String alias, String column, TimeRange[] ranges, Reference<qdb_ts_blob_point[]> points);
-    public static native int ts_blob_aggregate(long handle,
-                                               String alias,
-                                               String column,
-                                               qdb_ts_blob_aggregation[] input,
-                                               Reference<qdb_ts_blob_aggregation[]> aggregations);
-
-    public static native int ts_string_insert(long handle,
-                                              String alias,
-                                              String column,
-                                              qdb_ts_string_point[] points);
-    public static native int ts_string_get_ranges(
-        long handle, String alias, String column, TimeRange[] ranges, Reference<qdb_ts_string_point[]> points);
-    public static native int ts_string_aggregate(long handle,
-                                                 String alias,
-                                                 String column,
-                                                 qdb_ts_string_aggregation[] input,
-                                                 Reference<qdb_ts_string_aggregation[]> aggregations);
+    public static native int ts_series_insert(long handle,
+                                              String tableName,
+                                              String columnName,
+                                              Timespecs timespecs,
+                                              int valueType,
+                                              Object values);
 
     public static native int query_execute(long handle, String query, Reference<Result> result);
 
