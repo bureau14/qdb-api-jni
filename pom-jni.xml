@@ -16,7 +16,7 @@ xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
     <artifactId>jni</artifactId>
     <version>3.13.4-SNAPSHOT</version>
     <packaging>jar</packaging>
-    <file>target/jni-3.13.4-SNAPSHOT.jar</file>
+    <file>target/jni-3.13.4.jar</file>
 
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
