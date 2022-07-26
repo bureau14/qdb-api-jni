@@ -6,7 +6,7 @@
   <groupId>net.quasardb</groupId>
   <artifactId>jni</artifactId>
   <packaging>jar</packaging>
-  <version>3.13.4-SNAPSHOT</version>
+  <version>3.13.5-SNAPSHOT</version>
   <name>quasardb</name>
 
   <description>
