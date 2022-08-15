@@ -371,12 +371,8 @@ public class WriterTest {
                               new Timespec(rows[(rows.length - 1)].getTimestamp().asLocalDateTime().plusNanos(1)))
             };
 
-            if (columnType == Column.Type.SYMBOL) {
-                System.err.println("SKIPPING SYMBOL + NULL TEST, CURRENTLY BROKEN IN READER");
-            } else {
-                WritableRow[] readRows = TestUtils.readRows(s, t, ranges);
-                assertArrayEquals(rows, readRows);
-            }
+            WritableRow[] readRows = TestUtils.readRows(s, t, ranges);
+            assertArrayEquals(rows, readRows);
         } finally {
             writer.close();
         }
