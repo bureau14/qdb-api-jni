@@ -225,7 +225,7 @@ public class Table implements Serializable {
      * @param session Active session with the QuasarDB cluster.
      * @param table Timeseries table.
      */
-    public static Writer expWriter(Session session, Table table) {
+    public static ExpWriter expWriter(Session session, Table table) {
         return Tables.expWriter(session, new Table[] {table});
     }
 
@@ -257,7 +257,7 @@ public class Table implements Serializable {
      * @param session Active session with the QuasarDB cluster.
      * @param name Timeseries table name. Must already exist.
      */
-    public static Writer expTruncateWriter(Session session, String name) {
+    public static ExpWriter expTruncateWriter(Session session, String name) {
         return expTruncateWriter(session, new Table(session, name));
     }
 
@@ -267,7 +267,7 @@ public class Table implements Serializable {
      * @param session Active session with the QuasarDB cluster.
      * @param table Timeseries table.
      */
-    public static Writer expTruncateWriter(Session session, Table table) {
+    public static ExpWriter expTruncateWriter(Session session, Table table) {
         return Tables.expTruncateWriter(session, new Table[] {table});
     }
 
@@ -333,7 +333,7 @@ public class Table implements Serializable {
      * @param session Active session with the QuasarDB cluster.
      * @param table Timeseries table.
      */
-    public static Writer expAsyncWriter(Session session, Table table) {
+    public static ExpWriter expAsyncWriter(Session session, Table table) {
         return Tables.expAsyncWriter(session, new Table[] {table});
     }
 
@@ -399,7 +399,7 @@ public class Table implements Serializable {
      * @param session Active session with the QuasarDB cluster.
      * @param name Timeseries table name. Must already exist.
      */
-    public static Writer expFastWriter(Session session, String name) {
+    public static ExpWriter expFastWriter(Session session, String name) {
         return expFastWriter(session, new Table(session, name));
     }
 
@@ -412,7 +412,7 @@ public class Table implements Serializable {
      * @param session Active session with the QuasarDB cluster.
      * @param table Table to insert into.
      */
-    public static Writer expFastWriter(Session session, Table table) {
+    public static ExpWriter expFastWriter(Session session, Table table) {
         return Tables.expFastWriter(session, new Table[] {table});
     }
 

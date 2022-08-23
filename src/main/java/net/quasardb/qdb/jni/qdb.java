@@ -253,6 +253,13 @@ public final class qdb
                                                           String tableName,
                                                           Timespecs timespecs);
 
+    public static native void ts_exp_batch_table_set_drop_duplicates(long batchTables,
+                                                                     long tableNum);
+
+    public static native void ts_exp_batch_table_set_drop_duplicate_columns(long batchTables,
+                                                                            long tableNum,
+                                                                            String[] columns);
+
     public static native void ts_exp_batch_table_set_truncate_ranges(long batchTables,
                                                                      long tableNum,
                                                                      TimeRange[] ranges);

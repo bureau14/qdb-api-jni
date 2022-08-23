@@ -10,15 +10,6 @@ import java.util.stream.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
-import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
-import it.unimi.dsi.fastutil.longs.LongIterator;
-import it.unimi.dsi.fastutil.longs.LongSet;
-import it.unimi.dsi.fastutil.longs.LongArrayList;
-import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
-import it.unimi.dsi.fastutil.ints.IntSortedSet;
-import it.unimi.dsi.fastutil.ints.Int2ObjectLinkedOpenHashMap;
-import it.unimi.dsi.fastutil.ints.IntBidirectionalIterator;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 
 import net.quasardb.qdb.*;
@@ -146,7 +137,8 @@ public class ExpWriter extends Writer {
          */
         public void toNative(long prepped,
                              int tableNum,
-                             String tableName) {
+                             String tableName,
+                             Options options) {
             for (int i = 0; i < this.columns.length; ++i) {
                 toNative(prepped, tableNum, i);
             }
@@ -155,15 +147,27 @@ public class ExpWriter extends Writer {
                                             tableNum,
                                             tableName,
                                             Timespecs.ofArray(this.timestamps));
+
+
+            if (options.isDropDuplicatesEnabled() == true) {
+                qdb.ts_exp_batch_table_set_drop_duplicates(prepped, tableNum);
+
+                if (options.hasDropDuplicateColumns() == true) {
+                    qdb.ts_exp_batch_table_set_drop_duplicate_columns(prepped,
+                                                                      tableNum,
+                                                                      options.getDropDuplicateColumns());
+                };
+            };
         }
 
         public void toNative(long prepped,
                              int tableNum,
                              String tableName,
+                             Options options,
                              TimeRange[] truncateRanges) {
             assert(truncateRanges != null);
 
-            toNative(prepped, tableNum, tableName);
+            toNative(prepped, tableNum, tableName, options);
 
             qdb.ts_exp_batch_table_set_truncate_ranges(prepped,
                                                        tableNum,
@@ -172,20 +176,103 @@ public class ExpWriter extends Writer {
         }
     }
 
+    /**
+     * Batch writer options.
+     */
+    static public class Options {
+        private boolean dropDuplicates;
+        private String[] dropDuplicateColumns;
+
+        public Options() {
+            this.dropDuplicates = false;
+            this.dropDuplicateColumns = null;
+        };
+
+        /**
+         * Enables server-side deduplication when all values of a row
+         * match.
+         */
+        public void enableDropDuplicates() {
+            this.dropDuplicates = true;
+        };
+
+        /**
+         * Enables server-side deduplication when values of provided columns
+         * match.
+         */
+        public void enableDropDuplicates(String[] columns) {
+            this.dropDuplicates = true;
+            this.dropDuplicateColumns = columns;
+        };
+
+        /**
+         * Enables server-side deduplication when values of provided columns
+         * match.
+         */
+        public void enableDropDuplicates(Column[] columns) {
+            String[] columnNames = new String[columns.length];
+
+            for (int i = 0; i < columns.length; ++i) {
+                columnNames[i] = columns[i].getName();
+            };
+
+            enableDropDuplicates(columnNames);
+        };
+
+        /**
+         * Disables server-side deduplication.
+         */
+        public void disableDropDuplicates() {
+            this.dropDuplicates = false;
+            this.dropDuplicateColumns = null;
+        };
+
+        /**
+         * Returns true if server-side deduplication is enabled.
+         */
+        public boolean isDropDuplicatesEnabled() {
+            return this.dropDuplicates;
+        };
+
+        /**
+         * Returns true if column-wise server-side deduplication is enabled.
+         */
+        public boolean hasDropDuplicateColumns() {
+            return this.dropDuplicateColumns != null;
+        };
+
+        /**
+         * Returns the columns to perform server-side deduplication on.
+         */
+        public String[] getDropDuplicateColumns() {
+            assert(this.isDropDuplicatesEnabled() == true);
+            assert(this.hasDropDuplicateColumns() == true);
+
+            return this.dropDuplicateColumns;
+        };
+
+    };
+
+    private Options options;
     private long prepared;
     private HashMap<String, StagedTable> stagedTables;
 
     protected ExpWriter(Session session, Table[] tables) {
         super(session, tables);
 
+        this.options = new Options();
         this.reset();
-
     }
 
     protected ExpWriter(Session session, Table[] tables, Writer.PushMode mode) {
         super(session, tables, mode);
 
+        this.options = new Options();
         this.reset();
+    }
+
+    public Options options() {
+        return this.options;
     }
 
     private void reset() {
@@ -269,9 +356,9 @@ public class ExpWriter extends Writer {
             StagedTable stagedTable = x.getValue();
 
             if (truncateRanges[i] == null) {
-                stagedTable.toNative(this.prepared, i, tableName);
+                stagedTable.toNative(this.prepared, i, tableName, this.options);
             } else {
-                stagedTable.toNative(this.prepared, i, tableName, truncateRanges[i]);
+                stagedTable.toNative(this.prepared, i, tableName, this.options, truncateRanges[i]);
             }
             i++;
         }

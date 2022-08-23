@@ -162,6 +162,11 @@ public class TestUtils {
         return ret;
     }
 
+    public static boolean randomBoolean() {
+        // Not cryptographically secure, but works well enough
+        return randomInt64() % 2 == 0;
+    };
+
     public static long randomInt64() {
         return new Random(n++).nextLong();
     }
@@ -349,6 +354,44 @@ public class TestUtils {
         return t;
     }
 
+
+    /**
+     * Performs random mutation on one of the row's values. Modifies
+     * the object in-place, returns reference to the same object.
+     */
+    public static WritableRow mutateRow(WritableRow row) {
+        return mutateRow(row, new Random(n++).nextInt(row.size()));
+    };
+
+    public static WritableRow mutateRow(WritableRow row, int offset) {
+        WritableRow ret = new WritableRow(row);
+
+        // Select random value to mutate
+        ret.setValue(mutateValue(row.getValue(offset)), offset);
+
+        return ret;
+    };
+
+    /**
+     * Performs random mutation of a Value based on its type. Modifies
+     * the object in-place, also returns reference to this same object.
+     */
+    public static Value mutateValue(Value x) {
+        Value ret = new Value(x);
+        assert(ret.equals(x));
+
+        // There's a non-zero chance that we may accidentally regenerate
+        // the exact same value, so for that purpose, let's loop until we
+        // know for sure the values differ.
+
+        while (ret.equals(x)) {
+            ret = generateRandomValueByType(x.getType());
+        };
+
+        return ret;
+    };
+
+
     /**
      * Generates a TimeRange from an array of rows. Assumes that all rows are sorted,
      * with the oldest row being first.
@@ -369,7 +412,35 @@ public class TestUtils {
             .map((t) -> {
                      return new TimeRange(t, t.plusNanos(1));
                 })
+            .distinct()
             .toArray(TimeRange[]::new);
+    }
+
+    public static TimeRange[] rangesFromRows(ArrayList<WritableRow> rows) {
+        return rangesFromRows(rows.toArray(new WritableRow[0]));
+    }
+
+    public static TimeRange[] singleRangeFromRows(WritableRow[] rows) {
+        Timespec begin = null;
+        Timespec end = null;
+
+        for (TimeRange x : rangesFromRows(rows)) {
+            if (begin == null && end == null) {
+                begin = x.getBegin();
+                end = x.getEnd();
+            } else {
+                begin = Timespec.min(begin, x.getBegin());
+                end = Timespec.max(end, x.getEnd());
+            }
+        }
+
+        TimeRange[] ret = new TimeRange[1];
+        ret[0] = new TimeRange(begin, end);
+        return ret;
+    }
+
+    public static TimeRange[] singleRangeFromRows(ArrayList<WritableRow> rows) {
+        return singleRangeFromRows(rows.toArray(new WritableRow[0]));
     }
 
     public static <T extends Serializable> byte[] serialize(T obj)

@@ -17,7 +17,7 @@ import net.quasardb.qdb.exception.InvalidArgumentException;
  * @see Value
  * @see Row
  */
-public class Timespec implements Serializable {
+public class Timespec implements Serializable, Comparable<Timespec> {
     /**
      * Lowest possible representable time (identical to epoch).
      */
@@ -73,12 +73,28 @@ public class Timespec implements Serializable {
              value.getNano());
     }
 
+    /**
+     * Create a copy of this timespec.
+     */
+    public Timespec (Timespec value) {
+        this(value.getSec(),
+             value.getNano());
+    }
+
     public long getSec() {
         return this.sec;
     }
 
+    public void setSec(long sec) {
+        this.sec = sec;
+    }
+
     public long getNano() {
         return this.nsec;
+    }
+
+    public void setNano(long nsec) {
+        this.nsec = nsec;
     }
 
     public boolean isBefore(Timespec rhs) {
@@ -176,6 +192,25 @@ public class Timespec implements Serializable {
 
         return rhs.getSec() == this.sec && rhs.getNano() == this.nsec;
     }
+
+    @Override
+    public int compareTo(Timespec rhs) {
+        if (rhs.getSec() < this.getSec()) {
+            return 1;
+        } else if (rhs.getSec() > this.getSec()) {
+            return -1;
+        }
+
+        assert(rhs.getSec() == this.getSec());
+
+        if (rhs.getNano() < this.getNano()) {
+            return 1;
+        } else if (rhs.getNano() > this.getNano()) {
+            return -1;
+        }
+
+        return 0;
+    };
 
     public String toString() {
         return "Timespec (" + this.asInstant().toString() + ")";

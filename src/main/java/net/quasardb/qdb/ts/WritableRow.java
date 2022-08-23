@@ -53,6 +53,16 @@ public final class WritableRow extends Row implements Serializable {
     }
 
     /**
+     * Creates a new WritableRow out of an existing row, that is, copies the underlying
+     * representation.
+     */
+    public WritableRow(WritableRow row) {
+        super((Row)(row));
+
+        this.timestamp = new Timespec(row.getTimestamp());
+    }
+
+    /**
      * Access to the timestamp of this row.
      *
      * @return The timestamp, or null if this row does not have a timestamp associated (in case
@@ -60,6 +70,15 @@ public final class WritableRow extends Row implements Serializable {
      */
     public Timespec getTimestamp() {
         return this.timestamp;
+    }
+
+    /**
+     * Set timestamp of this row.
+     *
+     * @param timestamp Timestamp to set
+     */
+    public void setTimestamp(Timespec timestamp) {
+        this.timestamp = timestamp;
     }
 
     /**
@@ -74,6 +93,22 @@ public final class WritableRow extends Row implements Serializable {
 
         WritableRow rhs = (WritableRow)obj;
         return this.timestamp.equals(rhs.getTimestamp());
+    }
+
+    /**
+     * Comparable interface implementation.
+     */
+    @Override
+    public int compareTo(Row rhs) {
+        assert((rhs instanceof WritableRow) == true);
+        WritableRow rhs_ = (WritableRow)rhs;
+
+        int x = this.getTimestamp().compareTo(rhs_.getTimestamp());
+        if (x != 0) {
+            return x;
+        };
+
+        return super.compareTo(rhs);
     }
 
     /**
