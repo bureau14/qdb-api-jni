@@ -1004,6 +1004,52 @@ JNIEXPORT void JNICALL Java_net_quasardb_qdb_jni_qdb_ts_1exp_1batch_1set_1table_
     }
 }
 
+JNIEXPORT void JNICALL Java_net_quasardb_qdb_jni_qdb_ts_1exp_1batch_1table_1set_1drop_1duplicates(
+    JNIEnv * jniEnv, jclass /* thisClass */, jlong batchTables, jlong tableNum)
+{
+    qdb::jni::env env(jniEnv);
+    try
+    {
+        qdb_exp_batch_push_table_t & table = _table_from_tables(batchTables, tableNum);
+        table.options                      = qdb_exp_batch_option_unique;
+    }
+    catch (jni::exception const & e)
+    {
+        e.throw_new(env);
+    }
+};
+
+JNIEXPORT void JNICALL
+Java_net_quasardb_qdb_jni_qdb_ts_1exp_1batch_1table_1set_1drop_1duplicate_1columns(JNIEnv * jniEnv,
+    jclass /* thisClass */,
+    jlong batchTables,
+    jlong tableNum,
+    jobjectArray columns)
+{
+    qdb::jni::env env(jniEnv);
+    try
+    {
+        jni::object_array columns_{env, columns};
+        qdb_exp_batch_push_table_t & table = _table_from_tables(batchTables, tableNum);
+
+        assert(table.options == qdb_exp_batch_option_unique);
+
+        std::size_t n               = std::size(columns_);
+        table.where_duplicate       = static_cast<qdb_string_t *>(malloc(sizeof(qdb_string_t) * n));
+        table.where_duplicate_count = n;
+
+        for (qdb_size_t i = 0; i < n; ++i)
+        {
+            jstring in{static_cast<jstring>(columns_.get(i))};
+            jni::string::get_chars_utf8(env, in).as_qdb(table.where_duplicate[i]);
+        };
+    }
+    catch (jni::exception const & e)
+    {
+        e.throw_new(env);
+    }
+};
+
 JNIEXPORT void JNICALL Java_net_quasardb_qdb_jni_qdb_ts_1exp_1batch_1table_1set_1truncate_1ranges(
     JNIEnv * jniEnv, jclass /* thisClass */, jlong batchTables, jlong tableNum, jobjectArray ranges)
 {

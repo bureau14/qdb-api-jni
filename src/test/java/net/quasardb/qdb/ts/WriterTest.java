@@ -4,6 +4,7 @@ import java.lang.Exception;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertIterableEquals;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -26,6 +27,12 @@ import net.quasardb.qdb.exception.InvalidArgumentException;
 public class WriterTest {
 
     private Session s;
+
+    public enum DeduplicationStyle {
+        NO_DEDUPLICATION,
+        FULL_DEDUPLICATION,
+        COLUMN_WISE_DEDUPLICATION;
+    };
 
     @BeforeEach
     public void setup() {
@@ -53,18 +60,23 @@ public class WriterTest {
                          );
     }
 
+    static Stream<Arguments> deduplicationStyleProvider() {
+        return Stream.of(Arguments.of(DeduplicationStyle.NO_DEDUPLICATION),
+                         Arguments.of(DeduplicationStyle.FULL_DEDUPLICATION),
+                         Arguments.of(DeduplicationStyle.COLUMN_WISE_DEDUPLICATION));
+    }
+
     static Stream<Arguments> columnTypeProvider() {
         return Stream.of(Arguments.of(Column.Type.DOUBLE),
                          Arguments.of(Column.Type.INT64),
-                         Arguments.of(Column.Type.BLOB),
                          Arguments.of(Column.Type.TIMESTAMP),
                          Arguments.of(Column.Type.STRING),
-                         Arguments.of(Column.Type.SYMBOL));
+                         Arguments.of(Column.Type.SYMBOL),
+                         Arguments.of(Column.Type.BLOB));
     }
 
     static Stream<Arguments> columnTypesProvider() {
         return Stream.of(
-
                          // Need to wrap in Object[] because otherwise the array will be
                          // automatically expanded.
                          Arguments.of(new Object[]{new Column.Type[]{Column.Type.DOUBLE,
@@ -101,6 +113,12 @@ public class WriterTest {
         return combineStreams(pushModeProvider(),
                               columnTypeProvider());
     }
+
+    static Stream<Arguments> deduplicationStyleAndColumnTypesProvider() {
+        return combineStreams(deduplicationStyleProvider(),
+                              columnTypesProvider());
+    }
+
 
     static boolean isTruncatePushMode(Writer.PushMode mode) {
         return mode == Writer.PushMode.TRUNCATE ||
@@ -585,4 +603,159 @@ public class WriterTest {
         }
     }
 
+    /**
+     * Sets deduplication options based on style. If column-wise, uses column with offset 0
+     * to deduplicate.
+     */
+    static private void setDeduplicationOptions(Column[] columns, ExpWriter writer,  DeduplicationStyle deduplicationStyle) {
+        switch (deduplicationStyle) {
+        case FULL_DEDUPLICATION:
+            writer.options().enableDropDuplicates();
+            break;
+        case COLUMN_WISE_DEDUPLICATION:
+            writer.options().enableDropDuplicates(new String[]{columns[0].getName()});
+            break;
+        case NO_DEDUPLICATION:
+            break;
+        };
+    }
+
+    @ParameterizedTest
+    @MethodSource("deduplicationStyleAndColumnTypesProvider")
+    public void canDropDuplicates(DeduplicationStyle deduplicationStyle, Column.Type[] columnTypes) throws Exception {
+        assertEquals(columnTypes.length, 2);
+
+        /////
+        //
+        // Does a 'standard' deduplication, that is, it only deduplicates when
+        // *all* columns have identical values.
+        //
+
+        Column[] definition = TestUtils.generateTableColumns(columnTypes);
+        Table t = TestUtils.createTable(definition);
+        ExpWriter writer = t.expFastWriter(s, t);
+
+        try {
+            setDeduplicationOptions(definition, writer, deduplicationStyle);
+
+            int ROW_COUNT = 10;
+            Timespec ts = Timespec.now();
+            List<WritableRow> inputRows = Arrays.asList(TestUtils.generateTableRows(definition, ROW_COUNT));
+            Collections.sort(inputRows);
+
+            ArrayList<WritableRow> allRows = new ArrayList<WritableRow>();
+
+            // Generate and insert "base" dataset
+            for (WritableRow row : inputRows) {
+                writer.append(row);
+            }
+            allRows.addAll(inputRows);
+            Collections.sort(allRows);
+
+            pushmodeAwareFlush(writer);
+
+            // Base test: we can read our rows back after writing
+            {
+                List<WritableRow> readRows = Arrays.asList(TestUtils.readRows(s, t, TestUtils.singleRangeFromRows(allRows)));
+                assertIterableEquals(inputRows, readRows);
+            }
+
+            ////
+            // Test case one -- insert pure duplicates
+            //
+
+            for (WritableRow row : inputRows) {
+                writer.append(row);
+            }
+            allRows.addAll(inputRows);
+            Collections.sort(allRows);
+
+            pushmodeAwareFlush(writer);
+
+            // Verify behavior based on deduplication style
+
+            {
+                List<WritableRow> readRows = Arrays.asList(TestUtils.readRows(s, t, TestUtils.singleRangeFromRows(allRows)));
+                Collections.sort(readRows);
+
+                switch (deduplicationStyle) {
+                case COLUMN_WISE_DEDUPLICATION:
+                case FULL_DEDUPLICATION:
+                    assertIterableEquals(inputRows, readRows);
+                    break;
+                case NO_DEDUPLICATION:
+                    assertIterableEquals(allRows, readRows);
+                    break;
+                };
+            }
+
+
+            ////
+            // Test case two -- insert semi-duplicates
+            //
+            // We mutate about half of the rows here, with the $timestamp *always* being
+            // duplicated. This means that behavior for all three deduplication styles
+            // will be different, as we use the $timestamp column as the identifier for
+            // column-wise deduplication.
+            ArrayList<WritableRow> mutatedRows = new ArrayList<WritableRow>();
+            ArrayList<WritableRow> noMutatedRows = new ArrayList<WritableRow>();
+
+            for (WritableRow row : inputRows) {
+                boolean shouldMutate = TestUtils.randomBoolean();
+
+                if (shouldMutate) {
+                    // Use column with offset 1, because column with offset 0 is used for
+                    // deduplication
+                    row = TestUtils.mutateRow(row, 1);
+                    mutatedRows.add(new WritableRow(row));
+                } else {
+                    noMutatedRows.add(new WritableRow(row));
+                }
+
+                writer.append(row);
+            }
+            pushmodeAwareFlush(writer);
+
+            {
+                List<WritableRow> readRows = Arrays.asList(TestUtils.readRows(s, t, TestUtils.singleRangeFromRows(allRows)));
+
+                ArrayList<WritableRow> expected = new ArrayList();
+
+                switch (deduplicationStyle) {
+                case NO_DEDUPLICATION:
+                    // No deduplication: we expect *all* rows to be visible, so just
+                    // expect everything
+                    expected.addAll(inputRows);
+                    expected.addAll(inputRows);
+                    expected.addAll(mutatedRows);
+                    expected.addAll(noMutatedRows);
+                    assertEquals(expected.size(), ROW_COUNT * 3);
+                    break;
+
+                case COLUMN_WISE_DEDUPLICATION:
+                    // Column-wise deduplication: since all rows share the same $timestamp,
+                    // we expect no rows to be added.
+                    expected.addAll(inputRows);
+                    break;
+
+                case FULL_DEDUPLICATION:
+                    // Full dedupication: we only expect the rows that were mutated to be
+                    // added.
+                    expected.addAll(inputRows);
+                    expected.addAll(mutatedRows);
+
+                    break;
+                };
+
+                Collections.sort(readRows);
+                Collections.sort(expected);
+
+                assertEquals(expected.size(), readRows.size());
+                assertIterableEquals(expected, readRows);
+            }
+
+        } finally {
+            writer.close();
+        }
+    }
 }

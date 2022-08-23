@@ -214,7 +214,7 @@ public class Tables implements Serializable {
      * @param session Active session with the QuasarDB cluster.
      * @param tables Timeseries tables.
      */
-    public static Writer expWriter (Session session, Tables tables) {
+    public static ExpWriter expWriter (Session session, Tables tables) {
         return expWriter(session, tables, Writer.PushMode.NORMAL);
     }
 
@@ -224,7 +224,7 @@ public class Tables implements Serializable {
      * @param session Active session with the QuasarDB cluster.
      * @param tables Timeseries tables.
      */
-    public static Writer expWriter (Session session, Tables tables, Writer.PushMode mode) {
+    public static ExpWriter expWriter (Session session, Tables tables, Writer.PushMode mode) {
         return expWriter(session, tables.getTables(), mode);
     }
 
@@ -234,7 +234,7 @@ public class Tables implements Serializable {
      * @param session Active session with the QuasarDB cluster.
      * @param tables Timeseries tables.
      */
-    public static Writer expWriter (Session session, Table[] tables) {
+    public static ExpWriter expWriter (Session session, Table[] tables) {
         return expWriter (session, tables, Writer.PushMode.NORMAL);
     }
 
@@ -245,7 +245,7 @@ public class Tables implements Serializable {
      * @param tables Timeseries tables.
      * @param mode The pushmode to use
      */
-    public static Writer expWriter (Session session, Table[] tables, Writer.PushMode mode) {
+    public static ExpWriter expWriter (Session session, Table[] tables, Writer.PushMode mode) {
         return new ExpWriter (session, tables, mode);
     }
 
@@ -279,7 +279,7 @@ public class Tables implements Serializable {
      * @param session Active session with the QuasarDB cluster.
      * @param tables Timeseries tables.
      */
-    public static Writer expTruncateWriter (Session session, Tables tables) {
+    public static ExpWriter expTruncateWriter (Session session, Tables tables) {
         return expTruncateWriter(session, tables.getTables());
     }
 
@@ -291,7 +291,7 @@ public class Tables implements Serializable {
      * @param session Active session with the QuasarDB cluster.
      * @param tables Timeseries tables.
      */
-    public static Writer expTruncateWriter (Session session, Table[] tables) {
+    public static ExpWriter expTruncateWriter (Session session, Table[] tables) {
         return new ExpWriter(session, tables, Writer.PushMode.TRUNCATE);
     }
 
@@ -328,7 +328,7 @@ public class Tables implements Serializable {
      * @param session Active session with the QuasarDB cluster.
      * @param tables Timeseries tables.
      */
-    public static Writer expAsyncWriter (Session session, Tables tables) {
+    public static ExpWriter expAsyncWriter (Session session, Tables tables) {
         return expAsyncWriter(session, tables.getTables());
     }
 
@@ -340,7 +340,7 @@ public class Tables implements Serializable {
      * @param session Active session with the QuasarDB cluster.
      * @param tables Timeseries tables.
      */
-    public static Writer expAsyncWriter (Session session, Table[] tables) {
+    public static ExpWriter expAsyncWriter (Session session, Table[] tables) {
         return new ExpWriter(session, tables, Writer.PushMode.ASYNC);
     }
 
@@ -433,7 +433,7 @@ public class Tables implements Serializable {
      * @param session Active session with the QuasarDB cluster.
      * @param tables Timeseries tables.
      */
-    public static Writer expFastWriter (Session session, Tables tables) {
+    public static ExpWriter expFastWriter (Session session, Tables tables) {
         return expFastWriter(session, tables.getTables());
     }
 
@@ -448,7 +448,7 @@ public class Tables implements Serializable {
      * @param session Active session with the QuasarDB cluster.
      * @param tables Timeseries tables.
      */
-    public static Writer expFastWriter (Session session, Table[] tables) {
+    public static ExpWriter expFastWriter (Session session, Table[] tables) {
         return new ExpWriter(session, tables, Writer.PushMode.FAST);
     }
 

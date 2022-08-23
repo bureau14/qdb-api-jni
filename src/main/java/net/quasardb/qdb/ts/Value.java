@@ -11,7 +11,7 @@ import net.quasardb.qdb.exception.IncompatibleTypeException;
 /**
  * Represents a timeseries value.
  */
-public class Value implements Serializable {
+public class Value implements Serializable, Comparable<Value> {
 
     Type type;
     long int64Value = Constants.nullInt64;
@@ -68,6 +68,36 @@ public class Value implements Serializable {
     protected Value(Type type) {
         this.type = type;
     }
+
+    /**
+     * Creates new value out of this value, that is, copies the underlying value.
+     */
+    public Value(Value value) {
+        this.type = value.type;
+
+        switch (this.type) {
+        case INT64:
+            this.int64Value = value.int64Value;
+            break;
+        case DOUBLE:
+            this.doubleValue = value.doubleValue;
+            break;
+        case TIMESTAMP:
+            this.timestampValue = new Timespec(value.timestampValue);
+            break;
+        case STRING:
+            this.stringValue = new String(value.stringValue);
+            break;
+        case BLOB:
+            this.blobValue = ByteBuffer.allocateDirect(value.blobValue.capacity());
+            this.blobValue.put(value.blobValue);
+            this.blobValue.rewind();
+            value.blobValue.rewind();
+
+            break;
+        };
+    };
+
 
     /**
      * Create a null / empty value.
@@ -352,6 +382,47 @@ public class Value implements Serializable {
 
         return false;
     }
+
+    @Override
+    public int compareTo(Value rhs) {
+        if (this.getType().asInt() < rhs.getType().asInt()) {
+            return -1;
+        } else if (this.getType().asInt() > rhs.getType().asInt()) {
+            return 1;
+        };
+
+        switch (this.getType()) {
+        case INT64:
+            if (this.getInt64() < rhs.getInt64()) {
+                return -1;
+            } else if (this.getInt64() > rhs.getInt64()) {
+                return 1;
+            };
+            return 0;
+
+        case DOUBLE:
+            if (this.getDouble() < rhs.getDouble()) {
+                return -1;
+            } else if (this.getDouble() > rhs.getDouble()) {
+                return 1;
+            };
+            return 0;
+
+        case TIMESTAMP:
+            return this.getTimestamp().compareTo(rhs.getTimestamp());
+
+        case STRING:
+            return this.getString().compareTo(rhs.getString());
+
+        case BLOB:
+            return this.getBlob().compareTo(rhs.getBlob());
+
+        default:
+            break;
+        };
+
+        throw new RuntimeException("Unrecognized value type: " + this.getType().toString());
+    };
 
     private void writeObject(java.io.ObjectOutputStream stream)
         throws IOException {
