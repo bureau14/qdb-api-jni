@@ -14,7 +14,6 @@ import net.quasardb.qdb.ts.Timespecs;
 import net.quasardb.qdb.ts.Series;
 import net.quasardb.qdb.ts.Value;
 import net.quasardb.qdb.ts.Writer;
-import net.quasardb.qdb.ts.PinnedWriter;
 
 public final class qdb
 {
@@ -148,11 +147,6 @@ public final class qdb
 
     public static native int ts_batch_push_truncate(long handle, long batchTable, TimeRange[] ranges);
 
-    public static native int ts_batch_pinned_push(long handle,
-                                                  long batchTable,
-                                                  int[] columnTypes,
-                                                  Object[] rows);
-
     public static native int ts_batch_start_row(long timestamp,
                                                 long sec,
                                                 long nsec);
@@ -173,41 +167,6 @@ public final class qdb
     public static native int ts_batch_row_set_string(long batchTable,
                                                      long index,
                                                      byte[] value);
-
-    public static native int ts_batch_set_pinned_doubles(long handle,
-                                                         long batchTable,
-                                                         long shard,
-                                                         int columnIndex,
-                                                         long[] timeoffsets,
-                                                         double[] values);
-
-    public static native int ts_batch_set_pinned_int64s(long handle,
-                                                        long batchTable,
-                                                        long shard,
-                                                        int columnIndex,
-                                                        long[] timeoffsets,
-                                                        long[] values);
-
-    public static native int ts_batch_set_pinned_timestamps(long handle,
-                                                            long batchTable,
-                                                            long shard,
-                                                            int columnIndex,
-                                                            long[] timeoffsets,
-                                                            Timespecs values);
-
-    public static native int ts_batch_set_pinned_blobs(long handle,
-                                                       long batchTable,
-                                                       long shard,
-                                                       int columnIndex,
-                                                       long[] timeoffsets,
-                                                       ByteBuffer[] values);
-
-    public static native int ts_batch_set_pinned_strings(long handle,
-                                                         long batchTable,
-                                                         long shard,
-                                                         int columnIndex,
-                                                         long[] timeoffsets,
-                                                         ByteBuffer[] values);
 
     /**
      * Allocates all data structures in one big allocation. For each table, a rowCount

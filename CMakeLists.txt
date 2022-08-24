@@ -48,7 +48,6 @@ set(QDB_JNI_SOURCES
   src/main/c++/net/quasardb/qdb/jni/export/qdb_query.cpp
   src/main/c++/net/quasardb/qdb/jni/export/ts/series.cpp
   src/main/c++/net/quasardb/qdb/jni/util/helpers.cpp
-  src/main/c++/net/quasardb/qdb/jni/util/pinned_columns.cpp
   src/main/c++/net/quasardb/qdb/jni/util/ts_helpers.cpp
 )
 
