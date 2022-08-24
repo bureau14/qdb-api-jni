@@ -35,9 +35,6 @@ public class Writer implements AutoCloseable, Flushable {
         FAST(2),
         TRUNCATE(3),
 
-        PINNED_NORMAL(4),
-        PINNED_FAST(5),
-
         EXP_NORMAL(6),
         EXP_FAST(7),
         EXP_ASYNC(8),

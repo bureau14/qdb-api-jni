@@ -51,8 +51,6 @@ public class WriterTest {
                          Arguments.of(Writer.PushMode.NORMAL),
                          Arguments.of(Writer.PushMode.TRUNCATE),
                          Arguments.of(Writer.PushMode.FAST),
-                         Arguments.of(Writer.PushMode.PINNED_NORMAL),
-                         Arguments.of(Writer.PushMode.PINNED_FAST),
                          Arguments.of(Writer.PushMode.EXP_NORMAL),
                          Arguments.of(Writer.PushMode.EXP_TRUNCATE)
                          // Arguments.of(Writer.PushMode.ASYNC),
@@ -149,14 +147,10 @@ public class WriterTest {
         switch (mode) {
         case NORMAL:
             return t.writer(s, t);
-        case PINNED_NORMAL:
-            return t.pinnedWriter(s, t);
         case EXP_NORMAL:
             return t.expWriter(s, t);
         case FAST:
             return t.fastWriter(s, t);
-        case PINNED_FAST:
-            return t.pinnedFastWriter(s, t);
         case EXP_FAST:
             return t.expFastWriter(s, t);
         case ASYNC:
@@ -176,14 +170,10 @@ public class WriterTest {
         switch (mode) {
         case NORMAL:
             return t.writer(s, t);
-        case PINNED_NORMAL:
-            return t.pinnedWriter(s, t);
         case EXP_NORMAL:
             return t.expWriter(s, t);
         case FAST:
             return t.fastWriter(s, t);
-        case PINNED_FAST:
-            return t.pinnedFastWriter(s, t);
         case EXP_FAST:
             return t.expFastWriter(s, t);
         case ASYNC:
@@ -436,69 +426,6 @@ public class WriterTest {
             writer.close();
         }
     }
-
-    // @ParameterizedTest
-    // @MethodSource("pushModeAndValueTypesProvider")
-    // public void canAddExtraTable(Writer.PushMode mode,
-    //                              Column.Type[] columnTypes) throws Exception {
-    //     Column[] definition = TestUtils.generateTableColumns(columnTypes);
-
-    //     Table t1 = TestUtils.createTable(definition);
-    //     Table t2 = TestUtils.createTable(definition);
-
-    //     Writer writer = writerByPushMode(t1, mode);
-
-    //     int ROW_COUNT = 1000;
-
-    //     WritableRow[] rows1 = new WritableRow[ROW_COUNT];
-    //     WritableRow[] rows2 = new WritableRow[ROW_COUNT];
-
-    //     for (int i = 0; i < rows1.length; ++i) {
-    //         Value[] vs = Arrays.stream(columnTypes)
-    //             .map((columnType) -> {
-    //                     return TestUtils.generateRandomValueByType(32, columnType);
-    //                 })
-    //             .toArray(Value[]::new);
-
-    //         rows1[i] =
-    //             new WritableRow (LocalDateTime.now(), vs);
-    //         writer.append(t1.getName(), rows1[i]);
-    //     }
-
-    //     // This is the crucial test: add additional state in the middle of the flush
-    //     writer.extraTables(t2);
-
-    //     for (int i = 0; i < rows2.length; ++i) {
-    //         Value[] vs = Arrays.stream(columnTypes)
-    //             .map((columnType) -> {
-    //                     return TestUtils.generateRandomValueByType(32, columnType);
-    //                 })
-    //             .toArray(Value[]::new);
-
-    //         rows2[i] =
-    //             new WritableRow (LocalDateTime.now(), vs);
-    //         writer.append(t2.getName(), rows2[i]);
-    //     }
-
-    //     // Do note we actually need to flush, as the pinned writer does most of its
-    //     // complex operations in the flush operation.
-    //     pushmodeAwareFlush(writer);
-
-    //     TimeRange[] ranges1 = {
-    //         new TimeRange(rows1[0].getTimestamp(),
-    //                       new Timespec(rows1[(rows1.length - 1)].getTimestamp().asLocalDateTime().plusNanos(1)))
-    //     };
-
-    //     TimeRange[] ranges2 = {
-    //         new TimeRange(rows2[0].getTimestamp(),
-    //                       new Timespec(rows2[(rows2.length - 1)].getTimestamp().asLocalDateTime().plusNanos(1)))
-    //     };
-
-    //     WritableRow[] readRows1 = TestUtils.readRows(s, t1, ranges1);
-    //     WritableRow[] readRows2 = TestUtils.readRows(s, t2, ranges2);
-    //     assertArrayEquals(rows1, readRows1);
-    //     assertArrayEquals(rows2, readRows2);
-    // }
 
     @ParameterizedTest
     @MethodSource("pushModeAndColumnTypeProvider")
