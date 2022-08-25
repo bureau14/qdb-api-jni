@@ -1,5 +1,7 @@
 package net.quasardb.qdb;
 
+import java.util.Optional;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,29 +19,53 @@ public class SessionFactory {
     private static final Logger logger = LoggerFactory.getLogger(SessionFactory.class);
 
     private String qdbUri;
-    private Session.SecurityOptions securityOptions;
+    private Optional<Session.SecurityOptions> securityOptions;
+    private Optional<Long> inputBufferSize;
+    private Optional<Long> clientMaxParallelism;
 
     public SessionFactory(String qdbUri) {
         this.qdbUri = qdbUri;
+
+        this.securityOptions      = Optional.empty();
+        this.inputBufferSize      = Optional.empty();
+        this.clientMaxParallelism = Optional.empty();
     }
 
-    public SessionFactory(String qdbUri, String qdbUser, String qdbPrivateKey, String qdbPublicKey) {
-        this(qdbUri, new Session.SecurityOptions(qdbUser,
-                                                 qdbPrivateKey,
-                                                 qdbPublicKey));
+    public SessionFactory securityOptions(Session.SecurityOptions securityOptions) {
+        this.securityOptions = Optional.of(securityOptions);
+        return this;
     }
 
-    public SessionFactory(String qdbUri, Session.SecurityOptions securityOptions) {
-        this.qdbUri = qdbUri;
-        this.securityOptions = securityOptions;
+    public SessionFactory inputBufferSize(Long inputBufferSize) {
+        this.inputBufferSize = Optional.of(inputBufferSize);
+        return this;
+    }
+
+    public SessionFactory clientMaxParallelism(Long clientMaxParallelism) {
+        this.clientMaxParallelism = Optional.of(clientMaxParallelism);
+        return this;
     }
 
     public Session newSession() {
-        if (this.securityOptions != null) {
-            return Session.connect(this.securityOptions,
-                                   this.qdbUri);
+        Session ret = null;
+
+        if (this.securityOptions.isPresent()) {
+            ret = Session.connect(this.securityOptions.get(),
+                                  this.qdbUri);
         } else {
-            return Session.connect(this.qdbUri);
+            ret = Session.connect(this.qdbUri);
         }
+        assert(ret != null);
+
+        if (this.inputBufferSize.isPresent()) {
+            ret.setInputBufferSize(this.inputBufferSize.get().longValue());
+        }
+
+        if (this.clientMaxParallelism.isPresent()) {
+            ret.setClientMaxParallelism(this.clientMaxParallelism.get().longValue());
+        }
+
+        return ret;
     }
+
 }
