@@ -377,8 +377,20 @@ public class WriterTest {
         try {
             int ROW_COUNT = 250;
 
-            WritableRow[] rows1 = TestUtils.generateTableRows(definition1, ROW_COUNT);
-            WritableRow[] rows2 = TestUtils.generateTableRows(definition2, ROW_COUNT);
+
+            // We really want the two tables to "overlap", so we split a large array here
+            // and dividie it over two smaller arrays
+            WritableRow[] rows = TestUtils.generateTableRows(definition1, ROW_COUNT * 2);
+            WritableRow[] rows1 = new WritableRow[ROW_COUNT];
+            WritableRow[] rows2 = new WritableRow[ROW_COUNT];
+
+            for (int i = 0; i < rows.length; ++i) {
+                if (i % 2 == 0) {
+                    rows1[i / 2] = rows[i];
+                } else {
+                    rows2[i / 2] = rows[i];
+                };
+            };
 
             for (int i = 0; i < ROW_COUNT; ++i) {
                 writer.append(t1, rows1[i]);
