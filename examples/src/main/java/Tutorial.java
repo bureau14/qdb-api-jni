@@ -109,15 +109,17 @@ public class Tutorial {
     private static void batchInsert(Session c) throws IOException {
         // batch-insert-start
 
-        // We initialize a Writer here that automatically flushes rows as we insert
-        // them, by default every 50,000 rows. If we want to explicitly control these
-        // flushes, use `Table.writer()` instead.
-        Writer w = Table.autoFlushWriter(c, "stocks");
+        // We initialize a Writer here, by using the builder interface.
+        Writer w = Writer.builder(c).build();
+
+        // Now let's acquire a reference to the table
+        Table t = new Table(c, "stocks");
 
         // Insert the first row: to start a new row, we must provide it with a mandatory
         // timestamp that all values for this row will share. QuasarDB will use this timestamp
         // as its primary index.
-        w.append(new Timespec(Instant.ofEpochSecond(1548979200)),
+        w.append(t,
+                 new Timespec(Instant.ofEpochSecond(1548979200)),
                  new Value[] {
                      Value.createDouble(3.40),
                      Value.createDouble(3.50),
@@ -125,7 +127,8 @@ public class Tutorial {
                  });
 
         // Inserting the next row is a matter of just calling append.
-        w.append(new Timespec(Instant.ofEpochSecond(1549065600)),
+        w.append(t,
+                 new Timespec(Instant.ofEpochSecond(1549065600)),
                  new Value[] {
                      Value.createDouble(3.50),
                      Value.createDouble(3.55),

@@ -126,14 +126,14 @@ public class PerformanceTraceTest {
         assertEquals(0, res1.size());
         assertEquals(3, res2.size());
 
-        Writer w = Table.writer(s, t);
+        Writer w = Writer.builder(s).build();
 
         Collection<PerformanceTrace.Trace> res3 = PerformanceTrace.pop(s);
         assertEquals(0, res3.size());
 
         WritableRow[] rows = TestUtils.generateTableRows(columns, 32);
         for (WritableRow row : rows) {
-            w.append(row);
+            w.append(t, row);
         }
 
         Collection<PerformanceTrace.Trace> res4 = PerformanceTrace.pop(s);

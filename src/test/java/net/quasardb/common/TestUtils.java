@@ -342,10 +342,10 @@ public class TestUtils {
 
     public static Table seedTable(Session s, String tableName, Column[] cols, WritableRow[] rows) throws Exception {
         Table t = createTable(s, tableName, cols);
-        Writer writer = Table.writer(s, t);
+        Writer writer = Writer.builder(s).build();
 
         for (WritableRow row : rows) {
-            writer.append(row);
+            writer.append(t, row);
         }
 
         writer.flush();

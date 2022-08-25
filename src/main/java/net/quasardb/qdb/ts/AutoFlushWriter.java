@@ -28,57 +28,34 @@ public final class AutoFlushWriter extends Writer {
     long threshold;
 
     /**
-     * Initialize a new auto-flushing timeseries table with a default threshold of 50000 rows.
+     * Initialize a new auto-flushing batch writer with a default threshold of 50000 rows.
      *
      * @param session Active connection with the QdbCluster
-     * @param tables Timeseries tables we're writing to.
+     * @param options Batch writer options
      */
-    protected AutoFlushWriter(Session session, Table[] tables) {
-        this(session, tables, PushMode.NORMAL);
+    protected AutoFlushWriter(Session session, Writer.Options options) {
+        this(session, 50000, options);
     }
 
     /**
-     * Initialize a new auto-flushing timeseries table with a default threshold of 50000 rows.
+     * Initialize a new auto-flushing batch writer.
      *
      * @param session Active connection with the QdbCluster
-     * @param tables Timeseries tables we're writing to.
-     * @param pushMode Determines which method of operation to use for flushing
-     */
-    protected AutoFlushWriter(Session session, Table[] tables, PushMode pushMode) {
-        this(session, tables, 50000, pushMode);
-    }
-
-    /**
-     * Initialize a new auto-flushing timeseries table.
-     *
-     * @param session Active connection with the QdbCluster
-     * @param tables Timeseries tables we're writing to.
      * @param threshold The amount of rows to keep in local buffer before automatic flushing occurs.
+     * @param options Writer options
      */
-    protected AutoFlushWriter(Session session, Table[] tables, long threshold) {
-        this(session, tables, threshold, PushMode.NORMAL);
-    }
+    protected AutoFlushWriter(Session session, long threshold, Writer.Options options) {
+        super(session, options);
 
-    /**
-     * Initialize a new auto-flushing timeseries table.
-     *
-     * @param session Active connection with the QdbCluster
-     * @param tables Timeseries tables we're writing to.
-     * @param threshold The amount of rows to keep in local buffer before automatic flushing occurs.
-     * @param pushMode Determines which method of operation to use for flushing
-     */
-    protected AutoFlushWriter(Session session, Table[] tables, long threshold, PushMode pushMode) {
-        super(session, tables, pushMode);
-
-        logger.info("Initializing AutoFlushWriter with {} tables, {} threshold, {} pushMode", tables.length, threshold, pushMode);
+        logger.info("Initializing AutoFlushWriter with threshold {}, pushMode {}", threshold, options);
 
         this.counter = 0;
         this.threshold = threshold;
     }
 
     @Override
-    public void append(Integer offset, Timespec timestamp, Value[] values) throws IOException {
-        super.append(offset, timestamp, values);
+    public void append(Table table, Timespec timestamp, Value[] values) throws IOException {
+        super.append(table, timestamp, values);
 
         if (++counter >= threshold) {
             try {

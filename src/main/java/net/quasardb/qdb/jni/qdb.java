@@ -135,8 +135,6 @@ public final class qdb
 
 
     // Returns qdb_ts_batch_table_t
-    public static native long ts_batch_table_init(long handle, Writer.TableColumn[] columns);
-    public static native int ts_batch_table_extra_columns(long handle, long batchTable, Writer.TableColumn[] columns);
     public static native void ts_batch_table_release(long handle, long batchTable);
 
     public static native int ts_batch_push(long handle, long batchTable);

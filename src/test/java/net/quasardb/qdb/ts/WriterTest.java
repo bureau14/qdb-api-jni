@@ -50,11 +50,8 @@ public class WriterTest {
         return Stream.of(
                          Arguments.of(Writer.PushMode.NORMAL),
                          Arguments.of(Writer.PushMode.TRUNCATE),
-                         Arguments.of(Writer.PushMode.FAST),
-                         Arguments.of(Writer.PushMode.EXP_NORMAL),
-                         Arguments.of(Writer.PushMode.EXP_TRUNCATE)
-                         // Arguments.of(Writer.PushMode.ASYNC),
-                         // Arguments.of(Writer.PushMode.EXP_ASYNC)
+                         Arguments.of(Writer.PushMode.FAST)
+                         // Arguments.of(Writer.PushMode.ASYNC)
                          );
     }
 
@@ -74,10 +71,9 @@ public class WriterTest {
     }
 
     static Stream<Arguments> columnTypesProvider() {
-        return Stream.of(
-                         // Need to wrap in Object[] because otherwise the array will be
-                         // automatically expanded.
-                         Arguments.of(new Object[]{new Column.Type[]{Column.Type.DOUBLE,
+        // Need to wrap in Object[] because otherwise the array will be
+        // automatically expanded.
+        return Stream.of(Arguments.of(new Object[]{new Column.Type[]{Column.Type.DOUBLE,
                                                                      Column.Type.INT64}}),
                          Arguments.of(new Object[]{new Column.Type[]{Column.Type.INT64,
                                                                      Column.Type.BLOB}}),
@@ -119,8 +115,7 @@ public class WriterTest {
 
 
     static boolean isTruncatePushMode(Writer.PushMode mode) {
-        return mode == Writer.PushMode.TRUNCATE ||
-            mode == Writer.PushMode.EXP_TRUNCATE;
+        return mode == Writer.PushMode.TRUNCATE;
 
     }
 
@@ -143,48 +138,17 @@ public class WriterTest {
                               columnTypesProvider());
     }
 
-    Writer writerByPushMode(Table t, Writer.PushMode mode) {
+    Writer writerByPushMode(Writer.PushMode mode) {
         switch (mode) {
         case NORMAL:
-            return t.writer(s, t);
-        case EXP_NORMAL:
-            return t.expWriter(s, t);
+            return Writer.builder(this.s).normalPush().build();
         case FAST:
-            return t.fastWriter(s, t);
-        case EXP_FAST:
-            return t.expFastWriter(s, t);
+            return Writer.builder(this.s).fastPush().build();
         case ASYNC:
-            return t.asyncWriter(s, t);
-        case EXP_ASYNC:
-            return t.expAsyncWriter(s, t);
+            return Writer.builder(this.s).asyncPush().build();
         case TRUNCATE:
-            return t.truncateWriter(s, t);
-        case EXP_TRUNCATE:
-            return t.expTruncateWriter(s, t);
-        }
-
-        throw new IllegalArgumentException("Invalid push mode: " + mode.toString());
-    }
-
-    Writer writerByPushMode(Tables t, Writer.PushMode mode) {
-        switch (mode) {
-        case NORMAL:
-            return t.writer(s, t);
-        case EXP_NORMAL:
-            return t.expWriter(s, t);
-        case FAST:
-            return t.fastWriter(s, t);
-        case EXP_FAST:
-            return t.expFastWriter(s, t);
-        case ASYNC:
-            return t.asyncWriter(s, t);
-        case EXP_ASYNC:
-            return t.expAsyncWriter(s, t);
-        case TRUNCATE:
-            return t.truncateWriter(s, t);
-        case EXP_TRUNCATE:
-            return t.expTruncateWriter(s, t);
-        }
+            return Writer.builder(this.s).truncatePush().build();
+        };
 
         throw new IllegalArgumentException("Invalid push mode: " + mode.toString());
     }
@@ -192,9 +156,9 @@ public class WriterTest {
     void pushmodeAwareFlush(Writer w) throws Exception {
         w.flush();
 
-        if (w.pushMode() == Writer.PushMode.ASYNC) {
-            Thread.sleep(8000);
-        }
+        // if (w.pushMode() == Writer.PushMode.ASYNC) {
+        //     Thread.sleep(8000);
+        // }
     }
 
 
@@ -206,7 +170,7 @@ public class WriterTest {
         Table table = TestUtils.seedTable(s, cols, rows);
         TimeRange[] ranges = TestUtils.rangesFromRows(rows);
 
-        Writer w = writerByPushMode(table, mode);
+        Writer w = writerByPushMode(mode);
         w.close();
    }
 
@@ -219,7 +183,7 @@ public class WriterTest {
         Table table = TestUtils.seedTable(s, cols, rows);
         TimeRange[] ranges = TestUtils.rangesFromRows(rows);
 
-        Writer w = writerByPushMode(table, mode);
+        Writer w = writerByPushMode(mode);
         try {
             w.flush();
         } finally {
@@ -235,37 +199,8 @@ public class WriterTest {
         Table table = TestUtils.seedTable(s, cols, rows);
         TimeRange[] ranges = TestUtils.rangesFromRows(rows);
 
-        Writer w = writerByPushMode(table, mode);
+        Writer w = writerByPushMode(mode);
         w.close();
-    }
-
-    @ParameterizedTest
-    @EnumSource(Writer.PushMode.class)
-    public void canLookupTableOffsetById(Writer.PushMode mode) throws Exception {
-        Column[] columns = {
-            new Column.Double(TestUtils.createUniqueAlias()),
-            new Column.Double(TestUtils.createUniqueAlias()),
-            new Column.Double(TestUtils.createUniqueAlias()),
-            new Column.Double(TestUtils.createUniqueAlias()),
-            new Column.Double(TestUtils.createUniqueAlias()),
-            new Column.Double(TestUtils.createUniqueAlias()),
-            new Column.Double(TestUtils.createUniqueAlias()),
-            new Column.Double(TestUtils.createUniqueAlias())
-        };
-
-        Table table1 = TestUtils.createTable(columns);
-        Table table2 = TestUtils.createTable(columns);
-
-        Tables tables = new Tables(new Table[] {table1, table2});
-
-        Writer writer = writerByPushMode(tables, mode);
-
-        try {
-            assertEquals(writer.tableIndexByName(table1.getName()), 0);
-            assertEquals(writer.tableIndexByName(table2.getName()), columns.length);
-        } finally {
-            writer.close();
-        }
     }
 
     @ParameterizedTest
@@ -284,9 +219,9 @@ public class WriterTest {
 
         WritableRow writeRow = new WritableRow(timestamp, values);
 
-        Writer writer = writerByPushMode(t, mode);
+        Writer writer = writerByPushMode(mode);
         try {
-            writer.append(writeRow);
+            writer.append(t, writeRow);
             pushmodeAwareFlush(writer);
         } finally {
             writer.close();
@@ -316,7 +251,7 @@ public class WriterTest {
         Column[] definition = TestUtils.generateTableColumns(columnType, 1);
 
         Table t = TestUtils.createTable(definition);
-        Writer writer = writerByPushMode(t, mode);
+        Writer writer = writerByPushMode(mode);
 
         try {
             int ROW_COUNT = 250;
@@ -327,7 +262,7 @@ public class WriterTest {
                     new WritableRow (LocalDateTime.now(),
                                      new Value[] {
                                          TestUtils.generateRandomValueByType(32, columnType)});
-                writer.append(rows[i]);
+                writer.append(t, rows[i]);
             }
 
             pushmodeAwareFlush(writer);
@@ -358,7 +293,7 @@ public class WriterTest {
         Column[] definition = TestUtils.generateTableColumns(columnType, 1);
 
         Table t = TestUtils.createTable(definition);
-        Writer writer = writerByPushMode(t, mode);
+        Writer writer = writerByPushMode(mode);
 
         try {
             int ROW_COUNT = 250;
@@ -369,7 +304,7 @@ public class WriterTest {
                     new WritableRow (LocalDateTime.now(),
                                      new Value[] {
                                          TestUtils.generateRandomValueByType(32, columnType, NULL_CHANCE)});
-                writer.append(rows[i]);
+                writer.append(t, rows[i]);
             }
 
             pushmodeAwareFlush(writer);
@@ -395,7 +330,7 @@ public class WriterTest {
         Column[] definition = TestUtils.generateTableColumns(columnTypes);
 
         Table t = TestUtils.createTable(definition);
-        Writer writer = writerByPushMode(t, mode);
+        Writer writer = writerByPushMode(mode);
 
         try {
             int ROW_COUNT = 2500;
@@ -410,7 +345,7 @@ public class WriterTest {
 
                 rows[i] =
                     new WritableRow (LocalDateTime.now(), vs);
-                writer.append(rows[i]);
+                writer.append(t, rows[i]);
             }
 
             pushmodeAwareFlush(writer);
@@ -434,7 +369,7 @@ public class WriterTest {
         Column[] definition = TestUtils.generateTableColumns(columnType, 1);
 
         Table t = TestUtils.createTable(definition);
-        Writer writer = writerByPushMode(t, mode);
+        Writer writer = writerByPushMode(mode);
 
         try {
             int ROW_COUNT = 1000;
@@ -455,13 +390,13 @@ public class WriterTest {
 
             // Insert and flush the first half of the rows
             for (int i = 0; i < 500; ++i) {
-                writer.append(rows[i]);
+                writer.append(t, rows[i]);
             }
             pushmodeAwareFlush(writer);
 
             // Second half
             for (int i = 500; i < rows.length; ++i) {
-                writer.append(rows[i]);
+                writer.append(t, rows[i]);
             }
             pushmodeAwareFlush(writer);
 
@@ -490,7 +425,7 @@ public class WriterTest {
         Column[] definition = TestUtils.generateTableColumns(columnType, 1);
 
         Table t = TestUtils.createTable(definition);
-        Writer writer = writerByPushMode(t, mode);
+        Writer writer = writerByPushMode(mode);
 
         try {
             int ROW_COUNT = 250;
@@ -511,13 +446,13 @@ public class WriterTest {
 
             // Insert and flush the time
             for (WritableRow row : rows) {
-                writer.append(row);
+                writer.append(t, row);
             }
             pushmodeAwareFlush(writer);
 
             // Second time is the *exact* same rows
             for (WritableRow row : rows) {
-                writer.append(row);
+                writer.append(t, row);
             }
             pushmodeAwareFlush(writer);
 
@@ -534,17 +469,17 @@ public class WriterTest {
      * Sets deduplication options based on style. If column-wise, uses column with offset 0
      * to deduplicate.
      */
-    static private void setDeduplicationOptions(Column[] columns, ExpWriter writer,  DeduplicationStyle deduplicationStyle) {
+    static private Writer.Builder setDeduplicationOptions(Column[] columns, Writer.Builder builder,  DeduplicationStyle deduplicationStyle) {
         switch (deduplicationStyle) {
         case FULL_DEDUPLICATION:
-            writer.options().enableDropDuplicates();
-            break;
+            return builder.dropDuplicates();
         case COLUMN_WISE_DEDUPLICATION:
-            writer.options().enableDropDuplicates(new String[]{columns[0].getName()});
-            break;
+            return builder.dropDuplicates(new String[]{columns[0].getName()});
         case NO_DEDUPLICATION:
             break;
         };
+
+        return builder;
     }
 
     @ParameterizedTest
@@ -560,11 +495,11 @@ public class WriterTest {
 
         Column[] definition = TestUtils.generateTableColumns(columnTypes);
         Table t = TestUtils.createTable(definition);
-        ExpWriter writer = t.expFastWriter(s, t);
+        Writer.Builder builder = Writer.builder(this.s).fastPush();
+        builder = setDeduplicationOptions(definition, builder, deduplicationStyle);
+        Writer writer = builder.build();
 
         try {
-            setDeduplicationOptions(definition, writer, deduplicationStyle);
-
             int ROW_COUNT = 10;
             Timespec ts = Timespec.now();
             List<WritableRow> inputRows = Arrays.asList(TestUtils.generateTableRows(definition, ROW_COUNT));
@@ -574,7 +509,7 @@ public class WriterTest {
 
             // Generate and insert "base" dataset
             for (WritableRow row : inputRows) {
-                writer.append(row);
+                writer.append(t, row);
             }
             allRows.addAll(inputRows);
             Collections.sort(allRows);
@@ -592,7 +527,7 @@ public class WriterTest {
             //
 
             for (WritableRow row : inputRows) {
-                writer.append(row);
+                writer.append(t, row);
             }
             allRows.addAll(inputRows);
             Collections.sort(allRows);
@@ -639,7 +574,7 @@ public class WriterTest {
                     noMutatedRows.add(new WritableRow(row));
                 }
 
-                writer.append(row);
+                writer.append(t, row);
             }
             pushmodeAwareFlush(writer);
 

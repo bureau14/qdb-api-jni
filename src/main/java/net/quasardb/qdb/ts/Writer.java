@@ -8,6 +8,7 @@ import java.time.LocalDateTime;
 
 import java.nio.channels.SeekableByteChannel;
 import java.util.*;
+import java.util.stream.*;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,12 +34,7 @@ public class Writer implements AutoCloseable, Flushable {
         NORMAL(0),
         ASYNC(1),
         FAST(2),
-        TRUNCATE(3),
-
-        EXP_NORMAL(6),
-        EXP_FAST(7),
-        EXP_ASYNC(8),
-        EXP_TRUNCATE(9)
+        TRUNCATE(3)
 
         ;
 
@@ -55,12 +51,282 @@ public class Writer implements AutoCloseable, Flushable {
 
     private static final Logger logger = LoggerFactory.getLogger(Writer.class);
 
-    PushMode pushMode;
+    static class StagedTable {
+        private static final int initialCapacity = 1;
+
+        Column[] columns;
+        ArrayList<Timespec> timestamps;
+        ArrayList<ArrayList<Value> > valuesByColumn;
+
+        StagedTable(Column[] columns) {
+            this.columns = columns;
+            this.timestamps = new ArrayList<Timespec>(initialCapacity);
+            this.valuesByColumn = new ArrayList<ArrayList<Value>>(columns.length);
+
+            for (int i = 0; i < this.columns.length; ++i) {
+                this.valuesByColumn.add(new ArrayList<Value>(initialCapacity));
+            }
+        }
+
+        public long rowCount() {
+            return this.timestamps.size();
+        }
+
+        public long columnCount() {
+            return this.columns.length;
+        }
+
+        /**
+         * As we are receiving the data in row-oriented fashion, while appending
+         * we pre-pivot the dataset so that we store everything in column-oriented
+         * fashion. This will ensure that later, we can easily convert all arrays.
+         */
+        public void append(Timespec timestamp, Value[] values) {
+            this.timestamps.add(timestamp);
+
+            // For now, we require values for every column
+            assert(values.length == this.columns.length);
+
+            for (int i = 0; i < values.length; ++i) {
+                ArrayList<Value> xs = this.valuesByColumn.get(i);
+
+                if (values[i].getType() == Value.Type.STRING) {
+                    // TODO(leon): once the new writer have stabilized, we should
+                    // always represent all strings as bytebuffers immeidately.
+                    //
+                    // Invoking this call here has the advantage that the Value matrix
+                    // we buffer 'owns' the directly allocated memory region, and means
+                    // it's released automatically when the GC decides the Value objects
+                    // (and thus, their underlying direct ByteBuffers) are to be evicted.
+                    values[i].ensureByteBufferBackedString();
+                }
+
+                xs.add(values[i]);
+
+                // Sanity check: all timestamps + column values arrays are of equal size.
+                assert(xs.size() == this.timestamps.size());
+            }
+        }
+
+        public void toNative(long prepped,
+                             int tableNum,
+                             int offset) {
+            Column c = this.columns[offset];
+            ArrayList<Value> xs = this.valuesByColumn.get(offset);
+
+            switch (c.getType()) {
+            case DOUBLE:
+                qdb.ts_exp_batch_set_column_from_double(prepped,
+                                                        tableNum,
+                                                        offset,
+                                                        c.getName(),
+                                                        Values.asPrimitiveDoubleArray(xs));
+                break;
+            case INT64:
+                qdb.ts_exp_batch_set_column_from_int64(prepped,
+                                                       tableNum,
+                                                       offset,
+                                                       c.getName(),
+                                                       Values.asPrimitiveInt64Array(xs));
+                break;
+            case BLOB:
+                qdb.ts_exp_batch_set_column_from_blob(prepped,
+                                                      tableNum,
+                                                      offset,
+                                                      c.getName(),
+                                                      Values.asPrimitiveBlobArray(xs));
+                break;
+
+            case SYMBOL:
+                //! FALLTHROUGH
+            case STRING:
+                qdb.ts_exp_batch_set_column_from_string(prepped,
+                                                        tableNum,
+                                                        offset,
+                                                        c.getName(),
+                                                        Values.asPrimitiveStringArray(xs));
+                break;
+            case TIMESTAMP:
+                qdb.ts_exp_batch_set_column_from_timestamp(prepped,
+                                                           tableNum,
+                                                           offset,
+                                                           c.getName(),
+                                                           Values.asPrimitiveTimestampArray(xs));
+                break;
+            default:
+                throw new RuntimeException("Unrecognized column type: " + c.toString());
+            };
+        }
+
+        /**
+         * qdb
+         */
+        public void toNative(long prepped,
+                             int tableNum,
+                             String tableName,
+                             Options options) {
+            for (int i = 0; i < this.columns.length; ++i) {
+                toNative(prepped, tableNum, i);
+            }
+
+            qdb.ts_exp_batch_set_table_data(prepped,
+                                            tableNum,
+                                            tableName,
+                                            Timespecs.ofArray(this.timestamps));
+
+
+            if (options.isDropDuplicatesEnabled() == true) {
+                logger.debug("enabling deduplication while flushing to table {}", tableName);
+                qdb.ts_exp_batch_table_set_drop_duplicates(prepped, tableNum);
+
+                if (options.hasDropDuplicateColumns() == true) {
+                    logger.debug("enabling column-wise deduplication while flushing to table {}", tableName);
+                    qdb.ts_exp_batch_table_set_drop_duplicate_columns(prepped,
+                                                                      tableNum,
+                                                                      options.getDropDuplicateColumns());
+                };
+            };
+        }
+
+        public void toNative(long prepped,
+                             int tableNum,
+                             String tableName,
+                             Options options,
+                             TimeRange[] truncateRanges) {
+            assert(truncateRanges != null);
+
+            toNative(prepped, tableNum, tableName, options);
+
+            qdb.ts_exp_batch_table_set_truncate_ranges(prepped,
+                                                       tableNum,
+                                                       truncateRanges);
+
+        }
+    }
+
+
+
+    /**
+     * Batch writer options.
+     */
+    static public class Options {
+        private PushMode pushMode;
+        private boolean dropDuplicates;
+        private String[] dropDuplicateColumns;
+
+        public Options() {
+            this.pushMode = PushMode.NORMAL;
+            this.dropDuplicates = false;
+            this.dropDuplicateColumns = null;
+        };
+
+        /**
+         * Resets push mode to 'normal'.
+         */
+        public void enableNormalPush() {
+            this.pushMode = PushMode.NORMAL;
+        };
+
+        /**
+         * Sets push mode to 'fast'.
+         */
+        public void enableFastPush() {
+            this.pushMode = PushMode.FAST;
+        };
+
+        /**
+         * Sets push mode to 'async'.
+         */
+        public void enableAsyncPush() {
+            this.pushMode = PushMode.ASYNC;
+        };
+
+        /**
+         * Sets push mode to 'truncate'.
+         */
+        public void enableTruncatePush() {
+            this.pushMode = PushMode.TRUNCATE;
+        };
+
+        /**
+         * Get the currently set push mode.
+         */
+        public PushMode getPushMode() {
+            return this.pushMode;
+        };
+
+        /**
+         * Enables server-side deduplication when all values of a row
+         * match.
+         */
+        public void enableDropDuplicates() {
+            this.dropDuplicates = true;
+        };
+
+        /**
+         * Enables server-side deduplication when values of provided columns
+         * match.
+         */
+        public void enableDropDuplicates(String[] columns) {
+            this.dropDuplicates = true;
+            this.dropDuplicateColumns = columns;
+        };
+
+        /**
+         * Enables server-side deduplication when values of provided columns
+         * match.
+         */
+        public void enableDropDuplicates(Column[] columns) {
+            String[] columnNames = new String[columns.length];
+
+            for (int i = 0; i < columns.length; ++i) {
+                columnNames[i] = columns[i].getName();
+            };
+
+            enableDropDuplicates(columnNames);
+        };
+
+        /**
+         * Disables server-side deduplication.
+         */
+        public void disableDropDuplicates() {
+            this.dropDuplicates = false;
+            this.dropDuplicateColumns = null;
+        };
+
+        /**
+         * Returns true if server-side deduplication is enabled.
+         */
+        public boolean isDropDuplicatesEnabled() {
+            return this.dropDuplicates;
+        };
+
+        /**
+         * Returns true if column-wise server-side deduplication is enabled.
+         */
+        public boolean hasDropDuplicateColumns() {
+            return this.dropDuplicateColumns != null;
+        };
+
+        /**
+         * Returns the columns to perform server-side deduplication on.
+         */
+        public String[] getDropDuplicateColumns() {
+            assert(this.isDropDuplicatesEnabled() == true);
+            assert(this.hasDropDuplicateColumns() == true);
+
+            return this.dropDuplicateColumns;
+        };
+    };
+
+
+    private Options options;
+    private long prepared;
+    private HashMap<String, StagedTable> stagedTables;
+
     protected long pointsSinceFlush = 0;
     boolean async;
     Session session;
-    long batchTable;
-    protected List<TableColumn> columns;
 
     TimeRange minMaxTs;
 
@@ -75,128 +341,51 @@ public class Writer implements AutoCloseable, Flushable {
      */
     ArrayList<Table> offsetsToTable;
 
-    /**
-     * Helper class to represent a table and column pair, which we
-     * need because we need to lay out all columns as flat array.
-     */
-    public static class TableColumn {
-        public String table;
-        public Value.Type type;
-        public String column;
-
-        public TableColumn(String table, Value.Type type, String column) {
-            this.table = table;
-            this.type = type;
-            this.column = column;
-        }
-
-        public String toString() {
-            return "TableColumn (table: " + this.table + ", column type: " + this.type + ", column name: " + this.column + ")";
-        }
-    }
-
-    protected Writer(Session session, Table[] tables) {
-        this(session, tables, PushMode.NORMAL);
-    }
-
-    protected Writer(Session session, Table[] tables, PushMode mode) {
-        this.pushMode = mode;
+    protected Writer(Session session, Options options) {
         this.session = session;
+        this.options = options;
+
         this.tableOffsets = new HashMap<String, Integer>();
         this.offsetsToTable = new ArrayList<Table>();
-        this.columns = new ArrayList<TableColumn>();
         this.minMaxTs = null;
 
-        for (Table table : tables) {
-            logger.debug("Initializing table {} at offset {}", table.name, this.columns.size());
-            this.tableOffsets.put(table.name, this.columns.size());
+        this.reset();
 
-            for (Column column : table.columns) {
-                logger.trace("Initializing column {} of table {} at offset {}", column.name, table.name, this.columns.size());
-                this.columns.add(new TableColumn(table.name,
-                                                 column.type.asValueType(),
-                                                 column.name));
-                this.offsetsToTable.add(table);
-            }
-        }
-
-        TableColumn[] tableColumns = this.columns.toArray(new TableColumn[columns.size()]);
-        Reference<Long> theBatchTable = new Reference<Long>();
-        this.batchTable = qdb.ts_batch_table_init(this.session.handle(),
-                                                  tableColumns);
-
-        // Crude check for pointer validity
-        assert(this.batchTable > 0);
-
-        logger.info("Successfully initialized Writer with {} columns for {} tables to Writer state", this.columns.size(), tables.length);
+        logger.info("Successfully initialized Writer");
     }
 
     /**
-     * After a writer is already initialized, this function allows extra tables to
-     * be added to the internal state. Blocking function that needs to communicate with
-     * the QuasarDB daemon to retrieve metadata.
-     */
-    public void extraTables(Table[] tables) {
-        List<TableColumn> columns = new ArrayList<TableColumn>();
-
-        for (Table table : tables) {
-            logger.debug("Adding new table {} to batch writer at column offset {}", table.name, this.columns.size());
-
-            this.tableOffsets.put(table.name, this.columns.size());
-
-            for (Column column : table.columns) {
-                logger.debug("Initializing extra column {} of table {} at offset {}", column.name, table.name, this.columns.size());
-                this.columns.add(new TableColumn(table.name,
-                                                 column.type.asValueType(),
-                                                 column.name));
-                columns.add(new TableColumn(table.name,
-                                            column.type.asValueType(),
-                                            column.name));
-            }
-        }
-
-        logger.debug("Added {} columns for {} tables to Writer state, invoking native", columns.size(), tables.length);
-        TableColumn[] tableColumns = columns.toArray(new TableColumn[columns.size()]);
-        qdb.ts_batch_table_extra_columns(this.session.handle(),
-                                         this.batchTable,
-                                         tableColumns);
-
-        logger.info("Successfully added {} columns for {} tables to Writer state", columns.size(), tables.length);
-
-    }
-
-    public void extraTables(Table table) {
-        extraTables(new Table[] { table });
-    }
-
-    /**
-     * Utility function that looks up a table's index with the batch being written
-     * by its name. The first table starts with column 0, but depending upon the amount
-     * of columns in other tables, it can influence the offset of the table within the batch.
+     * Create a builder instance.
      *
-     * If possible, you are encouraged to cache this value so that recurring writes
-     * of rows to the same table only do this lookup once.
+     * @param session Active connection with the QuasarDB cluster.
      */
-    public int tableIndexByName(String name) {
-        Integer offset = this.tableOffsets.get(name);
-        logger.trace("Resolved trable {} to column offset {}", name, offset);
-        if (offset == null) {
-            throw new InvalidArgumentException("Table not seen before: '" + name + "'. Please use extratables() to explicitly add the table to the Writer state.");
+    public static Builder builder(Session session) {
+        return new Builder(session);
+    };
+
+    private void reset() {
+        // We reuse the table offsets
+        logger.debug("resetting internal batch writer state");
+        this.stagedTables = new HashMap<String, StagedTable>(this.tableOffsets.size());
+
+        if (this.prepared != 0) {
+            qdb.ts_exp_batch_release(this.prepared, this.stagedTables.size());
+            this.prepared = 0;
         }
 
-        return offset.intValue();
+        this.pointsSinceFlush = 0;
+        this.minMaxTs = null;
     }
 
-    /**
-     * Reverse of tableIndexByName, based on a (column) index, resolves the table.
-     * May be removed in the future.
-     */
-    protected Table tableByIndex(int index) {
-        Table ret = this.offsetsToTable.get(index);
-
+    private StagedTable getStagedTable(Table t) {
+        String name = t.getName();
+        StagedTable ret = this.stagedTables.get(name);
         if (ret == null) {
-            throw new InvalidArgumentException("Table index not found: " + index);
+            this.stagedTables.put(name, new StagedTable(t.getColumns()));
+            ret = this.stagedTables.get(name);
         }
+
+        assert(ret != null);
 
         return ret;
     }
@@ -207,11 +396,7 @@ public class Writer implements AutoCloseable, Flushable {
     @Override
     protected void finalize() throws Throwable {
         logger.info("Finalizing batch writer");
-        try {
-            qdb.ts_batch_table_release(this.session.handle(), this.batchTable);
-        } finally {
-            super.finalize();
-        }
+        this.reset();
     }
 
     /**
@@ -220,119 +405,96 @@ public class Writer implements AutoCloseable, Flushable {
      */
     public void close() throws IOException {
         logger.info("Closing batch writer");
-        //this.flush();
-        qdb.ts_batch_table_release(this.session.handle(), this.batchTable);
-
-        this.batchTable = -1;
+        this.reset();
     }
 
-    public Writer.PushMode pushMode() {
-        return this.pushMode;
+    public void flush() throws IOException {
+        try {
+
+            if (this.prepared == 0) {
+                this.prepareFlush();
+            }
+
+            logger.info("Flushing batch writer, push mode='{}', points since last flush={}", this.options.getPushMode().toString(), this.pointsSinceFlush);
+            qdb.ts_exp_batch_push(this.session.handle(),
+                                  this.options.getPushMode().asInt(),
+                                  this.prepared,
+                                  this.stagedTables.size());
+        } finally {
+            this.reset();
+            assert(this.prepared == 0);
+        }
+    }
+
+    public void flush(TimeRange[] ranges) throws IOException {
+        this.prepareFlush(ranges);
+        this.flush();
     }
 
     /**
-     * Flush current local cache to server.
+     * Prepare internal data structure for flushing. Will be automatically called if
+     * not called explicitly.
      */
-    public void flush() throws IOException {
-        switch (this.pushMode) {
-        case NORMAL:
-            logger.info("Flushing batch writer sync, points since last flush: {}", pointsSinceFlush);
-            qdb.ts_batch_push(this.session.handle(), this.batchTable);
-            break;
+    public void prepareFlush() throws IOException  {
+        this.prepareFlush(null);
+    }
 
-        case ASYNC:
-            logger.info("Flushing batch writer async, points since last flush: {}", pointsSinceFlush);
-            qdb.ts_batch_push_async(this.session.handle(), this.batchTable);
-            break;
+    /**
+     * Prepare internal data structure for flushing. Will be automatically called if
+     * not called explicitly.
+     */
+    public void prepareFlush(TimeRange[] ranges) {
+        long[]        rowCount       = new long[this.stagedTables.size()];
+        long[]        columnCount    = new long[this.stagedTables.size()];
 
-        case FAST:
-            logger.info("Using in-place fast flushing to push batch, points since last flush: {}", pointsSinceFlush);
-            qdb.ts_batch_push_fast(this.session.handle(), this.batchTable);
-            break;
+        int i = 0;
+        for (StagedTable t : this.stagedTables.values()) {
+            columnCount[i] = t.columnCount();
+            rowCount[i] = t.rowCount();
 
-        case TRUNCATE:
-            if (this.minMaxTs == null) {
-                logger.warn("Trying to flush with truncate push, but empty dataset. Please append new rows to the writer before calling flush()");
-            } else {
-                // Point the end exactly 1 nanosecond after the last timestamp, as the range
-                // is begin-inclusive but end-exclusive, i.e. [Tmin, Tmax)
-                TimeRange[] r = {
+            ++i;
+        }
+
+        // The data structure / logic below is set up to handle different ranges
+        // per table, but we don't actually support this on a high-level yet.
+        TimeRange[][] truncateRanges = new TimeRange[this.stagedTables.size()][];
+
+        if (this.options.getPushMode() == PushMode.TRUNCATE) {
+            if (ranges == null && this.minMaxTs != null) {
+                ranges = new TimeRange[] {
                     this.minMaxTs.withEnd(this.minMaxTs.end.plusNanos(1))
                 };
-
-                logger.info("Flushing batch writer and truncating existing data in range {}, points since last flush: {}", this.minMaxTs.toString(), pointsSinceFlush);
-                qdb.ts_batch_push_truncate(this.session.handle(),
-                                           this.batchTable,
-                                           r);
             }
-            break;
 
-        default:
-            throw new RuntimeException("Fatal error: unrecognized push mode: " + this.pushMode);
+            // As mentioned above, all ranges are the same for all tables. We *could*
+            // actually do this on a per-table basis.
+            Arrays.fill(truncateRanges, ranges);
+        } else {
+            if (ranges != null) {
+                logger.warn("Truncate ranges provided but insert mode is not truncate!");
+            }
 
+            // A 'null' value for the truncate ranges is interpreted as 'no range' by
+            // the C++ code.
+            Arrays.fill(truncateRanges, null);
         }
 
-        pointsSinceFlush = 0;
-        this.minMaxTs = null;
-    }
 
-    /**
-     * Flush with specific time range, only useful in the context of a truncate push mode.
-     */
-    public void flush(TimeRange range) throws IOException {
-        flush(new TimeRange[]{range});
-    }
+        this.prepared = qdb.ts_exp_batch_prepare(rowCount,
+                                                 columnCount);
 
-    /**
-     * Flush with specific time range, only useful in the context of a truncate push mode.
-     */
-    public void flush(TimeRange[] ranges) throws IOException {
-        if (this.pushMode != PushMode.TRUNCATE) {
-            throw new RuntimeException("Fatal error: can only flush with a time range in truncate push mode, our current mode is: " + this.pushMode.toString());
+        i = 0;
+        for (Map.Entry<String, StagedTable> x : this.stagedTables.entrySet()) {
+            String tableName = x.getKey();
+            StagedTable stagedTable = x.getValue();
+
+            if (truncateRanges[i] == null) {
+                stagedTable.toNative(this.prepared, i, tableName, this.options);
+            } else {
+                stagedTable.toNative(this.prepared, i, tableName, this.options, truncateRanges[i]);
+            }
+            i++;
         }
-
-        logger.info("Flushing batch writer and truncating existing data in range {}, points since last flush: {}", this.minMaxTs.toString(), pointsSinceFlush);
-        qdb.ts_batch_push_truncate(this.session.handle(),
-                                   this.batchTable,
-                                   ranges);
-    }
-
-
-    /**
-     * Append a new row to the local table cache. Should be periodically flushed,
-     * unless an {@link AutoFlushWriter} is used.
-     *
-     * @param offset Relative offset of the table inside the batch. Use #tableIndexByName
-     *               to determine the appropriate value.
-     * @param timestamp Timestamp of the row
-     * @param values Values being inserted, mapped to columns by their relative offset.
-     *
-     * @see #tableIndexByName
-     * @see #flush
-     * @see Table#autoFlushWriter
-     */
-    public void append(Integer offset, Timespec timestamp, Value[] values) throws IOException {
-        if (offset < 0 || offset >= this.columns.size()) {
-            logger.error("Invalid offset {}, only {} columns", offset, this.columns.size());
-            throw new OutOfBoundsException("Unable to append at offset " + offset.toString() + ", out of bounds.");
-        }
-
-        logger.trace("Appending row to batch writer at offset {} with {} values with timestamp {}", offset, values.length, timestamp);
-
-        qdb.ts_batch_start_row(this.batchTable,
-                               timestamp.sec, timestamp.nsec);
-
-        for (int i = 0; i < values.length; ++i) {
-            Value v = values[i];
-            int column_offset = offset + i;
-
-            v.setNative(this.batchTable,
-                        this.columns.get(column_offset).type,
-                        column_offset);
-        }
-
-        this.pointsSinceFlush += values.length;
-        this.trackMinMaxTimestamp(timestamp);
     }
 
     protected void trackMinMaxTimestamp(Timespec timestamp) {
@@ -351,53 +513,32 @@ public class Writer implements AutoCloseable, Flushable {
      * reason, you are encouraged to manually invoke and cache the value of #tableIndexByName
      * whenever possible.
      *
-     * @param tableName Name of the table to insert to.
+     * @param table Table to insert into.
      * @param timestamp Timestamp of the row
      * @param values Values being inserted, mapped to columns by their relative offset.
      *
-     * @see #tableIndexByName
      * @see #flush
-     * @see Table#autoFlushWriter
      */
-    public void append(String tableName, Timespec timestamp, Value[] values) throws IOException {
-        this.append(this.tableIndexByName(tableName),
-                    timestamp,
-                    values);
-    }
+    public void append(Table table, Timespec timestamp, Value[] values) throws IOException {
+        this.trackMinMaxTimestamp(timestamp);
+        this.pointsSinceFlush += values.length;
 
+        StagedTable t = this.getStagedTable(table);
 
-    /**
-     * Append a new row to the local table cache. Should be periodically flushed,
-     * unless an {@link AutoFlushWriter} is used.
-     *
-     * This is a convenience function that assumes only one table is being inserted
-     * to and should not be used when inserts to multiple tables are being batched.
-     *
-     * @param timestamp Timestamp of the row
-     * @param values Values being inserted, mapped to columns by their relative offset.
-     *
-     * @see #tableIndexByName
-     * @see #flush
-     * @see Table#autoFlushWriter
-     */
-    public void append(Timespec timestamp, Value[] values) throws IOException {
-        this.append(0, timestamp, values);
+        t.append(timestamp, values);
     }
 
     /**
      * Append a new row to the local table cache. Should be periodically flushed,
      * unless an {@link AutoFlushWriter} is used.
      *
-     * @param offset Relative offset of the table inside the batch. Use #tableIndexByName
-     *               to determine the appropriate value.
+     * @param table Table to insert into
      * @param row Row being inserted.
      *
-     * @see #tableIndexByName
      * @see #flush
-     * @see Table#autoFlushWriter
      */
-    public void append(Integer offset, WritableRow row) throws IOException {
-        this.append(offset,
+    public void append(Table table, WritableRow row) throws IOException {
+        this.append(table,
                     row.getTimestamp(),
                     row.getValues());
     }
@@ -406,147 +547,82 @@ public class Writer implements AutoCloseable, Flushable {
      * Append a new row to the local table cache. Should be periodically flushed,
      * unless an {@link AutoFlushWriter} is used.
      *
-     * This function automatically looks up a table's offset by its name. For performance
-     * reason, you are encouraged to manually invoke and cache the value of #tableIndexByName
-     * whenever possible.
-     *
-     * @param tableName Name of the table to insert to.
-     * @param row Row being inserted.
-     *
-     * @see #tableIndexByName
-     * @see #flush
-     * @see Table#autoFlushWriter
-     */
-    public void append(String tableName, WritableRow row) throws IOException {
-        this.append(this.tableIndexByName(tableName), row);
-    }
-
-    /**
-     * Append a new row to the local table cache. Should be periodically flushed,
-     * unless an {@link AutoFlushWriter} is used.
-     *
-     * This is a convenience function that assumes only one table is being inserted
-     * to and should not be used when inserts to multiple tables are being batched.
-     *
-     * @param row Row being inserted.
-     *
-     * @see #tableIndexByName
-     * @see #flush
-     * @see Table#autoFlushWriter
-     */
-    public void append(WritableRow row) throws IOException {
-        this.append(0, row);
-    }
-
-
-    /**
-     * Append a new row to the local table cache. Should be periodically flushed,
-     * unless an {@link AutoFlushWriter} is used.
-     *
-     * @param offset Relative offset of the table inside the batch. Use #tableIndexByName
-     *               to determine the appropriate value.
+     * @param table Table to insert into
      * @param timestamp Timestamp of the row
      * @param values Values being inserted, mapped to columns by their relative offset.
      *
-     * @see #tableIndexByName
      * @see #flush
-     * @see Table#autoFlushWriter
      */
-    public void append(Integer offset, LocalDateTime timestamp, Value[] values) throws IOException {
-        this.append(offset, new Timespec(timestamp), values);
+    public void append(Table table, LocalDateTime timestamp, Value[] values) throws IOException {
+        this.append(table,
+                    new Timespec(timestamp),
+                    values);
     }
 
     /**
      * Append a new row to the local table cache. Should be periodically flushed,
      * unless an {@link AutoFlushWriter} is used.
      *
-     * This function automatically looks up a table's offset by its name. For performance
-     * reason, you are encouraged to manually invoke and cache the value of #tableIndexByName
-     * whenever possible.
-     *
-     * @param tableName Name of the table to insert to.
+     * @param table Table to insert into
      * @param timestamp Timestamp of the row
      * @param values Values being inserted, mapped to columns by their relative offset.
      *
-     * @see #tableIndexByName
      * @see #flush
-     * @see Table#autoFlushWriter
      */
-    public void append(String tableName, LocalDateTime timestamp, Value[] values) throws IOException {
-        this.append(this.tableIndexByName(tableName), timestamp, values);
+    public void append(Table table, Timestamp timestamp, Value[] values) throws IOException {
+        this.append(table,
+                    new Timespec(timestamp),
+                    values);
     }
 
+    public static final class Builder {
+        private Session session;
+        private Writer.Options options;
 
-    /**
-     * Append a new row to the local table cache. Should be periodically flushed,
-     * unless an {@link AutoFlushWriter} is used.
-     *
-     * This is a convenience function that assumes only one table is being inserted
-     * to and should not be used when inserts to multiple tables are being batched.
-     *
-     * @param timestamp Timestamp of the row
-     * @param values Values being inserted, mapped to columns by their relative offset.
-     *
-     * @see #tableIndexByName
-     * @see #flush
-     * @see Table#autoFlushWriter
-     */
-    public void append(LocalDateTime timestamp, Value[] values) throws IOException {
-        this.append(0, timestamp, values);
-    }
+        protected Builder(Session session) {
+            this.session = session;
+            this.options = new Writer.Options();
+        };
 
-    /**
-     * Append a new row to the local table cache. Should be periodically flushed,
-     * unless an {@link AutoFlushWriter} is used.
-     *
-     * @param offset Relative offset of the table inside the batch. Use #tableIndexByName
-     *               to determine the appropriate value.
-     * @param timestamp Timestamp of the row
-     * @param values Values being inserted, mapped to columns by their relative offset.
-     *
-     * @see #tableIndexByName
-     * @see #flush
-     * @see Table#autoFlushWriter
-     */
-    public void append(Integer offset, Timestamp timestamp, Value[] values) throws IOException {
-        this.append(offset, new Timespec(timestamp), values);
-    }
+        public Builder normalPush() {
+            this.options.enableNormalPush();
+            return this;
+        };
 
-    /**
-     * Append a new row to the local table cache. Should be periodically flushed,
-     * unless an {@link AutoFlushWriter} is used.
-     *
-     * This function automatically looks up a table's offset by its name. For performance
-     * reason, you are encouraged to manually invoke and cache the value of #tableIndexByName
-     * whenever possible.
-     *
-     * @param tableName Name of the table to insert to.
-     * @param timestamp Timestamp of the row
-     * @param values Values being inserted, mapped to columns by their relative offset.
-     *
-     * @see #tableIndexByName
-     * @see #flush
-     * @see Table#autoFlushWriter
-     */
-    public void append(String tableName, Timestamp timestamp, Value[] values) throws IOException {
-        this.append(this.tableIndexByName(tableName), timestamp, values);
-    }
+        public Builder fastPush() {
+            this.options.enableFastPush();
+            return this;
+        };
 
-    /**
-     * Append a new row to the local table cache. Should be periodically flushed,
-     * unless an {@link AutoFlushWriter} is used.
-     *
-     * This is a convenience function that assumes only one table is being inserted
-     * to and should not be used when inserts to multiple tables are being batched.
-     *
-     * @param timestamp Timestamp of the row
-     * @param values Values being inserted, mapped to columns by their relative offset.
-     *
-     * @see #tableIndexByName
-     * @see #flush
-     * @see Table#autoFlushWriter
-     */
-    public void append(Timestamp timestamp, Value[] values) throws IOException {
-        this.append(0, timestamp, values);
-    }
+        public Builder asyncPush() {
+            this.options.enableAsyncPush();
+            return this;
+        };
+
+        public Builder truncatePush() {
+            this.options.enableTruncatePush();
+            return this;
+        };
+
+        public Builder dropDuplicates() {
+            this.options.enableDropDuplicates();
+            return this;
+        };
+
+        public Builder dropDuplicates(String[] columns) {
+            this.options.enableDropDuplicates(columns);
+            return this;
+        };
+
+        public Builder dropDuplicates(Column[] columns) {
+            this.options.enableDropDuplicates(columns);
+            return this;
+        };
+
+        public Writer build() {
+            return new Writer(this.session, this.options);
+        };
+
+    };
+
 }
