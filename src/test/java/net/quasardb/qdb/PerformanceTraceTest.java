@@ -142,7 +142,7 @@ public class PerformanceTraceTest {
         w.flush();
 
         Collection<PerformanceTrace.Trace> res5 = PerformanceTrace.pop(s);
-        assertEquals(1, res5.size());
+        assertEquals(2, res5.size());
     }
 
     @Test
