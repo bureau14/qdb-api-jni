@@ -3,8 +3,6 @@ package net.quasardb.qdb.ts;
 import java.nio.ByteBuffer;
 import java.util.*;
 
-import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-import it.unimi.dsi.fastutil.objects.ObjectSet;
 import net.quasardb.qdb.jni.Constants;
 import net.quasardb.qdb.jni.qdb;
 
@@ -73,40 +71,37 @@ public class Values {
         throw new RuntimeException("Not a string value: " + in.toString());
     }
 
-    public static double[] asPrimitiveDoubleArray (ObjectArrayList<Value> in) {
+    public static double[] asPrimitiveDoubleArray (ArrayList<Value> in) {
         int len = in.size();
         double[] out = new double[len];
 
-        Object[] xs = in.elements();
         for (int i = 0; i < len; ++i) {
-            out[i] = asDouble((Value)xs[i]);
+            out[i] = asDouble(in.get(i));
         }
 
         return out;
     }
 
-    public static long[] asPrimitiveInt64Array  (ObjectArrayList<Value> in) {
+    public static long[] asPrimitiveInt64Array  (ArrayList<Value> in) {
         int len = in.size();
         long[] out = new long[len];
 
-        Object[] xs = in.elements();
         for (int i = 0; i < len; ++i) {
-            out[i] = asInt64((Value)xs[i]);
+            out[i] = asInt64(in.get(i));
         }
 
         return out;
     }
 
-    public static Timespecs asPrimitiveTimestampArray (ObjectArrayList<Value> in) {
+    public static Timespecs asPrimitiveTimestampArray (ArrayList<Value> in) {
         int len = in.size();
         long[] sec = new long[len];
         long[] nsec = new long[len];
         Arrays.fill(sec, Constants.nullTime);
         Arrays.fill(nsec, Constants.nullTime);
 
-        Object[] xs = in.elements();
         for (int i = 0; i < len; ++i) {
-            Value v = (Value)xs[i];
+            Value v = in.get(i);
 
             if (v.getType () == Value.Type.UNINITIALIZED) {
                 sec[i] = Constants.nullTime;
@@ -122,25 +117,23 @@ public class Values {
         return new Timespecs(sec, nsec);
     }
 
-    public static ByteBuffer[] asPrimitiveBlobArray (ObjectArrayList<Value> in) {
+    public static ByteBuffer[] asPrimitiveBlobArray (ArrayList<Value> in) {
         int len = in.size();
         ByteBuffer[] out = new ByteBuffer[len];
 
-        Object[] xs = in.elements();
         for (int i = 0; i < len; ++i) {
-            out[i] = asBlob((Value)(xs[i]));
+            out[i] = asBlob(in.get(i));
         }
 
         return out;
     }
 
-    public static ByteBuffer[] asPrimitiveStringArray (ObjectArrayList<Value> in) {
+    public static ByteBuffer[] asPrimitiveStringArray (ArrayList<Value> in) {
         int len = in.size();
         ByteBuffer[] out = new ByteBuffer[len];
 
-        Object[] xs = in.elements();
         for (int i = 0; i < len; ++i) {
-            out[i] = asString((Value)(xs[i]));
+            out[i] = asString(in.get(i));
         }
 
         return out;
