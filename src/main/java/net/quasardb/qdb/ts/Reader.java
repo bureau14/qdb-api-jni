@@ -25,6 +25,7 @@ import net.quasardb.qdb.jni.*;
  */
 public class Reader implements AutoCloseable, Iterator<WritableRow> {
     private static final Logger logger = LoggerFactory.getLogger(Reader.class);
+
     Session session;
     Table table;
     long localTable;
