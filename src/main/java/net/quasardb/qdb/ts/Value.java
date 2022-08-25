@@ -4,6 +4,9 @@ import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import net.quasardb.qdb.*;
 import net.quasardb.qdb.jni.*;
 import net.quasardb.qdb.exception.IncompatibleTypeException;
@@ -12,6 +15,7 @@ import net.quasardb.qdb.exception.IncompatibleTypeException;
  * Represents a timeseries value.
  */
 public class Value implements Serializable, Comparable<Value> {
+    private static final Logger logger = LoggerFactory.getLogger(Row.class);
 
     Type type;
     long int64Value = Constants.nullInt64;

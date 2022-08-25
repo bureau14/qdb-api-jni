@@ -82,8 +82,6 @@ public class WriterTest {
                          Arguments.of(new Object[]{new Column.Type[]{Column.Type.TIMESTAMP,
                                                                      Column.Type.STRING}}),
                          Arguments.of(new Object[]{new Column.Type[]{Column.Type.STRING,
-                                                                     Column.Type.SYMBOL}}),
-                         Arguments.of(new Object[]{new Column.Type[]{Column.Type.SYMBOL,
                                                                      Column.Type.DOUBLE}}));
     }
 
@@ -363,9 +361,49 @@ public class WriterTest {
     }
 
     @ParameterizedTest
+    @MethodSource("pushModeAndColumnTypesProvider")
+    public void canInsertMultipleTables(Writer.PushMode mode,
+                                        Column.Type[] columnTypes) throws Exception {
+        Column[] definition1 = TestUtils.generateTableColumns(columnTypes);
+        Column[] definition2 = TestUtils.generateTableColumns(columnTypes);
+
+        Table t1 = TestUtils.createTable(definition1);
+        Table t2 = TestUtils.createTable(definition2);
+
+        assert(t1.getName() != t2.getName());
+
+        Writer writer = writerByPushMode(mode);
+
+        try {
+            int ROW_COUNT = 250;
+
+            WritableRow[] rows1 = TestUtils.generateTableRows(definition1, ROW_COUNT);
+            WritableRow[] rows2 = TestUtils.generateTableRows(definition2, ROW_COUNT);
+
+            for (int i = 0; i < ROW_COUNT; ++i) {
+                writer.append(t1, rows1[i]);
+                writer.append(t2, rows2[i]);
+            }
+
+            pushmodeAwareFlush(writer);
+
+            WritableRow[] readRows1 =
+                TestUtils.readRows(s, t1, TestUtils.singleRangeFromRows(rows1));
+
+            WritableRow[] readRows2 =
+                TestUtils.readRows(s, t2, TestUtils.singleRangeFromRows(rows2));
+
+            assertArrayEquals(rows1, readRows1);
+            assertArrayEquals(rows2, readRows2);
+
+        } finally {
+            writer.close();
+        }
+    }
+
+    @ParameterizedTest
     @MethodSource("pushModeAndColumnTypeProvider")
     public void canFlushTwice(Writer.PushMode mode, Column.Type columnType) throws Exception {
-        String alias = TestUtils.createUniqueAlias();
         Column[] definition = TestUtils.generateTableColumns(columnType, 1);
 
         Table t = TestUtils.createTable(definition);
@@ -421,7 +459,6 @@ public class WriterTest {
     @ParameterizedTest
     @MethodSource("truncatePushModeAndColumnTypeProvider")
     public void canTruncate(Writer.PushMode mode, Column.Type columnType) throws Exception {
-        String alias = TestUtils.createUniqueAlias();
         Column[] definition = TestUtils.generateTableColumns(columnType, 1);
 
         Table t = TestUtils.createTable(definition);

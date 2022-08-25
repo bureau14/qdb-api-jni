@@ -6,6 +6,9 @@ import java.nio.channels.SeekableByteChannel;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import net.quasardb.qdb.*;
 import net.quasardb.qdb.jni.*;
 import java.util.*;
@@ -14,6 +17,7 @@ import java.util.*;
  * Represents a timeseries row.
  */
 public final class WritableRow extends Row implements Serializable {
+    private static final Logger logger = LoggerFactory.getLogger(WritableRow.class);
 
     protected Timespec timestamp;
 
