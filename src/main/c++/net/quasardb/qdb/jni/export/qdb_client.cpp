@@ -1,5 +1,6 @@
 #include "../env.h"
 #include "../exception.h"
+#include "../guard/qdb_resource.h"
 #include "../log.h"
 #include "../string.h"
 #include "../util/helpers.h"
@@ -134,6 +135,65 @@ JNIEXPORT void JNICALL Java_net_quasardb_qdb_jni_qdb_release(
     catch (jni::exception const & e)
     {
         e.throw_new(env);
+    }
+}
+
+JNIEXPORT jint JNICALL Java_net_quasardb_qdb_jni_qdb_option_1set_1client_1soft_1memory_1limit(
+    JNIEnv * jniEnv, jclass /*thisClass*/, jlong handle, jlong limit)
+{
+    qdb::jni::env env(jniEnv);
+    try
+    {
+        static_assert(sizeof(qdb_uint_t) >= sizeof(jlong));
+
+        return jni::exception::throw_if_error((qdb_handle_t)handle,
+            qdb_option_set_client_soft_memory_limit((qdb_handle_t)handle, (qdb_uint_t)(limit)));
+    }
+    catch (jni::exception const & e)
+    {
+        e.throw_new(env);
+        return e.error();
+    }
+}
+
+JNIEXPORT jstring JNICALL Java_net_quasardb_qdb_jni_qdb_option_1get_1client_1memory_1info(
+    JNIEnv * jniEnv, jclass /*thisClass*/, jlong handle)
+{
+    qdb::jni::env env(jniEnv);
+    try
+    {
+        jni::guard::qdb_resource<char const *> content{(qdb_handle_t)(handle)};
+        qdb_size_t content_length{0};
+
+        qdb_error_t err =
+            qdb_option_client_get_memory_info((qdb_handle_t)handle, &content, &content_length);
+        jni::exception::throw_if_error((qdb_handle_t)handle, err);
+
+        assert(content.get() != nullptr);
+        assert(content_length > 0);
+
+        return env.instance().NewStringUTF(std::string{content.get(), content_length}.c_str());
+    }
+    catch (jni::exception const & e)
+    {
+        e.throw_new(env);
+        return nullptr;
+    }
+}
+
+JNIEXPORT jint JNICALL Java_net_quasardb_qdb_jni_qdb_option_1client_1tidy_1memory(
+    JNIEnv * jniEnv, jclass /*thisClass*/, jlong handle)
+{
+    qdb::jni::env env(jniEnv);
+    try
+    {
+        return jni::exception::throw_if_error(
+            (qdb_handle_t)handle, qdb_option_client_tidy_memory((qdb_handle_t)handle));
+    }
+    catch (jni::exception const & e)
+    {
+        e.throw_new(env);
+        return e.error();
     }
 }
 

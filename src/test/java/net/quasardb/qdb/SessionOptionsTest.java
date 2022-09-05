@@ -54,6 +54,36 @@ public class SessionOptionsTest {
     }
 
     @Test
+    public void canSetSoftMemoryLimit() {
+        Session s = TestUtils.createSession();
+
+        // 4GiB
+        long limit = 4294967296L;
+        s.setSoftMemoryLimit(limit);
+    }
+
+    @Test
+    public void canGetMemoryInfo() {
+        Session s = TestUtils.createSession();
+
+        String info1 = s.getMemoryInfo();
+        assertTrue(info1.contains("TBB huge threshold bytes"));
+
+        long limit = 4294967296L;
+        s.setSoftMemoryLimit(limit);
+        String info2 = s.getMemoryInfo();
+
+        assertTrue(info2.contains("TBB soft limit bytes = 4294967296"));
+    }
+
+    @Test
+    public void canTidyMemory() {
+        Session s = TestUtils.createSession();
+
+        s.tidyMemory();
+    }
+
+    @Test
     public void throwsExceptionOnSmallBuffer() throws Exception {
         // Create a table with 100x10 blobs, set a ridiculously low input
         // buffer size, and retrieve all data to force a buffer size issue

@@ -232,6 +232,57 @@ public class Session implements AutoCloseable {
     }
 
     /**
+     * Sets the soft memory limit of the client.
+     *
+     * This sets the desired limit of the off-heap memory buffer the QuasarDB C API will
+     * maintain.
+     *
+     * @param limit The desired soft limit (in bytes)
+     *
+     * @throws ClusterClosedException If the connection to the cluster is currently closed.
+     */
+    public long setSoftMemoryLimit(long limit) throws ClusterClosedException {
+        assert(limit > 0);
+        throwIfClosed();
+
+        return qdb.option_set_client_soft_memory_limit(handle, limit);
+    }
+
+    /**
+     * Returns information about the current memory usage.
+     *
+     * @throws ClusterClosedException If the connection to the cluster is currently closed.
+     */
+    public String getMemoryInfo() throws ClusterClosedException {
+        throwIfClosed();
+
+        return qdb.option_get_client_memory_info(handle);
+    }
+
+    /**
+     * Logs memory usage information through SLF4J facade with DEBUG log level.
+     *
+     * @throws ClusterClosedException If the connection to the cluster is currently closed.
+     */
+    public void logMemoryInfo() throws ClusterClosedException {
+        throwIfClosed();
+
+        logger.debug(getMemoryInfo());
+    }
+
+    /**
+     * Cleans up memory allocator and purged any unused cache. Acquires a global lock
+     * on the memory allocator and temporarily pauses all threads, use with caution.
+     *
+     * @throws ClusterClosedException If the connection to the cluster is currently closed.
+     */
+    public long tidyMemory() throws ClusterClosedException {
+        throwIfClosed();
+
+        return qdb.option_client_tidy_memory(handle);
+    }
+
+    /**
      * Wait for all nodes of the cluster to be stabilized.
      *
      * @param timeoutMillis The timeout of the operation, in milliseconds
