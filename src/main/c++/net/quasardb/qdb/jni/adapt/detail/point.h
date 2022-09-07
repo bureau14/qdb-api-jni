@@ -9,7 +9,7 @@
 #include <jni.h>
 #include <sstream>
 
-namespace qdb::jni::adapt::series::detail
+namespace qdb::jni::adapt::point::detail
 {
 
 template <typename From>
@@ -19,8 +19,8 @@ template <typename From>
 using jarray_type = typename value_traits<From>::jarray_type;
 
 /**
- * xform_series is responsible for transforming the value-part of a ts_point.
- * Default xform_series implementation works for simple values.
+ * xform_point is responsible for transforming the value-part of a ts_point.
+ * Default xform_point implementation works for simple values.
  *
  * At moment of writing works for:
  *
@@ -29,13 +29,13 @@ using jarray_type = typename value_traits<From>::jarray_type;
  *  - qdb_timespec_t
  */
 template <typename From, typename T>
-inline void xform_series(qdb::jni::env & /* env */, T v, point_type<From> & out)
+inline void xform_point(qdb::jni::env & /* env */, T v, point_type<From> & out)
 {
     out.value = v;
 }
 
 template <>
-inline void xform_series<qdb_blob_t>(qdb::jni::env & env, jobject v, qdb_ts_blob_point & out)
+inline void xform_point<qdb_blob_t>(qdb::jni::env & env, jobject v, qdb_ts_blob_point & out)
 {
     qdb_blob_t tmp = jni::byte_buffer::to_qdb(env, v);
 
@@ -44,7 +44,7 @@ inline void xform_series<qdb_blob_t>(qdb::jni::env & env, jobject v, qdb_ts_blob
 }
 
 template <>
-inline void xform_series<qdb_string_t>(qdb::jni::env & env, jobject v, qdb_ts_string_point & out)
+inline void xform_point<qdb_string_t>(qdb::jni::env & env, jobject v, qdb_ts_string_point & out)
 {
     jni::string::get_chars_utf8(env, v).as_qdb(out);
 }
@@ -123,7 +123,7 @@ struct xform_util
 template <>
 struct xform_util<qdb_timespec_t>
 {
-    static constexpr char const * data_class = "net/quasardb/qdb/ts/Series$TimestampData";
+    static constexpr char const * data_class = "net/quasardb/qdb/ts/Points$TimestampData";
 
     static inline std::string data_constructor()
     {
@@ -140,7 +140,7 @@ struct xform_util<qdb_timespec_t>
 template <>
 struct xform_util<qdb_string_t>
 {
-    static constexpr char const * data_class = "net/quasardb/qdb/ts/Series$StringData";
+    static constexpr char const * data_class = "net/quasardb/qdb/ts/Points$StringData";
 
     static inline std::string data_constructor()
     {
@@ -168,7 +168,7 @@ struct xform_util<qdb_string_t>
 template <>
 struct xform_util<qdb_blob_t>
 {
-    static constexpr char const * data_class = "net/quasardb/qdb/ts/Series$BlobData";
+    static constexpr char const * data_class = "net/quasardb/qdb/ts/Points$BlobData";
 
     static inline std::string data_constructor()
     {
@@ -208,4 +208,4 @@ inline jni::guard::local_ref<jobject> create(qdb::jni::env & env,
         xform_util<From>::data_constructor().c_str(), timestamps.release(), values.release());
 }
 
-}; // namespace qdb::jni::adapt::series::detail
+}; // namespace qdb::jni::adapt::point::detail

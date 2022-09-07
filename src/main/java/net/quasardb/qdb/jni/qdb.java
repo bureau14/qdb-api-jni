@@ -11,7 +11,7 @@ import net.quasardb.qdb.ts.Table;
 import net.quasardb.qdb.ts.TimeRange;
 import net.quasardb.qdb.ts.Timespec;
 import net.quasardb.qdb.ts.Timespecs;
-import net.quasardb.qdb.ts.Series;
+import net.quasardb.qdb.ts.Points;
 import net.quasardb.qdb.ts.Value;
 import net.quasardb.qdb.ts.Writer;
 
@@ -244,18 +244,18 @@ public final class qdb
     public static native WritableRow ts_table_next_row(long handle, long localTable, Column[] columns);
 
 
-    public static native Series.Data ts_series_get_ranges(long handle,
-                                                          String tableName,
-                                                          String columnName,
-                                                          int valueType,
-                                                          TimeRange[] ranges);
+    public static native Points.Data ts_point_get_ranges(long handle,
+                                                         String tableName,
+                                                         String columnName,
+                                                         int valueType,
+                                                         TimeRange[] ranges);
 
-    public static native int ts_series_insert(long handle,
-                                              String tableName,
-                                              String columnName,
-                                              Timespecs timespecs,
-                                              int valueType,
-                                              Object values);
+    public static native int ts_point_insert(long handle,
+                                             String tableName,
+                                             String columnName,
+                                             Timespecs timespecs,
+                                             int valueType,
+                                             Object values);
 
     public static native int query_execute(long handle, String query, Reference<Result> result);
 
