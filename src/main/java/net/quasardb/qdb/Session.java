@@ -9,6 +9,8 @@ import java.nio.file.Path;
 import java.lang.AutoCloseable;
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
+import java.time.Instant;
+import java.time.Duration;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -279,7 +281,13 @@ public class Session implements AutoCloseable {
     public long tidyMemory() throws ClusterClosedException {
         throwIfClosed();
 
-        return qdb.option_client_tidy_memory(handle);
+        logger.warn("tidying memory");
+        Instant start = Instant.now();
+        long ret = qdb.option_client_tidy_memory(handle);
+        Instant stop = Instant.now();
+
+        logger.info("successfully tidied memory in {}ms", Duration.between(start, stop).toMillis());
+        return ret;
     }
 
     /**
