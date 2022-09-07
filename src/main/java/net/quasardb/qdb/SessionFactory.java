@@ -22,6 +22,7 @@ public class SessionFactory {
     private Optional<Session.SecurityOptions> securityOptions;
     private Optional<Long> inputBufferSize;
     private Optional<Long> clientMaxParallelism;
+    private Optional<Long> softMemoryLimit;
 
     public SessionFactory(String qdbUri) {
         this.qdbUri = qdbUri;
@@ -29,6 +30,7 @@ public class SessionFactory {
         this.securityOptions      = Optional.empty();
         this.inputBufferSize      = Optional.empty();
         this.clientMaxParallelism = Optional.empty();
+        this.softMemoryLimit      = Optional.empty();
     }
 
     public SessionFactory securityOptions(Session.SecurityOptions securityOptions) {
@@ -43,6 +45,11 @@ public class SessionFactory {
 
     public SessionFactory clientMaxParallelism(Long clientMaxParallelism) {
         this.clientMaxParallelism = Optional.of(clientMaxParallelism);
+        return this;
+    }
+
+    public SessionFactory softMemoryLimit(Long softMemoryLimit) {
+        this.softMemoryLimit = Optional.of(softMemoryLimit);
         return this;
     }
 
@@ -63,6 +70,10 @@ public class SessionFactory {
 
         if (this.clientMaxParallelism.isPresent()) {
             ret.setClientMaxParallelism(this.clientMaxParallelism.get().longValue());
+        }
+
+        if (this.softMemoryLimit.isPresent()) {
+            ret.setSoftMemoryLimit(this.softMemoryLimit.get().longValue());
         }
 
         return ret;
