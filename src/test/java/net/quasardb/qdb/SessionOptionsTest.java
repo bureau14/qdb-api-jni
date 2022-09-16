@@ -73,7 +73,7 @@ public class SessionOptionsTest {
         s.setSoftMemoryLimit(limit);
         String info2 = s.getMemoryInfo();
 
-        assertTrue(info2.contains("TBB soft limit bytes = 4294967296"));
+        assertTrue(info2.contains("TBB soft limit bytes = 2147483648"));
     }
 
     @Test
