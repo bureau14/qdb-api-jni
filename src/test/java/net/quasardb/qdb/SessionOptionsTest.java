@@ -69,7 +69,7 @@ public class SessionOptionsTest {
         String info1 = s.getMemoryInfo();
         assertTrue(info1.contains("TBB huge threshold bytes"));
 
-        long limit = 4294967296L;
+        long limit = 2147483648L;
         s.setSoftMemoryLimit(limit);
         String info2 = s.getMemoryInfo();
 
