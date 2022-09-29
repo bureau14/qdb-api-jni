@@ -398,6 +398,38 @@ JNIEXPORT jint JNICALL Java_net_quasardb_qdb_jni_qdb_get_1metadata(
     }
 }
 
+JNIEXPORT jboolean JNICALL Java_net_quasardb_qdb_jni_qdb_entry_1exists(
+    JNIEnv * jniEnv, jclass /*thisClass*/, jlong handle, jstring alias)
+{
+    qdb::jni::env env(jniEnv);
+
+    try
+    {
+        qdb_entry_metadata_t meta;
+        qdb_handle_t handle_ = reinterpret_cast<qdb_handle_t>(handle);
+        qdb_error_t err =
+            qdb_get_metadata(handle_, qdb::jni::string::get_chars_utf8(env, alias), &meta);
+
+        switch (err)
+        {
+        case qdb_e_ok:
+            return true;
+        case qdb_e_alias_not_found:
+            return false;
+        default:
+            break;
+        }
+
+        jni::exception::throw_if_error(handle_, err);
+        return false;
+    }
+    catch (jni::exception const & e)
+    {
+        e.throw_new(env);
+        return e.error();
+    }
+}
+
 JNIEXPORT jint JNICALL Java_net_quasardb_qdb_jni_qdb_expires_1at(
     JNIEnv * jniEnv, jclass /*thisClass*/, jlong handle, jstring alias, jlong expiry)
 {
