@@ -91,6 +91,7 @@ public final class qdb
     public static native int get_expiry_time(long handle, String alias, Reference<Long> expiry);
     public static native int get_type(long handle, String alias, Reference<Integer> type);
     public static native int get_metadata(long handle, String alias, ByteBuffer metadata);
+    public static native boolean entry_exists(long handle, String alias);
 
     public static native int blob_compare_and_swap(long handle,
                                                    String alias,
@@ -105,6 +106,18 @@ public final class qdb
         long handle, String alias, ByteBuffer newContent, long expiry, Reference<ByteBuffer> originalContent);
     public static native int blob_remove_if(long handle, String alias, ByteBuffer comparand);
     public static native int blob_update(long handle, String alias, ByteBuffer content, long expiry);
+
+    public static native void timestamp_put(long handle, String alias, Timespec value);
+    public static native Timespec timestamp_get(long handle, String alias);
+    public static native boolean timestamp_update(long handle, String alias, Timespec value);
+
+    public static native void string_put(long handle, String alias, String content);
+    public static native String string_get(long handle, String alias);
+    public static native boolean string_update(long handle, String alias, String content);
+
+    public static native void double_put(long handle, String alias, double content);
+    public static native double double_get(long handle, String alias);
+    public static native boolean double_update(long handle, String alias, double content);
 
     public static native int int_put(long handle, String alias, long value, long expiry);
     public static native int int_update(long handle, String alias, long value, long expiry);
