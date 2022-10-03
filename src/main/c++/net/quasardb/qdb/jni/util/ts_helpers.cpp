@@ -73,38 +73,6 @@ jni::guard::local_ref<jobjectArray> nativeToDoublePoints(
     return output;
 }
 
-void blobPointToNative(qdb::jni::env & env, jobject input, qdb_ts_blob_point * native)
-{
-    jfieldID timestampField, valueField;
-    jclass objectClass;
-    jobject value;
-
-    objectClass = env.instance().GetObjectClass(input);
-
-    timestampField =
-        env.instance().GetFieldID(objectClass, "timestamp", "Lnet/quasardb/qdb/ts/Timespec;");
-    valueField = env.instance().GetFieldID(objectClass, "value", "Ljava/nio/ByteBuffer;");
-    value      = env.instance().GetObjectField(input, valueField);
-
-    native->timestamp =
-        jni::adapt::timespec::to_qdb(env, env.instance().GetObjectField(input, timestampField));
-    native->content        = env.instance().GetDirectBufferAddress(value);
-    native->content_length = (qdb_size_t)env.instance().GetDirectBufferCapacity(value);
-}
-
-void blobPointsToNative(
-    qdb::jni::env & env, jobjectArray input, size_t count, qdb_ts_blob_point * native)
-{
-    qdb_ts_blob_point * cur = native;
-    for (size_t i = 0; i < count; ++i)
-    {
-        jobject point =
-            (jobject)(env.instance().GetObjectArrayElement(input, static_cast<jsize>(i)));
-
-        blobPointToNative(env, point, cur++);
-    }
-}
-
 void doubleAggregateToNative(
     qdb::jni::env & env, jobject input, qdb_ts_double_aggregation_t * native)
 {
@@ -169,74 +137,6 @@ jni::guard::local_ref<jobjectArray> nativeToDoubleAggregates(
     {
         env.instance().SetObjectArrayElement(
             output, (jsize)i, nativeToDoubleAggregate(env, native[i]).release());
-    }
-
-    return output;
-}
-
-void blobAggregateToNative(qdb::jni::env & env, jobject input, qdb_ts_blob_aggregation_t * native)
-{
-    assert(input != NULL);
-
-    jfieldID typeField, timeRangeField, countField, resultField;
-    jclass objectClass;
-
-    objectClass = env.instance().GetObjectClass(input);
-    typeField   = env.instance().GetFieldID(objectClass, "aggregation_type", "J");
-    timeRangeField =
-        env.instance().GetFieldID(objectClass, "time_range", "Lnet/quasardb/qdb/ts/TimeRange;");
-    countField  = env.instance().GetFieldID(objectClass, "count", "J");
-    resultField = env.instance().GetFieldID(
-        objectClass, "result", "Lnet/quasardb/qdb/jni/qdb_ts_blob_point;");
-
-    native->range = jni::adapt::timerange::to_qdb(
-        env, jni::object::from_field<jobject>(env, input, timeRangeField));
-
-    blobPointToNative(env, env.instance().GetObjectField(input, resultField), &(native->result));
-
-    native->type =
-        static_cast<qdb_ts_aggregation_type_t>(env.instance().GetLongField(input, typeField));
-    native->count = static_cast<qdb_size_t>(env.instance().GetLongField(input, countField));
-}
-
-void blobAggregatesToNative(
-    qdb::jni::env & env, jobjectArray input, size_t count, qdb_ts_blob_aggregation_t * native)
-{
-    assert(input != NULL);
-
-    qdb_ts_blob_aggregation_t * cur = native;
-    for (size_t i = 0; i < count; ++i)
-    {
-        jobject aggregate =
-            (jobject)(env.instance().GetObjectArrayElement(input, static_cast<jsize>(i)));
-
-        blobAggregateToNative(env, aggregate, cur++);
-    }
-}
-
-jni::guard::local_ref<jobject> nativeToBlobAggregate(
-    qdb::jni::env & env, qdb_ts_blob_aggregation_t native)
-{
-    static_assert(sizeof(jlong) >= sizeof(native.type));
-    static_assert(sizeof(jlong) >= sizeof(native.count));
-
-    return jni::object::create(env, "net/quasardb/qdb/jni/qdb_ts_blob_aggregation",
-        "(Lnet/quasardb/qdb/ts/TimeRange;JJLnet/quasardb/qdb/jni/"
-        "qdb_ts_blob_point;)V",
-        jni::adapt::timerange::to_java(env, native.range).release(), (jlong)native.type,
-        (jlong)native.count, nativeToBlobPoint(env, native.result).release());
-}
-
-jni::guard::local_ref<jobjectArray> nativeToBlobAggregates(
-    qdb::jni::env & env, qdb_ts_blob_aggregation_t * native, size_t count)
-{
-    jni::guard::local_ref<jobjectArray> output(
-        jni::object::create_array(env, count, "net/quasardb/qdb/jni/qdb_ts_blob_aggregation"));
-
-    for (size_t i = 0; i < count; i++)
-    {
-        env.instance().SetObjectArrayElement(
-            output, (jsize)i, nativeToBlobAggregate(env, native[i]).release());
     }
 
     return output;
