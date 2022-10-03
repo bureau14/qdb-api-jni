@@ -18,7 +18,7 @@ template <typename T = qdb_ts_column_info_ex_t>
 jni::guard::local_ref<jobject> to_java(jni::env & env, T const & x);
 
 template <typename T>
-T to_qdb(qdb::jni::env & env, jobject input);
+T to_qdb(qdb::jni::env & env, qdb_handle_t handle, jobject input);
 
 inline qdb_ts_column_type_t _column_type_from_type_enum(qdb::jni::env & env, jobject input)
 {
@@ -33,10 +33,10 @@ namespace qdb::jni::adapt::columns
 {
 
 template <typename T, ranges::input_range R>
-inline std::vector<T> to_qdb(jni::env & env, R const & xs)
+inline std::vector<T> to_qdb(jni::env & env, qdb_handle_t handle, R const & xs)
 {
-    auto view = ranges::views::transform(xs, [&env](jobject x) -> T {
-        return column::to_qdb<T>(env, x);
+    auto view = ranges::views::transform(xs, [&env, &handle](jobject x) -> T {
+        return column::to_qdb<T>(env, handle, x);
     });
     return std::vector<T>{view.begin(), view.end()};
 }

@@ -1,4 +1,5 @@
 #include "byte_buffer.h"
+#include "allocate.h"
 #include "env.h"
 #include "object.h"
 #include <iostream>
@@ -15,16 +16,15 @@
 }
 
 /* static */ qdb::jni::guard::local_ref<jobject> qdb::jni::byte_buffer::create_copy(
-    qdb::jni::env & env, void const * src, jsize len)
+    qdb::jni::env & env, qdb_handle_t handle, void const * src, jsize len)
 {
     assert(src != NULL);
     assert(len > 0);
 
-    void * dest = malloc(len);
+    void * dest = (void *)jni::allocate<char>(handle, len);
     assert(dest != NULL);
 
     memcpy(dest, src, len);
-
 
     // XXX(leon): ownership of the memory area is "moved" from native to JVM. I believe
     //            that the ByteBuffer supports some kind of 'cleaner'; this is a utility

@@ -30,11 +30,12 @@ public:
      * Create new byte buffer. Memory in buffer is copied.
      */
     static jni::guard::local_ref<jobject> create_copy(
-        qdb::jni::env & env, void const * buffer, jsize len);
+        qdb::jni::env & env, qdb_handle_t handle, void const * buffer, jsize len);
 
-    static jni::guard::local_ref<jobject> create_copy(qdb::jni::env & env, qdb_blob_t blob)
+    static jni::guard::local_ref<jobject> create_copy(
+        qdb::jni::env & env, qdb_handle_t handle, qdb_blob_t blob)
     {
-        return create_copy(env, blob.content, static_cast<jsize>(blob.content_length));
+        return create_copy(env, handle, blob.content, static_cast<jsize>(blob.content_length));
     }
 
     static void get_address(

@@ -15,7 +15,7 @@ JNIEXPORT jdouble JNICALL Java_net_quasardb_qdb_jni_qdb_double_1get(
     try
     {
         qdb_handle_t handle_ = reinterpret_cast<qdb_handle_t>(handle);
-        auto alias_          = qdb::jni::string::get_chars_utf8(env, alias);
+        auto alias_          = qdb::jni::string::get_chars_utf8(env, handle_, alias);
 
         jdouble ret;
 
@@ -39,7 +39,7 @@ JNIEXPORT void JNICALL Java_net_quasardb_qdb_jni_qdb_double_1put(
     try
     {
         qdb_handle_t handle_ = reinterpret_cast<qdb_handle_t>(handle);
-        auto alias_          = qdb::jni::string::get_chars_utf8(env, alias);
+        auto alias_          = qdb::jni::string::get_chars_utf8(env, handle_, alias);
 
         jni::exception::throw_if_error(handle_, qdb_double_put(handle_, alias_, value, -1));
     }
@@ -57,7 +57,7 @@ JNIEXPORT jboolean JNICALL Java_net_quasardb_qdb_jni_qdb_double_1update(
     try
     {
         qdb_handle_t handle_ = reinterpret_cast<qdb_handle_t>(handle);
-        auto alias_          = qdb::jni::string::get_chars_utf8(env, alias);
+        auto alias_          = qdb::jni::string::get_chars_utf8(env, handle_, alias);
 
         qdb_error_t err =
             jni::exception::throw_if_error(handle_, qdb_double_update(handle_, alias_, value, -1));

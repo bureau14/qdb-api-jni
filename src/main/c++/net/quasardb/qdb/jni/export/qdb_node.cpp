@@ -18,11 +18,12 @@ JNIEXPORT jint JNICALL Java_net_quasardb_qdb_jni_qdb_node_1status(
     qdb::jni::env env(jniEnv);
     try
     {
+        qdb_handle_t handle_       = reinterpret_cast<qdb_handle_t>(handle);
         const char * nativeContent = NULL;
         qdb_size_t contentLength   = 0;
-        jni::exception::throw_if_error((qdb_handle_t)handle,
-            qdb_node_status((qdb_handle_t)handle, qdb::jni::string::get_chars_utf8(env, uri),
-                &nativeContent, &contentLength));
+        jni::exception::throw_if_error(
+            handle_, qdb_node_status(handle_, qdb::jni::string::get_chars_utf8(env, handle_, uri),
+                         &nativeContent, &contentLength));
         setString(env, content, nativeContent);
         return qdb_e_ok;
     }
@@ -44,11 +45,12 @@ JNIEXPORT jint JNICALL Java_net_quasardb_qdb_jni_qdb_node_1config(
     qdb::jni::env env(jniEnv);
     try
     {
+        qdb_handle_t handle_       = reinterpret_cast<qdb_handle_t>(handle);
         const char * nativeContent = NULL;
         qdb_size_t contentLength   = 0;
-        jni::exception::throw_if_error((qdb_handle_t)handle,
-            qdb_node_config((qdb_handle_t)handle, qdb::jni::string::get_chars_utf8(env, uri),
-                &nativeContent, &contentLength));
+        jni::exception::throw_if_error(
+            handle_, qdb_node_config(handle_, qdb::jni::string::get_chars_utf8(env, handle_, uri),
+                         &nativeContent, &contentLength));
         setString(env, content, nativeContent);
         return qdb_e_ok;
     }
@@ -71,11 +73,12 @@ JNIEXPORT jint JNICALL Java_net_quasardb_qdb_jni_qdb_node_1topology(
 
     try
     {
+        qdb_handle_t handle_       = reinterpret_cast<qdb_handle_t>(handle);
         const char * nativeContent = NULL;
         qdb_size_t contentLength   = 0;
-        jni::exception::throw_if_error((qdb_handle_t)handle,
-            qdb_node_topology((qdb_handle_t)handle, qdb::jni::string::get_chars_utf8(env, uri),
-                &nativeContent, &contentLength));
+        jni::exception::throw_if_error(
+            handle_, qdb_node_topology(handle_, qdb::jni::string::get_chars_utf8(env, handle_, uri),
+                         &nativeContent, &contentLength));
         setString(env, content, nativeContent);
         return qdb_e_ok;
     }
@@ -97,9 +100,10 @@ JNIEXPORT jint JNICALL Java_net_quasardb_qdb_jni_qdb_node_1stop(
     qdb::jni::env env(jniEnv);
     try
     {
-        return jni::exception::throw_if_error((qdb_handle_t)handle,
-            qdb_node_stop((qdb_handle_t)handle, qdb::jni::string::get_chars_utf8(env, uri),
-                qdb::jni::string::get_chars_utf8(env, reason)));
+        qdb_handle_t handle_ = reinterpret_cast<qdb_handle_t>(handle);
+        return jni::exception::throw_if_error(
+            handle_, qdb_node_stop(handle_, qdb::jni::string::get_chars_utf8(env, handle_, uri),
+                         qdb::jni::string::get_chars_utf8(env, handle_, reason)));
     }
     catch (jni::exception const & e)
     {
@@ -124,10 +128,11 @@ JNIEXPORT jint JNICALL Java_net_quasardb_qdb_jni_qdb_get_1location(JNIEnv * jniE
     qdb::jni::env env(jniEnv);
     try
     {
+        qdb_handle_t handle_ = reinterpret_cast<qdb_handle_t>(handle);
         qdb_remote_node_t node;
         jni::exception::throw_if_error(
-            (qdb_handle_t)handle, qdb_get_location((qdb_handle_t)handle,
-                                      qdb::jni::string::get_chars_utf8(env, alias), &node));
+            handle_, qdb_get_location(
+                         handle_, qdb::jni::string::get_chars_utf8(env, handle_, alias), &node));
         setString(env, address, node.address);
         setInteger(env, port, node.port);
         return qdb_e_ok;
