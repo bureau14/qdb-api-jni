@@ -96,12 +96,13 @@ Java_net_quasardb_qdb_jni_qdb_batch_1read_1blob_1compare_1and_1swap(JNIEnv * jni
 
     try
     {
+        qdb_handle_t handle_ = reinterpret_cast<qdb_handle_t>(handle);
         qdb_operation_t & op = get_operation(batch, index);
-        jni::exception::throw_if_error((qdb_handle_t)handle, op.error);
+        jni::exception::throw_if_error(handle_, op.error);
 
         if (alias) env.instance().ReleaseStringUTFChars(alias, op.alias);
-        setByteBuffer(
-            env, originalContent, op.blob_cas.original_content, op.blob_cas.original_content_size);
+        setByteBuffer(env, handle_, originalContent, op.blob_cas.original_content,
+            op.blob_cas.original_content_size);
         return op.error;
     }
     catch (jni::exception const & e)
@@ -138,11 +139,12 @@ extern "C" JNIEXPORT jint JNICALL Java_net_quasardb_qdb_jni_qdb_batch_1read_1blo
 
     try
     {
+        qdb_handle_t handle_ = reinterpret_cast<qdb_handle_t>(handle);
         qdb_operation_t & op = get_operation(batch, index);
-        jni::exception::throw_if_error((qdb_handle_t)handle, op.error);
+        jni::exception::throw_if_error(handle_, op.error);
 
         if (alias) env.instance().ReleaseStringUTFChars(alias, op.alias);
-        setByteBuffer(env, content, op.blob_get.content, op.blob_get.content_size);
+        setByteBuffer(env, handle_, content, op.blob_get.content, op.blob_get.content_size);
         return op.error;
     }
     catch (jni::exception const & e)
@@ -188,11 +190,12 @@ extern "C" JNIEXPORT jint JNICALL Java_net_quasardb_qdb_jni_qdb_batch_1read_1blo
     qdb::jni::env env(jniEnv);
     try
     {
+        qdb_handle_t handle_ = reinterpret_cast<qdb_handle_t>(handle);
         qdb_operation_t & op = get_operation(batch, index);
-        jni::exception::throw_if_error((qdb_handle_t)handle, op.error);
+        jni::exception::throw_if_error(handle_, op.error);
 
         if (alias) env.instance().ReleaseStringUTFChars(alias, op.alias);
-        setByteBuffer(env, content, op.blob_get_and_update.original_content,
+        setByteBuffer(env, handle_, content, op.blob_get_and_update.original_content,
             op.blob_get_and_update.original_content_size);
         return op.error;
     }

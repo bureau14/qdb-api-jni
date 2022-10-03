@@ -1,6 +1,5 @@
 #pragma once
 
-#include "introspect.h"
 #include <qdb/client.h> // qdb_size_t
 #include <qdb/ts.h>     // qdb_blob_t
 #include "guard/local_ref.h"
@@ -20,11 +19,12 @@ class byte_buffer
 {
 public:
     /**
-     * Create new byte buffer. Ownership of the allocated memory is moved to the
-     * ByteBuffer, and the memory address must remain valid for the lifetime of
-     * the jobject.
+     * Wraps around java.nio.ByteBuffer.allocate().
+     *
+     * Allocates JVM-managed bytebuffer of size `n`. This memory will be automatically released
+     * by the JVM, so that we don't have to deal with the mess that is direct-allocated bytebuffers.
      */
-    static jni::guard::local_ref<jobject> create(qdb::jni::env & env, void * buffer, jsize len);
+    static jni::guard::local_ref<jobject> allocate(jni::env & env, jsize len);
 
     /**
      * Create new byte buffer. Memory in buffer is copied.

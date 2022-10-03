@@ -1,18 +1,20 @@
 #include "byte_buffer.h"
-#include "allocate.h"
 #include "env.h"
+#include "introspect.h"
 #include "object.h"
-#include <iostream>
 #include <string.h>
 
-/* static */ qdb::jni::guard::local_ref<jobject> qdb::jni::byte_buffer::create(
-    qdb::jni::env & env, void * buffer, jsize len)
+/* static */ qdb::jni::guard::local_ref<jobject> qdb::jni::byte_buffer::allocate(
+    qdb::jni::env & env, jsize len)
 {
-    assert(buffer != NULL);
     assert(len > 0);
 
-    return qdb::jni::guard::local_ref<jobject>(
-        env, env.instance().NewDirectByteBuffer(buffer, len));
+    // Relevant: by invoking allocateDirect, the 'cleaner' property is set, which
+    // is *not* set when invoking env.instance().NewDirectByteBuffer
+    //
+    // See: https://stackoverflow.com/questions/35363486#35364247
+    return jni::object::call_static_method(
+        env, "java/nio/ByteBuffer", "allocateDirect", "(I)Ljava/nio/ByteBuffer;", len);
 }
 
 /* static */ qdb::jni::guard::local_ref<jobject> qdb::jni::byte_buffer::create_copy(
@@ -21,21 +23,19 @@
     assert(src != NULL);
     assert(len > 0);
 
-    void * dest = (void *)jni::allocate<char>(handle, len);
-    assert(dest != NULL);
+    // We'll first allocate a JVM-managed bytebuffer, and then copy our src
+    // buffer into there. We specifically do not use JNI's AllocateDirectByteBuffer,
+    // so that we can avoid the mess with deallocating the buffer (which is a mess).
+    qdb::jni::guard::local_ref<jobject> bb = allocate(env, len);
+
+    assert(env.instance().GetDirectBufferCapacity(bb) == len);
+
+    // Get pointer to underlying buffer
+    void * dest = env.instance().GetDirectBufferAddress(bb);
 
     memcpy(dest, src, len);
 
-    // XXX(leon): ownership of the memory area is "moved" from native to JVM. I believe
-    //            that the ByteBuffer supports some kind of 'cleaner'; this is a utility
-    //            object which is run when the object is garbage collected.
-    //
-    //            we may need to explore this further, see:
-    //
-    //            * https://stackoverflow.com/a/35364247/1764661
-    //            * https://stackoverflow.com/a/6699007/1764661
-    //            * https://docs.oracle.com/javase/6/docs/api/java/lang/ref/PhantomReference.html
-    return create(env, dest, len);
+    return bb;
 }
 
 /* static */ void qdb::jni::byte_buffer::get_address(

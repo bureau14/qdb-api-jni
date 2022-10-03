@@ -32,7 +32,8 @@ JNIEXPORT jint JNICALL Java_net_quasardb_qdb_jni_qdb_blob_1compare_1and_1swap(JN
                          qdb::jni::string::get_chars_utf8(env, handle_, alias), newContentPtr,
                          newContentSize, comparandPtr, comparandSize, expiry, &originalContentPtr,
                          &originalContentSize));
-        setByteBuffer(env, originalContent, originalContentPtr, originalContentSize);
+
+        setByteBuffer(env, handle_, originalContent, originalContentPtr, originalContentSize);
         return qdb_e_ok;
     }
     catch (jni::exception const & e)
@@ -56,7 +57,7 @@ JNIEXPORT jint JNICALL Java_net_quasardb_qdb_jni_qdb_blob_1get(
         jni::exception::throw_if_error(
             handle_, qdb_blob_get(handle_, qdb::jni::string::get_chars_utf8(env, handle_, alias),
                          &contentPtr, &contentSize));
-        setByteBuffer(env, content, contentPtr, contentSize);
+        setByteBuffer(env, handle_, content, contentPtr, contentSize);
         return qdb_e_ok;
     }
     catch (jni::exception const & e)
@@ -80,7 +81,7 @@ JNIEXPORT jint JNICALL Java_net_quasardb_qdb_jni_qdb_blob_1get_1and_1remove(
         jni::exception::throw_if_error(handle_,
             qdb_blob_get_and_remove(handle_, qdb::jni::string::get_chars_utf8(env, handle_, alias),
                 &contentPtr, &contentSize));
-        setByteBuffer(env, content, contentPtr, contentSize);
+        setByteBuffer(env, handle_, content, contentPtr, contentSize);
         return qdb_e_ok;
     }
     catch (jni::exception const & e)
@@ -111,7 +112,7 @@ JNIEXPORT jint JNICALL Java_net_quasardb_qdb_jni_qdb_blob_1get_1and_1update(JNIE
         jni::exception::throw_if_error(handle_,
             qdb_blob_get_and_update(handle_, qdb::jni::string::get_chars_utf8(env, handle_, alias),
                 newContentPtr, newContentSize, expiry, &originalContentPtr, &originalContentSize));
-        setByteBuffer(env, originalContent, originalContentPtr, originalContentSize);
+        setByteBuffer(env, handle_, originalContent, originalContentPtr, originalContentSize);
         return qdb_e_ok;
     }
     catch (jni::exception const & e)

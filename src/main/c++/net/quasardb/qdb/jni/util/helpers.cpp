@@ -1,4 +1,5 @@
 #include "helpers.h"
+#include "../byte_buffer.h"
 #include "../env.h"
 #include "../exception.h"
 #include "../log.h"
@@ -26,10 +27,11 @@ jobject getReferenceValue(qdb::jni::env & env, jobject reference)
     return env.instance().GetObjectField(reference, fid);
 }
 
-void setByteBuffer(qdb::jni::env & env, jobject reference, const void * ptr, jlong size)
+void setByteBuffer(
+    qdb::jni::env & env, qdb_handle_t handle, jobject reference, const void * ptr, jlong size)
 {
-    setReferenceValue(
-        env, reference, ptr ? env.instance().NewDirectByteBuffer((void *)ptr, size) : NULL);
+    setReferenceValue(env, reference,
+        ptr ? qdb::jni::byte_buffer::create_copy(env, handle, ptr, size).get() : NULL);
 }
 
 void setInteger(qdb::jni::env & env, jobject reference, jint value)
