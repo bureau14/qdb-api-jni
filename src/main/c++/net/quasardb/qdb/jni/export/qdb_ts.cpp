@@ -592,7 +592,7 @@ JNIEXPORT void JNICALL Java_net_quasardb_qdb_jni_qdb_ts_1exp_1batch_1set_1column
 
         // NOTE(leon): column.data.doubles is heap-allocated and will remain around until
         //             java application calls qdb.ts_exp_batch_release()
-        column.data.doubles = arr.copy();
+        column.data.doubles = arr.copy(handle_);
     }
     catch (jni::exception const & e)
     {
@@ -624,7 +624,7 @@ JNIEXPORT void JNICALL Java_net_quasardb_qdb_jni_qdb_ts_1exp_1batch_1set_1column
 
         // NOTE(leon): column.data.ints is heap-allocated and will remain around until
         //             java application calls qdb.ts_exp_batch_release()
-        column.data.ints = arr.copy();
+        column.data.ints = arr.copy(handle_);
     }
     catch (jni::exception const & e)
     {
@@ -659,7 +659,7 @@ JNIEXPORT void JNICALL Java_net_quasardb_qdb_jni_qdb_ts_1exp_1batch_1set_1column
         for (qdb_size_t i = 0; i < values.size(); ++i)
         {
             jobject bb = values.get(i);
-            jni::byte_buffer::as_qdb_blob(env, bb, ret[i]);
+            jni::byte_buffer::as_qdb_blob(env, handle_, bb, ret[i]);
         }
 
         // NOTE(leon): column.data.blobs is heap-allocated and will remain around until
@@ -699,7 +699,7 @@ JNIEXPORT void JNICALL Java_net_quasardb_qdb_jni_qdb_ts_1exp_1batch_1set_1column
         for (qdb_size_t i = 0; i < values.size(); ++i)
         {
             jobject bb = values.get(i);
-            jni::byte_buffer::as_qdb_string(env, bb, ret[i]);
+            jni::byte_buffer::as_qdb_string(env, handle_, bb, ret[i]);
         }
 
         // NOTE(leon): column.data.strings is heap-allocated and will remain around until
@@ -901,15 +901,15 @@ JNIEXPORT void JNICALL Java_net_quasardb_qdb_jni_qdb_ts_1exp_1batch_1release(
     {
         for (jlong j = 0; j < xs[i].data.column_count; ++j)
         {
-            delete xs[i].data.columns[j].name.data;
+            qdb_release(handle_, xs[i].data.columns[j].name.data);
 
             switch (xs[i].data.columns[j].data_type)
             {
             case qdb_ts_column_double:
-                delete[] xs[i].data.columns[j].data.doubles;
+                qdb_release(handle_, xs[i].data.columns[j].data.doubles);
                 break;
             case qdb_ts_column_int64:
-                delete[] xs[i].data.columns[j].data.ints;
+                qdb_release(handle_, xs[i].data.columns[j].data.ints);
                 break;
             case qdb_ts_column_blob:
             {
@@ -917,7 +917,7 @@ JNIEXPORT void JNICALL Java_net_quasardb_qdb_jni_qdb_ts_1exp_1batch_1release(
                 {
                     if (xs[i].data.columns[j].data.blobs[k].content != nullptr)
                     {
-                        free((void *)(xs[i].data.columns[j].data.blobs[k].content));
+                        qdb_release(handle_, xs[i].data.columns[j].data.blobs[k].content);
                     }
                 }
                 delete[] xs[i].data.columns[j].data.blobs;
@@ -929,7 +929,7 @@ JNIEXPORT void JNICALL Java_net_quasardb_qdb_jni_qdb_ts_1exp_1batch_1release(
                 {
                     if (xs[i].data.columns[j].data.strings[k].data != nullptr)
                     {
-                        free((void *)(xs[i].data.columns[j].data.strings[k].data));
+                        qdb_release(handle_, xs[i].data.columns[j].data.strings[k].data);
                     }
                 }
                 delete[] xs[i].data.columns[j].data.strings;

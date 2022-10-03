@@ -1,4 +1,5 @@
 #include "byte_buffer.h"
+#include "allocate.h"
 #include "env.h"
 #include "introspect.h"
 #include "object.h"
@@ -46,7 +47,7 @@
 }
 
 /* static */ void qdb::jni::byte_buffer::as_qdb_blob(
-    qdb::jni::env & env, jobject bb, qdb_blob_t & out)
+    qdb::jni::env & env, qdb_handle_t handle, jobject bb, qdb_blob_t & out)
 {
     if (bb == NULL)
     {
@@ -57,9 +58,9 @@
 
     qdb_size_t len   = static_cast<qdb_size_t>(env.instance().GetDirectBufferCapacity(bb));
     void const * src = env.instance().GetDirectBufferAddress(bb);
-    void * dest      = malloc(len);
 
-    assert(dest != NULL);
+    char * dest = jni::allocate<char>(handle, len);
+
     memcpy(dest, src, len);
 
     out.content        = dest;
@@ -67,7 +68,7 @@
 }
 
 /* static */ void qdb::jni::byte_buffer::as_qdb_string(
-    qdb::jni::env & env, jobject bb, qdb_string_t & out)
+    qdb::jni::env & env, qdb_handle_t handle, jobject bb, qdb_string_t & out)
 {
     if (bb == NULL)
     {
@@ -78,9 +79,8 @@
 
     qdb_size_t len   = static_cast<qdb_size_t>(env.instance().GetDirectBufferCapacity(bb));
     void const * src = env.instance().GetDirectBufferAddress(bb);
-    void * dest      = malloc(len);
 
-    assert(dest != NULL);
+    char * dest = jni::allocate<char>(handle, len);
     memcpy(dest, src, len);
 
     out.data   = reinterpret_cast<char const *>(dest);

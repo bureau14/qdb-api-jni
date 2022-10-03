@@ -1,5 +1,6 @@
 #pragma once
 
+#include "../allocate.h"
 #include "../env.h"
 #include <jni.h>
 #include <memory>
@@ -51,7 +52,7 @@ public:
         }
     }
 
-    primitive_array(primitive_array const & o) = delete;
+    primitive_array(primitive_array const & o)             = delete;
     primitive_array & operator=(primitive_array const & o) = delete;
 
     operator T *() noexcept
@@ -109,9 +110,9 @@ public:
         }
     }
 
-    inline constexpr T * copy() const
+    inline constexpr T * copy(qdb_handle_t handle) const
     {
-        T * ret = new T[_n];
+        T * ret = jni::allocate<T>(handle, _n);
         copy(ret);
         return ret;
     }

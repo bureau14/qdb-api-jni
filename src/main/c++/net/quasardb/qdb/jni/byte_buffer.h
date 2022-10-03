@@ -41,9 +41,10 @@ public:
     static void get_address(
         qdb::jni::env & env, jobject bb, const void ** buffer, qdb_size_t * len);
 
-    static void as_qdb_blob(qdb::jni::env & env, jobject bb, qdb_blob_t & out);
+    static void as_qdb_blob(qdb::jni::env & env, qdb_handle_t handle, jobject bb, qdb_blob_t & out);
 
-    static void as_qdb_string(qdb::jni::env & env, jobject bb, qdb_string_t & out);
+    static void as_qdb_string(
+        qdb::jni::env & env, qdb_handle_t handle, jobject bb, qdb_string_t & out);
 
     static inline qdb_blob_t to_qdb(qdb::jni::env & env, jobject in)
     {
