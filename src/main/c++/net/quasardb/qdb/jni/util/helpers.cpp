@@ -28,7 +28,7 @@ jobject getReferenceValue(qdb::jni::env & env, jobject reference)
 }
 
 void setByteBuffer(
-    qdb::jni::env & env, qdb_handle_t handle, jobject reference, const void * ptr, jlong size)
+    qdb::jni::env & env, qdb_handle_t handle, jobject reference, const void * ptr, jsize size)
 {
     setReferenceValue(env, reference,
         ptr ? qdb::jni::byte_buffer::create_copy(env, handle, ptr, size).get() : NULL);
