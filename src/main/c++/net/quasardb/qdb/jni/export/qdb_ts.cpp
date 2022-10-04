@@ -730,10 +730,10 @@ JNIEXPORT void JNICALL Java_net_quasardb_qdb_jni_qdb_ts_1exp_1batch_1set_1column
             reinterpret_cast<qdb_exp_batch_push_table_t *>(batchTables);
         qdb_exp_batch_push_table_t & table = xs[tableNum];
 
-        qdb_size_t values_count = table.data.row_count;
-        auto timestamps         = std::make_unique<qdb_timespec_t[]>(values_count);
+        qdb_size_t values_count     = table.data.row_count;
+        qdb_timespec_t * timestamps = jni::allocate<qdb_timespec_t>(handle_, values_count);
 
-        _timestamps_from_timespecs(env, values, timestamps.get());
+        _timestamps_from_timespecs(env, values, timestamps);
 
         qdb_exp_batch_push_column_t & column = _batch_column_from_tables(xs, tableNum, columnNum);
 
@@ -742,7 +742,7 @@ JNIEXPORT void JNICALL Java_net_quasardb_qdb_jni_qdb_ts_1exp_1batch_1set_1column
 
         // NOTE(leon): column.data.timestamps is heap-allocated and will remain around until
         //             java application calls qdb.ts_exp_batch_release()
-        column.data.timestamps = timestamps.release();
+        column.data.timestamps = timestamps;
     }
     catch (jni::exception const & e)
     {
@@ -938,7 +938,7 @@ JNIEXPORT void JNICALL Java_net_quasardb_qdb_jni_qdb_ts_1exp_1batch_1release(
                 break;
             }
             case qdb_ts_column_timestamp:
-                delete[] xs[i].data.columns[j].data.timestamps;
+                qdb_release(handle_, xs[i].data.columns[j].data.timestamps);
                 break;
             default:
                 throw new jni::exception(qdb_e_incompatible_type, "Unrecognized column type");
