@@ -654,7 +654,7 @@ JNIEXPORT void JNICALL Java_net_quasardb_qdb_jni_qdb_ts_1exp_1batch_1set_1column
         column.name      = jni::string::get_chars_utf8(env, handle_, name).as_qdb(handle_);
         column.data_type = qdb_ts_column_blob;
 
-        auto ret = std::make_unique<qdb_blob_t[]>(values.size());
+        qdb_blob_t * ret = jni::allocate<qdb_blob_t>(handle_, values.size());
 
         for (qdb_size_t i = 0; i < values.size(); ++i)
         {
@@ -664,7 +664,7 @@ JNIEXPORT void JNICALL Java_net_quasardb_qdb_jni_qdb_ts_1exp_1batch_1set_1column
 
         // NOTE(leon): column.data.blobs is heap-allocated and will remain around until
         //             java application calls qdb.ts_exp_batch_release()
-        column.data.blobs = ret.release();
+        column.data.blobs = ret;
     }
     catch (jni::exception const & e)
     {
@@ -920,7 +920,8 @@ JNIEXPORT void JNICALL Java_net_quasardb_qdb_jni_qdb_ts_1exp_1batch_1release(
                         qdb_release(handle_, xs[i].data.columns[j].data.blobs[k].content);
                     }
                 }
-                delete[] xs[i].data.columns[j].data.blobs;
+
+                qdb_release(handle_, xs[i].data.columns[j].data.blobs);
                 break;
             }
             case qdb_ts_column_string:
