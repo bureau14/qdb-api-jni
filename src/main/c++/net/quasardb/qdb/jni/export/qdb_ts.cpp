@@ -806,9 +806,11 @@ Java_net_quasardb_qdb_jni_qdb_ts_1exp_1batch_1table_1set_1drop_1duplicate_1colum
         jni::object_array columns_{env, columns};
         qdb_exp_batch_push_table_t & table = _table_from_tables(batchTables, tableNum);
 
-        assert(table.options == qdb_exp_batch_option_unique);
+        assert(table.options == qdb_exp_batch_option_unique_drop);
 
         std::size_t n = std::size(columns_);
+
+        assert(n > 0);
 
         table.where_duplicate_count = n;
         table.where_duplicate       = jni::allocate<qdb_string_t>(handle_, n);
@@ -870,8 +872,10 @@ JNIEXPORT jlong JNICALL Java_net_quasardb_qdb_jni_qdb_ts_1exp_1batch_1prepare(JN
         auto column_guard    = jni::make_primitive_array<jlong>(env, columnCount_);
 
         assert(row_guard.size() == column_guard.size());
+        assert(row_guard.size() > 0);
 
-        auto ret = std::make_unique<qdb_exp_batch_push_table_t[]>(row_guard.size());
+        qdb_exp_batch_push_table_t * ret =
+            jni::allocate<qdb_exp_batch_push_table_t>(handle_, row_guard.size());
 
         for (qdb_size_t i = 0; i < row_guard.size(); ++i)
         {
@@ -880,15 +884,17 @@ JNIEXPORT jlong JNICALL Java_net_quasardb_qdb_jni_qdb_ts_1exp_1batch_1prepare(JN
 
             ret[i].data.row_count    = row_count;
             ret[i].data.column_count = column_count;
-
-            ret[i].data.timestamps = jni::allocate<qdb_timespec_t>(handle_, row_count);
+            ret[i].data.timestamps   = jni::allocate<qdb_timespec_t>(handle_, row_count);
             ret[i].data.columns = jni::allocate<qdb_exp_batch_push_column_t>(handle_, column_count);
 
-            ret[i].truncate_ranges      = nullptr;
-            ret[i].truncate_range_count = 0;
+            ret[i].truncate_ranges       = nullptr;
+            ret[i].truncate_range_count  = 0;
+            ret[i].options               = qdb_exp_batch_option_standard;
+            ret[i].where_duplicate       = nullptr;
+            ret[i].where_duplicate_count = 0;
         }
 
-        return reinterpret_cast<jlong>(ret.release());
+        return reinterpret_cast<jlong>(ret);
     }
     catch (jni::exception const & e)
     {
@@ -961,7 +967,8 @@ JNIEXPORT void JNICALL Java_net_quasardb_qdb_jni_qdb_ts_1exp_1batch_1release(
         qdb_release(handle_, xs[i].data.timestamps);
         qdb_release(handle_, xs[i].data.columns);
     }
-    delete[] xs;
+
+    qdb_release(handle_, xs);
 }
 
 JNIEXPORT jlong JNICALL Java_net_quasardb_qdb_jni_qdb_ts_1exp_1batch_1push(JNIEnv * jniEnv,

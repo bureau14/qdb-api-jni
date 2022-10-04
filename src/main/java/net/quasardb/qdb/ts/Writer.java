@@ -332,7 +332,7 @@ public class Writer implements AutoCloseable, Flushable {
 
 
     private Options options;
-    private long prepared;
+    private long prepared = 0;
     private HashMap<String, StagedTable> stagedTables;
 
     protected long pointsSinceFlush = 0;
@@ -425,6 +425,12 @@ public class Writer implements AutoCloseable, Flushable {
 
             if (this.prepared == 0) {
                 this.prepareFlush();
+
+            }
+
+            if (this.prepared == 0) {
+                logger.warn("Unable to prepare flush, skipping...");
+                return;
             }
 
             logger.info("Flushing batch writer, push mode='{}', points since last flush={}", this.options.getPushMode().toString(), this.pointsSinceFlush);
@@ -456,6 +462,14 @@ public class Writer implements AutoCloseable, Flushable {
      * not called explicitly.
      */
     public void prepareFlush(TimeRange[] ranges) {
+        // Logic below and internally within the C++ parts assumes that we have
+        // at least 1 table to flush.
+        if (this.stagedTables.size() == 0) {
+            logger.warn("No tables staged, nothing to flush!");
+            assert(this.prepared == 0);
+            return;
+        }
+
         long[]        rowCount       = new long[this.stagedTables.size()];
         long[]        columnCount    = new long[this.stagedTables.size()];
 

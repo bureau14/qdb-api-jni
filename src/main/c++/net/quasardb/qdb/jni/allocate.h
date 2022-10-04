@@ -15,6 +15,7 @@ namespace jni
 template <typename T>
 inline T * allocate(qdb_handle_t handle, qdb_size_t n)
 {
+    assert(n > 0);
     void * ret{nullptr};
     qdb::jni::exception::throw_if_error(handle, qdb_alloc_buffer(handle, n * sizeof(T), &ret));
     assert(ret != nullptr);
