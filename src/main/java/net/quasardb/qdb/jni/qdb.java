@@ -243,7 +243,8 @@ public final class qdb
                                                                             long tableNum,
                                                                             String[] columns);
 
-    public static native void ts_exp_batch_table_set_truncate_ranges(long batchTables,
+    public static native void ts_exp_batch_table_set_truncate_ranges(long handle,
+                                                                     long batchTables,
                                                                      long tableNum,
                                                                      TimeRange[] ranges);
 

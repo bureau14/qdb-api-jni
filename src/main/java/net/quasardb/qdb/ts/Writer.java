@@ -207,7 +207,8 @@ public class Writer implements AutoCloseable, Flushable {
 
             toNative(handle, prepped, tableNum, tableName, options);
 
-            qdb.ts_exp_batch_table_set_truncate_ranges(prepped,
+            qdb.ts_exp_batch_table_set_truncate_ranges(handle,
+                                                       prepped,
                                                        tableNum,
                                                        truncateRanges);
 

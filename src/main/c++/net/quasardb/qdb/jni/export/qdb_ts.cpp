@@ -826,21 +826,28 @@ Java_net_quasardb_qdb_jni_qdb_ts_1exp_1batch_1table_1set_1drop_1duplicate_1colum
 };
 
 JNIEXPORT void JNICALL Java_net_quasardb_qdb_jni_qdb_ts_1exp_1batch_1table_1set_1truncate_1ranges(
-    JNIEnv * jniEnv, jclass /* thisClass */, jlong batchTables, jlong tableNum, jobjectArray ranges)
+    JNIEnv * jniEnv,
+    jclass /* thisClass */,
+    jlong handle,
+    jlong batchTables,
+    jlong tableNum,
+    jobjectArray ranges)
 {
     qdb::jni::env env(jniEnv);
     try
     {
+        qdb_handle_t handle_ = reinterpret_cast<qdb_handle_t>(handle);
+
         qdb_exp_batch_push_table_t & table = _table_from_tables(batchTables, tableNum);
 
         jni::object_array ranges_{env, ranges};
 
-        std::unique_ptr<qdb_ts_range_t[]> ret = std::make_unique<qdb_ts_range_t[]>(ranges_.size());
-        std::span<qdb_ts_range_t> ret_{ret.get(), ranges_.size()};
+        qdb_ts_range_t * ret = jni::allocate<qdb_ts_range_t>(handle_, ranges_.size());
+        std::span<qdb_ts_range_t> ret_{ret, ranges_.size()};
 
         jni::adapt::timerange::to_qdb(env, ranges_, ret_.begin());
 
-        table.truncate_ranges      = ret.release();
+        table.truncate_ranges      = ret;
         table.truncate_range_count = ranges_.size();
     }
     catch (jni::exception const & e)
@@ -947,7 +954,7 @@ JNIEXPORT void JNICALL Java_net_quasardb_qdb_jni_qdb_ts_1exp_1batch_1release(
 
         if (xs[i].truncate_ranges != nullptr)
         {
-            delete xs[i].truncate_ranges;
+            qdb_release(handle_, xs[i].truncate_ranges);
         }
 
         qdb_release(handle_, xs[i].name.data);
