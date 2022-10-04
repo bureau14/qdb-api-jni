@@ -765,7 +765,7 @@ JNIEXPORT void JNICALL Java_net_quasardb_qdb_jni_qdb_ts_1exp_1batch_1table_1set_
     try
     {
         qdb_exp_batch_push_table_t & table = _table_from_tables(batchTables, tableNum);
-        table.options                      = qdb_exp_batch_option_unique;
+        table.options                      = qdb_exp_batch_option_unique_drop;
     }
     catch (jni::exception const & e)
     {
