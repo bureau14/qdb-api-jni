@@ -16,7 +16,7 @@ JNIEXPORT jobject JNICALL Java_net_quasardb_qdb_jni_qdb_timestamp_1get(
     try
     {
         qdb_handle_t handle_ = reinterpret_cast<qdb_handle_t>(handle);
-        auto alias_          = qdb::jni::string::get_chars_utf8(env, alias);
+        auto alias_          = qdb::jni::string::get_chars_utf8(env, handle_, alias);
 
         qdb_timespec_t ret;
 
@@ -40,7 +40,7 @@ JNIEXPORT void JNICALL Java_net_quasardb_qdb_jni_qdb_timestamp_1put(
     try
     {
         qdb_handle_t handle_  = reinterpret_cast<qdb_handle_t>(handle);
-        auto alias_           = qdb::jni::string::get_chars_utf8(env, alias);
+        auto alias_           = qdb::jni::string::get_chars_utf8(env, handle_, alias);
         qdb_timespec_t value_ = jni::adapt::timespec::to_qdb(env, value);
 
         jni::exception::throw_if_error(handle_, qdb_timestamp_put(handle_, alias_, &value_, -1));
@@ -59,7 +59,7 @@ JNIEXPORT jboolean JNICALL Java_net_quasardb_qdb_jni_qdb_timestamp_1update(
     try
     {
         qdb_handle_t handle_  = reinterpret_cast<qdb_handle_t>(handle);
-        auto alias_           = qdb::jni::string::get_chars_utf8(env, alias);
+        auto alias_           = qdb::jni::string::get_chars_utf8(env, handle_, alias);
         qdb_timespec_t value_ = jni::adapt::timespec::to_qdb(env, value);
 
         qdb_error_t err = jni::exception::throw_if_error(

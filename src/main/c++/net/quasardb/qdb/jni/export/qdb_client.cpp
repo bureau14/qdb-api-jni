@@ -49,9 +49,10 @@ JNIEXPORT jint JNICALL Java_net_quasardb_qdb_jni_qdb_connect(
     try
     {
         // qdb::jni::log::swap_callback();
+        qdb_handle_t handle_ = reinterpret_cast<qdb_handle_t>(handle);
 
-        qdb_error_t err = jni::exception::throw_if_error((qdb_handle_t)handle,
-            qdb_connect((qdb_handle_t)handle, qdb::jni::string::get_chars_utf8(env, uri)));
+        qdb_error_t err = jni::exception::throw_if_error(
+            handle_, qdb_connect(handle_, qdb::jni::string::get_chars_utf8(env, handle_, uri)));
 
         return err;
     }
@@ -69,6 +70,7 @@ JNIEXPORT jint JNICALL Java_net_quasardb_qdb_jni_qdb_secure_1connect(
     try
     {
         // qdb::jni::log::swap_callback();
+        qdb_handle_t handle_ = reinterpret_cast<qdb_handle_t>(handle);
 
         jclass objectClass;
         jfieldID userNameField, userPrivateKeyField, clusterPublicKeyField;
@@ -87,16 +89,16 @@ JNIEXPORT jint JNICALL Java_net_quasardb_qdb_jni_qdb_secure_1connect(
             (jstring)env.instance().GetObjectField(securityOptions, clusterPublicKeyField);
 
         jni::exception::throw_if_error(
-            (qdb_handle_t)handle, qdb_option_set_cluster_public_key((qdb_handle_t)handle,
-                                      qdb::jni::string::get_chars_utf8(env, clusterPublicKey)));
+            handle_, qdb_option_set_cluster_public_key(handle_,
+                         qdb::jni::string::get_chars_utf8(env, handle_, clusterPublicKey)));
 
         jni::exception::throw_if_error(
-            (qdb_handle_t)handle, qdb_option_set_user_credentials((qdb_handle_t)handle,
-                                      qdb::jni::string::get_chars_utf8(env, userName),
-                                      qdb::jni::string::get_chars_utf8(env, userPrivateKey)));
+            handle_, qdb_option_set_user_credentials(handle_,
+                         qdb::jni::string::get_chars_utf8(env, handle_, userName),
+                         qdb::jni::string::get_chars_utf8(env, handle_, userPrivateKey)));
 
-        return jni::exception::throw_if_error((qdb_handle_t)handle,
-            qdb_connect((qdb_handle_t)handle, qdb::jni::string::get_chars_utf8(env, uri)));
+        return jni::exception::throw_if_error(
+            handle_, qdb_connect(handle_, qdb::jni::string::get_chars_utf8(env, handle_, uri)));
     }
     catch (jni::exception const & e)
     {
@@ -339,8 +341,9 @@ JNIEXPORT jint JNICALL Java_net_quasardb_qdb_jni_qdb_remove(
     qdb::jni::env env(jniEnv);
     try
     {
-        return jni::exception::throw_if_error((qdb_handle_t)handle,
-            qdb_remove((qdb_handle_t)handle, qdb::jni::string::get_chars_utf8(env, alias)));
+        qdb_handle_t handle_ = reinterpret_cast<qdb_handle_t>(handle);
+        return jni::exception::throw_if_error(
+            handle_, qdb_remove(handle_, qdb::jni::string::get_chars_utf8(env, handle_, alias)));
     }
     catch (jni::exception const & e)
     {
@@ -356,12 +359,13 @@ JNIEXPORT jint JNICALL Java_net_quasardb_qdb_jni_qdb_get_1type(
 
     try
     {
+        qdb_handle_t handle_ = reinterpret_cast<qdb_handle_t>(handle);
         qdb_entry_metadata_t metadata;
-        jni::exception::throw_if_error((qdb_handle_t)handle,
-            qdb_get_metadata((qdb_handle_t)handle,
-                (alias == NULL ? (char const *)(NULL)
-                               : qdb::jni::string::get_chars_utf8(env, alias)),
-                &metadata));
+        jni::exception::throw_if_error(
+            handle_, qdb_get_metadata(handle_,
+                         (alias == NULL ? (char const *)(NULL)
+                                        : qdb::jni::string::get_chars_utf8(env, handle_, alias)),
+                         &metadata));
         setInteger(env, type, metadata.type);
         return qdb_e_ok;
     }
@@ -379,16 +383,17 @@ JNIEXPORT jint JNICALL Java_net_quasardb_qdb_jni_qdb_get_1metadata(
 
     try
     {
-        void * metaPtr      = env.instance().GetDirectBufferAddress(meta);
-        qdb_size_t metaSize = (qdb_size_t)env.instance().GetDirectBufferCapacity(meta);
+        qdb_handle_t handle_ = reinterpret_cast<qdb_handle_t>(handle);
+        void * metaPtr       = env.instance().GetDirectBufferAddress(meta);
+        qdb_size_t metaSize  = (qdb_size_t)env.instance().GetDirectBufferCapacity(meta);
         if (metaSize != sizeof(qdb_entry_metadata_t))
         {
             // XXX(leon): hacks!
-            jni::exception::throw_if_error((qdb_handle_t)handle, qdb_e_invalid_argument);
+            jni::exception::throw_if_error(handle_, qdb_e_invalid_argument);
         }
 
-        return jni::exception::throw_if_error((qdb_handle_t)handle,
-            qdb_get_metadata((qdb_handle_t)handle, qdb::jni::string::get_chars_utf8(env, alias),
+        return jni::exception::throw_if_error(handle_,
+            qdb_get_metadata(handle_, qdb::jni::string::get_chars_utf8(env, handle_, alias),
                 (qdb_entry_metadata_t *)metaPtr));
     }
     catch (jni::exception const & e)
@@ -408,7 +413,7 @@ JNIEXPORT jboolean JNICALL Java_net_quasardb_qdb_jni_qdb_entry_1exists(
         qdb_entry_metadata_t meta;
         qdb_handle_t handle_ = reinterpret_cast<qdb_handle_t>(handle);
         qdb_error_t err =
-            qdb_get_metadata(handle_, qdb::jni::string::get_chars_utf8(env, alias), &meta);
+            qdb_get_metadata(handle_, qdb::jni::string::get_chars_utf8(env, handle_, alias), &meta);
 
         switch (err)
         {
@@ -437,9 +442,9 @@ JNIEXPORT jint JNICALL Java_net_quasardb_qdb_jni_qdb_expires_1at(
 
     try
     {
-        return jni::exception::throw_if_error(
-            (qdb_handle_t)handle, qdb_expires_at((qdb_handle_t)handle,
-                                      qdb::jni::string::get_chars_utf8(env, alias), expiry));
+        qdb_handle_t handle_ = reinterpret_cast<qdb_handle_t>(handle);
+        return jni::exception::throw_if_error(handle_,
+            qdb_expires_at(handle_, qdb::jni::string::get_chars_utf8(env, handle_, alias), expiry));
     }
     catch (jni::exception const & e)
     {
@@ -455,10 +460,11 @@ JNIEXPORT jint JNICALL Java_net_quasardb_qdb_jni_qdb_get_1expiry_1time(
 
     try
     {
+        qdb_handle_t handle_ = reinterpret_cast<qdb_handle_t>(handle);
         qdb_entry_metadata_t metadata;
         jni::exception::throw_if_error(
-            (qdb_handle_t)handle, qdb_get_metadata((qdb_handle_t)handle,
-                                      qdb::jni::string::get_chars_utf8(env, alias), &metadata));
+            handle_, qdb_get_metadata(handle_,
+                         qdb::jni::string::get_chars_utf8(env, handle_, alias), &metadata));
         setLong(env, expiry,
             static_cast<qdb_time_t>(metadata.expiry_time.tv_sec) * 1000
                 + static_cast<qdb_time_t>(metadata.expiry_time.tv_nsec / 1000000ull));

@@ -203,10 +203,10 @@ inline jni::guard::local_ref<JNIType> from_field(
  * Invokes `.toString()` on the object and returns the resulting string.
  * For debugging purposes.
  */
-inline jni::guard::string_utf8 to_string(jni::env & env, jobject object)
+inline jni::guard::string_utf8 to_string(jni::env & env, qdb_handle_t handle, jobject object)
 {
     return jni::string::get_chars_utf8(
-        env, call_method(env, object, "toString", "()Ljava/lang/String;"));
+        env, handle, call_method(env, object, "toString", "()Ljava/lang/String;"));
 }
 
 }; // namespace qdb::jni::object

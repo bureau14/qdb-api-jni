@@ -49,6 +49,7 @@ inline decltype(auto) as_range(T const & input)
  */
 template <typename From>
 inline void to_qdb(qdb::jni::env & env,
+    qdb_handle_t handle,
     std::vector<qdb_timespec_t> const & timestamps,
     typename value_traits<From>::jarray_type values,
     typename std::vector<typename value_traits<From>::point_type>::iterator dst)
@@ -70,9 +71,9 @@ inline void to_qdb(qdb::jni::env & env,
 
     auto zipped = ranges::zip_view(timestamps, as_range(values_));
 
-    auto callback = [&env](auto iter) -> point_type {
+    auto callback = [&env, &handle](auto iter) -> point_type {
         point_type ret{std::get<0>(iter)};
-        detail::xform_point<From>(env, std::get<1>(iter), ret);
+        detail::xform_point<From>(env, handle, std::get<1>(iter), ret);
         return ret;
     };
 
@@ -82,20 +83,22 @@ inline void to_qdb(qdb::jni::env & env,
 
 template <typename From>
 inline std::vector<typename value_traits<From>::point_type> to_qdb(qdb::jni::env & env,
+    qdb_handle_t handle,
     std::vector<qdb_timespec_t> const & timestamps,
     typename value_traits<From>::jarray_type values)
 {
     using point_type = typename value_traits<From>::point_type;
     std::vector<point_type> out{timestamps.size()};
 
-    to_qdb<From>(env, timestamps, values, std::begin(out));
+    to_qdb<From>(env, handle, timestamps, values, std::begin(out));
 
     return out;
 }
 
 template <typename From, ranges::input_range R>
 requires(std::is_same<ranges::range_value_t<R>, typename value_traits<From>::point_type>::value)
-    jni::guard::local_ref<jobject> to_java(qdb::jni::env & env, R const & input)
+    jni::guard::local_ref<jobject> to_java(
+        qdb::jni::env & env, qdb_handle_t handle, R const & input)
 {
     using point_type  = typename value_traits<From>::point_type;
     using value_type  = typename value_traits<From>::value_type;
@@ -114,7 +117,7 @@ requires(std::is_same<ranges::range_value_t<R>, typename value_traits<From>::poi
     auto const && [timestamps, values] = jni::util::make_unzip_views(range_of_pairs);
 
     jni::guard::local_ref<jobject> timestamps_ = adapt::timespecs::to_java(env, timestamps);
-    jni::guard::local_ref<jarray_type> values_ = detail::xform_output<From>(env, values);
+    jni::guard::local_ref<jarray_type> values_ = detail::xform_output<From>(env, handle, values);
 
     return detail::create<From>(env, std::move(timestamps_), std::move(values_));
 }

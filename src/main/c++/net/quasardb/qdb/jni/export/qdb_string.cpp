@@ -16,14 +16,14 @@ JNIEXPORT jstring JNICALL Java_net_quasardb_qdb_jni_qdb_string_1get(
     try
     {
         qdb_handle_t handle_ = reinterpret_cast<qdb_handle_t>(handle);
-        auto alias_          = qdb::jni::string::get_chars_utf8(env, alias);
+        auto alias_          = qdb::jni::string::get_chars_utf8(env, handle_, alias);
 
         char const * xs{nullptr};
         qdb_size_t n{0};
 
         jni::exception::throw_if_error(handle_, qdb_string_get(handle_, alias_, &xs, &n));
 
-        return qdb::jni::string::create_utf8(env, xs, n).release();
+        return qdb::jni::string::create_utf8(env, handle_, xs, n).release();
     }
     catch (jni::exception const & e)
     {
@@ -41,8 +41,8 @@ JNIEXPORT void JNICALL Java_net_quasardb_qdb_jni_qdb_string_1put(
     try
     {
         qdb_handle_t handle_ = reinterpret_cast<qdb_handle_t>(handle);
-        auto alias_          = qdb::jni::string::get_chars_utf8(env, alias);
-        auto content_        = qdb::jni::string::get_chars_utf8(env, content);
+        auto alias_          = qdb::jni::string::get_chars_utf8(env, handle_, alias);
+        auto content_        = qdb::jni::string::get_chars_utf8(env, handle_, content);
 
         jni::exception::throw_if_error(
             handle_, qdb_string_put(handle_, alias_, content_, content_.size(), -1));
@@ -61,8 +61,8 @@ JNIEXPORT jboolean JNICALL Java_net_quasardb_qdb_jni_qdb_string_1update(
     try
     {
         qdb_handle_t handle_ = reinterpret_cast<qdb_handle_t>(handle);
-        auto alias_          = qdb::jni::string::get_chars_utf8(env, alias);
-        auto content_        = qdb::jni::string::get_chars_utf8(env, content);
+        auto alias_          = qdb::jni::string::get_chars_utf8(env, handle_, alias);
+        auto content_        = qdb::jni::string::get_chars_utf8(env, handle_, content);
 
         qdb_error_t err = jni::exception::throw_if_error(
             handle_, qdb_string_update(handle_, alias_, content_, content_.size(), -1));

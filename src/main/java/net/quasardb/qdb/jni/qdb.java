@@ -190,40 +190,47 @@ public final class qdb
      *
      * rowCount.length == columnCount.length, and pretty much defines the number of tables.
      */
-    public static native long ts_exp_batch_prepare(long[] rowCount,
+    public static native long ts_exp_batch_prepare(long handle,
+                                                   long[] rowCount,
                                                    long[] columnCount);
 
-    public static native void ts_exp_batch_set_column_from_double(long batchTables,
+    public static native void ts_exp_batch_set_column_from_double(long handle,
+                                                                  long batchTables,
                                                                   long tableNum,
                                                                   long columnNum,
                                                                   String name,
                                                                   double[] values);
 
-    public static native void ts_exp_batch_set_column_from_int64(long batchTables,
+    public static native void ts_exp_batch_set_column_from_int64(long handle,
+                                                                 long batchTables,
                                                                  long tableNum,
                                                                  long columnNum,
                                                                  String name,
                                                                  long[] values);
 
-    public static native void ts_exp_batch_set_column_from_blob(long batchTables,
+    public static native void ts_exp_batch_set_column_from_blob(long handle,
+                                                                long batchTables,
                                                                 long tableNum,
                                                                 long columnNum,
                                                                 String name,
                                                                 ByteBuffer[] values);
 
-    public static native void ts_exp_batch_set_column_from_string(long batchTables,
+    public static native void ts_exp_batch_set_column_from_string(long handle,
+                                                                  long batchTables,
                                                                   long tableNum,
                                                                   long columnNum,
                                                                   String name,
                                                                   ByteBuffer[] values);
 
-    public static native void ts_exp_batch_set_column_from_timestamp(long batchTables,
+    public static native void ts_exp_batch_set_column_from_timestamp(long handle,
+                                                                     long batchTables,
                                                                      long tableNum,
                                                                      long columnNum,
                                                                      String name,
                                                                      Timespecs values);
 
-    public static native void ts_exp_batch_set_table_data(long batchTables,
+    public static native void ts_exp_batch_set_table_data(long handle,
+                                                          long batchTables,
                                                           long tableNum,
                                                           String tableName,
                                                           Timespecs timespecs);
@@ -231,11 +238,13 @@ public final class qdb
     public static native void ts_exp_batch_table_set_drop_duplicates(long batchTables,
                                                                      long tableNum);
 
-    public static native void ts_exp_batch_table_set_drop_duplicate_columns(long batchTables,
+    public static native void ts_exp_batch_table_set_drop_duplicate_columns(long handle,
+                                                                             long batchTables,
                                                                             long tableNum,
                                                                             String[] columns);
 
-    public static native void ts_exp_batch_table_set_truncate_ranges(long batchTables,
+    public static native void ts_exp_batch_table_set_truncate_ranges(long handle,
+                                                                     long batchTables,
                                                                      long tableNum,
                                                                      TimeRange[] ranges);
 
@@ -245,7 +254,8 @@ public final class qdb
                                                 long tableCount);
 
 
-    public static native void ts_exp_batch_release(long batchTables,
+    public static native void ts_exp_batch_release(long handle,
+                                                   long batchTables,
                                                    long tableCount);
 
 
