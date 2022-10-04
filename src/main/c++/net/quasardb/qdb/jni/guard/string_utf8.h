@@ -1,5 +1,6 @@
 #pragma once
 
+#include "../allocate.h"
 #include "../env.h"
 #include <qdb/ts.h>
 #include <cstring>
@@ -23,6 +24,7 @@ class string_utf8
 {
 private:
     qdb::jni::env & _env;
+    qdb_handle_t _handle;
     jstring & _str;
     char const * _ptr;
     size_t _len;
@@ -33,8 +35,10 @@ public:
      * env->GetStringUTFChars, and will ensure the reference
      * is released when necessary.
      */
-    string_utf8(qdb::jni::env & env, jstring & str, char const * ptr, size_t len)
+    string_utf8(
+        qdb::jni::env & env, qdb_handle_t handle, jstring & str, char const * ptr, size_t len)
         : _env(env)
+        , _handle(handle)
         , _str(str)
         , _ptr(ptr)
         , _len(len)
@@ -49,10 +53,10 @@ public:
         }
     }
 
-    string_utf8(string_utf8 && o)    = delete;
-    string_utf8(string_utf8 const &) = delete;
+    string_utf8(string_utf8 && o)                = delete;
+    string_utf8(string_utf8 const &)             = delete;
     string_utf8 & operator=(string_utf8 const &) = delete;
-    string_utf8 & operator=(string_utf8 &&) = delete;
+    string_utf8 & operator=(string_utf8 &&)      = delete;
 
     /**
      * Provide automatic casting to char const *, so that it can be
@@ -103,30 +107,30 @@ public:
 
     /**
      */
-    char * copy() const
+    char * copy(qdb_handle_t handle) const
     {
-        char * ret = new char[_len + 1];
+        char * ret = jni::allocate<char>(handle, _len + 1);
         memcpy(ret, _ptr, _len);
         ret[_len] = '\0';
         return ret;
     }
 
-    inline qdb_string_t as_qdb() const
+    inline qdb_string_t as_qdb(qdb_handle_t handle) const
     {
         qdb_string_t ret;
-        as_qdb(ret);
+        as_qdb(handle, ret);
         return ret;
     }
 
-    inline void as_qdb(qdb_ts_string_point & out) const
+    inline void as_qdb(qdb_handle_t handle, qdb_ts_string_point & out) const
     {
-        out.content        = copy();
+        out.content        = copy(handle);
         out.content_length = _len;
     }
 
-    inline void as_qdb(qdb_string_t & out) const
+    inline void as_qdb(qdb_handle_t handle, qdb_string_t & out) const
     {
-        out.data   = copy();
+        out.data   = copy(handle);
         out.length = _len;
     }
 };

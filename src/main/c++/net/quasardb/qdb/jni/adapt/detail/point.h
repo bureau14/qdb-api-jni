@@ -29,13 +29,15 @@ using jarray_type = typename value_traits<From>::jarray_type;
  *  - qdb_timespec_t
  */
 template <typename From, typename T>
-inline void xform_point(qdb::jni::env & /* env */, T v, point_type<From> & out)
+inline void xform_point(
+    qdb::jni::env & /* env */, qdb_handle_t /* handle */, T v, point_type<From> & out)
 {
     out.value = v;
 }
 
 template <>
-inline void xform_point<qdb_blob_t>(qdb::jni::env & env, jobject v, qdb_ts_blob_point & out)
+inline void xform_point<qdb_blob_t>(
+    qdb::jni::env & env, qdb_handle_t /* handle */, jobject v, qdb_ts_blob_point & out)
 {
     qdb_blob_t tmp = jni::byte_buffer::to_qdb(env, v);
 
@@ -44,9 +46,10 @@ inline void xform_point<qdb_blob_t>(qdb::jni::env & env, jobject v, qdb_ts_blob_
 }
 
 template <>
-inline void xform_point<qdb_string_t>(qdb::jni::env & env, jobject v, qdb_ts_string_point & out)
+inline void xform_point<qdb_string_t>(
+    qdb::jni::env & env, qdb_handle_t handle, jobject v, qdb_ts_string_point & out)
 {
-    jni::string::get_chars_utf8(env, v).as_qdb(out);
+    jni::string::get_chars_utf8(env, handle, v).as_qdb(handle, out);
 }
 
 template <typename From>
@@ -105,7 +108,7 @@ struct xform_util
 
     template <ranges::input_range R>
     static inline jni::guard::local_ref<jarray_type<From>> output(
-        qdb::jni::env & env, R const & input)
+        qdb::jni::env & env, qdb_handle_t /* handle */, R const & input)
     {
         return jni::primitive_array::from_range<From>(env, input);
     };
@@ -131,7 +134,8 @@ struct xform_util<qdb_timespec_t>
     }
 
     template <ranges::input_range R>
-    static inline jni::guard::local_ref<jobject> output(qdb::jni::env & env, R const & input)
+    static inline jni::guard::local_ref<jobject> output(
+        qdb::jni::env & env, qdb_handle_t /* handle */, R const & input)
     {
         return adapt::timespecs::to_java(env, input);
     };
@@ -148,13 +152,14 @@ struct xform_util<qdb_string_t>
     }
 
     template <ranges::input_range R>
-    static inline jni::guard::local_ref<jobjectArray> output(qdb::jni::env & env, R const & input)
+    static inline jni::guard::local_ref<jobjectArray> output(
+        qdb::jni::env & env, qdb_handle_t handle, R const & input)
     {
         static_assert(std::is_same<ranges::range_value_t<R>, qdb_string_t>::value);
 
         // Convert all qdb_string_t's to jstrings
-        auto xform = [&env](qdb_string_t const & x) {
-            return jni::string::create_utf8(env, x).release();
+        auto xform = [&env, &handle](qdb_string_t const & x) {
+            return jni::string::create_utf8(env, handle, x).release();
         };
 
         auto input_ = input | ranges::views::transform(xform);
@@ -176,13 +181,14 @@ struct xform_util<qdb_blob_t>
     }
 
     template <ranges::input_range R>
-    static inline jni::guard::local_ref<jobjectArray> output(qdb::jni::env & env, R const & input)
+    static inline jni::guard::local_ref<jobjectArray> output(
+        qdb::jni::env & env, qdb_handle_t handle, R const & input)
     {
         static_assert(std::is_same<ranges::range_value_t<R>, qdb_blob_t>::value);
 
         // Convert all qdb_blob_t's to bytebuffers (jobjects)
-        auto xform = [&env](qdb_blob_t const & x) {
-            return jni::byte_buffer::create_copy(env, x).release();
+        auto xform = [&env, &handle](qdb_blob_t const & x) {
+            return jni::byte_buffer::create_copy(env, handle, x).release();
         };
 
         auto input_ = input | ranges::views::transform(xform);
@@ -194,9 +200,9 @@ struct xform_util<qdb_blob_t>
 };
 
 template <typename From, ranges::input_range R>
-inline decltype(auto) xform_output(qdb::jni::env & env, R const & input)
+inline decltype(auto) xform_output(qdb::jni::env & env, qdb_handle_t handle, R const & input)
 {
-    return xform_util<From>::template output(env, input);
+    return xform_util<From>::template output(env, handle, input);
 }
 
 template <typename From>

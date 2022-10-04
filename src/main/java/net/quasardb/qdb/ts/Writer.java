@@ -108,7 +108,8 @@ public class Writer implements AutoCloseable, Flushable {
             }
         }
 
-        public void toNative(long prepped,
+        public void toNative(long handle,
+                             long prepped,
                              int tableNum,
                              int offset) {
             Column c = this.columns[offset];
@@ -116,21 +117,24 @@ public class Writer implements AutoCloseable, Flushable {
 
             switch (c.getType()) {
             case DOUBLE:
-                qdb.ts_exp_batch_set_column_from_double(prepped,
+                qdb.ts_exp_batch_set_column_from_double(handle,
+                                                        prepped,
                                                         tableNum,
                                                         offset,
                                                         c.getName(),
                                                         Values.asPrimitiveDoubleArray(xs));
                 break;
             case INT64:
-                qdb.ts_exp_batch_set_column_from_int64(prepped,
+                qdb.ts_exp_batch_set_column_from_int64(handle,
+                                                       prepped,
                                                        tableNum,
                                                        offset,
                                                        c.getName(),
                                                        Values.asPrimitiveInt64Array(xs));
                 break;
             case BLOB:
-                qdb.ts_exp_batch_set_column_from_blob(prepped,
+                qdb.ts_exp_batch_set_column_from_blob(handle,
+                                                      prepped,
                                                       tableNum,
                                                       offset,
                                                       c.getName(),
@@ -140,14 +144,16 @@ public class Writer implements AutoCloseable, Flushable {
             case SYMBOL:
                 //! FALLTHROUGH
             case STRING:
-                qdb.ts_exp_batch_set_column_from_string(prepped,
+                qdb.ts_exp_batch_set_column_from_string(handle,
+                                                        prepped,
                                                         tableNum,
                                                         offset,
                                                         c.getName(),
                                                         Values.asPrimitiveStringArray(xs));
                 break;
             case TIMESTAMP:
-                qdb.ts_exp_batch_set_column_from_timestamp(prepped,
+                qdb.ts_exp_batch_set_column_from_timestamp(handle,
+                                                           prepped,
                                                            tableNum,
                                                            offset,
                                                            c.getName(),
@@ -161,15 +167,17 @@ public class Writer implements AutoCloseable, Flushable {
         /**
          * qdb
          */
-        public void toNative(long prepped,
+        public void toNative(long handle,
+                             long prepped,
                              int tableNum,
                              String tableName,
                              Options options) {
             for (int i = 0; i < this.columns.length; ++i) {
-                toNative(prepped, tableNum, i);
+                toNative(handle, prepped, tableNum, i);
             }
 
-            qdb.ts_exp_batch_set_table_data(prepped,
+            qdb.ts_exp_batch_set_table_data(handle,
+                                            prepped,
                                             tableNum,
                                             tableName,
                                             Timespecs.ofArray(this.timestamps));
@@ -181,23 +189,26 @@ public class Writer implements AutoCloseable, Flushable {
 
                 if (options.hasDropDuplicateColumns() == true) {
                     logger.debug("enabling column-wise deduplication while flushing to table {}", tableName);
-                    qdb.ts_exp_batch_table_set_drop_duplicate_columns(prepped,
+                    qdb.ts_exp_batch_table_set_drop_duplicate_columns(handle,
+                                                                      prepped,
                                                                       tableNum,
                                                                       options.getDropDuplicateColumns());
                 };
             };
         }
 
-        public void toNative(long prepped,
+        public void toNative(long handle,
+                             long prepped,
                              int tableNum,
                              String tableName,
                              Options options,
                              TimeRange[] truncateRanges) {
             assert(truncateRanges != null);
 
-            toNative(prepped, tableNum, tableName, options);
+            toNative(handle, prepped, tableNum, tableName, options);
 
-            qdb.ts_exp_batch_table_set_truncate_ranges(prepped,
+            qdb.ts_exp_batch_table_set_truncate_ranges(handle,
+                                                       prepped,
                                                        tableNum,
                                                        truncateRanges);
 
@@ -321,7 +332,7 @@ public class Writer implements AutoCloseable, Flushable {
 
 
     private Options options;
-    private long prepared;
+    private long prepared = 0;
     private HashMap<String, StagedTable> stagedTables;
 
     protected long pointsSinceFlush = 0;
@@ -369,7 +380,8 @@ public class Writer implements AutoCloseable, Flushable {
         this.stagedTables = new HashMap<String, StagedTable>(this.tableOffsets.size());
 
         if (this.prepared != 0) {
-            qdb.ts_exp_batch_release(this.prepared, this.stagedTables.size());
+            qdb.ts_exp_batch_release(this.session.handle(),
+                                     this.prepared, this.stagedTables.size());
             this.prepared = 0;
         }
 
@@ -415,6 +427,11 @@ public class Writer implements AutoCloseable, Flushable {
                 this.prepareFlush();
             }
 
+            if (this.prepared == 0) {
+                logger.warn("Unable to prepare flush, skipping...");
+                return;
+            }
+
             logger.info("Flushing batch writer, push mode='{}', points since last flush={}", this.options.getPushMode().toString(), this.pointsSinceFlush);
             qdb.ts_exp_batch_push(this.session.handle(),
                                   this.options.getPushMode().asInt(),
@@ -444,6 +461,14 @@ public class Writer implements AutoCloseable, Flushable {
      * not called explicitly.
      */
     public void prepareFlush(TimeRange[] ranges) {
+        // Logic below and internally within the C++ parts assumes that we have
+        // at least 1 table to flush.
+        if (this.stagedTables.size() == 0) {
+            logger.warn("No tables staged, nothing to flush!");
+            assert(this.prepared == 0);
+            return;
+        }
+
         long[]        rowCount       = new long[this.stagedTables.size()];
         long[]        columnCount    = new long[this.stagedTables.size()];
 
@@ -480,7 +505,8 @@ public class Writer implements AutoCloseable, Flushable {
         }
 
 
-        this.prepared = qdb.ts_exp_batch_prepare(rowCount,
+        this.prepared = qdb.ts_exp_batch_prepare(this.session.handle(),
+                                                 rowCount,
                                                  columnCount);
 
         i = 0;
@@ -489,9 +515,11 @@ public class Writer implements AutoCloseable, Flushable {
             StagedTable stagedTable = x.getValue();
 
             if (truncateRanges[i] == null) {
-                stagedTable.toNative(this.prepared, i, tableName, this.options);
+                stagedTable.toNative(this.session.handle(),
+                                     this.prepared, i, tableName, this.options);
             } else {
-                stagedTable.toNative(this.prepared, i, tableName, this.options, truncateRanges[i]);
+                stagedTable.toNative(this.session.handle(),
+                                     this.prepared, i, tableName, this.options, truncateRanges[i]);
             }
             i++;
         }

@@ -11,7 +11,7 @@
 #include <cassert>
 
 /* static */ qdb::jni::guard::local_ref<jobject> qdb::jni::adapt::value::from_native(
-    qdb::jni::env & env, qdb_point_result_t const & input)
+    qdb::jni::env & env, qdb_handle_t handle, qdb_point_result_t const & input)
 {
     switch (input.type)
     {
@@ -28,11 +28,11 @@
         break;
 
     case qdb_query_result_blob:
-        return _from_native_blob(env, input);
+        return _from_native_blob(env, handle, input);
         break;
 
     case qdb_query_result_string:
-        return _from_native_string(env, input);
+        return _from_native_string(env, handle, input);
         break;
 
     case qdb_query_result_count:
@@ -77,22 +77,22 @@
 }
 
 /* static */ qdb::jni::guard::local_ref<jobject> qdb::jni::adapt::value::_from_native_blob(
-    qdb::jni::env & env, qdb_point_result_t const & input)
+    qdb::jni::env & env, qdb_handle_t handle, qdb_point_result_t const & input)
 {
     return jni::object::call_static_method(env, "net/quasardb/qdb/ts/Value", "createSafeBlob",
         "(Ljava/nio/ByteBuffer;)Lnet/quasardb/qdb/ts/Value;",
         jni::byte_buffer::create_copy(
-            env, input.payload.blob.content, input.payload.blob.content_length)
+            env, handle, input.payload.blob.content, input.payload.blob.content_length)
             .release());
 }
 
 /* static */ qdb::jni::guard::local_ref<jobject> qdb::jni::adapt::value::_from_native_string(
-    qdb::jni::env & env, qdb_point_result_t const & input)
+    qdb::jni::env & env, qdb_handle_t handle, qdb_point_result_t const & input)
 {
     return jni::object::call_static_method(env, "net/quasardb/qdb/ts/Value", "createString",
         "(Ljava/lang/String;)Lnet/quasardb/qdb/ts/Value;",
         jni::string::create_utf8(
-            env, input.payload.string.content, input.payload.string.content_length)
+            env, handle, input.payload.string.content, input.payload.string.content_length)
             .release());
 }
 

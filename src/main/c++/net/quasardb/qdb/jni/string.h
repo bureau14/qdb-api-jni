@@ -24,11 +24,13 @@ public:
      * Returns characters in modified UTF-8 encoding. This might create
      * a copy of the underlying string.
      */
-    static jni::guard::string_utf8 get_chars_utf8(qdb::jni::env & env, jstring str);
+    static jni::guard::string_utf8 get_chars_utf8(
+        qdb::jni::env & env, qdb_handle_t handle, jstring str);
 
-    static inline jni::guard::string_utf8 get_chars_utf8(qdb::jni::env & env, jobject str)
+    static inline jni::guard::string_utf8 get_chars_utf8(
+        qdb::jni::env & env, qdb_handle_t handle, jobject str)
     {
-        return get_chars_utf8(env, reinterpret_cast<jstring>(str));
+        return get_chars_utf8(env, handle, reinterpret_cast<jstring>(str));
     }
 
     /**
@@ -42,31 +44,37 @@ public:
      */
     static jni::guard::string_critical get_chars_critical(qdb::jni::env & env, jstring str);
 
-    static jni::guard::local_ref<jstring> create(jni::env & env, char const * str, jsize len);
+    static jni::guard::local_ref<jstring> create(
+        jni::env & env, qdb_handle_t handle, char const * str, jsize len);
 
-    static jni::guard::local_ref<jstring> create(jni::env & env, qdb_string_t str)
+    static jni::guard::local_ref<jstring> create(
+        jni::env & env, qdb_handle_t handle, qdb_string_t str)
     {
-        return create(env, str.data, (jsize)str.length);
+        return create(env, handle, str.data, (jsize)str.length);
     }
 
-    static jni::guard::local_ref<jstring> create(jni::env & env, std::string const & str)
+    static jni::guard::local_ref<jstring> create(
+        jni::env & env, qdb_handle_t handle, std::string const & str)
     {
-        return create(env, str.c_str(), (jsize)str.size());
+        return create(env, handle, str.c_str(), (jsize)str.size());
     }
-
-    static jni::guard::local_ref<jstring> create_utf8(jni::env & env, char const * str);
 
     static jni::guard::local_ref<jstring> create_utf8(
-        jni::env & env, char const * str, qdb_size_t contentLength);
+        jni::env & env, qdb_handle_t handle, char const * str);
 
-    static jni::guard::local_ref<jstring> create_utf8(jni::env & env, std::string const & str)
+    static jni::guard::local_ref<jstring> create_utf8(
+        jni::env & env, qdb_handle_t handle, char const * str, qdb_size_t contentLength);
+
+    static jni::guard::local_ref<jstring> create_utf8(
+        jni::env & env, qdb_handle_t handle, std::string const & str)
     {
-        return create_utf8(env, str.c_str(), str.size());
+        return create_utf8(env, handle, str.c_str(), str.size());
     }
 
-    static jni::guard::local_ref<jstring> create_utf8(jni::env & env, qdb_string_t str)
+    static jni::guard::local_ref<jstring> create_utf8(
+        jni::env & env, qdb_handle_t handle, qdb_string_t str)
     {
-        return create_utf8(env, str.data, (jsize)str.length);
+        return create_utf8(env, handle, str.data, (jsize)str.length);
     }
 
     /**
@@ -95,13 +103,14 @@ public:
     /**
      * Acquires a string from another object's field.
      */
-    static jni::guard::string_utf8 from_field(jni::env & env, jobject object, jfieldID field)
+    static jni::guard::string_utf8 from_field(
+        jni::env & env, qdb_handle_t handle, jobject object, jfieldID field)
     {
         assert(object != NULL);
         assert(field != NULL);
 
         return get_chars_utf8(
-            env, reinterpret_cast<jstring>(env.instance().GetObjectField(object, field)));
+            env, handle, reinterpret_cast<jstring>(env.instance().GetObjectField(object, field)));
     }
 };
 }; // namespace jni

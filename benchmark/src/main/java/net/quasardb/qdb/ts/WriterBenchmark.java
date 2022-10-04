@@ -27,10 +27,6 @@ public class WriterBenchmark {
     @Param({"FIRST"})
     public String tableSpread;
 
-    // @Param({"pinnedWriter", "expWriter"})
-    @Param({"expWriter"})
-    public String writerType;
-
     @Param({"APPEND", "FLUSH"})
     public String operationType;
 
@@ -43,11 +39,8 @@ public class WriterBenchmark {
     @Param({"10000"})
     public int rowCount;
 
-    @Param({"ASYNC"})
-    public Writer.PushMode pushMode;
-
     @Param({"DOUBLE", "STRING"})
-    public Value.Type valueType;
+    public Column.Type columnType;
 
     private Table[] t;
     private Value[] v;
@@ -79,6 +72,16 @@ public class WriterBenchmark {
     @TearDown(Level.Trial)
     public void teardownTrial() throws Exception {
         this.v = null;
+        System.out.println("memory before tidy: ");
+        System.out.println(this.s.getMemoryInfo());
+        System.out.println();
+
+        this.s.tidyMemory();
+
+        System.out.println("after tidy: ");
+        System.out.println(this.s.getMemoryInfo());
+        System.out.println();
+
         this.s.close();
     }
 
@@ -94,15 +97,7 @@ public class WriterBenchmark {
             this.t[i] = t;
         }
 
-        if (this.writerType.equals("writer")) {
-            this.w = Tables.writer(this.s, this.t, this.pushMode);
-        } else if (this.writerType.equals("pinnedWriter")) {
-            this.w = Tables.pinnedWriter(this.s, this.t, this.pushMode);
-        } else if (this.writerType.equals("expWriter")) {
-            this.w = Tables.expWriter(this.s, this.t, this.pushMode);
-        } else {
-            throw new RuntimeException("Unrecognized writer type: " + this.writerType);
-        }
+        this.w = Writer.builder(this.s).fastPush().build();
 
         if (this.operationType.equals("FLUSH")) {
             this.appendRows();
@@ -119,17 +114,18 @@ public class WriterBenchmark {
     }
 
     void appendFirstTableRows() throws Exception {
+        Table table = this.t[0];
         for (int i = 0; i < this.rowCount; ++i) {
-            this.w.append(0, this.ts, this.v);
+            this.w.append(table, this.ts, this.v);
         }
     }
 
     void appendManyTablesRows()  throws Exception {
         for (int i = 0; i < this.rowCount; ++i) {
             int randomTable = ThreadLocalRandom.current().nextInt(0, this.tableCount);
-            int offset = randomTable * this.columnCount;
+            Table table = this.t[randomTable];
 
-            this.w.append(offset, this.ts, this.v);
+            this.w.append(table, this.ts, this.v);
         }
     }
 
@@ -140,20 +136,13 @@ public class WriterBenchmark {
             this.appendManyTablesRows();
         }
 
-        if (this.writerType.equals("pinnedWriter")) {
-            PinnedWriter pw = (PinnedWriter)this.w;
-            pw.prepareFlush();
-        } else if (this.writerType.equals("expWriter")) {
-            ExpWriter pw = (ExpWriter)this.w;
-            pw.prepareFlush();
-        }
+        this.w.prepareFlush();
     }
 
     void flush() throws Exception {
         if (!this.operationType.equals("APPEND"))  {
             this.w.flush();
         }
-
     }
 
     @Benchmark

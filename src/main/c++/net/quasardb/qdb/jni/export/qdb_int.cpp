@@ -13,9 +13,10 @@ JNIEXPORT jint JNICALL Java_net_quasardb_qdb_jni_qdb_int_1put(
     qdb::jni::env env(jniEnv);
     try
     {
+        qdb_handle_t handle_ = reinterpret_cast<qdb_handle_t>(handle);
         return jni::exception::throw_if_error(
-            (qdb_handle_t)handle, qdb_int_put((qdb_handle_t)handle,
-                                      qdb::jni::string::get_chars_utf8(env, alias), value, expiry));
+            handle_, qdb_int_put(handle_, qdb::jni::string::get_chars_utf8(env, handle_, alias),
+                         value, expiry));
     }
     catch (jni::exception const & e)
     {
@@ -30,9 +31,10 @@ JNIEXPORT jint JNICALL Java_net_quasardb_qdb_jni_qdb_int_1update(
     qdb::jni::env env(jniEnv);
     try
     {
+        qdb_handle_t handle_ = reinterpret_cast<qdb_handle_t>(handle);
         return jni::exception::throw_if_error(
-            (qdb_handle_t)handle, qdb_int_update((qdb_handle_t)handle,
-                                      qdb::jni::string::get_chars_utf8(env, alias), value, expiry));
+            handle_, qdb_int_update(handle_, qdb::jni::string::get_chars_utf8(env, handle_, alias),
+                         value, expiry));
     }
     catch (jni::exception const & e)
     {
@@ -48,10 +50,11 @@ JNIEXPORT jint JNICALL Java_net_quasardb_qdb_jni_qdb_int_1get(
 
     try
     {
+        qdb_handle_t handle_ = reinterpret_cast<qdb_handle_t>(handle);
         qdb_int_t nativeValue;
         jni::exception::throw_if_error(
-            (qdb_handle_t)handle, qdb_int_get((qdb_handle_t)handle,
-                                      qdb::jni::string::get_chars_utf8(env, alias), &nativeValue));
+            handle_, qdb_int_get(handle_, qdb::jni::string::get_chars_utf8(env, handle_, alias),
+                         &nativeValue));
         setLong(env, value, nativeValue);
         return qdb_e_ok;
     }
@@ -73,10 +76,11 @@ JNIEXPORT jint JNICALL Java_net_quasardb_qdb_jni_qdb_int_1add(JNIEnv * jniEnv,
 
     try
     {
+        qdb_handle_t handle_ = reinterpret_cast<qdb_handle_t>(handle);
         qdb_int_t nativeResult;
-        jni::exception::throw_if_error((qdb_handle_t)handle,
-            qdb_int_add((qdb_handle_t)handle, qdb::jni::string::get_chars_utf8(env, alias), addend,
-                &nativeResult));
+        jni::exception::throw_if_error(
+            handle_, qdb_int_add(handle_, qdb::jni::string::get_chars_utf8(env, handle_, alias),
+                         addend, &nativeResult));
         setLong(env, result, nativeResult);
         return qdb_e_ok;
     }

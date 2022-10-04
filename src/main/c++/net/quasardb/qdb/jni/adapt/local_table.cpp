@@ -20,7 +20,7 @@ struct value_handler<qdb_ts_column_double>
         double value;
         qdb::jni::exception::throw_if_error(handle, qdb_ts_row_get_double(localTable, idx, &value));
 
-        return qdb::jni::adapt::value::to_java(env, value);
+        return qdb::jni::adapt::value::to_java(env, handle, value);
     }
 };
 
@@ -34,7 +34,7 @@ struct value_handler<qdb_ts_column_blob>
         qdb::jni::exception::throw_if_error(handle,
             qdb_ts_row_get_blob(localTable, idx, &(value.content), &(value.content_length)));
 
-        return qdb::jni::adapt::value::to_java(env, value);
+        return qdb::jni::adapt::value::to_java(env, handle, value);
     }
 };
 
@@ -47,7 +47,7 @@ struct value_handler<qdb_ts_column_int64>
         qdb_int_t value;
         qdb::jni::exception::throw_if_error(handle, qdb_ts_row_get_int64(localTable, idx, &value));
 
-        return qdb::jni::adapt::value::to_java(env, value);
+        return qdb::jni::adapt::value::to_java(env, handle, value);
     }
 };
 
@@ -61,7 +61,7 @@ struct value_handler<qdb_ts_column_timestamp>
         qdb::jni::exception::throw_if_error(
             handle, qdb_ts_row_get_timestamp(localTable, idx, &value));
 
-        return qdb::jni::adapt::value::to_java(env, value);
+        return qdb::jni::adapt::value::to_java(env, handle, value);
     }
 };
 
@@ -75,7 +75,7 @@ struct value_handler<qdb_ts_column_string>
         qdb::jni::exception::throw_if_error(
             handle, qdb_ts_row_get_string(localTable, idx, &(value.data), &(value.length)));
 
-        return qdb::jni::adapt::value::to_java(env, value);
+        return qdb::jni::adapt::value::to_java(env, handle, value);
     }
 };
 

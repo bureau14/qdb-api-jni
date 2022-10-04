@@ -15,9 +15,11 @@ JNIEXPORT jint JNICALL Java_net_quasardb_qdb_jni_qdb_attach_1tag(
 
     try
     {
-        return jni::exception::throw_if_error((qdb_handle_t)handle,
-            qdb_attach_tag((qdb_handle_t)handle, qdb::jni::string::get_chars_utf8(env, alias),
-                qdb::jni::string::get_chars_utf8(env, tag)));
+        qdb_handle_t handle_ = reinterpret_cast<qdb_handle_t>(handle);
+
+        return jni::exception::throw_if_error(
+            handle_, qdb_attach_tag(handle_, qdb::jni::string::get_chars_utf8(env, handle_, alias),
+                         qdb::jni::string::get_chars_utf8(env, handle_, tag)));
     }
     catch (jni::exception const & e)
     {
@@ -33,9 +35,11 @@ JNIEXPORT jint JNICALL Java_net_quasardb_qdb_jni_qdb_has_1tag(
 
     try
     {
-        return jni::exception::throw_if_error((qdb_handle_t)handle,
-            qdb_has_tag((qdb_handle_t)handle, qdb::jni::string::get_chars_utf8(env, alias),
-                qdb::jni::string::get_chars_utf8(env, tag)));
+        qdb_handle_t handle_ = reinterpret_cast<qdb_handle_t>(handle);
+
+        return jni::exception::throw_if_error(
+            handle_, qdb_has_tag(handle_, qdb::jni::string::get_chars_utf8(env, handle_, alias),
+                         qdb::jni::string::get_chars_utf8(env, handle_, tag)));
     }
     catch (jni::exception const & e)
     {
@@ -50,9 +54,11 @@ JNIEXPORT jint JNICALL Java_net_quasardb_qdb_jni_qdb_detach_1tag(
     qdb::jni::env env(jniEnv);
     try
     {
-        return jni::exception::throw_if_error((qdb_handle_t)handle,
-            qdb_detach_tag((qdb_handle_t)handle, qdb::jni::string::get_chars_utf8(env, alias),
-                qdb::jni::string::get_chars_utf8(env, tag)));
+        qdb_handle_t handle_ = reinterpret_cast<qdb_handle_t>(handle);
+
+        return jni::exception::throw_if_error(
+            handle_, qdb_detach_tag(handle_, qdb::jni::string::get_chars_utf8(env, handle_, alias),
+                         qdb::jni::string::get_chars_utf8(env, handle_, tag)));
     }
     catch (jni::exception const & e)
     {
@@ -68,13 +74,15 @@ JNIEXPORT jint JNICALL Java_net_quasardb_qdb_jni_qdb_get_1tags(
 
     try
     {
+        qdb_handle_t handle_ = reinterpret_cast<qdb_handle_t>(handle);
+
         const char ** nativeTags = NULL;
         size_t tagCount          = 0;
-        jni::exception::throw_if_error((qdb_handle_t)handle,
-            qdb_get_tags((qdb_handle_t)handle, qdb::jni::string::get_chars_utf8(env, alias),
-                &nativeTags, &tagCount));
+        jni::exception::throw_if_error(
+            handle_, qdb_get_tags(handle_, qdb::jni::string::get_chars_utf8(env, handle_, alias),
+                         &nativeTags, &tagCount));
         setStringArray(env, tags, nativeTags, tagCount);
-        qdb_release((qdb_handle_t)handle, nativeTags);
+        qdb_release(handle_, nativeTags);
         return qdb_e_ok;
     }
     catch (jni::exception const & e)
@@ -91,10 +99,12 @@ JNIEXPORT jint JNICALL Java_net_quasardb_qdb_jni_qdb_tag_1iterator_1begin(
 
     try
     {
+        qdb_handle_t handle_ = reinterpret_cast<qdb_handle_t>(handle);
+
         qdb_const_tag_iterator_t * nativeIterator = new qdb_const_tag_iterator_t;
-        qdb_error_t err = jni::exception::throw_if_error((qdb_handle_t)handle,
-            qdb_tag_iterator_begin((qdb_handle_t)handle,
-                qdb::jni::string::get_chars_utf8(env, alias), nativeIterator));
+        qdb_error_t err                           = jni::exception::throw_if_error(
+                                      handle_, qdb_tag_iterator_begin(handle_,
+                                                   qdb::jni::string::get_chars_utf8(env, handle_, alias), nativeIterator));
         if (QDB_SUCCESS(err))
         {
             setLong(env, iterator, (jlong)nativeIterator);

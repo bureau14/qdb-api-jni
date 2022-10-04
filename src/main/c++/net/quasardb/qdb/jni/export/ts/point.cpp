@@ -49,13 +49,14 @@ struct points_inserter
 
         try
         {
-            auto table_  = qdb::jni::string::get_chars_utf8(env, table);
-            auto column_ = qdb::jni::string::get_chars_utf8(env, column);
+            auto table_  = qdb::jni::string::get_chars_utf8(env, handle_, table);
+            auto column_ = qdb::jni::string::get_chars_utf8(env, handle_, column);
 
             std::vector<qdb_timespec_t> timestamps_ =
                 jni::adapt::timespecs::to_qdb(env, timestamps);
 
-            std::vector<point_type> xs = jni::adapt::point::to_qdb<From>(env, timestamps_, values);
+            std::vector<point_type> xs =
+                jni::adapt::point::to_qdb<From>(env, handle_, timestamps_, values);
 
             /**
              * All data is in the correct shape now, invoke the actual insertion
@@ -109,8 +110,8 @@ struct points_retriever
 
         try
         {
-            auto table_  = qdb::jni::string::get_chars_utf8(env, table);
-            auto column_ = qdb::jni::string::get_chars_utf8(env, column);
+            auto table_  = qdb::jni::string::get_chars_utf8(env, handle_, table);
+            auto column_ = qdb::jni::string::get_chars_utf8(env, handle_, column);
 
             std::vector<qdb_ts_range_t> ranges_ =
                 jni::adapt::timerange::to_qdb(env, jni::object_array(env, ranges));
@@ -123,7 +124,8 @@ struct points_retriever
 
             assert(xs != nullptr);
 
-            return jni::adapt::point::to_java<From>(env, ranges::views::counted(xs.get(), n))
+            return jni::adapt::point::to_java<From>(
+                env, handle_, ranges::views::counted(xs.get(), n))
                 .release();
         }
         catch (jni::exception const & e)

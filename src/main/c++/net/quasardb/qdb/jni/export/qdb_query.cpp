@@ -16,7 +16,7 @@
 namespace jni = qdb::jni;
 
 jni::guard::local_ref<jobjectArray> nativeToValues(
-    qdb::jni::env & env, qdb_point_result_t const values[], qdb_size_t count)
+    qdb::jni::env & env, qdb_handle_t handle, qdb_point_result_t const values[], qdb_size_t count)
 {
     // Takes native result row, and reutrns an array of Value objects.
 
@@ -28,28 +28,28 @@ jni::guard::local_ref<jobjectArray> nativeToValues(
     for (qdb_size_t i = 0; i < count; ++i)
     {
         env.instance().SetObjectArrayElement(
-            output, i, qdb::jni::adapt::value::from_native(env, values[i]).release());
+            output, i, qdb::jni::adapt::value::from_native(env, handle, values[i]).release());
     }
 
     return lf.pop(output.release());
 }
 
 jni::guard::local_ref<jobjectArray> nativeToColumnNames(
-    qdb::jni::env & env, qdb_string_t const columns[], qdb_size_t count)
+    qdb::jni::env & env, qdb_handle_t handle, qdb_string_t const columns[], qdb_size_t count)
 {
     jni::guard::local_ref<jobjectArray> output = jni::string::create_array(env, count);
 
     for (qdb_size_t i = 0; i < count; ++i)
     {
         env.instance().SetObjectArrayElement(
-            output, i, jni::string::create_utf8(env, columns[i].data));
+            output, i, jni::string::create_utf8(env, handle, columns[i].data));
     }
 
     return output;
 }
 
 jni::guard::local_ref<jobject> nativeToResult(
-    qdb::jni::env & env, qdb_query_result_t const & input, jclass resultClass)
+    qdb::jni::env & env, qdb_handle_t handle, qdb_query_result_t const & input, jclass resultClass)
 {
     jclass rowClass = qdb::jni::introspect::lookup_class(env, "net/quasardb/qdb/ts/Row");
 
@@ -60,13 +60,14 @@ jni::guard::local_ref<jobject> nativeToResult(
     {
         jni::guard::local_ref<jobject> row =
             jni::object::create(env, rowClass, "([Lnet/quasardb/qdb/ts/Value;)V",
-                nativeToValues(env, input.rows[i], input.column_count).release());
+                nativeToValues(env, handle, input.rows[i], input.column_count).release());
 
         env.instance().SetObjectArrayElement(rows, i, row.release());
     }
 
     return jni::object::create(env, resultClass, "([Ljava/lang/String;[Lnet/quasardb/qdb/ts/Row;)V",
-        nativeToColumnNames(env, input.column_names, input.column_count).release(), rows.release());
+        nativeToColumnNames(env, handle, input.column_names, input.column_count).release(),
+        rows.release());
 }
 
 JNIEXPORT jint JNICALL Java_net_quasardb_qdb_jni_qdb_query_1execute(
@@ -77,15 +78,16 @@ JNIEXPORT jint JNICALL Java_net_quasardb_qdb_jni_qdb_query_1execute(
 
     try
     {
-        qdb_error_t err = qdb::jni::exception::throw_if_error(
-            (qdb_handle_t)(handle), qdb_query((qdb_handle_t)(handle),
-                                        qdb::jni::string::get_chars_utf8(env, query), &result));
+        qdb_handle_t handle_ = reinterpret_cast<qdb_handle_t>(handle);
+
+        qdb_error_t err = qdb::jni::exception::throw_if_error(handle_,
+            qdb_query(handle_, qdb::jni::string::get_chars_utf8(env, handle_, query), &result));
 
         assert(result != NULL);
 
         setReferenceValue(env, outputReference,
-            nativeToResult(
-                env, *result, jni::introspect::lookup_class(env, "net/quasardb/qdb/ts/Result"))
+            nativeToResult(env, handle_, *result,
+                jni::introspect::lookup_class(env, "net/quasardb/qdb/ts/Result"))
                 .release());
 
         qdb_release((qdb_handle_t)handle, result);
