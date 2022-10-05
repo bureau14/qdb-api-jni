@@ -818,7 +818,8 @@ Java_net_quasardb_qdb_jni_qdb_ts_1exp_1batch_1table_1set_1drop_1duplicate_1colum
         for (qdb_size_t i = 0; i < n; ++i)
         {
             jstring in{static_cast<jstring>(columns_.get(i))};
-            jni::string::get_chars_utf8(env, handle_, in).as_qdb(handle_, table.where_duplicate[i]);
+            table.where_duplicate[i] =
+                jni::string::get_chars_utf8(env, handle_, in).as_qdb(handle_);
         };
     }
     catch (jni::exception const & e)
@@ -961,6 +962,17 @@ JNIEXPORT void JNICALL Java_net_quasardb_qdb_jni_qdb_ts_1exp_1batch_1release(
         if (xs[i].truncate_ranges != nullptr)
         {
             qdb_release(handle_, xs[i].truncate_ranges);
+        }
+        if (xs[i].where_duplicate != nullptr)
+        {
+            assert(xs[i].where_duplicate_count > 0);
+
+            for (qdb_size_t j = 0; j < xs[i].where_duplicate_count; ++j)
+            {
+                qdb_release(handle_, xs[i].where_duplicate[j].data);
+            }
+
+            qdb_release(handle_, xs[i].where_duplicate);
         }
 
         qdb_release(handle_, xs[i].name.data);
