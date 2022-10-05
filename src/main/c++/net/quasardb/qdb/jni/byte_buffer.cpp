@@ -1,7 +1,7 @@
 #include "byte_buffer.h"
-#include "allocate.h"
 #include "env.h"
 #include "introspect.h"
+#include "memory.h"
 #include "object.h"
 #include <string.h>
 
@@ -59,7 +59,7 @@ inline void _copy_into(
 
     qdb_size_t n_    = static_cast<qdb_size_t>(env.instance().GetDirectBufferCapacity(bb));
     void const * src = env.instance().GetDirectBufferAddress(bb);
-    char * xs_       = qdb::jni::allocate<char>(handle, n_);
+    char * xs_       = qdb::jni::memory::allocate<char>(handle, n_);
 
     memcpy(xs_, src, n_);
 

@@ -3,9 +3,7 @@
 #include "exception.h"
 #include <qdb/client.h>
 
-namespace qdb
-{
-namespace jni
+namespace qdb::jni::memory
 {
 
 /**
@@ -22,5 +20,4 @@ inline T * allocate(qdb_handle_t handle, qdb_size_t n)
     return static_cast<T *>(ret);
 }
 
-}; // namespace jni
-}; // namespace qdb
+}; // namespace qdb::jni::memory
