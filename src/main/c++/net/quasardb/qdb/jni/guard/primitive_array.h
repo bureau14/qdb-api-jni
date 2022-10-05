@@ -1,7 +1,7 @@
 #pragma once
 
-#include "../allocate.h"
 #include "../env.h"
+#include "../memory.h"
 #include <jni.h>
 #include <memory>
 #include <span>
@@ -112,7 +112,7 @@ public:
 
     inline constexpr T * copy(qdb_handle_t handle) const
     {
-        T * ret = jni::allocate<T>(handle, _n);
+        T * ret = jni::memory::allocate<T>(handle, _n);
         copy(ret);
         return ret;
     }

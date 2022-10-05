@@ -1,7 +1,7 @@
 #pragma once
 
-#include "../allocate.h"
 #include "../env.h"
+#include "../memory.h"
 #include <qdb/ts.h>
 #include <cstring>
 #include <jni.h>
@@ -109,7 +109,7 @@ public:
      */
     char * copy(qdb_handle_t handle) const
     {
-        char * ret = jni::allocate<char>(handle, _len + 1);
+        char * ret = jni::memory::allocate<char>(handle, _len + 1);
         memcpy(ret, _ptr, _len);
         ret[_len] = '\0';
         return ret;
