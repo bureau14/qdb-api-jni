@@ -34,7 +34,9 @@ struct value_handler<qdb_ts_column_blob>
         qdb::jni::exception::throw_if_error(handle,
             qdb_ts_row_get_blob(localTable, idx, &(value.content), &(value.content_length)));
 
-        return qdb::jni::adapt::value::to_java(env, handle, value);
+        auto ret = qdb::jni::adapt::value::to_java(env, handle, value);
+        qdb_release(handle, value.content);
+        return ret;
     }
 };
 
@@ -75,7 +77,9 @@ struct value_handler<qdb_ts_column_string>
         qdb::jni::exception::throw_if_error(
             handle, qdb_ts_row_get_string(localTable, idx, &(value.data), &(value.length)));
 
-        return qdb::jni::adapt::value::to_java(env, handle, value);
+        auto ret = qdb::jni::adapt::value::to_java(env, handle, value);
+        qdb_release(handle, value.data);
+        return ret;
     }
 };
 
