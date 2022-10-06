@@ -336,16 +336,9 @@ public class Writer implements AutoCloseable, Flushable {
     private HashMap<String, StagedTable> stagedTables;
 
     protected long pointsSinceFlush = 0;
-    boolean async;
     Session session;
 
     TimeRange minMaxTs;
-
-    /**
-     * Maintains a cache of table offsets so we can easily look them up
-     * later.
-     */
-    Map<String, Integer> tableOffsets;
 
     /**
      * Reverse function that maps offsets to table names
@@ -356,7 +349,6 @@ public class Writer implements AutoCloseable, Flushable {
         this.session = session;
         this.options = options;
 
-        this.tableOffsets = new HashMap<String, Integer>();
         this.offsetsToTable = new ArrayList<Table>();
         this.minMaxTs = null;
 
@@ -375,7 +367,6 @@ public class Writer implements AutoCloseable, Flushable {
     };
 
     private void reset() {
-        // We reuse the table offsets
         logger.debug("resetting internal batch writer state");
 
         if (this.prepared != 0) {
