@@ -377,13 +377,14 @@ public class Writer implements AutoCloseable, Flushable {
     private void reset() {
         // We reuse the table offsets
         logger.debug("resetting internal batch writer state");
-        this.stagedTables = new HashMap<String, StagedTable>(this.tableOffsets.size());
 
         if (this.prepared != 0) {
             qdb.ts_exp_batch_release(this.session.handle(),
                                      this.prepared, this.stagedTables.size());
             this.prepared = 0;
         }
+
+        this.stagedTables = new HashMap<String, StagedTable>();
 
         this.pointsSinceFlush = 0;
         this.minMaxTs = null;
