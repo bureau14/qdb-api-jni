@@ -448,7 +448,14 @@ JNIEXPORT jlong JNICALL Java_net_quasardb_qdb_jni_qdb_ts_1local_1table_1init(
         qdb::jni::exception::throw_if_error(handle_,
             qdb_ts_local_table_init(handle_, alias_, columns_.data(), columns_.size(), &ret));
 
-        return jni::native_ptr::to_java(ret);
+        auto ret_ = jni::native_ptr::to_java(ret);
+
+        for (qdb_ts_column_info_t const & column : columns_)
+        {
+            qdb_release(handle_, column.name);
+        }
+
+        return ret_;
     }
     catch (jni::exception const & e)
     {
@@ -501,6 +508,11 @@ JNIEXPORT jobject JNICALL Java_net_quasardb_qdb_jni_qdb_ts_1table_1next_1row(
                 env, handle_, jni::object_array{env, columns});
 
         auto ret = jni::adapt::local_table::next_row(env, handle_, local_table_, columns_);
+
+        for (qdb_ts_column_info_ex_t const & column : columns_)
+        {
+            qdb_release(handle_, column.name);
+        }
 
         return ret.release();
     }
