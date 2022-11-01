@@ -340,16 +340,10 @@ public class Writer implements AutoCloseable, Flushable {
 
     TimeRange minMaxTs;
 
-    /**
-     * Reverse function that maps offsets to table names
-     */
-    ArrayList<Table> offsetsToTable;
-
     protected Writer(Session session, Options options) {
         this.session = session;
         this.options = options;
 
-        this.offsetsToTable = new ArrayList<Table>();
         this.minMaxTs = null;
 
         this.reset();
