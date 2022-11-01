@@ -76,6 +76,10 @@ public class Writer implements AutoCloseable, Flushable {
             return this.columns.length;
         }
 
+        public long valueCount() {
+            return rowCount() * columnCount();
+        }
+
         /**
          * As we are receiving the data in row-oriented fashion, while appending
          * we pre-pivot the dataset so that we store everything in column-oriented
@@ -587,6 +591,19 @@ public class Writer implements AutoCloseable, Flushable {
         this.append(table,
                     new Timespec(timestamp),
                     values);
+    }
+
+    /**
+     * Returns the amount of values appended to the writer, not yet pushed/flushed.
+     */
+    public long size() {
+        long n = 0;
+
+        for (StagedTable t : this.stagedTables.values()) {
+            n += t.valueCount();
+        }
+
+        return n;
     }
 
     public static final class Builder {
