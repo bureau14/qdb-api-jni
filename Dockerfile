@@ -33,7 +33,6 @@ RUN mkdir /download \
     && mvn -version \
     && rm -rf /download
 
-
 RUN mkdir /build
 WORKDIR /build
 
@@ -47,18 +46,26 @@ ADD qdb/ /build/qdb/
 ADD src/ /build/src/
 ADD thirdparty/ /build/thirdparty/
 
-RUN mvn compile
-
 ENV CXX=gcc10-c++
 ENV CC=gcc10-cc
 
-RUN mkdir build && \
-        cd build && \
-        cmake -G Ninja -DCMAKE_BUILD_TYPE=RelWithDebInfo .. && \
-        cmake --build . --config RelWithDebInfo && \
-        cd ..
-
-RUN mvn package -Dmaven.javadoc.skip=true -DskipTests -Darch=linux-x86_64
-
-RUN mvn install:install-file -f pom-jni.xml \
-    && mvn install:install-file -f pom-jni-arch.xml -Darch=linux-x86_64
+# mvn compile creates the necessary jni header file
+RUN mvn compile \
+    \
+# now compile our JNI native library
+    && mkdir build \
+    && cd build \
+    && cmake -G Ninja -DCMAKE_BUILD_TYPE=RelWithDebInfo .. \
+    && cmake --build . --config RelWithDebInfo \
+    && cd .. \
+    \
+# now build a .jar with all our assets (.jar files + native cojmpiled files)
+    && mvn package -Dmaven.javadoc.skip=true -DskipTests -Darch=linux-x86_64 \
+    \
+# now install our library into our local maven repo ~/.m2
+    && mvn install:install-file -f pom-jni.xml \
+    && mvn install:install-file -f pom-jni-arch.xml -Darch=linux-x86_64 \
+    \
+# clear the build directory files
+    && rm -rf /build \
+    && mkdir /build
