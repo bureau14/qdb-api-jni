@@ -201,6 +201,37 @@ public class WriterTest {
         w.close();
     }
 
+
+    @ParameterizedTest
+    @MethodSource("pushModeAndColumnTypeProvider")
+    public void canCalculateSize(Writer.PushMode mode, Column.Type columnType) throws Exception {
+        int COLUMN_COUNT = 3;
+        int ROW_COUNT = 7;
+
+        String alias = TestUtils.createUniqueAlias();
+        Column[] definition = TestUtils.generateTableColumns(columnType, COLUMN_COUNT);
+        Table t = TestUtils.createTable(definition);
+
+
+        Writer writer = writerByPushMode(mode);
+        assertEquals(writer.size(), 0);
+
+        WritableRow[] rows = TestUtils.generateTableRows(definition, ROW_COUNT);
+
+        for (int i = 0; i < rows.length; ++i) {
+            writer.append(t, rows[i]);
+            assertEquals((i + 1) * COLUMN_COUNT, writer.size());
+        }
+
+        try {
+            pushmodeAwareFlush(writer);
+        } finally {
+            writer.close();
+        }
+
+        assertEquals(writer.size(), 0);
+    }
+
     @ParameterizedTest
     @MethodSource("pushModeAndColumnTypeProvider")
     public void canInsertRow(Writer.PushMode mode, Column.Type columnType) throws Exception {
