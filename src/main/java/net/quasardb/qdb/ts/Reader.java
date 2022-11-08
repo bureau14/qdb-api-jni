@@ -49,6 +49,12 @@ public class Reader implements AutoCloseable, Iterator<WritableRow> {
         qdb.ts_table_get_ranges(this.session.handle(), this.localTable, ranges);
     }
 
+    protected Reader(Session session, Table table) {
+        // Delegate to the regular constructor, but use an 'infinity' time range (that is, no time
+        // filter).
+        this(session, table, new TimeRange[] { TimeRange.UNIVERSE_RANGE });
+    }
+
     /**
      * @return The underlying table that is being written to.
      */

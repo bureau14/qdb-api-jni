@@ -170,7 +170,7 @@ public class Table implements Serializable {
     }
 
     /**
-     * Initializes new reader for a timeseries table.
+     * Initializes new reader for a timeseries table that filters for a time range.
      *
      * @param session Active session with the QuasarDB cluster.
      * @param name    Timeseries table name. Must already exist.
@@ -186,6 +186,17 @@ public class Table implements Serializable {
      * Initializes new reader for a timeseries table.
      *
      * @param session Active session with the QuasarDB cluster.
+     * @param name    Timeseries table name. Must already exist.
+     */
+    public static Reader reader(Session session, String name) {
+        return reader(session,
+                      new Table(session, name));
+    }
+
+    /**
+     * Initializes new reader for a timeseries table that filters for a time range.
+     *
+     * @param session Active session with the QuasarDB cluster.
      * @param table   Timeseries table.
      * @param ranges  Time time ranges to look for.
      */
@@ -193,6 +204,17 @@ public class Table implements Serializable {
         return new Reader (session,
                            table,
                            ranges);
+    }
+
+    /**
+     * Initializes new reader for a timeseries table,
+     *
+     * @param session Active session with the QuasarDB cluster.
+     * @param table   Timeseries table.
+     */
+    public static Reader reader(Session session, Table table) {
+        return new Reader (session,
+                           table);
     }
 
     /**
