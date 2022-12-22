@@ -15,8 +15,8 @@ import org.junit.jupiter.api.BeforeEach;
 
 import net.quasardb.common.TestUtils;
 import net.quasardb.qdb.Session;
-import net.quasardb.qdb.Buffer;
-import net.quasardb.qdb.kv.*;
+import net.quasardb.qdb.batch.Batch;
+import net.quasardb.qdb.kv.BlobEntry;
 
 public class BatchTest {
 
@@ -36,7 +36,8 @@ public class BatchTest {
 
     @Test
     public void canCreateBatch() throws Exception {
-        assertEquals(false, false);
+        Batch x = Batch.create(this.s);
     }
+
 
 }
