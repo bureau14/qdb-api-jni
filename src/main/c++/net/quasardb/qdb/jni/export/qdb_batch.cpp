@@ -1,3 +1,4 @@
+#include "../detail/native_ptr.h"
 #include "../env.h"
 #include "../exception.h"
 #include "../util/helpers.h"
@@ -27,6 +28,42 @@ extern "C" JNIEXPORT jint JNICALL Java_net_quasardb_qdb_jni_qdb_init_1operations
     {
         e.throw_new(env);
         return e.error();
+    }
+}
+
+extern "C" JNIEXPORT jlong JNICALL Java_net_quasardb_qdb_jni_qdb_init_1batch(
+    JNIEnv * jniEnv, jclass /*thisClass*/, jlong handle, jint count)
+{
+    qdb::jni::env env(jniEnv);
+    try
+    {
+        qdb_operation_t * ops = new qdb_operation_t[count];
+        jni::exception::throw_if_error(
+            (qdb_handle_t)handle, {qdb_e_alias_not_found}, qdb_init_operations(ops, count));
+
+        return qdb::jni::native_ptr::to_java(ops);
+    }
+    catch (jni::exception const & e)
+    {
+        e.throw_new(env);
+        return e.error();
+    }
+}
+
+extern "C" JNIEXPORT void JNICALL Java_net_quasardb_qdb_jni_qdb_release_1batch(
+    JNIEnv * jniEnv, jclass /*thisClass*/, jlong handle, jlong batch)
+{
+    qdb::jni::env env(jniEnv);
+    try
+    {
+        qdb_handle_t handle_     = qdb::jni::native_ptr::from_java<qdb_handle_t>(handle);
+        qdb_operation_t * batch_ = qdb::jni::native_ptr::from_java<qdb_operation_t *>(batch);
+
+        qdb_release(handle_, batch_);
+    }
+    catch (jni::exception const & e)
+    {
+        e.throw_new(env);
     }
 }
 

@@ -37,7 +37,7 @@ public class BatchTest {
 
     @Test
     public void canCreateBatch() throws Exception {
-        Batch b = Batch.create(this.s);
+        Batch b = Batch.builder(this.s).build();
     }
 
 
@@ -48,7 +48,7 @@ public class BatchTest {
         ByteBuffer bb = TestUtils.randomBlob();
 
         // Create batch, put blob in batch
-        Batch b = Batch.create(this.s);
+        Batch b = Batch.builder(this.s).build();
         assertTrue(b.isEmpty());
 
         b.blob(k).put(bb);
@@ -68,6 +68,38 @@ public class BatchTest {
 
         assertEquals(bb, bb_);
     }
+
+
+    @Test
+    public void canUpdateBlob() throws Exception {
+        // Random key/value
+        String k = TestUtils.createUniqueAlias();
+        ByteBuffer bb1 = TestUtils.randomBlob();
+        ByteBuffer bb2 = TestUtils.randomBlob();
+
+        Batch b = Batch.builder(this.s).build();
+
+        // First put new blob
+        b.blob(k).put(bb1);
+
+        // Then update to bb2
+        b.blob(k).update(bb2);
+        assertEquals(b.size(), 2);
+
+        // Commit the batch, ensure it's now empty
+        b.commit();
+
+        // Validate entry actually exists using regular key/value API
+        BlobEntry b_ = BlobEntry.ofAlias(this.s, k);
+        assertEquals(true, b_.exists());
+
+        Buffer v_ = b_.get();
+        ByteBuffer bb_ = v_.toByteBuffer();
+
+        // Compare against bb1
+        assertEquals(bb1, bb_);
+    }
+
 
 
 

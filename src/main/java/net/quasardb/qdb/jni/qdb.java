@@ -289,6 +289,9 @@ public final class qdb
     public static native int
     get_location(long handle, String alias, Reference<String> address, Reference<Integer> port);
 
+    public static native long init_batch(long handle, int count);
+    public static native void release_batch(long handle, long batch);
+
     public static native int init_operations(long handle, int count, Reference<Long> batch);
     public static native int delete_batch(long handle, long batch);
     public static native int run_batch(long handle, long batch, int count);

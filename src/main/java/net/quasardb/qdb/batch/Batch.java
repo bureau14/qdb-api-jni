@@ -25,24 +25,70 @@ public final class Batch implements AutoCloseable {
         public int error;
     }
 
+    public enum CommitMode {
+        FAST,
+        TRANSACTIONAL
+    }
+
+
+    /**
+     * Batch options.
+     */
+    static public class Options {
+        private CommitMode commitMode;
+
+        public Options() {
+            this.commitMode = CommitMode.FAST;
+        };
+
+        /**
+         * Resets commit mode to 'fast', i.e. the batch execution is optimized for performance
+         * and each operation is run independently.
+         */
+        public void enableFastCommit() {
+            this.commitMode = CommitMode.FAST;
+        };
+
+
+        /**
+         * Resets commit mode to 'transactional', i.e. the batch is executed in order as a
+         * single atomic transaction.
+         */
+        public void enableTransactionalCommit() {
+            this.commitMode = CommitMode.TRANSACTIONAL;
+        };
+
+        /**
+         * Provides access to the commit mode.
+         */
+        public CommitMode getCommitMode() {
+            return this.commitMode;
+        }
+    }
+
     private static final Logger logger = LoggerFactory.getLogger(Batch.class);
     final Session session;
+    final Options options;
+
     List<Operation> ops = new ArrayList<Operation>();
 
 
     /**
      * Construct a new Batch.
      */
-    protected Batch(Session session) {
+    protected Batch(Session session, Options options) {
         this.session = session;
+        this.options = options;
     }
 
     /**
-     * Construct a new Batch.
+     * Create a builder instance.
+     *
+     * @param session Active connection with the QuasarDB cluster.
      */
-    public static Batch create(Session session) {
-        return new Batch(session);
-    }
+    public static Builder builder(Session session) {
+        return new Builder(session);
+    };
 
     /**
      * Enqueue a batched operation.
@@ -92,8 +138,13 @@ public final class Batch implements AutoCloseable {
 
     public void commit() {
 
+        // This is where the 'magic' happens, and we'll invoke our native functions
+        // to construct the qdb_batch structure(s).
+
         int n = this.ops.size();
-        long batch = createBatch(this.session, n);
+
+        // `batch` is a pointer
+        long batch = qdb.init_batch(this.session.handle(), n);
 
         try {
 
@@ -101,33 +152,48 @@ public final class Batch implements AutoCloseable {
 
             int idx = 0;
             for (Operation op : this.ops) {
+                // Each operation's `.process()` function invoces a native JNI function
+                // for adding the batched operaton to the queue.
                 op.process(this.session.handle(), batch, idx++);
             }
 
             logger.debug("Committing batch");
 
+            // Commits
             int count = qdb.run_batch(this.session.handle(), batch, n);
 
             logger.debug("Successfully ran {} operations", count);
 
             this.ops.clear();
         } catch (Throwable t) {
-            releaseBatch(this.session, batch);
+            qdb.release_batch(this.session.handle(), batch);
         }
     }
 
-    private static long createBatch(Session s, int n) {
-        logger.info("Creating batch for {} operations", n);
 
-        Reference<Long> batch = new Reference<Long>();
-        qdb.init_operations(s.handle(), n, batch);
-        return batch.value;
+
+    public static final class Builder {
+        private Session session;
+        private Batch.Options options;
+
+        protected Builder(Session session) {
+            this.session = session;
+            this.options = new Batch.Options();
+        };
+
+        public Builder fastCommit() {
+            this.options.enableFastCommit();
+            return this;
+        }
+
+        public Builder transactionalCommit() {
+            this.options.enableTransactionalCommit();
+            return this;
+        }
+
+        public Batch build() {
+            return new Batch(this.session, this.options);
+        }
     }
-
-    private static void releaseBatch(Session session, long batch) {
-        logger.debug("Releasing batch");
-        qdb.delete_batch(session.handle(), batch);
-    }
-
 
 }
