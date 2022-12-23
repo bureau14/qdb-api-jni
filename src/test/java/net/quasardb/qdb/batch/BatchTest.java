@@ -15,6 +15,7 @@ import org.junit.jupiter.api.BeforeEach;
 
 import net.quasardb.common.TestUtils;
 import net.quasardb.qdb.Session;
+import net.quasardb.qdb.Buffer;
 import net.quasardb.qdb.batch.Batch;
 import net.quasardb.qdb.kv.BlobEntry;
 
@@ -36,8 +37,38 @@ public class BatchTest {
 
     @Test
     public void canCreateBatch() throws Exception {
-        Batch x = Batch.create(this.s);
+        Batch b = Batch.create(this.s);
     }
+
+
+    @Test
+    public void canPutBlob() throws Exception {
+        // Random key/value
+        String k = TestUtils.createUniqueAlias();
+        ByteBuffer bb = TestUtils.randomBlob();
+
+        // Create batch, put blob in batch
+        Batch b = Batch.create(this.s);
+        assertTrue(b.isEmpty());
+
+        b.blob(k).put(bb);
+        assertFalse(b.isEmpty());
+        assertEquals(b.size(), 1);
+
+        // Commit the batch, ensure it's now empty
+        b.commit();
+        assertTrue(b.isEmpty());
+
+        // Validate entry actually exists using regular key/value API
+        BlobEntry b_ = BlobEntry.ofAlias(this.s, k);
+        assertEquals(true, b_.exists());
+
+        Buffer v_ = b_.get();
+        ByteBuffer bb_ = v_.toByteBuffer();
+
+        assertEquals(bb, bb_);
+    }
+
 
 
 }

@@ -1,11 +1,12 @@
 package net.quasardb.qdb.batch;
 
 import java.util.List;
-import java.util.LinkedList;
+import java.util.ArrayList;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import net.quasardb.qdb.jni.*;
 import net.quasardb.qdb.Session;
 
 /**
@@ -26,7 +27,7 @@ public final class Batch implements AutoCloseable {
 
     private static final Logger logger = LoggerFactory.getLogger(Batch.class);
     final Session session;
-    List<Operation> ops = new LinkedList<Operation>();
+    List<Operation> ops = new ArrayList<Operation>();
 
 
     /**
@@ -50,6 +51,20 @@ public final class Batch implements AutoCloseable {
         this.ops.add(op);
     }
 
+    /**
+     * Returns the amount of operations in this batch.
+     */
+    public int size() {
+        return this.ops.size();
+    }
+
+    /**
+     * Returns true if there are no operations in the batch.
+     */
+    public boolean isEmpty() {
+        return this.ops.isEmpty();
+    }
+
 
     /**
      * Get access to the underlying session object.
@@ -71,8 +86,47 @@ public final class Batch implements AutoCloseable {
         super.finalize();
     }
 
+    public BlobEntry blob(String alias) {
+        return BlobEntry.ofAlias(this, alias);
+    }
 
     public void commit() {
+
+        int n = this.ops.size();
+        long batch = createBatch(this.session, n);
+
+        try {
+
+            logger.debug("Adding {} operations to batch", n);
+
+            int idx = 0;
+            for (Operation op : this.ops) {
+                op.process(this.session.handle(), batch, idx++);
+            }
+
+            logger.debug("Committing batch");
+
+            int count = qdb.run_batch(this.session.handle(), batch, n);
+
+            logger.debug("Successfully ran {} operations", count);
+
+            this.ops.clear();
+        } catch (Throwable t) {
+            releaseBatch(this.session, batch);
+        }
+    }
+
+    private static long createBatch(Session s, int n) {
+        logger.info("Creating batch for {} operations", n);
+
+        Reference<Long> batch = new Reference<Long>();
+        qdb.init_operations(s.handle(), n, batch);
+        return batch.value;
+    }
+
+    private static void releaseBatch(Session session, long batch) {
+        logger.debug("Releasing batch");
+        qdb.delete_batch(session.handle(), batch);
     }
 
 
