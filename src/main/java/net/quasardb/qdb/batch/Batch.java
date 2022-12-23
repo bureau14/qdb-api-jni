@@ -143,6 +143,11 @@ public final class Batch implements AutoCloseable {
         return BlobEntry.ofAlias(this, alias);
     }
 
+    public StringEntry string(String alias) {
+        return StringEntry.ofAlias(this, alias);
+    }
+
+
     public void commit() {
 
         // This is where the 'magic' happens, and we'll invoke our native functions

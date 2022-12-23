@@ -315,4 +315,11 @@ public final class qdb
     batch_read_blob_get_and_update(long handle, long batch, int index, String alias, Reference<ByteBuffer> content);
     public static native int batch_read_blob_put(long handle, long batch, int index, String alias);
     public static native int batch_read_blob_update(long handle, long batch, int index, String alias);
+
+
+    public static native void
+    batch_write_string_put(long batch, int index, String alias, String content, long expiry);
+    public static native void
+    batch_write_string_update(long batch, int index, String alias, String content, long expiry);
+
 }

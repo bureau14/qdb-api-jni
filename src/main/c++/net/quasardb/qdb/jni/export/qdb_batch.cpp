@@ -366,3 +366,31 @@ extern "C" JNIEXPORT jint JNICALL Java_net_quasardb_qdb_jni_qdb_batch_1read_1blo
         return e.error();
     }
 }
+
+// -----------------------
+// string_update
+// -----------------------
+
+extern "C" JNIEXPORT void JNICALL Java_net_quasardb_qdb_jni_qdb_batch_1write_1string_1update(
+    JNIEnv * jniEnv,
+    jclass /*thisClass*/,
+    jlong batch,
+    jint index,
+    jstring alias,
+    jstring content,
+    jlong expiry)
+{
+    qdb::jni::env env(jniEnv);
+
+    qdb_handle_t handle_ = static_cast<qdb_handle_t>(handle);
+
+    auto alias_   = jni::string::get_chars_utf8(alias);
+    auto content_ = jni::string::get_chars_utf8(content);
+
+    qdb_operation_t & op         = get_operation(batch, index);
+    op.type                      = qdb_op_string_update;
+    op.alias                     = alias ? env.instance().GetStringUTFChars(alias, NULL) : NULL;
+    op.string_put_update.content = content_.copy(handle_);
+    op.string_put_update.content_size = content_.size();
+    op.blob_put.expiry_time           = expiry;
+}
