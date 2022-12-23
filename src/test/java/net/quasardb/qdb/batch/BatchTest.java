@@ -42,36 +42,6 @@ public class BatchTest {
         Batch b = Batch.builder(this.s).build();
     }
 
-
-    @Test
-    public void canPutBlob() throws Exception {
-        // Random key/value
-        String k = TestUtils.createUniqueAlias();
-        ByteBuffer bb = TestUtils.randomBlob();
-
-        // Create batch, put blob in batch
-        Batch b = Batch.builder(this.s).build();
-        assertTrue(b.isEmpty());
-
-        b.blob(k).put(bb);
-        assertFalse(b.isEmpty());
-        assertEquals(b.size(), 1);
-
-        // Commit the batch, ensure it's now empty
-        b.commit();
-        assertTrue(b.isEmpty());
-
-        // Validate entry actually exists using regular key/value API
-        BlobEntry b_ = BlobEntry.ofAlias(this.s, k);
-        assertEquals(true, b_.exists());
-
-        Buffer v_ = b_.get();
-        ByteBuffer bb_ = v_.toByteBuffer();
-
-        assertEquals(bb, bb_);
-    }
-
-
     @ParameterizedTest
     @EnumSource(Batch.CommitMode.class)
     public void canBatchBlobs(Batch.CommitMode commitMode) throws Exception {
