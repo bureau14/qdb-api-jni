@@ -9,6 +9,8 @@ import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -70,14 +72,15 @@ public class BatchTest {
     }
 
 
-    @Test
-    public void canUpdateBlob() throws Exception {
+    @ParameterizedTest
+    @EnumSource(Batch.CommitMode.class)
+    public void canBatchBlobs(Batch.CommitMode commitMode) throws Exception {
         // Random key/value
         String k = TestUtils.createUniqueAlias();
         ByteBuffer bb1 = TestUtils.randomBlob();
         ByteBuffer bb2 = TestUtils.randomBlob();
 
-        Batch b = Batch.builder(this.s).build();
+        Batch b = Batch.builder(this.s).commitMode(commitMode).build();
 
         // First put new blob
         b.blob(k).put(bb1);
@@ -96,8 +99,17 @@ public class BatchTest {
         Buffer v_ = b_.get();
         ByteBuffer bb_ = v_.toByteBuffer();
 
-        // Compare against bb1
-        assertEquals(bb1, bb_);
+        switch (commitMode) {
+        case FAST:
+            // Fast mode only does the first update
+            assertEquals(bb1, bb_);
+            break;
+
+        case TRANSACTIONAL:
+            // All operations are executed in order
+            assertEquals(bb2, bb_);
+            break;
+        }
     }
 
 

@@ -94,6 +94,44 @@ extern "C" JNIEXPORT jint JNICALL Java_net_quasardb_qdb_jni_qdb_run_1batch(
     }
 }
 
+extern "C" JNIEXPORT jint JNICALL Java_net_quasardb_qdb_jni_qdb_commit_1batch_1fast(
+    JNIEnv * jniEnv, jclass /*thisClass*/, jlong handle, jlong batch, jint count)
+{
+    qdb::jni::env env(jniEnv);
+    try
+    {
+        qdb_handle_t handle_     = qdb::jni::native_ptr::from_java<qdb_handle_t>(handle);
+        qdb_operation_t * batch_ = qdb::jni::native_ptr::from_java<qdb_operation_t *>(batch);
+
+        return qdb_run_batch(handle_, batch_, count);
+    }
+    catch (jni::exception const & e)
+    {
+        e.throw_new(env);
+        return e.error();
+    }
+}
+
+extern "C" JNIEXPORT jint JNICALL Java_net_quasardb_qdb_jni_qdb_commit_1batch_1transactional(
+    JNIEnv * jniEnv, jclass /*thisClass*/, jlong handle, jlong batch, jint count)
+{
+    qdb::jni::env env(jniEnv);
+    try
+    {
+        qdb_handle_t handle_     = qdb::jni::native_ptr::from_java<qdb_handle_t>(handle);
+        qdb_operation_t * batch_ = qdb::jni::native_ptr::from_java<qdb_operation_t *>(batch);
+
+        size_t fail_idx;
+
+        return qdb_run_transaction(handle_, batch_, count, &fail_idx);
+    }
+    catch (jni::exception const & e)
+    {
+        e.throw_new(env);
+        return e.error();
+    }
+}
+
 // -----------------------
 // blob_compare_and_swap
 // -----------------------

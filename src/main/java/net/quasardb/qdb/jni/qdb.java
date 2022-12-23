@@ -296,6 +296,9 @@ public final class qdb
     public static native int delete_batch(long handle, long batch);
     public static native int run_batch(long handle, long batch, int count);
 
+    public static native int commit_batch_fast(long handle, long batch, int count);
+    public static native int commit_batch_transactional(long handle, long batch, int count);
+
     public static native void batch_write_blob_compare_and_swap(
         long batch, int index, String alias, ByteBuffer newContent, ByteBuffer comparand, long expiry);
     public static native void batch_write_blob_get(long batch, int index, String alias);

@@ -59,6 +59,13 @@ public final class Batch implements AutoCloseable {
         };
 
         /**
+         * Resets commit mode to provided value.
+         */
+        public void setCommitMode(CommitMode commitMode) {
+            this.commitMode = commitMode;
+        }
+
+        /**
          * Provides access to the commit mode.
          */
         public CommitMode getCommitMode() {
@@ -160,7 +167,15 @@ public final class Batch implements AutoCloseable {
             logger.debug("Committing batch");
 
             // Commits
-            int count = qdb.run_batch(this.session.handle(), batch, n);
+            int count = -1;
+            switch (this.options.commitMode) {
+            case FAST:
+                count = qdb.commit_batch_fast(this.session.handle(), batch, n);
+                break;
+            case TRANSACTIONAL:
+                count = qdb.commit_batch_transactional(this.session.handle(), batch, n);
+                break;
+            }
 
             logger.debug("Successfully ran {} operations", count);
 
@@ -180,6 +195,11 @@ public final class Batch implements AutoCloseable {
             this.session = session;
             this.options = new Batch.Options();
         };
+
+        public Builder commitMode(Batch.CommitMode commitMode) {
+            this.options.setCommitMode(commitMode);
+            return this;
+        }
 
         public Builder fastCommit() {
             this.options.enableFastCommit();
