@@ -290,7 +290,7 @@ public final class qdb
     get_location(long handle, String alias, Reference<String> address, Reference<Integer> port);
 
     public static native long init_batch(long handle, int count);
-    public static native void release_batch(long handle, long batch);
+    public static native void release_batch(long handle, long batch, int count);
 
     public static native int init_operations(long handle, int count, Reference<Long> batch);
     public static native int delete_batch(long handle, long batch);
@@ -321,5 +321,10 @@ public final class qdb
         batch_write_string_put(long handle, long batch, int index, String alias, String content, long expiry);
     public static native void
         batch_write_string_update(long handle, long batch, int index, String alias, String content, long expiry);
+
+    public static native void
+        batch_write_int_put(long handle, long batch, int index, String alias, long content, long expiry);
+    public static native void
+        batch_write_int_update(long handle, long batch, int index, String alias, long content, long expiry);
 
 }

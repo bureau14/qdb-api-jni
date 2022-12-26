@@ -20,6 +20,8 @@ import net.quasardb.qdb.Session;
 import net.quasardb.qdb.Buffer;
 import net.quasardb.qdb.batch.Batch;
 import net.quasardb.qdb.kv.BlobEntry;
+import net.quasardb.qdb.kv.StringEntry;
+import net.quasardb.qdb.kv.IntegerEntry;
 
 public class BatchTest {
 
@@ -32,15 +34,15 @@ public class BatchTest {
 
     @AfterEach
     public void teardown() {
-        this.s.purgeAll(300000);
+        // this.s.purgeAll(300000);
         this.s.close();
         this.s = null;
     }
 
-    @Test
-    public void canCreateBatch() throws Exception {
-        Batch b = Batch.builder(this.s).build();
-    }
+    // @Test
+    // public void canCreateBatch() throws Exception {
+    //     Batch b = Batch.builder(this.s).build();
+    // }
 
     @ParameterizedTest
     @EnumSource(Batch.CommitMode.class)
@@ -82,7 +84,84 @@ public class BatchTest {
         }
     }
 
+    @ParameterizedTest
+    @EnumSource(Batch.CommitMode.class)
+    public void canBatchStrings(Batch.CommitMode commitMode) throws Exception {
+        // Random key/value
+        String k = TestUtils.createUniqueAlias();
+        String v1 = TestUtils.randomString();
+        String v2 = TestUtils.randomString();
 
+        Batch b = Batch.builder(this.s).commitMode(commitMode).build();
+
+        // First put new string
+        b.string(k).put(v1);
+
+        // Then update to v2
+        b.string(k).update(v2);
+        assertEquals(b.size(), 2);
+
+        // Commit the batch, ensure it's now empty
+        b.commit();
+
+        // Validate entry actually exists using regular key/value API
+        StringEntry s_ = StringEntry.ofAlias(this.s, k);
+        // assertEquals(true, s_.exists());
+
+        String v_ = s_.get();
+
+        switch (commitMode) {
+        case FAST:
+            // Fast mode only does the first update
+            assertEquals(v1, v_);
+            break;
+
+        case TRANSACTIONAL:
+            // All operations are executed in order
+            assertEquals(v2, v_);
+            break;
+        }
+    }
+
+
+    @ParameterizedTest
+    @EnumSource(Batch.CommitMode.class)
+    public void canBatchIntegers(Batch.CommitMode commitMode) throws Exception {
+        // Random key/value
+        String k = TestUtils.createUniqueAlias();
+        long v1 = TestUtils.randomInt64();
+        long v2 = TestUtils.randomInt64();
+
+        Batch b = Batch.builder(this.s).commitMode(commitMode).build();
+
+        // First put new string
+        b.integer(k).put(v1);
+
+        // Then update to v2
+        b.integer(k).update(v2);
+        assertEquals(b.size(), 2);
+
+        // Commit the batch, ensure it's now empty
+        b.commit();
+
+        // Validate entry actually exists using regular key/value API
+        IntegerEntry i_ = IntegerEntry.ofAlias(this.s, k);
+        // assertEquals(true, s_.exists());
+
+        long v_ = i_.get();
+
+        switch (commitMode) {
+        case FAST:
+            // Fast mode only does the first update
+            assertEquals(v1, v_);
+            break;
+
+        case TRANSACTIONAL:
+            // All operations are executed in order
+            assertEquals(v2, v_);
+            break;
+        }
+    }
 
 
 }

@@ -147,6 +147,11 @@ public final class Batch implements AutoCloseable {
         return StringEntry.ofAlias(this, alias);
     }
 
+    public IntegerEntry integer(String alias) {
+        return IntegerEntry.ofAlias(this, alias);
+    }
+
+
 
     public void commit() {
 
@@ -158,36 +163,33 @@ public final class Batch implements AutoCloseable {
         // `batch` is a pointer
         long batch = qdb.init_batch(this.session.handle(), n);
 
-        try {
+        logger.debug("Adding {} operations to batch", n);
 
-            logger.debug("Adding {} operations to batch", n);
-
-            int idx = 0;
-            for (Operation op : this.ops) {
-                // Each operation's `.process()` function invoces a native JNI function
-                // for adding the batched operaton to the queue.
-                op.process(this.session.handle(), batch, idx++);
-            }
-
-            logger.debug("Committing batch");
-
-            // Commits
-            int count = -1;
-            switch (this.options.commitMode) {
-            case FAST:
-                count = qdb.commit_batch_fast(this.session.handle(), batch, n);
-                break;
-            case TRANSACTIONAL:
-                count = qdb.commit_batch_transactional(this.session.handle(), batch, n);
-                break;
-            }
-
-            logger.debug("Successfully ran {} operations", count);
-
-            this.ops.clear();
-        } catch (Throwable t) {
-            qdb.release_batch(this.session.handle(), batch);
+        int idx = 0;
+        for (Operation op : this.ops) {
+            // Each operation's `.process()` function invoces a native JNI function
+            // for adding the batched operaton to the queue.
+            op.process(this.session.handle(), batch, idx++);
         }
+
+        logger.debug("Committing batch");
+
+        // Commits
+        int count = -1;
+        switch (this.options.commitMode) {
+        case FAST:
+            count = qdb.commit_batch_fast(this.session.handle(), batch, n);
+            break;
+        case TRANSACTIONAL:
+            count = qdb.commit_batch_transactional(this.session.handle(), batch, n);
+            break;
+        }
+
+        logger.debug("Successfully ran {} operations", count);
+
+        this.ops.clear();
+
+        qdb.release_batch(this.session.handle(), batch, n);
     }
 
 
