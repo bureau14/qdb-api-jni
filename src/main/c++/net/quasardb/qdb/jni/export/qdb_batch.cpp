@@ -1,3 +1,4 @@
+#include "../byte_buffer.h"
 #include "../detail/native_ptr.h"
 #include "../env.h"
 #include "../exception.h"
@@ -61,18 +62,26 @@ extern "C" JNIEXPORT void JNICALL Java_net_quasardb_qdb_jni_qdb_release_1batch(
         qdb_handle_t handle_     = qdb::jni::native_ptr::from_java<qdb_handle_t>(handle);
         qdb_operation_t * batch_ = qdb::jni::native_ptr::from_java<qdb_operation_t *>(batch);
 
-        printf("qdb_release_batch, count = %d\n", count);
-
         for (jint idx = 0; idx < count; ++idx)
         {
             qdb_operation_t & op = get_operation(batch, idx);
-
-            printf("got op with type: %d at index %d\n", op.type, idx);
+            qdb_release(handle_, op.alias);
 
             switch (op.type)
             {
+            case qdb_op_string_put:
+                qdb_release(handle_, op.string_put.content);
+                break;
+            case qdb_op_string_update:
+                qdb_release(handle_, op.string_update.content);
+                break;
+            case qdb_op_blob_put:
+                qdb_release(handle_, op.blob_put.content);
+                break;
+            case qdb_op_blob_update:
+                qdb_release(handle_, op.blob_put.content);
+                break;
             default:
-                printf("warn: unrecognized op type: %d\n", op.type);
                 break;
             }
         }
@@ -122,11 +131,6 @@ extern "C" JNIEXPORT jint JNICALL Java_net_quasardb_qdb_jni_qdb_commit_1batch_1f
 
         qdb_size_t n = qdb_run_batch(handle_, batch_, count);
 
-        if (n != count)
-        {
-            printf("run_batch only ran %d operations instead of the provided %d\n", n, count);
-        }
-
         return n;
     }
     catch (jni::exception const & e)
@@ -144,14 +148,6 @@ extern "C" JNIEXPORT jint JNICALL Java_net_quasardb_qdb_jni_qdb_commit_1batch_1t
     {
         qdb_handle_t handle_     = qdb::jni::native_ptr::from_java<qdb_handle_t>(handle);
         qdb_operation_t * batch_ = qdb::jni::native_ptr::from_java<qdb_operation_t *>(batch);
-
-        for (jint i = 0; i < count; ++i)
-        {
-            qdb_operation_t & op = batch_[i];
-
-            printf("commit_batch_transactional, has op with idx = %d, type = %d, alias = '%s'\n", i,
-                op.type, op.alias);
-        }
 
         size_t fail_idx;
 
@@ -321,6 +317,7 @@ extern "C" JNIEXPORT jint JNICALL Java_net_quasardb_qdb_jni_qdb_batch_1read_1blo
 extern "C" JNIEXPORT void JNICALL Java_net_quasardb_qdb_jni_qdb_batch_1write_1blob_1put(
     JNIEnv * jniEnv,
     jclass /*thisClass*/,
+    jlong handle,
     jlong batch,
     jint index,
     jstring alias,
@@ -470,6 +467,7 @@ extern "C" JNIEXPORT void JNICALL Java_net_quasardb_qdb_jni_qdb_batch_1write_1do
 extern "C" JNIEXPORT void JNICALL Java_net_quasardb_qdb_jni_qdb_batch_1write_1blob_1update(
     JNIEnv * jniEnv,
     jclass /*thisClass*/,
+    jlong handle,
     jlong batch,
     jint index,
     jstring alias,
@@ -478,12 +476,24 @@ extern "C" JNIEXPORT void JNICALL Java_net_quasardb_qdb_jni_qdb_batch_1write_1bl
 {
     qdb::jni::env env(jniEnv);
 
-    qdb_operation_t & op     = get_operation(batch, index);
-    op.type                  = qdb_op_blob_update;
-    op.alias                 = alias ? env.instance().GetStringUTFChars(alias, NULL) : NULL;
-    op.blob_put.content      = env.instance().GetDirectBufferAddress(content);
-    op.blob_put.content_size = (qdb_size_t)env.instance().GetDirectBufferCapacity(content);
-    op.blob_put.expiry_time  = expiry;
+    try
+    {
+        qdb_handle_t handle_ = qdb::jni::native_ptr::from_java<qdb_handle_t>(handle);
+
+        auto alias_ = jni::string::get_chars_utf8(env, handle_, alias);
+
+        qdb_operation_t & op = get_operation(batch, index);
+        op.type              = qdb_op_blob_update;
+        op.alias             = alias ? env.instance().GetStringUTFChars(alias, NULL) : NULL;
+
+        // Released as part of batch_release
+        jni::byte_buffer::copy_into(
+            env, handle_, content, &op.blob_put.content, &op.blob_put.content_size);
+    }
+    catch (jni::exception const & e)
+    {
+        e.throw_new(env);
+    }
 }
 
 extern "C" JNIEXPORT jint JNICALL Java_net_quasardb_qdb_jni_qdb_batch_1read_1blob_1update(
@@ -566,7 +576,7 @@ extern "C" JNIEXPORT void JNICALL Java_net_quasardb_qdb_jni_qdb_batch_1write_1in
 
         qdb_operation_t & op      = get_operation(batch, index);
         op.type                   = qdb_op_int_update;
-        op.alias                  = alias ? env.instance().GetStringUTFChars(alias_, NULL) : NULL;
+        op.alias                  = alias_.copy(handle_);
         op.int_update.value       = content;
         op.int_update.expiry_time = expiry;
     }
@@ -599,10 +609,10 @@ extern "C" JNIEXPORT void JNICALL Java_net_quasardb_qdb_jni_qdb_batch_1write_1do
 
         auto alias_ = jni::string::get_chars_utf8(env, handle_, alias);
 
-        qdb_operation_t & op   = get_operation(batch, index);
-        op.type                = qdb_op_double_update;
-        op.alias               = alias ? env.instance().GetStringUTFChars(alias_, NULL) : NULL;
-        op.double_update.value = content;
+        qdb_operation_t & op         = get_operation(batch, index);
+        op.type                      = qdb_op_double_update;
+        op.alias                     = alias_.copy(handle_);
+        op.double_update.value       = content;
         op.double_update.expiry_time = expiry;
     }
     catch (jni::exception const & e)

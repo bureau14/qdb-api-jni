@@ -305,9 +305,9 @@ public final class qdb
     public static native void
     batch_write_blob_get_and_update(long batch, int index, String alias, ByteBuffer content, long expiry);
     public static native void
-    batch_write_blob_put(long batch, int index, String alias, ByteBuffer content, long expiry);
+        batch_write_blob_put(long handle, long batch, int index, String alias, ByteBuffer content, long expiry);
     public static native void
-    batch_write_blob_update(long batch, int index, String alias, ByteBuffer content, long expiry);
+        batch_write_blob_update(long handle, long batch, int index, String alias, ByteBuffer content, long expiry);
     public static native int
     batch_read_blob_compare_and_swap(long handle, long batch, int index, String alias, Reference<ByteBuffer> originalContent);
     public static native int batch_read_blob_get(long handle, long batch, int index, String alias, Reference<ByteBuffer> content);
