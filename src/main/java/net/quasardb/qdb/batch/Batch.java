@@ -151,6 +151,10 @@ public final class Batch implements AutoCloseable {
         return IntegerEntry.ofAlias(this, alias);
     }
 
+    public DoubleEntry double_(String alias) {
+        return DoubleEntry.ofAlias(this, alias);
+    }
+
 
 
     public void commit() {

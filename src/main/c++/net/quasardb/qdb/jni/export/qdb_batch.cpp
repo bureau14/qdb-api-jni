@@ -415,6 +415,41 @@ extern "C" JNIEXPORT void JNICALL Java_net_quasardb_qdb_jni_qdb_batch_1write_1in
 }
 
 // -----------------------
+// double_put
+// -----------------------
+
+extern "C" JNIEXPORT void JNICALL Java_net_quasardb_qdb_jni_qdb_batch_1write_1double_1put(
+    JNIEnv * jniEnv,
+    jclass /*thisClass*/,
+    jlong handle,
+    jlong batch,
+    jint index,
+    jstring alias,
+    jdouble content,
+    jlong expiry)
+{
+    qdb::jni::env env(jniEnv);
+
+    try
+    {
+        qdb_handle_t handle_     = qdb::jni::native_ptr::from_java<qdb_handle_t>(handle);
+        qdb_operation_t * batch_ = qdb::jni::native_ptr::from_java<qdb_operation_t *>(batch);
+
+        auto alias_ = jni::string::get_chars_utf8(env, handle_, alias);
+
+        qdb_operation_t & op      = get_operation(batch, index);
+        op.type                   = qdb_op_double_put;
+        op.alias                  = alias ? env.instance().GetStringUTFChars(alias_, NULL) : NULL;
+        op.double_put.value       = content;
+        op.double_put.expiry_time = expiry;
+    }
+    catch (jni::exception const & e)
+    {
+        e.throw_new(env);
+    }
+}
+
+// -----------------------
 // blob_update
 // -----------------------
 
@@ -521,6 +556,41 @@ extern "C" JNIEXPORT void JNICALL Java_net_quasardb_qdb_jni_qdb_batch_1write_1in
         op.alias                  = alias ? env.instance().GetStringUTFChars(alias_, NULL) : NULL;
         op.int_update.value       = content;
         op.int_update.expiry_time = expiry;
+    }
+    catch (jni::exception const & e)
+    {
+        e.throw_new(env);
+    }
+}
+
+// -----------------------
+// double_update
+// -----------------------
+
+extern "C" JNIEXPORT void JNICALL Java_net_quasardb_qdb_jni_qdb_batch_1write_1double_1update(
+    JNIEnv * jniEnv,
+    jclass /*thisClass*/,
+    jlong handle,
+    jlong batch,
+    jint index,
+    jstring alias,
+    jdouble content,
+    jlong expiry)
+{
+    qdb::jni::env env(jniEnv);
+
+    try
+    {
+        qdb_handle_t handle_     = qdb::jni::native_ptr::from_java<qdb_handle_t>(handle);
+        qdb_operation_t * batch_ = qdb::jni::native_ptr::from_java<qdb_operation_t *>(batch);
+
+        auto alias_ = jni::string::get_chars_utf8(env, handle_, alias);
+
+        qdb_operation_t & op   = get_operation(batch, index);
+        op.type                = qdb_op_double_update;
+        op.alias               = alias ? env.instance().GetStringUTFChars(alias_, NULL) : NULL;
+        op.double_update.value = content;
+        op.double_update.expiry_time = expiry;
     }
     catch (jni::exception const & e)
     {

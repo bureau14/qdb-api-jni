@@ -22,6 +22,7 @@ import net.quasardb.qdb.batch.Batch;
 import net.quasardb.qdb.kv.BlobEntry;
 import net.quasardb.qdb.kv.StringEntry;
 import net.quasardb.qdb.kv.IntegerEntry;
+import net.quasardb.qdb.kv.DoubleEntry;
 
 public class BatchTest {
 
@@ -146,9 +147,48 @@ public class BatchTest {
 
         // Validate entry actually exists using regular key/value API
         IntegerEntry i_ = IntegerEntry.ofAlias(this.s, k);
-        // assertEquals(true, s_.exists());
+        assertEquals(true, i_.exists());
 
         long v_ = i_.get();
+
+        switch (commitMode) {
+        case FAST:
+            // Fast mode only does the first update
+            assertEquals(v1, v_);
+            break;
+
+        case TRANSACTIONAL:
+            // All operations are executed in order
+            assertEquals(v2, v_);
+            break;
+        }
+    }
+
+    @ParameterizedTest
+    @EnumSource(Batch.CommitMode.class)
+    public void canBatchDoubles(Batch.CommitMode commitMode) throws Exception {
+        // Random key/value
+        String k = TestUtils.createUniqueAlias();
+        double v1 = TestUtils.randomDouble();
+        double v2 = TestUtils.randomDouble();
+
+        Batch b = Batch.builder(this.s).commitMode(commitMode).build();
+
+        // First put new string
+        b.double_(k).put(v1);
+
+        // Then update to v2
+        b.double_(k).update(v2);
+        assertEquals(b.size(), 2);
+
+        // Commit the batch, ensure it's now empty
+        b.commit();
+
+        // Validate entry actually exists using regular key/value API
+        DoubleEntry d_ = DoubleEntry.ofAlias(this.s, k);
+        assertEquals(true, d_.exists());
+
+        double v_ = d_.get();
 
         switch (commitMode) {
         case FAST:

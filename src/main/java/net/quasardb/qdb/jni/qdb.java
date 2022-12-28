@@ -327,4 +327,9 @@ public final class qdb
     public static native void
         batch_write_int_update(long handle, long batch, int index, String alias, long content, long expiry);
 
+    public static native void
+        batch_write_double_put(long handle, long batch, int index, String alias, double content, long expiry);
+    public static native void
+        batch_write_double_update(long handle, long batch, int index, String alias, double content, long expiry);
+
 }
