@@ -107,7 +107,7 @@ public class BatchTest {
 
         // Validate entry actually exists using regular key/value API
         StringEntry s_ = StringEntry.ofAlias(this.s, k);
-        // assertEquals(true, s_.exists());
+        assertEquals(true, s_.exists());
 
         String v_ = s_.get();
 
