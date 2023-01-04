@@ -19,8 +19,10 @@ import net.quasardb.common.TestUtils;
 import net.quasardb.qdb.Session;
 import net.quasardb.qdb.Buffer;
 import net.quasardb.qdb.batch.Batch;
+import net.quasardb.qdb.ts.Timespec;
 import net.quasardb.qdb.kv.BlobEntry;
 import net.quasardb.qdb.kv.StringEntry;
+import net.quasardb.qdb.kv.TimestampEntry;
 import net.quasardb.qdb.kv.IntegerEntry;
 import net.quasardb.qdb.kv.DoubleEntry;
 
@@ -110,6 +112,46 @@ public class BatchTest {
         assertEquals(true, s_.exists());
 
         String v_ = s_.get();
+
+        switch (commitMode) {
+        case FAST:
+            // Fast mode only does the first update
+            assertEquals(v1, v_);
+            break;
+
+        case TRANSACTIONAL:
+            // All operations are executed in order
+            assertEquals(v2, v_);
+            break;
+        }
+    }
+
+
+    @ParameterizedTest
+    @EnumSource(Batch.CommitMode.class)
+    public void canBatchTimestamps(Batch.CommitMode commitMode) throws Exception {
+        // Random key/value
+        String k = TestUtils.createUniqueAlias();
+        Timespec v1 = TestUtils.randomTimestamp();
+        Timespec v2 = TestUtils.randomTimestamp();
+
+        Batch b = Batch.builder(this.s).commitMode(commitMode).build();
+
+        // First put new timestamp
+        b.timestamp(k).put(v1);
+
+        // Then update to v2
+        b.timestamp(k).update(v2);
+        assertEquals(b.size(), 2);
+
+        // Commit the batch, ensure it's now empty
+        b.commit();
+
+        // Validate entry actually exists using regular key/value API
+        TimestampEntry t_ = TimestampEntry.ofAlias(this.s, k);
+        assertEquals(true, t_.exists());
+
+        Timespec v_ = t_.get();
 
         switch (commitMode) {
         case FAST:

@@ -323,6 +323,11 @@ public final class qdb
         batch_write_string_update(long handle, long batch, int index, String alias, String content, long expiry);
 
     public static native void
+        batch_write_timestamp_put(long handle, long batch, int index, String alias, Timespec content, long expiry);
+    public static native void
+        batch_write_timestamp_update(long handle, long batch, int index, String alias, Timespec content, long expiry);
+
+    public static native void
         batch_write_int_put(long handle, long batch, int index, String alias, long content, long expiry);
     public static native void
         batch_write_int_update(long handle, long batch, int index, String alias, long content, long expiry);

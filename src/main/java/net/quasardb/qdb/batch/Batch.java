@@ -155,7 +155,9 @@ public final class Batch implements AutoCloseable {
         return DoubleEntry.ofAlias(this, alias);
     }
 
-
+    public TimestampEntry timestamp(String alias) {
+        return TimestampEntry.ofAlias(this, alias);
+    }
 
     public void commit() {
 
