@@ -2,6 +2,7 @@
 
 #include "exception.h"
 #include <qdb/client.h>
+#include <assert.h>
 
 namespace qdb::jni::memory
 {

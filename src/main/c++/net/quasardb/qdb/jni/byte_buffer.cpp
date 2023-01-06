@@ -1,9 +1,7 @@
 #include "byte_buffer.h"
 #include "env.h"
 #include "introspect.h"
-#include "memory.h"
 #include "object.h"
-#include <string.h>
 
 /* static */ qdb::jni::guard::local_ref<jobject> qdb::jni::byte_buffer::allocate(
     qdb::jni::env & env, jsize len)
@@ -44,37 +42,4 @@
 {
     *buffer = env.instance().GetDirectBufferAddress(bb);
     *len    = static_cast<qdb_size_t>(env.instance().GetDirectBufferCapacity(bb));
-}
-
-template <typename T>
-inline void _copy_into(
-    qdb::jni::env & env, qdb_handle_t handle, jobject bb, T const ** xs, qdb_size_t * n)
-{
-    if (bb == NULL)
-    {
-        *xs = nullptr;
-        *n  = 0;
-        return;
-    }
-
-    qdb_size_t n_    = static_cast<qdb_size_t>(env.instance().GetDirectBufferCapacity(bb));
-    void const * src = env.instance().GetDirectBufferAddress(bb);
-    char * xs_       = qdb::jni::memory::allocate<char>(handle, n_);
-
-    memcpy(xs_, src, n_);
-
-    *xs = xs_;
-    *n  = n_;
-}
-
-/* static */ void qdb::jni::byte_buffer::as_qdb_blob(
-    qdb::jni::env & env, qdb_handle_t handle, jobject bb, qdb_blob_t & out)
-{
-    _copy_into(env, handle, bb, &out.content, &out.content_length);
-}
-
-/* static */ void qdb::jni::byte_buffer::as_qdb_string(
-    qdb::jni::env & env, qdb_handle_t handle, jobject bb, qdb_string_t & out)
-{
-    _copy_into(env, handle, bb, &out.data, &out.length);
 }
