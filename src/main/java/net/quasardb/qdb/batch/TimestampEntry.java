@@ -15,7 +15,7 @@ import net.quasardb.qdb.exception.*;
  * A timestamp in the database.
  */
 public final class TimestampEntry {
-    private static final Logger logger = LoggerFactory.getLogger(StringEntry.class);
+    private static final Logger logger = LoggerFactory.getLogger(TimestampEntry.class);
 
     private Batch batch;
     private String alias;

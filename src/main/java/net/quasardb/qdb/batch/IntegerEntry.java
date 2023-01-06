@@ -14,7 +14,7 @@ import net.quasardb.qdb.exception.*;
  * A integer in the database.
  */
 public final class IntegerEntry {
-    private static final Logger logger = LoggerFactory.getLogger(StringEntry.class);
+    private static final Logger logger = LoggerFactory.getLogger(IntegerEntry.class);
 
     private Batch batch;
     private String alias;

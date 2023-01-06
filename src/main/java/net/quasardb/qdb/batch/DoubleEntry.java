@@ -14,7 +14,7 @@ import net.quasardb.qdb.exception.*;
  * A double in the database.
  */
 public final class DoubleEntry {
-    private static final Logger logger = LoggerFactory.getLogger(StringEntry.class);
+    private static final Logger logger = LoggerFactory.getLogger(DoubleEntry.class);
 
     private Batch batch;
     private String alias;
