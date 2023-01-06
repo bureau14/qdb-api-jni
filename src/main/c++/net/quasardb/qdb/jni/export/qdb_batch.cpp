@@ -327,12 +327,24 @@ extern "C" JNIEXPORT void JNICALL Java_net_quasardb_qdb_jni_qdb_batch_1write_1bl
 {
     qdb::jni::env env(jniEnv);
 
-    qdb_operation_t & op     = get_operation(batch, index);
-    op.type                  = qdb_op_blob_put;
-    op.alias                 = alias ? env.instance().GetStringUTFChars(alias, NULL) : NULL;
-    op.blob_put.content      = env.instance().GetDirectBufferAddress(content);
-    op.blob_put.content_size = (qdb_size_t)env.instance().GetDirectBufferCapacity(content);
-    op.blob_put.expiry_time  = expiry;
+    try
+    {
+        qdb_handle_t handle_ = qdb::jni::native_ptr::from_java<qdb_handle_t>(handle);
+
+        auto alias_ = jni::string::get_chars_utf8(env, handle_, alias);
+
+        qdb_operation_t & op = get_operation(batch, index);
+        op.type              = qdb_op_blob_put;
+        op.alias             = alias_.copy(handle_);
+
+        // Released as part of batch_release
+        jni::byte_buffer::copy_into(
+            env, handle_, content, &op.blob_put.content, &op.blob_put.content_size);
+    }
+    catch (jni::exception const & e)
+    {
+        e.throw_new(env);
+    }
 }
 
 extern "C" JNIEXPORT jint JNICALL Java_net_quasardb_qdb_jni_qdb_batch_1read_1blob_1put(
@@ -450,7 +462,7 @@ extern "C" JNIEXPORT void JNICALL Java_net_quasardb_qdb_jni_qdb_batch_1write_1in
 
         qdb_operation_t & op   = get_operation(batch, index);
         op.type                = qdb_op_int_put;
-        op.alias               = alias ? env.instance().GetStringUTFChars(alias_, NULL) : NULL;
+        op.alias               = alias_.copy(handle_);
         op.int_put.value       = content;
         op.int_put.expiry_time = expiry;
     }
@@ -485,7 +497,7 @@ extern "C" JNIEXPORT void JNICALL Java_net_quasardb_qdb_jni_qdb_batch_1write_1do
 
         qdb_operation_t & op      = get_operation(batch, index);
         op.type                   = qdb_op_double_put;
-        op.alias                  = alias ? env.instance().GetStringUTFChars(alias_, NULL) : NULL;
+        op.alias                  = alias_.copy(handle_);
         op.double_put.value       = content;
         op.double_put.expiry_time = expiry;
     }
@@ -519,7 +531,7 @@ extern "C" JNIEXPORT void JNICALL Java_net_quasardb_qdb_jni_qdb_batch_1write_1bl
 
         qdb_operation_t & op = get_operation(batch, index);
         op.type              = qdb_op_blob_update;
-        op.alias             = alias ? env.instance().GetStringUTFChars(alias, NULL) : NULL;
+        op.alias             = alias_.copy(handle_);
 
         // Released as part of batch_release
         jni::byte_buffer::copy_into(
