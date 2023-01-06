@@ -535,7 +535,7 @@ extern "C" JNIEXPORT void JNICALL Java_net_quasardb_qdb_jni_qdb_batch_1write_1bl
 
         // Released as part of batch_release
         jni::byte_buffer::copy_into(
-            env, handle_, content, &op.blob_put.content, &op.blob_put.content_size);
+            env, handle_, content, &op.blob_update.content, &op.blob_update.content_size);
     }
     catch (jni::exception const & e)
     {
