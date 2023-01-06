@@ -80,7 +80,7 @@ extern "C" JNIEXPORT void JNICALL Java_net_quasardb_qdb_jni_qdb_release_1batch(
                 qdb_release(handle_, op.blob_put.content);
                 break;
             case qdb_op_blob_update:
-                qdb_release(handle_, op.blob_put.content);
+                qdb_release(handle_, op.blob_update.content);
                 break;
             default:
                 break;
