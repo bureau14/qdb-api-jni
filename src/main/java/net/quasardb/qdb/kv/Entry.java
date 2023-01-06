@@ -1,8 +1,10 @@
 package net.quasardb.qdb.kv;
 
+import java.util.Optional;
 import net.quasardb.qdb.Session;
 import net.quasardb.qdb.jni.*;
 import net.quasardb.qdb.exception.*;
+
 
 /**
  * A blob in the database.

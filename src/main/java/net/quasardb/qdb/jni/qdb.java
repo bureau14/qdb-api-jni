@@ -289,9 +289,15 @@ public final class qdb
     public static native int
     get_location(long handle, String alias, Reference<String> address, Reference<Integer> port);
 
+    public static native long init_batch(long handle, int count);
+    public static native void release_batch(long handle, long batch, int count);
+
     public static native int init_operations(long handle, int count, Reference<Long> batch);
     public static native int delete_batch(long handle, long batch);
     public static native int run_batch(long handle, long batch, int count);
+
+    public static native int commit_batch_fast(long handle, long batch, int count);
+    public static native int commit_batch_transactional(long handle, long batch, int count);
 
     public static native void batch_write_blob_compare_and_swap(
         long batch, int index, String alias, ByteBuffer newContent, ByteBuffer comparand, long expiry);
@@ -299,9 +305,9 @@ public final class qdb
     public static native void
     batch_write_blob_get_and_update(long batch, int index, String alias, ByteBuffer content, long expiry);
     public static native void
-    batch_write_blob_put(long batch, int index, String alias, ByteBuffer content, long expiry);
+        batch_write_blob_put(long handle, long batch, int index, String alias, ByteBuffer content, long expiry);
     public static native void
-    batch_write_blob_update(long batch, int index, String alias, ByteBuffer content, long expiry);
+        batch_write_blob_update(long handle, long batch, int index, String alias, ByteBuffer content, long expiry);
     public static native int
     batch_read_blob_compare_and_swap(long handle, long batch, int index, String alias, Reference<ByteBuffer> originalContent);
     public static native int batch_read_blob_get(long handle, long batch, int index, String alias, Reference<ByteBuffer> content);
@@ -309,4 +315,26 @@ public final class qdb
     batch_read_blob_get_and_update(long handle, long batch, int index, String alias, Reference<ByteBuffer> content);
     public static native int batch_read_blob_put(long handle, long batch, int index, String alias);
     public static native int batch_read_blob_update(long handle, long batch, int index, String alias);
+
+
+    public static native void
+        batch_write_string_put(long handle, long batch, int index, String alias, String content, long expiry);
+    public static native void
+        batch_write_string_update(long handle, long batch, int index, String alias, String content, long expiry);
+
+    public static native void
+        batch_write_timestamp_put(long handle, long batch, int index, String alias, Timespec content, long expiry);
+    public static native void
+        batch_write_timestamp_update(long handle, long batch, int index, String alias, Timespec content, long expiry);
+
+    public static native void
+        batch_write_int_put(long handle, long batch, int index, String alias, long content, long expiry);
+    public static native void
+        batch_write_int_update(long handle, long batch, int index, String alias, long content, long expiry);
+
+    public static native void
+        batch_write_double_put(long handle, long batch, int index, String alias, double content, long expiry);
+    public static native void
+        batch_write_double_update(long handle, long batch, int index, String alias, double content, long expiry);
+
 }

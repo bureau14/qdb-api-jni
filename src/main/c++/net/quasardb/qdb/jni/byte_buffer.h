@@ -1,9 +1,11 @@
 #pragma once
 
+#include "memory.h"
 #include <qdb/client.h> // qdb_size_t
 #include <qdb/ts.h>     // qdb_blob_t
 #include "guard/local_ref.h"
 #include <jni.h>
+#include <string.h>
 
 namespace qdb
 {
@@ -41,10 +43,38 @@ public:
     static void get_address(
         qdb::jni::env & env, jobject bb, const void ** buffer, qdb_size_t * len);
 
-    static void as_qdb_blob(qdb::jni::env & env, qdb_handle_t handle, jobject bb, qdb_blob_t & out);
+    template <typename T>
+    static inline void copy_into(
+        qdb::jni::env & env, qdb_handle_t handle, jobject bb, T const ** xs, qdb_size_t * n)
+    {
+        if (bb == NULL)
+        {
+            *xs = nullptr;
+            *n  = 0;
+            return;
+        }
 
-    static void as_qdb_string(
-        qdb::jni::env & env, qdb_handle_t handle, jobject bb, qdb_string_t & out);
+        qdb_size_t n_    = static_cast<qdb_size_t>(env.instance().GetDirectBufferCapacity(bb));
+        void const * src = env.instance().GetDirectBufferAddress(bb);
+        char * xs_       = qdb::jni::memory::allocate<char>(handle, n_);
+
+        memcpy(xs_, src, n_);
+
+        *xs = xs_;
+        *n  = n_;
+    }
+
+    static inline void as_qdb_blob(
+        qdb::jni::env & env, qdb_handle_t handle, jobject bb, qdb_blob_t & out)
+    {
+        copy_into(env, handle, bb, &out.content, &out.content_length);
+    }
+
+    static inline void as_qdb_string(
+        qdb::jni::env & env, qdb_handle_t handle, jobject bb, qdb_string_t & out)
+    {
+        copy_into(env, handle, bb, &out.data, &out.length);
+    }
 
     static inline qdb_blob_t to_qdb(qdb::jni::env & env, jobject in)
     {
