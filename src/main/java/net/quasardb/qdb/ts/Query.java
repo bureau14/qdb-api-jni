@@ -21,7 +21,7 @@ import net.quasardb.qdb.exception.InputException;
  * @see QueryBuilder
  */
 public final class Query {
-    private static final Logger logger = LoggerFactory.getLogger(Writer.class);
+    private static final Logger logger = LoggerFactory.getLogger(Query.class);
 
     private String query;
 
