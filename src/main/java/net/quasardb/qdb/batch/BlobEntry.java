@@ -37,7 +37,7 @@ public final class BlobEntry {
         batch.add(new Batch.Operation() {
                 @Override
                 public void process(long handle, long batch, int index) {
-                    logger.info("processing batch blob_put alias = {}, index = {}", alias, index);
+                    logger.debug("processing batch blob_put alias = {}, index = {}", alias, index);
                     qdb.batch_write_blob_put(handle, batch, index, alias, content, -1);
                 }});
     }
@@ -52,7 +52,7 @@ public final class BlobEntry {
         batch.add(new Batch.Operation() {
                 @Override
                 public void process(long handle, long batch, int index) {
-                    logger.info("processing batch blob_update alias = {}, index = {}", alias, index);
+                    logger.debug("processing batch blob_update alias = {}, index = {}", alias, index);
                     qdb.batch_write_blob_update(handle, batch, index, alias, content, -1);
                 }});
     }

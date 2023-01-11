@@ -37,7 +37,7 @@ public final class StringEntry {
         batch.add(new Batch.Operation() {
                 @Override
                 public void process(long handle, long batch, int index) {
-                    logger.info("processing batch string_put = {}, index = {}", alias, index);
+                    logger.debug("processing batch string_put = {}, index = {}", alias, index);
                     qdb.batch_write_string_put(handle, batch, index, alias, content, -1);
                 }});
     }
@@ -52,7 +52,7 @@ public final class StringEntry {
         batch.add(new Batch.Operation() {
                 @Override
                 public void process(long handle, long batch, int index) {
-                    logger.info("processing batch string_update alias = {}, index = {}", alias, index);
+                    logger.debug("processing batch string_update alias = {}, index = {}", alias, index);
                     qdb.batch_write_string_update(handle, batch, index, alias, content, -1);
                 }});
     }

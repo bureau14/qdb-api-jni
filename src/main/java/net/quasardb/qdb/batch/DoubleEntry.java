@@ -37,7 +37,7 @@ public final class DoubleEntry {
         batch.add(new Batch.Operation() {
                 @Override
                 public void process(long handle, long batch, int index) {
-                    logger.info("processing batch double_put alias = {}, index = {}", alias, index);
+                    logger.debug("processing batch double_put alias = {}, index = {}", alias, index);
                     qdb.batch_write_double_put(handle, batch, index, alias, content, -1);
                 }});
     }
@@ -52,7 +52,7 @@ public final class DoubleEntry {
         batch.add(new Batch.Operation() {
                 @Override
                 public void process(long handle, long batch, int index) {
-                    logger.info("processing batch double_update alias = {}, index = {}", alias, index);
+                    logger.debug("processing batch double_update alias = {}, index = {}", alias, index);
                     qdb.batch_write_double_update(handle, batch, index, alias, content, -1);
                 }});
     }
