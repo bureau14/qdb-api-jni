@@ -74,17 +74,7 @@ public class BatchTest {
         Buffer v_ = b_.get();
         ByteBuffer bb_ = v_.toByteBuffer();
 
-        switch (commitMode) {
-        case FAST:
-            // Fast mode only does the first update
-            assertEquals(bb1, bb_);
-            break;
-
-        case TRANSACTIONAL:
-            // All operations are executed in order
-            assertEquals(bb2, bb_);
-            break;
-        }
+        assertEquals(bb2, bb_);
     }
 
     @ParameterizedTest
@@ -113,17 +103,7 @@ public class BatchTest {
 
         String v_ = s_.get();
 
-        switch (commitMode) {
-        case FAST:
-            // Fast mode only does the first update
-            assertEquals(v1, v_);
-            break;
-
-        case TRANSACTIONAL:
-            // All operations are executed in order
-            assertEquals(v2, v_);
-            break;
-        }
+        assertEquals(v2, v_);
     }
 
 
@@ -153,17 +133,7 @@ public class BatchTest {
 
         Timespec v_ = t_.get();
 
-        switch (commitMode) {
-        case FAST:
-            // Fast mode only does the first update
-            assertEquals(v1, v_);
-            break;
-
-        case TRANSACTIONAL:
-            // All operations are executed in order
-            assertEquals(v2, v_);
-            break;
-        }
+        assertEquals(v2, v_);
     }
 
 
@@ -193,17 +163,7 @@ public class BatchTest {
 
         long v_ = i_.get();
 
-        switch (commitMode) {
-        case FAST:
-            // Fast mode only does the first update
-            assertEquals(v1, v_);
-            break;
-
-        case TRANSACTIONAL:
-            // All operations are executed in order
-            assertEquals(v2, v_);
-            break;
-        }
+        assertEquals(v2, v_);
     }
 
     @ParameterizedTest
@@ -232,17 +192,7 @@ public class BatchTest {
 
         double v_ = d_.get();
 
-        switch (commitMode) {
-        case FAST:
-            // Fast mode only does the first update
-            assertEquals(v1, v_);
-            break;
-
-        case TRANSACTIONAL:
-            // All operations are executed in order
-            assertEquals(v2, v_);
-            break;
-        }
+        assertEquals(v2, v_);
     }
 
 
