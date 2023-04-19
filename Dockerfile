@@ -11,24 +11,28 @@ RUN yum update -y \
                       java-17-amazon-corretto-devel \
                       ninja-build \
                       gdb \
-                      gcc10-c++ \
+                      gcc \
+                      gcc-c++ \
+                      gzip \
+                      libstdc++ \
+                      libstdc++-static \
                       tar \
                       which
 
 # Install fresh cmake, necessary for range-v3
 RUN mkdir /download \
     && cd /download \
-    && curl -L https://github.com/Kitware/CMake/releases/download/v3.25.0-rc2/cmake-3.25.0-rc2-linux-x86_64.tar.gz | tar -xz \
-    && mv cmake-3.25.0-rc2-linux-x86_64/bin/* /usr/local/bin/ \
-    && mv cmake-3.25.0-rc2-linux-x86_64/share/* /usr/local/share/ \
+    && curl -L https://github.com/Kitware/CMake/releases/download/v3.25.1/cmake-3.25.1-linux-x86_64.tar.gz | tar -xz \
+    && mv cmake-3.25.1-linux-x86_64/bin/* /usr/local/bin/ \
+    && mv cmake-3.25.1-linux-x86_64/share/* /usr/local/share/ \
     && cmake --version \
     && rm -rf /download
 
 # Install fresh maven, necessary for some modern compiler plugins
 RUN mkdir /download \
     && cd /download \
-    && curl -L https://dlcdn.apache.org/maven/maven-3/3.8.6/binaries/apache-maven-3.8.6-bin.tar.gz | tar -xz \
-    && mv apache-maven-3.8.6/ /usr/local/maven/ \
+    && curl -L https://dlcdn.apache.org/maven/maven-3/3.8.8/binaries/apache-maven-3.8.8-bin.tar.gz | tar -xz \
+    && mv apache-maven-3.8.8/ /usr/local/maven/ \
     && ln -s /usr/local/maven/bin/mvn /usr/local/bin/mvn \
     && mvn -version \
     && rm -rf /download
@@ -46,17 +50,14 @@ ADD qdb/ /build/qdb/
 ADD src/ /build/src/
 ADD thirdparty/ /build/thirdparty/
 
-ENV CXX=gcc10-c++
-ENV CC=gcc10-cc
-
 # mvn compile creates the necessary jni header file
-RUN mvn compile \
-    \
+RUN mvn compile
+
 # now compile our JNI native library
-    && mkdir build \
+RUN mkdir build \
     && cd build \
-    && cmake -G Ninja -DCMAKE_BUILD_TYPE=RelWithDebInfo .. \
-    && cmake --build . --config RelWithDebInfo \
+    && cmake -G Ninja -DCMAKE_BUILD_TYPE=Debug .. \
+    && cmake --build . --config Debug \
     && cd .. \
     \
 # now build a .jar with all our assets (.jar files + native cojmpiled files)
