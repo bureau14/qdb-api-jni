@@ -2,6 +2,7 @@
 #include "env.h"
 #include "introspect.h"
 #include "string.h"
+#include "guard/qdb_resource.h"
 #include <iostream>
 
 std::string _error_code_to_exception_class_name(qdb_error_t e)
@@ -92,18 +93,23 @@ qdb_error_t qdb::jni::exception::throw_if_error(qdb_handle_t h, qdb_error_t e)
 {
     if (QDB_FAILURE(e))
     {
-        qdb_string_t what;
+        guard::qdb_resource<qdb_string_t *> what{h};
         qdb_error_t err;
         qdb_get_last_error(h, &err, &what);
 
+        std::string msg_;
         if (err != e)
         {
             //! In some rare circumstances, QuasarDB loses the original error
             //! code.
-            what.data = qdb_error(e);
+            msg_ = qdb_error(e);
+        }
+        else
+        {
+            msg_ = what.get()->data;
         }
 
-        throw qdb::jni::exception{e, what.data};
+        throw qdb::jni::exception{e, msg_};
     }
 
     return e;
