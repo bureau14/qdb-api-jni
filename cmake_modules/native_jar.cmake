@@ -4,6 +4,8 @@ else()
     set(ARCH "x86_32")
 endif()
 
+message(status "Detected arch: ${ARCH}")
+
 if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
     set(SYSTEM "osx")
 else()
