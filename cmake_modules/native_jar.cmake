@@ -30,30 +30,6 @@ add_custom_command(
     COMMAND ${CMAKE_COMMAND} -E copy_if_different ${QDB_API_DLL}             ${NATIVE_DIR}
 )
 
-if(LIBCPP)
-    add_custom_command(
-        OUTPUT  ${NATIVE_JAR_FILE}
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different ${LIBCPP}    ${NATIVE_DIR}
-        APPEND
-    )
-endif()
-
-if(LIBCPPABI)
-    add_custom_command(
-        OUTPUT  ${NATIVE_JAR_FILE}
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different ${LIBCPPABI} ${NATIVE_DIR}
-        APPEND
-    )
-endif()
-
-if(LIBSTDCPP)
-    add_custom_command(
-        OUTPUT  ${NATIVE_JAR_FILE}
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different ${LIBSTDCPP} ${NATIVE_DIR}
-        APPEND
-    )
-endif()
-
 add_custom_command(
     OUTPUT  ${NATIVE_JAR_FILE}
     COMMAND jar cvf ${NATIVE_JAR_FILE} -C ${CMAKE_BINARY_DIR}/native/ .
