@@ -18,6 +18,9 @@ find_package(Java REQUIRED)
 find_package(JNI REQUIRED)
 
 include(UseJava)
+
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake_modules)
+
 include(compile_options.cmake)
 
 set(QDB_JNI_CLASSES

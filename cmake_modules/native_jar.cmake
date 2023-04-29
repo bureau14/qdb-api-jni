@@ -19,29 +19,6 @@ else()
     set(QDB_API_DLL "${CMAKE_SOURCE_DIR}/qdb/lib/${CMAKE_SHARED_LIBRARY_PREFIX}qdb_api${CMAKE_SHARED_LIBRARY_SUFFIX}")
 endif()
 
-# Copy libc++ dependencies from C API into JNI .jar file.
-if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-  find_library(LIBCPP
-    NAMES "c++.1" "c++"
-    REQUIRED
-    HINTS qdb/lib /usr/local/lib /usr/lib /lib /usr/local/lib64 /usr/lib64 /lib64)
-  find_library(LIBCPPABI
-    NAMES "c++abi.1" "c++abi"
-    REQUIRED
-    HINTS qdb/lib /usr/local/lib /usr/lib /lib /usr/local/lib64 /usr/lib64 /lib64)
-  message(STATUS "libc++: ${LIBCPP}")
-  message(STATUS "libc++abi: ${LIBCPPABI}")
-endif()
-
-if(CMAKE_CXX_COMPILER_ID MATCHES "GNU")
-  find_library(LIBSTDCPP
-    NAMES "stdc++" "stdc++.6" "libstdc++.so.6"
-    REQUIRED
-    HINTS qdb/lib /usr/local/lib /usr/lib /lib /usr/local/lib64 /usr/lib64 /lib64)
-endif()
-
-message(STATUS "libstdc++: ${LIBSTDCPP}")
-
 set(NATIVE_DIR "${CMAKE_BINARY_DIR}/native/net/quasardb/qdb/jni/${SYSTEM}/${ARCH}")
 
 # JAR: qdb_jni.dll -> windows-x86_64.jar
