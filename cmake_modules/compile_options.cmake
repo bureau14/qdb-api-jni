@@ -116,8 +116,6 @@ endif()
 
 if(CMAKE_COMPILER_IS_GNUCXX)
     add_link_options(
-        -static-libgcc
-        -static-libstdc++
         -Wl,-s
         -Wl,--gc-sections # remove dead code
     )
