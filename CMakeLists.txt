@@ -1,5 +1,7 @@
-cmake_minimum_required(VERSION 3.4)
-project(qdb-api-jni)
+cmake_minimum_required(VERSION 3.15)
+project(qdb-api-jni
+  DESCRIPTION "java api for the quasardb timeseries database"
+  HOMEPAGE_URL "https://www.quasar.ai")
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -19,9 +21,8 @@ find_package(JNI REQUIRED)
 
 include(UseJava)
 
-list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake_modules)
-
-include(compile_options.cmake)
+include(cmake_modules/libcxx.cmake)
+include(cmake_modules/compile_options.cmake)
 
 set(QDB_JNI_CLASSES
     net.quasardb.qdb.jni.qdb
@@ -85,7 +86,7 @@ target_link_libraries(qdb_api_jni
     range-v3
 )
 
-include(native_jar.cmake)
+include(cmake_modules/native_jar.cmake)
 
 install(TARGETS qdb_api_jni
         DESTINATION lib)
