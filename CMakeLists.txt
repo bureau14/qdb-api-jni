@@ -21,6 +21,7 @@ find_package(JNI REQUIRED)
 
 include(UseJava)
 
+include(cmake_modules/options.cmake)
 include(cmake_modules/libcxx.cmake)
 include(cmake_modules/compile_options.cmake)
 
