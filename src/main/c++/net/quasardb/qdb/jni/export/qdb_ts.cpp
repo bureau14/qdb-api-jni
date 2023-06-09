@@ -47,7 +47,7 @@ JNIEXPORT jint JNICALL Java_net_quasardb_qdb_jni_qdb_ts_1create(JNIEnv * jniEnv,
 
         qdb::jni::exception::throw_if_error(handle_,
             qdb_ts_create_ex(handle_, qdb::jni::string::get_chars_utf8(env, handle_, alias),
-                (qdb_uint_t)shard_size, xs.data(), xs.size()));
+                (qdb_uint_t)shard_size, xs.data(), xs.size(), qdb_never_expires));
 
         return qdb_e_ok;
     }
