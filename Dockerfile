@@ -22,17 +22,17 @@ RUN yum update -y \
 # Install fresh cmake, necessary for range-v3
 RUN mkdir /download \
     && cd /download \
-    && curl -L https://github.com/Kitware/CMake/releases/download/v3.25.1/cmake-3.25.1-linux-x86_64.tar.gz | tar -xz \
-    && mv cmake-3.25.1-linux-x86_64/bin/* /usr/local/bin/ \
-    && mv cmake-3.25.1-linux-x86_64/share/* /usr/local/share/ \
+    && curl -L https://github.com/Kitware/CMake/releases/download/v3.26.4/cmake-3.26.4-linux-x86_64.tar.gz | tar -xz \
+    && mv cmake-3.26.4-linux-x86_64/bin/* /usr/local/bin/ \
+    && mv cmake-3.26.4-linux-x86_64/share/* /usr/local/share/ \
     && cmake --version \
     && rm -rf /download
 
 # Install fresh maven, necessary for some modern compiler plugins
 RUN mkdir /download \
     && cd /download \
-    && curl -L https://dlcdn.apache.org/maven/maven-3/3.8.8/binaries/apache-maven-3.8.8-bin.tar.gz | tar -xz \
-    && mv apache-maven-3.8.8/ /usr/local/maven/ \
+    && curl -L https://dlcdn.apache.org/maven/maven-3/3.9.2/binaries/apache-maven-3.9.2-bin.tar.gz | tar -xz \
+    && mv apache-maven-3.9.2/ /usr/local/maven/ \
     && ln -s /usr/local/maven/bin/mvn /usr/local/bin/mvn \
     && mvn -version \
     && rm -rf /download
@@ -41,8 +41,11 @@ RUN mkdir /build
 WORKDIR /build
 
 ADD CMakeLists.txt /build/
-ADD compile_options.cmake /build/
-ADD native_jar.cmake /build/
+ADD cmake_modules/compile_options.cmake /build/cmake_modules/
+ADD cmake_modules/native_jar.cmake /build/cmake_modules/
+ADD cmake_modules/libcxx.cmake /build/cmake_modules/
+ADD cmake_modules/options.cmake /build/cmake_modules/
+
 ADD pom.xml /build/
 ADD pom-jni.xml /build/
 ADD pom-jni-arch.xml /build/
