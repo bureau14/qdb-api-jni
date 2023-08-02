@@ -6,7 +6,7 @@
   <groupId>net.quasardb</groupId>
   <artifactId>jni</artifactId>
   <packaging>jar</packaging>
-  <version>3.14.0-SNAPSHOT</version>
+  <version>3.14.1-SNAPSHOT</version>
   <name>quasardb</name>
 
   <description>
@@ -199,11 +199,11 @@
           <argLine>-XX:+UnlockDiagnosticVMOptions -XX:+LogCompilation -XX:+HeapDumpOnOutOfMemoryError</argLine>
 
           <additionalClasspathElements>
-            <additionalClasspathElement>${project.basedir}/target/jni-3.14.0-SNAPSHOT-linux-x86_64.jar</additionalClasspathElement>
-            <additionalClasspathElement>${project.basedir}/target/jni-3.14.0-SNAPSHOT-osx-x86_64.jar</additionalClasspathElement>
-            <additionalClasspathElement>${project.basedir}/target/jni-3.14.0-SNAPSHOT-freebsd-x86_64.jar</additionalClasspathElement>
-            <additionalClasspathElement>${project.basedir}/target/jni-3.14.0-SNAPSHOT-windows-x86_64.jar</additionalClasspathElement>
-            <additionalClasspathElement>${project.basedir}/target/jni-3.14.0-SNAPSHOT-windows-x86_32.jar</additionalClasspathElement>
+            <additionalClasspathElement>${project.basedir}/target/jni-3.14.1-SNAPSHOT-linux-x86_64.jar</additionalClasspathElement>
+            <additionalClasspathElement>${project.basedir}/target/jni-3.14.1-SNAPSHOT-osx-x86_64.jar</additionalClasspathElement>
+            <additionalClasspathElement>${project.basedir}/target/jni-3.14.1-SNAPSHOT-freebsd-x86_64.jar</additionalClasspathElement>
+            <additionalClasspathElement>${project.basedir}/target/jni-3.14.1-SNAPSHOT-windows-x86_64.jar</additionalClasspathElement>
+            <additionalClasspathElement>${project.basedir}/target/jni-3.14.1-SNAPSHOT-windows-x86_32.jar</additionalClasspathElement>
           </additionalClasspathElements>
         </configuration>
       </plugin>
@@ -222,27 +222,27 @@
             <configuration>
               <artifacts>
                 <artifact>
-                  <file>${project.basedir}/target/jni-3.14.0-SNAPSHOT-linux-x86_64.jar</file>
+                  <file>${project.basedir}/target/jni-3.14.1-SNAPSHOT-linux-x86_64.jar</file>
                   <type>jar</type>
                   <classifier>linux-x86_64</classifier>
                 </artifact>
                 <artifact>
-                  <file>${project.basedir}/target/jni-3.14.0-SNAPSHOT-osx-x86_64.jar</file>
+                  <file>${project.basedir}/target/jni-3.14.1-SNAPSHOT-osx-x86_64.jar</file>
                   <type>jar</type>
                   <classifier>osx-x86_64</classifier>
                 </artifact>
                 <artifact>
-                  <file>${project.basedir}/target/jni-3.14.0-SNAPSHOT-freebsd-x86_64.jar</file>
+                  <file>${project.basedir}/target/jni-3.14.1-SNAPSHOT-freebsd-x86_64.jar</file>
                   <type>jar</type>
                   <classifier>freebsd-x86_64</classifier>
                 </artifact>
                 <artifact>
-                  <file>${project.basedir}/target/jni-3.14.0-SNAPSHOT-windows-x86_64.jar</file>
+                  <file>${project.basedir}/target/jni-3.14.1-SNAPSHOT-windows-x86_64.jar</file>
                   <type>jar</type>
                   <classifier>windows-x86_64</classifier>
                 </artifact>
                 <artifact>
-                  <file>${project.basedir}/target/jni-3.14.0-SNAPSHOT-windows-x86_32.jar</file>
+                  <file>${project.basedir}/target/jni-3.14.1-SNAPSHOT-windows-x86_32.jar</file>
                   <type>jar</type>
                   <classifier>windows-x86_32</classifier>
                 </artifact>
