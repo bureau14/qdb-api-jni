@@ -83,7 +83,7 @@ public final class qdb
     public static native int option_client_tidy_memory(long handle);
 
     public static native int purge_all(long handle, int timeout);
-    public static native int trim_all(long handle, int timeout);
+    public static native int trim_all(long handle, int pause, int timeout);
     public static native int wait_for_stabilization(long handle, int timeout);
 
     public static native int remove(long handle, String alias);

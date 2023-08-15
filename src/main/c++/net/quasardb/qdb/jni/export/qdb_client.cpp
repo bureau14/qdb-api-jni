@@ -304,13 +304,13 @@ JNIEXPORT jint JNICALL Java_net_quasardb_qdb_jni_qdb_purge_1all(
 }
 
 JNIEXPORT jint JNICALL Java_net_quasardb_qdb_jni_qdb_trim_1all(
-    JNIEnv * jniEnv, jclass /*thisClass*/, jlong handle, jint timeout)
+    JNIEnv * jniEnv, jclass /*thisClass*/, jlong handle, jint pause, jint timeout)
 {
     qdb::jni::env env(jniEnv);
     try
     {
         return jni::exception::throw_if_error(
-            (qdb_handle_t)handle, qdb_trim_all((qdb_handle_t)handle, timeout));
+            (qdb_handle_t)handle, qdb_trim_all((qdb_handle_t)handle, pause, timeout));
     }
     catch (jni::exception const & e)
     {
