@@ -83,13 +83,15 @@ JNIEXPORT jlong JNICALL Java_net_quasardb_qdb_jni_qdb_ts_1shard_1size(
     try
     {
         qdb_handle_t handle_ = reinterpret_cast<qdb_handle_t>(handle);
-        qdb_uint_t shard_size{0};
-        qdb::jni::exception::throw_if_error(
-            handle_, qdb_ts_shard_size(handle_,
-                         qdb::jni::string::get_chars_utf8(env, handle_, alias), &shard_size));
 
-        assert(shard_size > 0);
-        return (jlong)shard_size;
+        jni::guard::qdb_resource<qdb_ts_metadata_t *> metadata{handle_};
+
+        qdb::jni::exception::throw_if_error(
+            handle_, qdb_ts_get_metadata(handle_,
+                         qdb::jni::string::get_chars_utf8(env, handle_, alias), &metadata));
+
+        assert(metadata.get()->shard_size > 0);
+        return (jlong)metadata.get()->shard_size;
     }
     catch (jni::exception const & e)
     {
@@ -134,14 +136,16 @@ JNIEXPORT jobjectArray JNICALL Java_net_quasardb_qdb_jni_qdb_ts_1list_1columns(
     try
     {
         qdb_handle_t handle_ = reinterpret_cast<qdb_handle_t>(handle);
-        jni::guard::qdb_resource<qdb_ts_column_info_ex_t *> xs{handle_};
-        qdb_size_t n;
 
-        jni::exception::throw_if_error(
-            handle_, qdb_ts_list_columns_ex(
-                         handle_, qdb::jni::string::get_chars_utf8(env, handle_, alias), &xs, &n));
+        jni::guard::qdb_resource<qdb_ts_metadata_t *> metadata{handle_};
 
-        return jni::adapt::columns::to_java(env, xs.get(), n).release();
+        qdb::jni::exception::throw_if_error(
+            handle_, qdb_ts_get_metadata(handle_,
+                         qdb::jni::string::get_chars_utf8(env, handle_, alias), &metadata));
+
+        return jni::adapt::columns::to_java(
+            env, metadata.get()->columns, metadata.get()->column_count)
+            .release();
     }
     catch (jni::exception const & e)
     {
