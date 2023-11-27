@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<template xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://www.jetbrains.com/teamcity/schemas/2021.1/project-config.xsd">
+  <name>Build template</name>
+  <settings>
+    <options>
+      <option name="artifactRules" value="+:target/*.jar&#xA;-:target/*-sources.jar&#xA;+:target/*-javadoc.jar" />
+      <option name="cleanBuild" value="true" />
+      <option name="executionTimeoutMin" value="60" />
+      <option name="showDependenciesChanges" value="true" />
+    </options>
+    <parameters>
+      <param name="env.CMAKE_BUILD_TYPE" value="%cmake_build_type%" spec="text validationMode='not_empty' readOnly='true'" />
+      <param name="env.CMAKE_CXX_COMPILER" value="%cmake_cxx_compiler%" spec="text validationMode='not_empty' readOnly='true'" />
+      <param name="env.CMAKE_C_COMPILER" value="%cmake_c_compiler%" spec="text validationMode='not_empty' readOnly='true'" />
+      <param name="env.CMAKE_GENERATOR" value="%cmake_generator%" spec="text validationMode='not_empty' readOnly='true'" />
+      <param name="env.JAVA_HOME" value="%java_home%" spec="text validationMode='not_empty' readOnly='true'" />
+      <param name="env.JAVA_PATH" value="%java_path%" spec="text validationMode='not_empty' readOnly='true'" />
+      <param name="env.MVN_PATH" value="%teamcity.tool.maven.3.5.3%/bin/mvn" spec="text validationMode='not_empty' readOnly='true'" />
+      <param name="env.WINDOWS_TARGET_ARCH" value="%windows_target_arch%" spec="text validationMode='not_empty' readOnly='true'" />
+    </parameters>
+    <build-runners>
+      <runner id="TEMPLATE_RUNNER_1" name="Build" type="simpleRunner">
+        <parameters>
+          <param name="command.executable" value="bash" />
+          <param name="command.parameters" value="10.build.sh" />
+          <param name="teamcity.build.workingDir" value="scripts/teamcity/" />
+          <param name="teamcity.step.mode" value="default" />
+          <param name="use.custom.script" value="" />
+        </parameters>
+      </runner>
+      <runner id="TEMPLATE_RUNNER_2" name="Start services" type="simpleRunner">
+        <parameters>
+          <param name="command.executable" value="bash" />
+          <param name="command.parameters" value="scripts/tests/setup/start-services.sh" />
+          <param name="script.content" value="./start-services" />
+          <param name="teamcity.step.mode" value="default" />
+          <param name="use.custom.script" value="" />
+        </parameters>
+      </runner>
+      <runner id="TEMPLATE_RUNNER_3" name="Test" type="simpleRunner">
+        <parameters>
+          <param name="command.executable" value="bash" />
+          <param name="command.parameters" value="20.test.sh" />
+          <param name="teamcity.build.workingDir" value="scripts/teamcity/" />
+          <param name="teamcity.step.mode" value="default" />
+          <param name="use.custom.script" value="" />
+        </parameters>
+      </runner>
+      <runner id="TEMPLATE_RUNNER_4" name="Example" type="simpleRunner">
+        <parameters>
+          <param name="command.executable" value="bash" />
+          <param name="command.parameters" value="30.example.sh" />
+          <param name="teamcity.build.workingDir" value="scripts/teamcity/" />
+          <param name="teamcity.step.mode" value="default" />
+          <param name="use.custom.script" value="" />
+        </parameters>
+      </runner>
+      <runner id="TEMPLATE_RUNNER_5" name="Stop services" type="simpleRunner">
+        <parameters>
+          <param name="command.executable" value="bash" />
+          <param name="command.parameters" value="scripts/tests/setup/stop-services.sh" />
+          <param name="script.content" value="./stop-services" />
+          <param name="teamcity.step.mode" value="execute_always" />
+          <param name="use.custom.script" value="" />
+        </parameters>
+      </runner>
+    </build-runners>
+    <vcs-settings>
+      <vcs-entry-ref root-id="QdbApiJni" />
+    </vcs-settings>
+    <requirements>
+      <equals id="TEMPLATE_RQ_1" name="teamcity.agent.jvm.os.name" value="%os_name%" />
+      <equals id="TEMPLATE_RQ_2" name="teamcity.agent.jvm.os.arch" value="%os_arch%" />
+      <starts-with id="TEMPLATE_RQ_3" name="teamcity.agent.name" value="default" />
+    </requirements>
+    <build-triggers />
+    <build-extensions>
+      <extension id="perfmon" type="perfmon">
+        <parameters>
+          <param name="teamcity.perfmon.feature.enabled" value="true" />
+        </parameters>
+      </extension>
+      <extension id="TEMPLATE_BUILD_EXT_1" type="xml-report-plugin">
+        <parameters>
+          <param name="xmlReportParsing.reportDirs" value="target/surefire-reports/TEST-*.xml" />
+          <param name="xmlReportParsing.reportType" value="surefire" />
+          <param name="xmlReportParsing.verboseOutput" value="true" />
+        </parameters>
+      </extension>
+    </build-extensions>
+    <cleanup />
+  </settings>
+</template>
+

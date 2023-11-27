@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<build-type xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://www.jetbrains.com/teamcity/schemas/2021.1/project-config.xsd">
+  <name>OpenJDK 1.8</name>
+  <description />
+  <settings ref="Api_Jni_Build">
+    <parameters>
+      <param name="java_home" value="%env.JDK_1_8_x64%" spec="text validationMode='not_empty' readOnly='true'" />
+    </parameters>
+    <build-runners />
+    <vcs-settings />
+    <requirements />
+    <build-triggers />
+    <artifact-dependencies>
+      <dependency id="ARTIFACT_DEPENDENCY_1" sourceBuildTypeId="Quasardb_Artifacts_Release_MacOS_X8664Core2_Default" cleanDestination="false">
+        <revisionRule name="sameChainOrLastFinished" revision="latest.sameChainOrLastFinished" />
+        <artifact sourcePath="*-darwin-64bit-core2-c-api.tar.gz!**/*=&gt;qdb&#xA;*-darwin-64bit-core2-utils.tar.gz!**/*=&gt;qdb&#xA;*-darwin-64bit-core2-server.tar.gz!**/*=&gt;qdb" />
+      </dependency>
+    </artifact-dependencies>
+    <dependencies>
+      <depend-on sourceBuildTypeId="Quasardb_Artifacts_Release_MacOS_X8664Core2_Default">
+        <options>
+          <option name="take-started-build-with-same-revisions" value="true" />
+          <option name="take-successful-builds-only" value="true" />
+        </options>
+      </depend-on>
+    </dependencies>
+    <cleanup />
+  </settings>
+</build-type>
+
