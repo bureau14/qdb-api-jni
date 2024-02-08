@@ -910,6 +910,9 @@ JNIEXPORT jlong JNICALL Java_net_quasardb_qdb_jni_qdb_ts_1exp_1batch_1prepare(JN
             ret[i].options               = qdb_exp_batch_option_standard;
             ret[i].where_duplicate       = nullptr;
             ret[i].where_duplicate_count = 0;
+
+            // TODO(leon): support actually specifying different table creation modes
+            ret[i].creation              = qdb_exp_batch_dont_create;
         }
 
         return reinterpret_cast<jlong>(ret);
