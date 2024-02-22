@@ -30,7 +30,7 @@ export -f tc_block_close
 #
 # These variables should never be affected by any environment provided variables
 
-THIS_SCRIPT_DIR=$(dirname $(realpath ${BASH_SOURCE[0]}))
+THIS_SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 PROJECT_ROOT="${THIS_SCRIPT_DIR}/../../"
 MVN_TARGET_DIR="${PROJECT_ROOT}/target/"
 EXAMPLES_DIR="${PROJECT_ROOT}/examples/"

@@ -2,7 +2,7 @@
 
 set -eux -o pipefail
 
-THIS_SCRIPT_DIR=$(dirname $(realpath ${BASH_SOURCE[0]}))
+THIS_SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 source "${THIS_SCRIPT_DIR}/common.sh"
 
 echo "Debug, target dir: "
