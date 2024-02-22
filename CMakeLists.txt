@@ -6,7 +6,7 @@ project(qdb-api-jni
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_VERBOSE_MAKEFILE ON)
-set(CMAKE_OSX_DEPLOYMENT_TARGET "10.14")
+set(CMAKE_OSX_DEPLOYMENT_TARGET "10.15")
 if(APPLE)
     # Robustly get the SDK path using xcrun.
     execute_process(
