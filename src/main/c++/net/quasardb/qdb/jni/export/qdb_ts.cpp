@@ -799,7 +799,7 @@ JNIEXPORT void JNICALL Java_net_quasardb_qdb_jni_qdb_ts_1exp_1batch_1table_1set_
     try
     {
         qdb_exp_batch_push_table_t & table = _table_from_tables(batchTables, tableNum);
-        table.options                      = qdb_exp_batch_option_unique_drop;
+        table.deduplication_mode           = qdb_exp_batch_deduplication_mode_drop;
     }
     catch (jni::exception const & e)
     {
@@ -822,7 +822,7 @@ Java_net_quasardb_qdb_jni_qdb_ts_1exp_1batch_1table_1set_1drop_1duplicate_1colum
         jni::object_array columns_{env, columns};
         qdb_exp_batch_push_table_t & table = _table_from_tables(batchTables, tableNum);
 
-        assert(table.options == qdb_exp_batch_option_unique_drop);
+        assert(table.deduplication_mode == qdb_exp_batch_deduplication_mode_drop);
 
         std::size_t n = std::size(columns_);
 
@@ -907,9 +907,12 @@ JNIEXPORT jlong JNICALL Java_net_quasardb_qdb_jni_qdb_ts_1exp_1batch_1prepare(JN
 
             ret[i].truncate_ranges       = nullptr;
             ret[i].truncate_range_count  = 0;
-            ret[i].options               = qdb_exp_batch_option_standard;
+            ret[i].deduplication_mode    = qdb_exp_batch_deduplication_mode_disabled;
             ret[i].where_duplicate       = nullptr;
             ret[i].where_duplicate_count = 0;
+
+            // TODO(leon): support actually specifying different table creation modes
+            ret[i].creation = qdb_exp_batch_dont_create;
         }
 
         return reinterpret_cast<jlong>(ret);
