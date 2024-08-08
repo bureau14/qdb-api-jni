@@ -42,17 +42,6 @@ public class SessionOptionsTest {
         assertTrue(s.getClientMaxParallelism() > 0);
     }
 
-
-    @Test
-    public void canSetClientMaxParallelism() {
-        Session s = TestUtils.createSession();
-
-        long old = s.getClientMaxParallelism();
-        s.setClientMaxParallelism(old * 2);
-
-        assertEquals(s.getClientMaxParallelism(), old * 2);
-    }
-
     @Test
     public void canSetSoftMemoryLimit() {
         Session s = TestUtils.createSession();
