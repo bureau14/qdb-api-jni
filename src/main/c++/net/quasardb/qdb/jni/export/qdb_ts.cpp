@@ -603,7 +603,7 @@ JNIEXPORT void JNICALL Java_net_quasardb_qdb_jni_qdb_ts_1exp_1batch_1set_1column
             _batch_column_from_tables(batchTables, tableNum, columnNum);
 
         auto arr         = jni::make_primitive_array<double>(env, values);
-        column.name      = jni::string::get_chars_utf8(env, handle_, name).as_qdb(handle_);
+        column.name      = jni::string::get_chars_utf8(env, handle_, name).copy(handle_);
         column.data_type = qdb_ts_column_double;
 
         // NOTE(leon): column.data.doubles is heap-allocated and will remain around until
@@ -635,7 +635,7 @@ JNIEXPORT void JNICALL Java_net_quasardb_qdb_jni_qdb_ts_1exp_1batch_1set_1column
 
         auto arr = jni::make_primitive_array<qdb_int_t>(env, values);
 
-        column.name      = jni::string::get_chars_utf8(env, handle_, name).as_qdb(handle_);
+        column.name      = jni::string::get_chars_utf8(env, handle_, name).copy(handle_);
         column.data_type = qdb_ts_column_int64;
 
         // NOTE(leon): column.data.ints is heap-allocated and will remain around until
@@ -667,7 +667,7 @@ JNIEXPORT void JNICALL Java_net_quasardb_qdb_jni_qdb_ts_1exp_1batch_1set_1column
 
         jni::object_array values(env, values_);
 
-        column.name      = jni::string::get_chars_utf8(env, handle_, name).as_qdb(handle_);
+        column.name      = jni::string::get_chars_utf8(env, handle_, name).copy(handle_);
         column.data_type = qdb_ts_column_blob;
 
         qdb_blob_t * ret = jni::memory::allocate<qdb_blob_t>(handle_, values.size());
@@ -707,7 +707,7 @@ JNIEXPORT void JNICALL Java_net_quasardb_qdb_jni_qdb_ts_1exp_1batch_1set_1column
 
         jni::object_array values(env, values_);
 
-        column.name      = jni::string::get_chars_utf8(env, handle_, name).as_qdb(handle_);
+        column.name      = jni::string::get_chars_utf8(env, handle_, name).copy(handle_);
         column.data_type = qdb_ts_column_string;
 
         qdb_string_t * ret = jni::memory::allocate<qdb_string_t>(handle_, values.size());
@@ -753,7 +753,7 @@ JNIEXPORT void JNICALL Java_net_quasardb_qdb_jni_qdb_ts_1exp_1batch_1set_1column
 
         qdb_exp_batch_push_column_t & column = _batch_column_from_tables(xs, tableNum, columnNum);
 
-        column.name      = jni::string::get_chars_utf8(env, handle_, name).as_qdb(handle_);
+        column.name      = jni::string::get_chars_utf8(env, handle_, name).copy(handle_);
         column.data_type = qdb_ts_column_timestamp;
 
         // NOTE(leon): column.data.timestamps is heap-allocated and will remain around until
@@ -781,7 +781,7 @@ JNIEXPORT void JNICALL Java_net_quasardb_qdb_jni_qdb_ts_1exp_1batch_1set_1table_
         qdb_handle_t handle_               = reinterpret_cast<qdb_handle_t>(handle);
         qdb_exp_batch_push_table_t & table = _table_from_tables(batchTables, tableNum);
 
-        table.name = jni::string::get_chars_utf8(env, handle_, tableName).as_qdb(handle_);
+        table.name = jni::string::get_chars_utf8(env, handle_, tableName).copy(handle_);
 
         _timestamps_from_timespecs(
             env, timespecs_, const_cast<qdb_timespec_t *>(table.data.timestamps));
@@ -829,13 +829,12 @@ Java_net_quasardb_qdb_jni_qdb_ts_1exp_1batch_1table_1set_1drop_1duplicate_1colum
         assert(n > 0);
 
         table.where_duplicate_count = n;
-        table.where_duplicate       = jni::memory::allocate<qdb_string_t>(handle_, n);
+        table.where_duplicate       = jni::memory::allocate<char const *>(handle_, n);
 
         for (qdb_size_t i = 0; i < n; ++i)
         {
             jstring in{static_cast<jstring>(columns_.get(i))};
-            table.where_duplicate[i] =
-                jni::string::get_chars_utf8(env, handle_, in).as_qdb(handle_);
+            table.where_duplicate[i] = jni::string::get_chars_utf8(env, handle_, in).copy(handle_);
         };
     }
     catch (jni::exception const & e)
@@ -934,7 +933,7 @@ JNIEXPORT void JNICALL Java_net_quasardb_qdb_jni_qdb_ts_1exp_1batch_1release(
     {
         for (jlong j = 0; j < xs[i].data.column_count; ++j)
         {
-            qdb_release(handle_, xs[i].data.columns[j].name.data);
+            qdb_release(handle_, xs[i].data.columns[j].name);
 
             switch (xs[i].data.columns[j].data_type)
             {
@@ -980,7 +979,7 @@ JNIEXPORT void JNICALL Java_net_quasardb_qdb_jni_qdb_ts_1exp_1batch_1release(
 
         qdb_release(handle_, xs[i].data.columns);
         qdb_release(handle_, xs[i].data.timestamps);
-        qdb_release(handle_, xs[i].name.data);
+        qdb_release(handle_, xs[i].name);
 
         if (xs[i].truncate_ranges != nullptr)
         {
@@ -992,7 +991,7 @@ JNIEXPORT void JNICALL Java_net_quasardb_qdb_jni_qdb_ts_1exp_1batch_1release(
 
             for (qdb_size_t j = 0; j < xs[i].where_duplicate_count; ++j)
             {
-                qdb_release(handle_, xs[i].where_duplicate[j].data);
+                qdb_release(handle_, xs[i].where_duplicate[j]);
             }
 
             qdb_release(handle_, xs[i].where_duplicate);
