@@ -3,6 +3,9 @@
   <name>OpenJDK 1.8</name>
   <description />
   <settings ref="Api_Jni_Build">
+    <disabled-settings>
+      <setting-ref ref="TEMPLATE_RUNNER_3" />
+    </disabled-settings>
     <parameters>
       <param name="java_home" value="%env.JDK_1_8_x64%" />
     </parameters>
