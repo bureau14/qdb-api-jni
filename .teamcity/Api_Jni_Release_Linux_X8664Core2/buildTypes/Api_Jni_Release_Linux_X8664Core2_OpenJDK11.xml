@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<build-type xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://www.jetbrains.com/teamcity/schemas/2021.1/project-config.xsd">
+<build-type xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" uuid="" xsi:noNamespaceSchemaLocation="https://www.jetbrains.com/teamcity/schemas/2021.1/project-config.xsd">
   <name>OpenJDK 11</name>
   <description />
   <settings ref="Api_Jni_Build">
@@ -13,7 +13,7 @@
     <artifact-dependencies>
       <dependency id="ARTIFACT_DEPENDENCY_1" sourceBuildTypeId="Quasardb_Artifacts_Release_Linux_X8664Core2_Composite" cleanDestination="false">
         <revisionRule name="sameChainOrLastFinished" revision="latest.sameChainOrLastFinished" />
-        <artifact sourcePath="*-linux-64bit-core2-c-api.tar.gz!**/*=&gt;qdb&#xA;*-linux-64bit-core2-utils.tar.gz!**/*=&gt;qdb&#xA;*-linux-64bit-core2-server.tar.gz!**/*=&gt;qdb" />
+        <artifact sourcePath="*-linux-64bit-core2-c-api.tar.zst!**/*=&gt;qdb&#xD;&#xA;*-linux-64bit-core2-utils.tar.zst!**/*=&gt;qdb&#xD;&#xA;*-linux-64bit-core2-server.tar.zst!**/*=&gt;qdb" />
       </dependency>
     </artifact-dependencies>
     <dependencies>
