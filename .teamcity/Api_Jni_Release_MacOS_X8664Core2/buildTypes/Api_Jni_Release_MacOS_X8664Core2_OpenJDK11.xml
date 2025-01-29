@@ -16,7 +16,7 @@
     <artifact-dependencies>
       <dependency id="ARTIFACT_DEPENDENCY_1" sourceBuildTypeId="Quasardb_Artifacts_Release_MacOS_X8664Core2_Composite" cleanDestination="false">
         <revisionRule name="sameChainOrLastFinished" revision="latest.sameChainOrLastFinished" />
-        <artifact sourcePath="*-darwin-64bit-core2-c-api.tar.gz!**/*=&gt;qdb&#xA;*-darwin-64bit-core2-utils.tar.gz!**/*=&gt;qdb&#xA;*-darwin-64bit-core2-server.tar.gz!**/*=&gt;qdb" />
+        <artifact sourcePath="*-darwin-64bit-core2-c-api.tar.zst!**/*=&gt;qdb&#xD;&#xA;*-darwin-64bit-core2-utils.tar.zst!**/*=&gt;qdb&#xD;&#xA;*-darwin-64bit-core2-server.tar.zst!**/*=&gt;qdb" />
       </dependency>
     </artifact-dependencies>
     <dependencies>
