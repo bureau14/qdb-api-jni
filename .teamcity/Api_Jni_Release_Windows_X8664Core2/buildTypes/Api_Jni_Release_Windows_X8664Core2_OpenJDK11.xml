@@ -13,7 +13,7 @@
     <artifact-dependencies>
       <dependency id="ARTIFACT_DEPENDENCY_1" sourceBuildTypeId="Quasardb_Artifacts_Release_Windows_X8664Core2" cleanDestination="false">
         <revisionRule name="sameChainOrLastFinished" revision="latest.sameChainOrLastFinished" />
-        <artifact sourcePath="*-windows-64bit-core2-c-api.zip!**/*=&gt;qdb&#xA;*-windows-64bit-core2-utils.zip!**/*=&gt;qdb&#xA;*-windows-64bit-core2-server.zip!**/*=&gt;qdb" />
+        <artifact sourcePath="*-windows-64bit-core2-c-api.tar.zst!**/*=&gt;qdb&#xD;&#xA;*-windows-64bit-core2-utils.tar.zst!**/*=&gt;qdb&#xD;&#xA;*-windows-64bit-core2-server.tar.zst!**/*=&gt;qdb" />
       </dependency>
     </artifact-dependencies>
     <dependencies>
