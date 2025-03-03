@@ -35,7 +35,7 @@ xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.7.0</version>
+        <version>3.14.0</version>
         <configuration>
           <release>11</release>
         </configuration>
