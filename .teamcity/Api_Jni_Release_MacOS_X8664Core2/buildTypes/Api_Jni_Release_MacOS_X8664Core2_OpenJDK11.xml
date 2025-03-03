@@ -7,7 +7,7 @@
       <setting-ref ref="TEMPLATE_RUNNER_3" />
     </disabled-settings>
     <parameters>
-      <param name="java_home" value="%env.JDK_11_0_x64%" />
+      <param name="java_home" value="%env.JDK_17_0%" />
     </parameters>
     <build-runners />
     <vcs-settings />
