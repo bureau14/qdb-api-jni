@@ -123,8 +123,7 @@
             <arg>-h</arg>
             <arg>target/headers</arg>
           </compilerArgs>
-          <source>1.8</source>
-          <target>1.8</target>
+          <release>11</release>
         </configuration>
       </plugin>
 
