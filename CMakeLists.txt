@@ -16,6 +16,8 @@ if(APPLE)
     string(STRIP "${SDK_PATH}" CMAKE_OSX_SYSROOT)
 endif()
 
+set(JAVA_AWT_LIBRARY NotNeeded)
+set(JAVA_AWT_INCLUDE_PATH NotNeeded)
 find_package(Java REQUIRED)
 find_package(JNI REQUIRED)
 
