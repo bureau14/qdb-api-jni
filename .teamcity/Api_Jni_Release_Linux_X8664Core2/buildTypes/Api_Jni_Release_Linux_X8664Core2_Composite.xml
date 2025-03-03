@@ -15,7 +15,7 @@
     <requirements />
     <build-triggers />
     <artifact-dependencies>
-      <dependency id="ARTIFACT_DEPENDENCY_1" sourceBuildTypeId="Api_Jni_Release_Linux_X8664Core2_OpenJDK11" cleanDestination="false">
+      <dependency id="ARTIFACT_DEPENDENCY_1" sourceBuildTypeId="Api_Jni_Release_Linux_X8664Core2_OpenJDK17" cleanDestination="false">
         <revisionRule name="sameChainOrLastFinished" revision="latest.sameChainOrLastFinished" />
         <artifact sourcePath="**" />
       </dependency>
