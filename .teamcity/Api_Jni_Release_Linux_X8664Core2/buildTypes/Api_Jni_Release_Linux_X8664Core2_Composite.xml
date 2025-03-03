@@ -21,7 +21,7 @@
       </dependency>
     </artifact-dependencies>
     <dependencies>
-      <depend-on sourceBuildTypeId="Api_Jni_Release_Linux_X8664Core2_OpenJDK11">
+      <depend-on sourceBuildTypeId="Api_Jni_Release_Linux_X8664Core2_OpenJDK17">
         <options>
           <option name="run-build-if-dependency-failed" value="RUN_ADD_PROBLEM" />
           <option name="take-started-build-with-same-revisions" value="true" />
