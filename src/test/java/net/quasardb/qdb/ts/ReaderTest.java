@@ -169,14 +169,12 @@ public class ReaderTest {
     @Test
     public void canCallHasNext_multipleTimes() throws Exception {
         // Generate a 1x1 test dataset
-        Session s = TestUtils.createSession();
-
         Column[] cols = TestUtils.generateTableColumns(1);
         WritableRow[] rows = TestUtils.generateTableRows(cols, 1);
-        Table table = TestUtils.seedTable(s, cols, rows);
+        Table table = TestUtils.seedTable(this.s, cols, rows);
         TimeRange[] ranges = TestUtils.rangesFromRows(rows);
 
-        Reader reader = Table.reader(s, table, ranges);
+        Reader reader = Table.reader(this.s, table, ranges);
 
         assertTrue(reader.hasNext());
         assertTrue(reader.hasNext());
@@ -191,16 +189,14 @@ public class ReaderTest {
     @Test
     public void invalidIterator_throwsException() throws Exception {
         // Generate a 1x1 test dataset
-        Session s = TestUtils.createSession();
-
         Column[] cols = TestUtils.generateTableColumns(1);
         WritableRow[] rows = TestUtils.generateTableRows(cols, 1);
-        Table table = TestUtils.seedTable(s, cols, rows);
+        Table table = TestUtils.seedTable(this.s, cols, rows);
         TimeRange[] ranges = TestUtils.rangesFromRows(rows);
 
         // Seeding complete, actual test below this line
 
-        Reader reader = Table.reader(s, table, ranges);
+        Reader reader = Table.reader(this.s, table, ranges);
         reader.next();
 
         assertThrows(InvalidIteratorException.class, () -> {

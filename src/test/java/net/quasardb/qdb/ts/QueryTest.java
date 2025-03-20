@@ -119,8 +119,6 @@ public class QueryTest {
 
     @Test
     public void nullValuesInResultsTest() throws Exception {
-        Session s = TestUtils.createSession();
-
         Column.Type[] columnTypes = { Column.Type.INT64,
                                       Column.Type.DOUBLE,
                                       Column.Type.TIMESTAMP,
