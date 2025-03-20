@@ -49,16 +49,16 @@ public class SessionOptionsTest {
     }
 
     @Test
-    public void canGetClientMaxBatchLoad() {
+    public void canGetMaxBatchLoad() {
         Session s = TestUtils.createSession();
         assertTrue(s.getMaxBatchLoad() > 0);
     }
 
     @Test
-    public void canSetClientMaxBatchLoad() {
+    public void canSetMaxBatchLoad() {
         Session s = TestUtils.createSession();
-        s.setClientMaxBatchLoad(42);
-        assertEquals(s.getClientMaxBatchLoad(), 42);
+        s.settMaxBatchLoad(42);
+        assertEquals(s.getMaxBatchLoad(), 42);
     }
 
     @Test
