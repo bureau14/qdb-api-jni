@@ -68,7 +68,7 @@ public class SessionOptionsTest {
     @Test
     public void canSetMaxBatchLoad() {
         long old = this.s.getMaxBatchLoad();
-        this.setMaxBatchLoad(old + 42);
+        this.s.setMaxBatchLoad(old + 42);
         assertEquals(this.s.getMaxBatchLoad(), old + 42);
     }
 
