@@ -21,8 +21,6 @@ public class TestUtils {
     public static Session createSession() {
         Session s = Session.connect(CLUSTER_URI);
 
-        s.setConnectionPerAddressSoftLimit(256);
-
         return s;
     }
 
