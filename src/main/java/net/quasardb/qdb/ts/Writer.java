@@ -368,6 +368,7 @@ public class Writer implements AutoCloseable, Flushable {
         logger.debug("resetting internal batch writer state");
 
         if (this.prepared != 0) {
+            logger.info("releasing batch writer state");
             qdb.ts_exp_batch_release(this.session.handle(),
                                      this.prepared, this.stagedTables.size());
             this.prepared = 0;
@@ -397,7 +398,6 @@ public class Writer implements AutoCloseable, Flushable {
      */
     @Override
     protected void finalize() throws Throwable {
-        logger.info("Finalizing batch writer");
         this.reset();
     }
 
@@ -406,7 +406,6 @@ public class Writer implements AutoCloseable, Flushable {
      * all remaining output.
      */
     public void close() throws IOException {
-        logger.info("Closing batch writer");
         this.reset();
     }
 

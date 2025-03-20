@@ -141,8 +141,8 @@ public class Session implements AutoCloseable {
     }
 
     public void close() {
-        logger.info("Closing session");
         if (handle != 0) {
+            logger.info("Closing session");
             qdb.close(handle);
             handle = 0;
         }
