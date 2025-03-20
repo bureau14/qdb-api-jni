@@ -10,8 +10,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 
 import net.quasardb.common.TestUtils;
 import net.quasardb.qdb.exception.InputBufferTooSmallException;
@@ -20,84 +20,99 @@ import net.quasardb.qdb.*;
 
 public class SessionOptionsTest {
 
-    private Session s;
+    private static Session s;
 
-    @BeforeEach
-    public void setup() {
-        this.s = TestUtils.createSession();
+    @BeforeAll
+    public static void setup() {
+        s = TestUtils.createSession();
     }
 
-    @AfterEach
-    public void teardown() {
-        this.s.close();
-        this.s = null;
+    @AfterAll
+    public static void teardown() {
+        s.close();
+        s = null;
     }
 
     @Test
     public void canGetInputBufferSize() {
-        assertTrue(this.s.getInputBufferSize() > 1);
+        assertTrue(s.getInputBufferSize() > 1);
     }
 
 
     @Test
     public void canSetInputBufferSize() {
-        long old = this.s.getInputBufferSize();
-        this.s.setInputBufferSize(old + 1024);
+        long old = s.getInputBufferSize();
 
-        assertEquals(this.s.getInputBufferSize(), old + 1024);
+        try {
+            s.setInputBufferSize(old + 1024);
+
+            assertEquals(s.getInputBufferSize(), old + 1024);
+        } finally {
+            s.setInputBufferSize(old);
+        }
     }
 
     @Test
     public void canGetConnectionPerAddressSoftLimit() {
-        assertTrue(this.s.getConnectionPerAddressSoftLimit() > 0);
+        assertTrue(s.getConnectionPerAddressSoftLimit() > 0);
     }
 
     @Test
     public void canSetConnectionPerAddressSoftLimit() {
-        long old = this.s.getConnectionPerAddressSoftLimit();
-        this.s.setConnectionPerAddressSoftLimit(old + 256);
-        assertEquals(this.s.getConnectionPerAddressSoftLimit(), old + 256);
+        long old = s.getConnectionPerAddressSoftLimit();
+
+        try {
+            s.setConnectionPerAddressSoftLimit(old + 256);
+            assertEquals(s.getConnectionPerAddressSoftLimit(), old + 256);
+        } finally {
+            s.setConnectionPerAddressSoftLimit(old);
+        }
     }
 
     @Test
     public void canGetMaxBatchLoad() {
-        assertTrue(this.s.getMaxBatchLoad() > 0);
+        assertTrue(s.getMaxBatchLoad() > 0);
     }
 
     @Test
     public void canSetMaxBatchLoad() {
-        long old = this.s.getMaxBatchLoad();
-        this.s.setMaxBatchLoad(old + 42);
-        assertEquals(this.s.getMaxBatchLoad(), old + 42);
+        long old = s.getMaxBatchLoad();
+
+        try {
+            s.setMaxBatchLoad(old + 42);
+            assertEquals(s.getMaxBatchLoad(), old + 42);
+        } finally {
+            s.setMaxBatchLoad(old);
+        }
     }
 
     @Test
     public void canGetClientMaxParallelism() {
-        assertTrue(this.s.getClientMaxParallelism() > 0);
+        assertTrue(s.getClientMaxParallelism() > 0);
     }
 
     @Test
     public void canSetSoftMemoryLimit() {
         // 4GiB
         long limit = 4294967296L;
-        this.s.setSoftMemoryLimit(limit);
+        s.setSoftMemoryLimit(limit);
     }
 
     @Test
     public void canGetMemoryInfo() {
-        String info1 = this.s.getMemoryInfo();
+        String info1 = s.getMemoryInfo();
         assertTrue(info1.contains("TBB huge threshold bytes"));
 
         long limit = 2147483648L;
-        this.s.setSoftMemoryLimit(limit);
-        String info2 = this.s.getMemoryInfo();
+        s.setSoftMemoryLimit(limit);
+        String info2 = s.getMemoryInfo();
 
         assertTrue(info2.contains("TBB soft limit bytes = 2147483648"));
     }
 
     @Test
     public void canTidyMemory() {
-        this.s.tidyMemory();
+        s.tidyMemory();
     }
 
     @Test
@@ -105,21 +120,26 @@ public class SessionOptionsTest {
         // Create a table with 100x10 blobs, set a ridiculously low input
         // buffer size, and retrieve all data to force a buffer size issue
         // to pop up.
+        long old = s.getInputBufferSize();
 
-        this.s.setInputBufferSize(1500);
+        try {
+            s.setInputBufferSize(1500);
 
-        Column[] definition =
-            TestUtils.generateTableColumns(Column.Type.BLOB, 10);
+            Column[] definition =
+                TestUtils.generateTableColumns(Column.Type.BLOB, 10);
 
-        WritableRow[] rows = TestUtils.generateTableRows(definition, 100);
-        Table t = TestUtils.seedTable(this.s, definition, rows);
+            WritableRow[] rows = TestUtils.generateTableRows(definition, 100);
+            Table t = TestUtils.seedTable(s, definition, rows);
 
-        Query r = new QueryBuilder()
-            .add("select * from " + t.getName())
-            .asQuery();
+            Query r = new QueryBuilder()
+                .add("select * from " + t.getName())
+                .asQuery();
 
-        assertThrows(InputBufferTooSmallException.class, () -> {
-                r.execute(this.s);
-            });
+            assertThrows(InputBufferTooSmallException.class, () -> {
+                    r.execute(s);
+                });
+        } finally {
+            s.setInputBufferSize(old);
+        }
     }
 }
