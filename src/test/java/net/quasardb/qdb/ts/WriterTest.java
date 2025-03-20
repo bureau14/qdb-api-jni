@@ -26,7 +26,7 @@ import net.quasardb.qdb.exception.InvalidArgumentException;
 
 public class WriterTest {
 
-    private Session s;
+    private static Session s;
 
     public enum DeduplicationStyle {
         NO_DEDUPLICATION,
@@ -35,14 +35,14 @@ public class WriterTest {
     };
 
     @BeforeAll
-    public void setup() {
-        this.s = TestUtils.createSession();
+    public static void setup() {
+        s = TestUtils.createSession();
     }
 
     @AfterAll
-    public void teardown() {
-        this.s.close();
-        this.s = null;
+    public static void teardown() {
+        s.close();
+        s = null;
     }
 
     static Stream<Arguments> pushModeProvider() {
@@ -138,13 +138,13 @@ public class WriterTest {
     Writer writerByPushMode(Writer.PushMode mode) {
         switch (mode) {
         case NORMAL:
-            return Writer.builder(this.s).normalPush().build();
+            return Writer.builder(s).normalPush().build();
         case FAST:
-            return Writer.builder(this.s).fastPush().build();
+            return Writer.builder(s).fastPush().build();
         case ASYNC:
-            return Writer.builder(this.s).asyncPush().build();
+            return Writer.builder(s).asyncPush().build();
         case TRUNCATE:
-            return Writer.builder(this.s).truncatePush().build();
+            return Writer.builder(s).truncatePush().build();
         };
 
         throw new IllegalArgumentException("Invalid push mode: " + mode.toString());
@@ -204,7 +204,7 @@ public class WriterTest {
 
         String alias = TestUtils.createUniqueAlias();
         Column[] definition = TestUtils.generateTableColumns(columnType, COLUMN_COUNT);
-        Table t = TestUtils.createTable(this.s, definition);
+        Table t = TestUtils.createTable(s, definition);
 
         Writer writer = writerByPushMode(mode);
         assertEquals(writer.size(), 0);
@@ -231,7 +231,7 @@ public class WriterTest {
         String alias = TestUtils.createUniqueAlias();
         Column[] definition = TestUtils.generateTableColumns(columnType, 1);
 
-        Table t = TestUtils.createTable(this.s, definition);
+        Table t = TestUtils.createTable(s, definition);
 
         Value[] values = {
             TestUtils.generateRandomValueByType(columnType)
@@ -272,7 +272,7 @@ public class WriterTest {
         String alias = TestUtils.createUniqueAlias();
         Column[] definition = TestUtils.generateTableColumns(columnType, 1);
 
-        Table t = TestUtils.createTable(this.s, definition);
+        Table t = TestUtils.createTable(s, definition);
         Writer writer = writerByPushMode(mode);
 
         try {
@@ -314,7 +314,7 @@ public class WriterTest {
         String alias = TestUtils.createUniqueAlias();
         Column[] definition = TestUtils.generateTableColumns(columnType, 1);
 
-        Table t = TestUtils.createTable(this.s, definition);
+        Table t = TestUtils.createTable(s, definition);
         Writer writer = writerByPushMode(mode);
 
         try {
@@ -351,7 +351,7 @@ public class WriterTest {
         String alias = TestUtils.createUniqueAlias();
         Column[] definition = TestUtils.generateTableColumns(columnTypes);
 
-        Table t = TestUtils.createTable(this.s, definition);
+        Table t = TestUtils.createTable(s, definition);
         Writer writer = writerByPushMode(mode);
 
         try {
@@ -391,8 +391,8 @@ public class WriterTest {
         Column[] definition1 = TestUtils.generateTableColumns(columnTypes);
         Column[] definition2 = TestUtils.generateTableColumns(columnTypes);
 
-        Table t1 = TestUtils.createTable(this.s, definition1);
-        Table t2 = TestUtils.createTable(this.s, definition2);
+        Table t1 = TestUtils.createTable(s, definition1);
+        Table t2 = TestUtils.createTable(s, definition2);
 
         assert(t1.getName() != t2.getName());
 
@@ -442,7 +442,7 @@ public class WriterTest {
     public void canFlushTwice(Writer.PushMode mode, Column.Type columnType) throws Exception {
         Column[] definition = TestUtils.generateTableColumns(columnType, 1);
 
-        Table t = TestUtils.createTable(this.s, definition);
+        Table t = TestUtils.createTable(s, definition);
         Writer writer = writerByPushMode(mode);
 
         try {
@@ -497,7 +497,7 @@ public class WriterTest {
     public void canTruncate(Writer.PushMode mode, Column.Type columnType) throws Exception {
         Column[] definition = TestUtils.generateTableColumns(columnType, 1);
 
-        Table t = TestUtils.createTable(this.s, definition);
+        Table t = TestUtils.createTable(s, definition);
         Writer writer = writerByPushMode(mode);
 
         try {
@@ -567,8 +567,8 @@ public class WriterTest {
         //
 
         Column[] definition = TestUtils.generateTableColumns(columnTypes);
-        Table t = TestUtils.createTable(this.s, definition);
-        Writer.Builder builder = Writer.builder(this.s).fastPush();
+        Table t = TestUtils.createTable(s, definition);
+        Writer.Builder builder = Writer.builder(s).fastPush();
         builder = setDeduplicationOptions(definition, builder, deduplicationStyle);
         Writer writer = builder.build();
 
