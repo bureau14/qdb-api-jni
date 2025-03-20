@@ -48,7 +48,7 @@ public class QueryTest {
     public void cannotExecuteEmptyQuery() throws Exception {
         assertThrows(InputException.class, () -> {
                 Query.create()
-                    .execute(TestUtils.createSession());
+                    .execute(this.s);
             });
     }
 
