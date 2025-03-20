@@ -19,24 +19,24 @@ import net.quasardb.qdb.kv.*;
 
 public class StringTest {
 
-    private Session s;
+    private static Session s;
 
     @BeforeAll
-    public void setup() {
-        this.s = TestUtils.createSession();
+    public static void setup() {
+        s = TestUtils.createSession();
     }
 
     @AfterAll
-    public void teardown() {
-        this.s.close();
-        this.s = null;
+    public static void teardown() {
+        s.close();
+        s = null;
     }
 
     @Test
     public void canCheckExists() throws Exception {
         String k = TestUtils.createUniqueAlias();
         String v = TestUtils.randomString();
-        StringEntry b = StringEntry.ofAlias(this.s, k);
+        StringEntry b = StringEntry.ofAlias(s, k);
 
         assertEquals(false, b.exists());
     }
@@ -45,7 +45,7 @@ public class StringTest {
     public void canPut() throws Exception {
         String k = TestUtils.createUniqueAlias();
         String v = TestUtils.randomString();
-        StringEntry b = StringEntry.ofAlias(this.s, k);
+        StringEntry b = StringEntry.ofAlias(s, k);
 
         b.put(v);
 
@@ -56,7 +56,7 @@ public class StringTest {
     public void canGet() throws Exception {
         String k = TestUtils.createUniqueAlias();
         String v = TestUtils.randomString();
-        StringEntry b = StringEntry.ofAlias(this.s, k);
+        StringEntry b = StringEntry.ofAlias(s, k);
 
         b.put(v);
 
@@ -71,7 +71,7 @@ public class StringTest {
     public void canUpdate() throws Exception {
         String k = TestUtils.createUniqueAlias();
         String v1 = TestUtils.randomString();
-        StringEntry b = StringEntry.ofAlias(this.s, k);
+        StringEntry b = StringEntry.ofAlias(s, k);
 
         boolean created1 = b.update(v1);
         assertEquals(true, created1);
@@ -89,7 +89,7 @@ public class StringTest {
     public void canRemove() throws Exception {
         String k = TestUtils.createUniqueAlias();
         String v = TestUtils.randomString();
-        StringEntry b = StringEntry.ofAlias(this.s, k);
+        StringEntry b = StringEntry.ofAlias(s, k);
 
         assertEquals(false, b.exists());
 

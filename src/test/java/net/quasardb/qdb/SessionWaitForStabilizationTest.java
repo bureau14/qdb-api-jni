@@ -24,7 +24,7 @@ public class SessionWaitForStabilizationTest {
 
     @BeforeAll
     public static void setup() {
-        this.s = TestUtils.createSession();
+        s = TestUtils.createSession();
     }
 
     @AfterAll
