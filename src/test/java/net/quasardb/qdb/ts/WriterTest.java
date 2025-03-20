@@ -15,8 +15,8 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 
 import net.quasardb.common.TestUtils;
 import net.quasardb.qdb.ts.*;
@@ -34,14 +34,13 @@ public class WriterTest {
         COLUMN_WISE_DEDUPLICATION;
     };
 
-    @BeforeEach
+    @BeforeAll
     public void setup() {
         this.s = TestUtils.createSession();
     }
 
-    @AfterEach
+    @AfterAll
     public void teardown() {
-        this.s.purgeAll(300000);
         this.s.close();
         this.s = null;
     }

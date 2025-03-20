@@ -10,8 +10,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 
 import net.quasardb.common.TestUtils;
 import net.quasardb.qdb.Session;
@@ -22,14 +22,13 @@ public class BlobTest {
 
     private Session s;
 
-    @BeforeEach
+    @BeforeAll
     public void setup() {
         this.s = TestUtils.createSession();
     }
 
-    @AfterEach
+    @AfterAll
     public void teardown() {
-        this.s.purgeAll(300000);
         this.s.close();
         this.s = null;
     }

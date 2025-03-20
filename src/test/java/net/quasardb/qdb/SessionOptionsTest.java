@@ -29,7 +29,6 @@ public class SessionOptionsTest {
 
     @AfterEach
     public void teardown() {
-        this.s.purgeAll(300000);
         this.s.close();
         this.s = null;
     }
