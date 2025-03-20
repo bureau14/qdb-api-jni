@@ -19,7 +19,11 @@ public class TestUtils {
     public static final String CLUSTER_URI = "qdb://127.0.0.1:2836";
 
     public static Session createSession() {
-        return Session.connect(CLUSTER_URI);
+        Session s = Session.connect(CLUSTER_URI);
+
+        s.setConnectionPerAddressSoftLimit(256);
+
+        return s;
     }
 
     public static Column generateTableColumn(Column.Type columnType) {
