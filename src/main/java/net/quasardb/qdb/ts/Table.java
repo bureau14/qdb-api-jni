@@ -2,12 +2,8 @@ package net.quasardb.qdb.ts;
 
 import java.io.IOException;
 import java.io.Serializable;
-import java.io.Flushable;
-import java.lang.AutoCloseable;
 import java.sql.Timestamp;
-import java.time.LocalDateTime;
 
-import java.nio.channels.SeekableByteChannel;
 import java.util.*;
 
 import org.slf4j.Logger;
