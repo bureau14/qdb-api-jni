@@ -41,6 +41,7 @@ public class ReaderTest {
         TimeRange[] ranges = TestUtils.rangesFromRows(rows);
 
         Reader reader = Table.reader(this.s, table, ranges);
+        reader.close();
     }
 
     @Test
@@ -79,8 +80,11 @@ public class ReaderTest {
         };
 
         Reader reader = Table.reader(this.s, table, ranges);
-
-        assertFalse(reader.hasNext());
+        try {
+            assertFalse(reader.hasNext());
+        } finally {
+            reader.close();
+        }
     }
 
     @Test
@@ -134,10 +138,14 @@ public class ReaderTest {
 
             Reader reader = Table.reader(this.s, table, ranges);
 
-            assertTrue(reader.hasNext());
+            try {
+                assertTrue(reader.hasNext());
 
-            Row row = reader.next();
-            assertEquals(rows[0], row);
+                Row row = reader.next();
+                assertEquals(rows[0], row);
+            } finally {
+                reader.close();
+            }
         }
     }
 
@@ -159,9 +167,13 @@ public class ReaderTest {
 
             Reader reader = Table.reader(this.s, table, ranges);
 
-            int index = 0;
-            while (reader.hasNext()) {
-                assertEquals(rows[index++], reader.next());
+            try {
+                int index = 0;
+                while (reader.hasNext()) {
+                    assertEquals(rows[index++], reader.next());
+                }
+            } finally {
+                reader.close();
             }
         }
     }
@@ -176,14 +188,18 @@ public class ReaderTest {
 
         Reader reader = Table.reader(this.s, table, ranges);
 
-        assertTrue(reader.hasNext());
-        assertTrue(reader.hasNext());
-        assertTrue(reader.hasNext());
+        try {
+            assertTrue(reader.hasNext());
+            assertTrue(reader.hasNext());
+            assertTrue(reader.hasNext());
 
-        reader.next();
+            reader.next();
 
-        assertFalse(reader.hasNext());
-        assertFalse(reader.hasNext());
+            assertFalse(reader.hasNext());
+            assertFalse(reader.hasNext());
+        } finally {
+            reader.close();
+        }
     }
 
     @Test
@@ -197,10 +213,14 @@ public class ReaderTest {
         // Seeding complete, actual test below this line
 
         Reader reader = Table.reader(this.s, table, ranges);
-        reader.next();
+        try {
+            reader.next();
 
-        assertThrows(InvalidIteratorException.class, () -> {
-                reader.next();
-            });
+            assertThrows(InvalidIteratorException.class, () -> {
+                    reader.next();
+                });
+        } finally {
+            reader.close();
+        }
     }
 }
