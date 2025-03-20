@@ -19,28 +19,27 @@ import net.quasardb.qdb.exception.InvalidArgumentException;
 
 public class ReaderTest {
 
-
-    private Session s;
+    private static Session s;
 
     @BeforeAll
-    public void setup() {
-        this.s = TestUtils.createSession();
+    public static void setup() {
+        s = TestUtils.createSession();
     }
 
     @AfterAll
-    public void teardown() {
-        this.s.close();
-        this.s = null;
+    public static void teardown() {
+        s.close();
+        s = null;
     }
 
     @Test
     public void canGetReader() throws Exception {
         Column[] cols = TestUtils.generateTableColumns(1);
         WritableRow[] rows = TestUtils.generateTableRows(cols, 1);
-        Table table = TestUtils.seedTable(this.s, cols, rows);
+        Table table = TestUtils.seedTable(s, cols, rows);
         TimeRange[] ranges = TestUtils.rangesFromRows(rows);
 
-        Reader reader = Table.reader(this.s, table, ranges);
+        Reader reader = Table.reader(s, table, ranges);
         reader.close();
     }
 
@@ -48,10 +47,10 @@ public class ReaderTest {
     public void canCloseReader() throws Exception {
         Column[] cols = TestUtils.generateTableColumns(1);
         WritableRow[] rows = TestUtils.generateTableRows(cols, 1);
-        Table table = TestUtils.seedTable(this.s, cols, rows);
+        Table table = TestUtils.seedTable(s, cols, rows);
         TimeRange[] ranges = TestUtils.rangesFromRows(rows);
 
-        Reader reader = Table.reader(this.s, table, ranges);
+        Reader reader = Table.reader(s, table, ranges);
         reader.close();
     }
 
@@ -59,11 +58,11 @@ public class ReaderTest {
     public void readWithoutRanges_throwsException() throws Exception {
         Column[] cols = TestUtils.generateTableColumns(1);
         WritableRow[] rows = TestUtils.generateTableRows(cols, 1);
-        Table table = TestUtils.seedTable(this.s, cols, rows);
+        Table table = TestUtils.seedTable(s, cols, rows);
         TimeRange[] ranges = {};
 
         assertThrows(InvalidArgumentException.class, () -> {
-                Table.reader(this.s, table, ranges);
+                Table.reader(s, table, ranges);
             });
     }
 
@@ -71,7 +70,7 @@ public class ReaderTest {
     public void canReadEmptyResult() throws Exception {
         Column[] cols = TestUtils.generateTableColumns(1);
         WritableRow[] rows = {};
-        Table table = TestUtils.seedTable(this.s, cols, rows);
+        Table table = TestUtils.seedTable(s, cols, rows);
 
         // These ranges should always be empty
         TimeRange[] ranges = {
@@ -79,7 +78,7 @@ public class ReaderTest {
                           Timespec.now().plusNanos(1))
         };
 
-        Reader reader = Table.reader(this.s, table, ranges);
+        Reader reader = Table.reader(s, table, ranges);
         try {
             assertFalse(reader.hasNext());
         } finally {
@@ -133,10 +132,10 @@ public class ReaderTest {
                 TestUtils.generateTableColumns(columnType, 1);
 
             WritableRow[] rows = TestUtils.generateTableRows(cols, 1);
-            Table table = TestUtils.seedTable(this.s, cols, rows);
+            Table table = TestUtils.seedTable(s, cols, rows);
             TimeRange[] ranges = TestUtils.rangesFromRows(rows);
 
-            Reader reader = Table.reader(this.s, table, ranges);
+            Reader reader = Table.reader(s, table, ranges);
 
             try {
                 assertTrue(reader.hasNext());
@@ -162,10 +161,10 @@ public class ReaderTest {
             Column[] cols =
                 TestUtils.generateTableColumns(columnType, 2);
             WritableRow[] rows = TestUtils.generateTableRows(cols, 2);
-            Table table = TestUtils.seedTable(this.s, cols, rows);
+            Table table = TestUtils.seedTable(s, cols, rows);
             TimeRange[] ranges = TestUtils.rangesFromRows(rows);
 
-            Reader reader = Table.reader(this.s, table, ranges);
+            Reader reader = Table.reader(s, table, ranges);
 
             try {
                 int index = 0;
@@ -183,10 +182,10 @@ public class ReaderTest {
         // Generate a 1x1 test dataset
         Column[] cols = TestUtils.generateTableColumns(1);
         WritableRow[] rows = TestUtils.generateTableRows(cols, 1);
-        Table table = TestUtils.seedTable(this.s, cols, rows);
+        Table table = TestUtils.seedTable(s, cols, rows);
         TimeRange[] ranges = TestUtils.rangesFromRows(rows);
 
-        Reader reader = Table.reader(this.s, table, ranges);
+        Reader reader = Table.reader(s, table, ranges);
 
         try {
             assertTrue(reader.hasNext());
@@ -207,12 +206,12 @@ public class ReaderTest {
         // Generate a 1x1 test dataset
         Column[] cols = TestUtils.generateTableColumns(1);
         WritableRow[] rows = TestUtils.generateTableRows(cols, 1);
-        Table table = TestUtils.seedTable(this.s, cols, rows);
+        Table table = TestUtils.seedTable(s, cols, rows);
         TimeRange[] ranges = TestUtils.rangesFromRows(rows);
 
         // Seeding complete, actual test below this line
 
-        Reader reader = Table.reader(this.s, table, ranges);
+        Reader reader = Table.reader(s, table, ranges);
         try {
             reader.next();
 

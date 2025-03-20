@@ -21,17 +21,17 @@ import net.quasardb.common.TestUtils;
 public class QueryTest {
 
 
-    private Session s;
+    private static Session s;
 
     @BeforeAll
-    public void setup() {
-        this.s = TestUtils.createSession();
+    public static void setup() {
+        s = TestUtils.createSession();
     }
 
     @AfterAll
-    public void teardown() {
-        this.s.close();
-        this.s = null;
+    public static void teardown() {
+        s.close();
+        s = null;
     }
 
     @Test
@@ -48,7 +48,7 @@ public class QueryTest {
     public void cannotExecuteEmptyQuery() throws Exception {
         assertThrows(InputException.class, () -> {
                 Query.create()
-                    .execute(this.s);
+                    .execute(s);
             });
     }
 
@@ -66,7 +66,7 @@ public class QueryTest {
 
             WritableRow[] rows = TestUtils.generateTableRows(definition, 1);
 
-            Table t = TestUtils.seedTable(this.s, definition, rows);
+            Table t = TestUtils.seedTable(s, definition, rows);
 
             Result r = new QueryBuilder()
                 .add("select")
@@ -75,7 +75,7 @@ public class QueryTest {
                 .add(t.getName())
                 .in(TestUtils.rangeFromRows(rows))
                 .asQuery()
-                .execute(this.s);
+                .execute(s);
 
             assertEquals(r.columns.length, definition.length);
             assertEquals(r.rows.length, rows.length);
@@ -101,7 +101,7 @@ public class QueryTest {
                 TestUtils.generateTableColumns(columnType, 1);
 
             WritableRow[] rows = TestUtils.generateTableRows(definition, 10);
-            Table t = TestUtils.seedTable(this.s, definition, rows);
+            Table t = TestUtils.seedTable(s, definition, rows);
 
             Result r = new QueryBuilder()
                 .add("select")
@@ -110,7 +110,7 @@ public class QueryTest {
                 .add(t.getName())
                 .in(TestUtils.rangeFromRows(rows))
                 .asQuery()
-                .execute(this.s);
+                .execute(s);
 
             assertEquals(r.stream().count(), r.rows.length);
         }
@@ -130,7 +130,7 @@ public class QueryTest {
                 TestUtils.generateTableColumns(columnType, 1);
 
             WritableRow[] rows = TestUtils.generateTableRows(definition, 32, 10, 0.5);
-            Table t = TestUtils.seedTable(this.s, definition, rows);
+            Table t = TestUtils.seedTable(s, definition, rows);
 
             QueryBuilder b = new QueryBuilder()
                 .add("select ");
@@ -150,7 +150,7 @@ public class QueryTest {
                 .add(t.getName())
                 .in(TestUtils.rangeFromRows(rows))
                 .asQuery()
-                .execute(this.s);
+                .execute(s);
 
             // + 2 because of $timestamp and $table
             assertEquals(definition.length, r.columns.length);

@@ -20,21 +20,21 @@ import net.quasardb.qdb.*;
 
 public class SessionWaitForStabilizationTest {
 
-    private Session s;
+    private static Session s;
 
     @BeforeAll
-    public void setup() {
+    public static void setup() {
         this.s = TestUtils.createSession();
     }
 
     @AfterAll
-    public void teardown() {
-        this.s.close();
-        this.s = null;
+    public static void teardown() {
+        s.close();
+        s = null;
     }
 
     @Test
     public void canWaitForStabilization() {
-        this.s.waitForStabilization(60000);
+        s.waitForStabilization(60000);
     }
 }

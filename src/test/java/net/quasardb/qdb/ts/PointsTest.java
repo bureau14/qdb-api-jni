@@ -25,17 +25,17 @@ import net.quasardb.qdb.exception.InvalidArgumentException;
 
 public class PointsTest {
 
-    private Session s;
+    private static Session s;
 
     @BeforeAll
-    public void setup() {
-        this.s = TestUtils.createSession();
+    public static void setup() {
+        s = TestUtils.createSession();
     }
 
     @AfterAll
-    public void teardown() {
-        this.s.close();
-        this.s = null;
+    public static void teardown() {
+        s.close();
+        s = null;
     }
 
     /**
@@ -55,22 +55,22 @@ public class PointsTest {
     @MethodSource("columnTypeProvider")
     public void canInsert(Column.Type columnType) throws Exception {
         Column column = TestUtils.generateTableColumn(columnType);
-        Table table = TestUtils.createTable(this.s, new Column[]{ column });
+        Table table = TestUtils.createTable(s, new Column[]{ column });
         Points values = TestUtils.generatePointsByColumnType(columnType);
 
-        Points.insert(this.s, table, column, values);
+        Points.insert(s, table, column, values);
     }
 
     @ParameterizedTest
     @MethodSource("columnTypeProvider")
     public void canInsertAndRetrieve(Column.Type columnType) throws Exception {
         Column column = TestUtils.generateTableColumn(columnType);
-        Table table = TestUtils.createTable(this.s, new Column[]{ column });
+        Table table = TestUtils.createTable(s, new Column[]{ column });
         Points values = TestUtils.generatePointsByColumnType(columnType);
 
-        Points.insert(this.s, table.getName(), column, values);
+        Points.insert(s, table.getName(), column, values);
 
-        Points ret = Points.get(this.s,
+        Points ret = Points.get(s,
                                 table.getName(),
                                 column);
 
