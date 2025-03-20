@@ -36,7 +36,6 @@ public class SessionOptionsTest {
 
     @Test
     public void canGetInputBufferSize() {
-        TestUtils.createSession();
         assertTrue(this.s.getInputBufferSize() > 1);
     }
 
