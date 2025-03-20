@@ -8,8 +8,8 @@ import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 
 import net.quasardb.qdb.Session;
 import net.quasardb.qdb.ts.*;
@@ -21,17 +21,17 @@ import net.quasardb.common.TestUtils;
 public class QueryTest {
 
 
-    private Session s;
+    private static Session s;
 
-    @BeforeEach
-    public void setup() {
-        this.s = TestUtils.createSession();
+    @BeforeAll
+    public static void setup() {
+        s = TestUtils.createSession();
     }
 
-    @AfterEach
-    public void teardown() {
-        this.s.close();
-        this.s = null;
+    @AfterAll
+    public static void teardown() {
+        s.close();
+        s = null;
     }
 
     @Test
@@ -48,7 +48,7 @@ public class QueryTest {
     public void cannotExecuteEmptyQuery() throws Exception {
         assertThrows(InputException.class, () -> {
                 Query.create()
-                    .execute(TestUtils.createSession());
+                    .execute(s);
             });
     }
 
@@ -66,7 +66,7 @@ public class QueryTest {
 
             WritableRow[] rows = TestUtils.generateTableRows(definition, 1);
 
-            Table t = TestUtils.seedTable(this.s, definition, rows);
+            Table t = TestUtils.seedTable(s, definition, rows);
 
             Result r = new QueryBuilder()
                 .add("select")
@@ -75,7 +75,7 @@ public class QueryTest {
                 .add(t.getName())
                 .in(TestUtils.rangeFromRows(rows))
                 .asQuery()
-                .execute(this.s);
+                .execute(s);
 
             assertEquals(r.columns.length, definition.length);
             assertEquals(r.rows.length, rows.length);
@@ -101,7 +101,7 @@ public class QueryTest {
                 TestUtils.generateTableColumns(columnType, 1);
 
             WritableRow[] rows = TestUtils.generateTableRows(definition, 10);
-            Table t = TestUtils.seedTable(this.s, definition, rows);
+            Table t = TestUtils.seedTable(s, definition, rows);
 
             Result r = new QueryBuilder()
                 .add("select")
@@ -110,7 +110,7 @@ public class QueryTest {
                 .add(t.getName())
                 .in(TestUtils.rangeFromRows(rows))
                 .asQuery()
-                .execute(this.s);
+                .execute(s);
 
             assertEquals(r.stream().count(), r.rows.length);
         }
@@ -119,8 +119,6 @@ public class QueryTest {
 
     @Test
     public void nullValuesInResultsTest() throws Exception {
-        Session s = TestUtils.createSession();
-
         Column.Type[] columnTypes = { Column.Type.INT64,
                                       Column.Type.DOUBLE,
                                       Column.Type.TIMESTAMP,
@@ -132,7 +130,7 @@ public class QueryTest {
                 TestUtils.generateTableColumns(columnType, 1);
 
             WritableRow[] rows = TestUtils.generateTableRows(definition, 32, 10, 0.5);
-            Table t = TestUtils.seedTable(this.s, definition, rows);
+            Table t = TestUtils.seedTable(s, definition, rows);
 
             QueryBuilder b = new QueryBuilder()
                 .add("select ");
@@ -152,7 +150,7 @@ public class QueryTest {
                 .add(t.getName())
                 .in(TestUtils.rangeFromRows(rows))
                 .asQuery()
-                .execute(this.s);
+                .execute(s);
 
             // + 2 because of $timestamp and $table
             assertEquals(definition.length, r.columns.length);

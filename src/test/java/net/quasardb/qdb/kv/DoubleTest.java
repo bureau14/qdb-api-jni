@@ -10,8 +10,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 
 import net.quasardb.common.TestUtils;
 import net.quasardb.qdb.Session;
@@ -20,25 +20,24 @@ import net.quasardb.qdb.kv.*;
 
 public class DoubleTest {
 
-    private Session s;
+    private static Session s;
 
-    @BeforeEach
-    public void setup() {
-        this.s = TestUtils.createSession();
+    @BeforeAll
+    public static void setup() {
+        s = TestUtils.createSession();
     }
 
-    @AfterEach
-    public void teardown() {
-        this.s.purgeAll(300000);
-        this.s.close();
-        this.s = null;
+    @AfterAll
+    public static void teardown() {
+        s.close();
+        s = null;
     }
 
     @Test
     public void canCheckExists() throws Exception {
         String k = TestUtils.createUniqueAlias();
         double v = TestUtils.randomDouble();
-        DoubleEntry d = DoubleEntry.ofAlias(this.s, k);
+        DoubleEntry d = DoubleEntry.ofAlias(s, k);
 
         assertEquals(false, d.exists());
     }
@@ -47,7 +46,7 @@ public class DoubleTest {
     public void canPut() throws Exception {
         String k = TestUtils.createUniqueAlias();
         double v = TestUtils.randomDouble();
-        DoubleEntry d = DoubleEntry.ofAlias(this.s, k);
+        DoubleEntry d = DoubleEntry.ofAlias(s, k);
 
         d.put(v);
 
@@ -58,7 +57,7 @@ public class DoubleTest {
     public void canGet() throws Exception {
         String k = TestUtils.createUniqueAlias();
         double v = TestUtils.randomDouble();
-        DoubleEntry d = DoubleEntry.ofAlias(this.s, k);
+        DoubleEntry d = DoubleEntry.ofAlias(s, k);
 
         d.put(v);
 
@@ -70,7 +69,7 @@ public class DoubleTest {
     public void canUpdate() throws Exception {
         String k = TestUtils.createUniqueAlias();
         double v1 = TestUtils.randomDouble();
-        DoubleEntry d = DoubleEntry.ofAlias(this.s, k);
+        DoubleEntry d = DoubleEntry.ofAlias(s, k);
 
         boolean created1 = d.update(v1);
         assertEquals(true, created1);
@@ -87,7 +86,7 @@ public class DoubleTest {
     public void canRemove() throws Exception {
         String k = TestUtils.createUniqueAlias();
         double v = TestUtils.randomDouble();
-        DoubleEntry d = DoubleEntry.ofAlias(this.s, k);
+        DoubleEntry d = DoubleEntry.ofAlias(s, k);
 
         assertEquals(false, d.exists());
 

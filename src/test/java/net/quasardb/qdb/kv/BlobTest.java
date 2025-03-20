@@ -10,8 +10,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 
 import net.quasardb.common.TestUtils;
 import net.quasardb.qdb.Session;
@@ -20,25 +20,24 @@ import net.quasardb.qdb.kv.*;
 
 public class BlobTest {
 
-    private Session s;
+    private static Session s;
 
-    @BeforeEach
-    public void setup() {
-        this.s = TestUtils.createSession();
+    @BeforeAll
+    public static void setup() {
+        s = TestUtils.createSession();
     }
 
-    @AfterEach
-    public void teardown() {
-        this.s.purgeAll(300000);
-        this.s.close();
-        this.s = null;
+    @AfterAll
+    public static void teardown() {
+        s.close();
+        s = null;
     }
 
     @Test
     public void canCheckExists() throws Exception {
         String k = TestUtils.createUniqueAlias();
         ByteBuffer v = TestUtils.randomBlob();
-        BlobEntry b = BlobEntry.ofAlias(this.s, k);
+        BlobEntry b = BlobEntry.ofAlias(s, k);
 
         assertEquals(false, b.exists());
     }
@@ -47,7 +46,7 @@ public class BlobTest {
     public void canPut() throws Exception {
         String k = TestUtils.createUniqueAlias();
         ByteBuffer v = TestUtils.randomBlob();
-        BlobEntry b = BlobEntry.ofAlias(this.s, k);
+        BlobEntry b = BlobEntry.ofAlias(s, k);
 
         b.put(v);
 
@@ -58,7 +57,7 @@ public class BlobTest {
     public void canGet() throws Exception {
         String k = TestUtils.createUniqueAlias();
         ByteBuffer bb = TestUtils.randomBlob();
-        BlobEntry b = BlobEntry.ofAlias(this.s, k);
+        BlobEntry b = BlobEntry.ofAlias(s, k);
 
         b.put(bb);
 
@@ -74,7 +73,7 @@ public class BlobTest {
     public void canUpdate() throws Exception {
         String k = TestUtils.createUniqueAlias();
         ByteBuffer bb1 = TestUtils.randomBlob();
-        BlobEntry b = BlobEntry.ofAlias(this.s, k);
+        BlobEntry b = BlobEntry.ofAlias(s, k);
 
         boolean created1 = b.update(bb1);
         assertEquals(true, created1);
@@ -92,7 +91,7 @@ public class BlobTest {
     public void canRemove() throws Exception {
         String k = TestUtils.createUniqueAlias();
         ByteBuffer bb = TestUtils.randomBlob();
-        BlobEntry b = BlobEntry.ofAlias(this.s, k);
+        BlobEntry b = BlobEntry.ofAlias(s, k);
 
         assertEquals(false, b.exists());
 

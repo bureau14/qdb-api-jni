@@ -14,8 +14,8 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 
 import net.quasardb.common.TestUtils;
 import net.quasardb.qdb.ts.*;
@@ -25,18 +25,17 @@ import net.quasardb.qdb.exception.InvalidArgumentException;
 
 public class PointsTest {
 
-    private Session s;
+    private static Session s;
 
-    @BeforeEach
-    public void setup() {
-        this.s = TestUtils.createSession();
+    @BeforeAll
+    public static void setup() {
+        s = TestUtils.createSession();
     }
 
-    @AfterEach
-    public void teardown() {
-        this.s.purgeAll(300000);
-        this.s.close();
-        this.s = null;
+    @AfterAll
+    public static void teardown() {
+        s.close();
+        s = null;
     }
 
     /**
@@ -56,22 +55,22 @@ public class PointsTest {
     @MethodSource("columnTypeProvider")
     public void canInsert(Column.Type columnType) throws Exception {
         Column column = TestUtils.generateTableColumn(columnType);
-        Table table = TestUtils.createTable(this.s, new Column[]{ column });
+        Table table = TestUtils.createTable(s, new Column[]{ column });
         Points values = TestUtils.generatePointsByColumnType(columnType);
 
-        Points.insert(this.s, table, column, values);
+        Points.insert(s, table, column, values);
     }
 
     @ParameterizedTest
     @MethodSource("columnTypeProvider")
     public void canInsertAndRetrieve(Column.Type columnType) throws Exception {
         Column column = TestUtils.generateTableColumn(columnType);
-        Table table = TestUtils.createTable(this.s, new Column[]{ column });
+        Table table = TestUtils.createTable(s, new Column[]{ column });
         Points values = TestUtils.generatePointsByColumnType(columnType);
 
-        Points.insert(this.s, table.getName(), column, values);
+        Points.insert(s, table.getName(), column, values);
 
-        Points ret = Points.get(this.s,
+        Points ret = Points.get(s,
                                 table.getName(),
                                 column);
 

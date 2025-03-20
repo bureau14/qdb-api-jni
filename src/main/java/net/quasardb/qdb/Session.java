@@ -234,6 +234,54 @@ public class Session implements AutoCloseable {
     }
 
     /**
+     * Set maximum number of connections per qdbd host.
+     *
+     * @param limit The limit of the number of connections
+     *
+     * @throws ClusterClosedException If the connection to the cluster is currently closed.
+     */
+    public void setConnectionPerAddressSoftLimit(long limit) throws ClusterClosedException {
+        throwIfClosed();
+
+        qdb.option_set_connection_per_address_soft_limit(handle, limit);
+    }
+
+    /**
+     * Returns the current connection limit per qdbd host.
+     *
+     * @throws ClusterClosedException If the connection to the cluster is currently closed.
+     */
+    public long getConnectionPerAddressSoftLimit() throws ClusterClosedException {
+        throwIfClosed();
+
+        return qdb.option_get_connection_per_address_soft_limit(handle);
+    }
+
+    /**
+     * Set the maximum "load" of a single execution batch per thread.
+     *
+     * @param batchLoad The maximum load of a batch
+     *
+     * @throws ClusterClosedException If the connection to the cluster is currently closed.
+     */
+    public void setMaxBatchLoad(long batchLoad) throws ClusterClosedException {
+        throwIfClosed();
+
+        qdb.option_set_client_max_batch_load(handle, batchLoad);
+    }
+
+    /**
+     * Returns the maximum load of a single execution batch per thread.
+     *
+     * @throws ClusterClosedException If the connection to the cluster is currently closed.
+     */
+    public long getMaxBatchLoad() throws ClusterClosedException {
+        throwIfClosed();
+
+        return qdb.option_get_client_max_batch_load(handle);
+    }
+
+    /**
      * Sets the soft memory limit of the client.
      *
      * This sets the desired limit of the off-heap memory buffer the QuasarDB C API will
