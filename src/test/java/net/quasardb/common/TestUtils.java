@@ -65,16 +65,6 @@ public class TestUtils {
             .toArray(Column[]::new);
     }
 
-    public static Table createTable(Column[] columns) throws IOException {
-        Session s = createSession();
-
-        try {
-            return createTable(s, columns);
-        } finally {
-            s.close();
-        }
-    }
-
     public static Table createTable(Session s, Column[] columns) throws IOException {
         return createTable(s, createUniqueAlias(), columns);
     }

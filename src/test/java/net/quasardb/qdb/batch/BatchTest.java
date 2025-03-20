@@ -12,8 +12,8 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 
 import net.quasardb.common.TestUtils;
 import net.quasardb.qdb.Session;
@@ -28,23 +28,22 @@ import net.quasardb.qdb.kv.DoubleEntry;
 
 public class BatchTest {
 
-    private Session s;
+    private static Session s;
 
-    @BeforeEach
-    public void setup() {
-        this.s = TestUtils.createSession();
+    @BeforeAll
+    public static void setup() {
+        s = TestUtils.createSession();
     }
 
-    @AfterEach
-    public void teardown() {
-        this.s.purgeAll(300000);
-        this.s.close();
-        this.s = null;
+    @AfterAll
+    public static void teardown() {
+        s.close();
+        s = null;
     }
 
     // @Test
     // public void canCreateBatch() throws Exception {
-    //     Batch b = Batch.builder(this.s).build();
+    //     Batch b = Batch.builder(s).build();
     // }
 
     @ParameterizedTest
@@ -55,7 +54,7 @@ public class BatchTest {
         ByteBuffer bb1 = TestUtils.randomBlob();
         ByteBuffer bb2 = TestUtils.randomBlob();
 
-        Batch b = Batch.builder(this.s).commitMode(commitMode).build();
+        Batch b = Batch.builder(s).commitMode(commitMode).build();
 
         // First put new blob
         b.blob(k).put(bb1);
@@ -68,7 +67,7 @@ public class BatchTest {
         b.commit();
 
         // Validate entry actually exists using regular key/value API
-        BlobEntry b_ = BlobEntry.ofAlias(this.s, k);
+        BlobEntry b_ = BlobEntry.ofAlias(s, k);
         assertEquals(true, b_.exists());
 
         Buffer v_ = b_.get();
@@ -85,7 +84,7 @@ public class BatchTest {
         String v1 = TestUtils.randomString();
         String v2 = TestUtils.randomString();
 
-        Batch b = Batch.builder(this.s).commitMode(commitMode).build();
+        Batch b = Batch.builder(s).commitMode(commitMode).build();
 
         // First put new string
         b.string(k).put(v1);
@@ -98,7 +97,7 @@ public class BatchTest {
         b.commit();
 
         // Validate entry actually exists using regular key/value API
-        StringEntry s_ = StringEntry.ofAlias(this.s, k);
+        StringEntry s_ = StringEntry.ofAlias(s, k);
         assertEquals(true, s_.exists());
 
         String v_ = s_.get();
@@ -115,7 +114,7 @@ public class BatchTest {
         Timespec v1 = TestUtils.randomTimestamp();
         Timespec v2 = TestUtils.randomTimestamp();
 
-        Batch b = Batch.builder(this.s).commitMode(commitMode).build();
+        Batch b = Batch.builder(s).commitMode(commitMode).build();
 
         // First put new timestamp
         b.timestamp(k).put(v1);
@@ -128,7 +127,7 @@ public class BatchTest {
         b.commit();
 
         // Validate entry actually exists using regular key/value API
-        TimestampEntry t_ = TimestampEntry.ofAlias(this.s, k);
+        TimestampEntry t_ = TimestampEntry.ofAlias(s, k);
         assertEquals(true, t_.exists());
 
         Timespec v_ = t_.get();
@@ -145,7 +144,7 @@ public class BatchTest {
         long v1 = TestUtils.randomInt64();
         long v2 = TestUtils.randomInt64();
 
-        Batch b = Batch.builder(this.s).commitMode(commitMode).build();
+        Batch b = Batch.builder(s).commitMode(commitMode).build();
 
         // First put new string
         b.integer(k).put(v1);
@@ -158,7 +157,7 @@ public class BatchTest {
         b.commit();
 
         // Validate entry actually exists using regular key/value API
-        IntegerEntry i_ = IntegerEntry.ofAlias(this.s, k);
+        IntegerEntry i_ = IntegerEntry.ofAlias(s, k);
         assertEquals(true, i_.exists());
 
         long v_ = i_.get();
@@ -174,7 +173,7 @@ public class BatchTest {
         double v1 = TestUtils.randomDouble();
         double v2 = TestUtils.randomDouble();
 
-        Batch b = Batch.builder(this.s).commitMode(commitMode).build();
+        Batch b = Batch.builder(s).commitMode(commitMode).build();
 
         // First put new string
         b.double_(k).put(v1);
@@ -187,7 +186,7 @@ public class BatchTest {
         b.commit();
 
         // Validate entry actually exists using regular key/value API
-        DoubleEntry d_ = DoubleEntry.ofAlias(this.s, k);
+        DoubleEntry d_ = DoubleEntry.ofAlias(s, k);
         assertEquals(true, d_.exists());
 
         double v_ = d_.get();

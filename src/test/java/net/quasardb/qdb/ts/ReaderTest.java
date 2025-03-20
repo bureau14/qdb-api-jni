@@ -8,8 +8,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 
 import net.quasardb.common.TestUtils;
 import net.quasardb.qdb.ts.*;
@@ -19,38 +19,38 @@ import net.quasardb.qdb.exception.InvalidArgumentException;
 
 public class ReaderTest {
 
+    private static Session s;
 
-    private Session s;
-
-    @BeforeEach
-    public void setup() {
-        this.s = TestUtils.createSession();
+    @BeforeAll
+    public static void setup() {
+        s = TestUtils.createSession();
     }
 
-    @AfterEach
-    public void teardown() {
-        this.s.close();
-        this.s = null;
+    @AfterAll
+    public static void teardown() {
+        s.close();
+        s = null;
     }
 
     @Test
     public void canGetReader() throws Exception {
         Column[] cols = TestUtils.generateTableColumns(1);
         WritableRow[] rows = TestUtils.generateTableRows(cols, 1);
-        Table table = TestUtils.seedTable(this.s, cols, rows);
+        Table table = TestUtils.seedTable(s, cols, rows);
         TimeRange[] ranges = TestUtils.rangesFromRows(rows);
 
-        Reader reader = Table.reader(this.s, table, ranges);
+        Reader reader = Table.reader(s, table, ranges);
+        reader.close();
     }
 
     @Test
     public void canCloseReader() throws Exception {
         Column[] cols = TestUtils.generateTableColumns(1);
         WritableRow[] rows = TestUtils.generateTableRows(cols, 1);
-        Table table = TestUtils.seedTable(this.s, cols, rows);
+        Table table = TestUtils.seedTable(s, cols, rows);
         TimeRange[] ranges = TestUtils.rangesFromRows(rows);
 
-        Reader reader = Table.reader(this.s, table, ranges);
+        Reader reader = Table.reader(s, table, ranges);
         reader.close();
     }
 
@@ -58,11 +58,11 @@ public class ReaderTest {
     public void readWithoutRanges_throwsException() throws Exception {
         Column[] cols = TestUtils.generateTableColumns(1);
         WritableRow[] rows = TestUtils.generateTableRows(cols, 1);
-        Table table = TestUtils.seedTable(this.s, cols, rows);
+        Table table = TestUtils.seedTable(s, cols, rows);
         TimeRange[] ranges = {};
 
         assertThrows(InvalidArgumentException.class, () -> {
-                Table.reader(this.s, table, ranges);
+                Table.reader(s, table, ranges);
             });
     }
 
@@ -70,7 +70,7 @@ public class ReaderTest {
     public void canReadEmptyResult() throws Exception {
         Column[] cols = TestUtils.generateTableColumns(1);
         WritableRow[] rows = {};
-        Table table = TestUtils.seedTable(this.s, cols, rows);
+        Table table = TestUtils.seedTable(s, cols, rows);
 
         // These ranges should always be empty
         TimeRange[] ranges = {
@@ -78,9 +78,12 @@ public class ReaderTest {
                           Timespec.now().plusNanos(1))
         };
 
-        Reader reader = Table.reader(this.s, table, ranges);
-
-        assertFalse(reader.hasNext());
+        Reader reader = Table.reader(s, table, ranges);
+        try {
+            assertFalse(reader.hasNext());
+        } finally {
+            reader.close();
+        }
     }
 
     @Test
@@ -129,15 +132,19 @@ public class ReaderTest {
                 TestUtils.generateTableColumns(columnType, 1);
 
             WritableRow[] rows = TestUtils.generateTableRows(cols, 1);
-            Table table = TestUtils.seedTable(this.s, cols, rows);
+            Table table = TestUtils.seedTable(s, cols, rows);
             TimeRange[] ranges = TestUtils.rangesFromRows(rows);
 
-            Reader reader = Table.reader(this.s, table, ranges);
+            Reader reader = Table.reader(s, table, ranges);
 
-            assertTrue(reader.hasNext());
+            try {
+                assertTrue(reader.hasNext());
 
-            Row row = reader.next();
-            assertEquals(rows[0], row);
+                Row row = reader.next();
+                assertEquals(rows[0], row);
+            } finally {
+                reader.close();
+            }
         }
     }
 
@@ -154,14 +161,18 @@ public class ReaderTest {
             Column[] cols =
                 TestUtils.generateTableColumns(columnType, 2);
             WritableRow[] rows = TestUtils.generateTableRows(cols, 2);
-            Table table = TestUtils.seedTable(this.s, cols, rows);
+            Table table = TestUtils.seedTable(s, cols, rows);
             TimeRange[] ranges = TestUtils.rangesFromRows(rows);
 
-            Reader reader = Table.reader(this.s, table, ranges);
+            Reader reader = Table.reader(s, table, ranges);
 
-            int index = 0;
-            while (reader.hasNext()) {
-                assertEquals(rows[index++], reader.next());
+            try {
+                int index = 0;
+                while (reader.hasNext()) {
+                    assertEquals(rows[index++], reader.next());
+                }
+            } finally {
+                reader.close();
             }
         }
     }
@@ -169,8 +180,6 @@ public class ReaderTest {
     @Test
     public void canCallHasNext_multipleTimes() throws Exception {
         // Generate a 1x1 test dataset
-        Session s = TestUtils.createSession();
-
         Column[] cols = TestUtils.generateTableColumns(1);
         WritableRow[] rows = TestUtils.generateTableRows(cols, 1);
         Table table = TestUtils.seedTable(s, cols, rows);
@@ -178,21 +187,23 @@ public class ReaderTest {
 
         Reader reader = Table.reader(s, table, ranges);
 
-        assertTrue(reader.hasNext());
-        assertTrue(reader.hasNext());
-        assertTrue(reader.hasNext());
+        try {
+            assertTrue(reader.hasNext());
+            assertTrue(reader.hasNext());
+            assertTrue(reader.hasNext());
 
-        reader.next();
+            reader.next();
 
-        assertFalse(reader.hasNext());
-        assertFalse(reader.hasNext());
+            assertFalse(reader.hasNext());
+            assertFalse(reader.hasNext());
+        } finally {
+            reader.close();
+        }
     }
 
     @Test
     public void invalidIterator_throwsException() throws Exception {
         // Generate a 1x1 test dataset
-        Session s = TestUtils.createSession();
-
         Column[] cols = TestUtils.generateTableColumns(1);
         WritableRow[] rows = TestUtils.generateTableRows(cols, 1);
         Table table = TestUtils.seedTable(s, cols, rows);
@@ -201,10 +212,14 @@ public class ReaderTest {
         // Seeding complete, actual test below this line
 
         Reader reader = Table.reader(s, table, ranges);
-        reader.next();
+        try {
+            reader.next();
 
-        assertThrows(InvalidIteratorException.class, () -> {
-                reader.next();
-            });
+            assertThrows(InvalidIteratorException.class, () -> {
+                    reader.next();
+                });
+        } finally {
+            reader.close();
+        }
     }
 }

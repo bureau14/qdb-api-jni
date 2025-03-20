@@ -10,8 +10,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 
 import net.quasardb.common.TestUtils;
 import net.quasardb.qdb.Session;
@@ -21,25 +21,24 @@ import net.quasardb.qdb.ts.Timespec;
 
 public class TimestampTest {
 
-    private Session s;
+    private static Session s;
 
-    @BeforeEach
-    public void setup() {
-        this.s = TestUtils.createSession();
+    @BeforeAll
+    public static void setup() {
+        s = TestUtils.createSession();
     }
 
-    @AfterEach
-    public void teardown() {
-        this.s.purgeAll(300000);
-        this.s.close();
-        this.s = null;
+    @AfterAll
+    public static void teardown() {
+        s.close();
+        s = null;
     }
 
     @Test
     public void canCheckExists() throws Exception {
         String k = TestUtils.createUniqueAlias();
         Timespec v = TestUtils.randomTimestamp();
-        TimestampEntry d = TimestampEntry.ofAlias(this.s, k);
+        TimestampEntry d = TimestampEntry.ofAlias(s, k);
 
         assertEquals(false, d.exists());
     }
@@ -48,7 +47,7 @@ public class TimestampTest {
     public void canPut() throws Exception {
         String k = TestUtils.createUniqueAlias();
         Timespec v = TestUtils.randomTimestamp();
-        TimestampEntry d = TimestampEntry.ofAlias(this.s, k);
+        TimestampEntry d = TimestampEntry.ofAlias(s, k);
 
         d.put(v);
 
@@ -59,7 +58,7 @@ public class TimestampTest {
     public void canGet() throws Exception {
         String k = TestUtils.createUniqueAlias();
         Timespec v = TestUtils.randomTimestamp();
-        TimestampEntry d = TimestampEntry.ofAlias(this.s, k);
+        TimestampEntry d = TimestampEntry.ofAlias(s, k);
 
         d.put(v);
 
@@ -71,7 +70,7 @@ public class TimestampTest {
     public void canUpdate() throws Exception {
         String k = TestUtils.createUniqueAlias();
         Timespec v1 = TestUtils.randomTimestamp();
-        TimestampEntry d = TimestampEntry.ofAlias(this.s, k);
+        TimestampEntry d = TimestampEntry.ofAlias(s, k);
 
         boolean created1 = d.update(v1);
         assertEquals(true, created1);
@@ -88,7 +87,7 @@ public class TimestampTest {
     public void canRemove() throws Exception {
         String k = TestUtils.createUniqueAlias();
         Timespec v = TestUtils.randomTimestamp();
-        TimestampEntry d = TimestampEntry.ofAlias(this.s, k);
+        TimestampEntry d = TimestampEntry.ofAlias(s, k);
 
         assertEquals(false, d.exists());
 

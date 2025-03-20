@@ -287,6 +287,79 @@ JNIEXPORT jint JNICALL Java_net_quasardb_qdb_jni_qdb_option_1set_1client_1max_1p
     }
 }
 
+JNIEXPORT jint JNICALL Java_net_quasardb_qdb_jni_qdb_option_1set_1client_1max_1batch_1load(
+    JNIEnv * jniEnv, jclass /*thisClass*/, jlong handle, jlong batchLoad)
+{
+    qdb::jni::env env(jniEnv);
+    try
+    {
+        return jni::exception::throw_if_error((qdb_handle_t)handle,
+            qdb_option_set_client_max_batch_load((qdb_handle_t)handle, batchLoad));
+    }
+    catch (jni::exception const & e)
+    {
+        e.throw_new(env);
+        return e.error();
+    }
+}
+
+JNIEXPORT jlong JNICALL Java_net_quasardb_qdb_jni_qdb_option_1get_1client_1max_1batch_1load(
+    JNIEnv * jniEnv, jclass /*thisClass*/, jlong handle)
+{
+    qdb::jni::env env(jniEnv);
+    try
+    {
+        qdb_size_t batchLoad;
+
+        jni::exception::throw_if_error((qdb_handle_t)handle,
+            qdb_option_get_client_max_batch_load((qdb_handle_t)handle, &batchLoad));
+
+        return batchLoad;
+    }
+    catch (jni::exception const & e)
+    {
+        e.throw_new(env);
+        return -1;
+    }
+}
+
+JNIEXPORT jint JNICALL Java_net_quasardb_qdb_jni_qdb_option_1set_1connection_1per_1address_1soft_1limit(
+    JNIEnv * jniEnv, jclass /*thisClass*/, jlong handle, jlong limit)
+{
+    qdb::jni::env env(jniEnv);
+    try
+    {
+        return jni::exception::throw_if_error((qdb_handle_t)handle,
+            qdb_option_set_connection_per_address_soft_limit((qdb_handle_t)handle, limit));
+    }
+    catch (jni::exception const & e)
+    {
+        e.throw_new(env);
+        return e.error();
+    }
+}
+
+JNIEXPORT jlong JNICALL Java_net_quasardb_qdb_jni_qdb_option_1get_1connection_1per_1address_1soft_1limit(
+    JNIEnv * jniEnv, jclass /*thisClass*/, jlong handle)
+{
+    qdb::jni::env env(jniEnv);
+    try
+    {
+        qdb_size_t limit;
+
+        jni::exception::throw_if_error((qdb_handle_t)handle,
+            qdb_option_get_connection_per_address_soft_limit((qdb_handle_t)handle, &limit));
+
+        return limit;
+    }
+    catch (jni::exception const & e)
+    {
+        e.throw_new(env);
+        return -1;
+    }
+}
+
+
 JNIEXPORT jint JNICALL Java_net_quasardb_qdb_jni_qdb_purge_1all(
     JNIEnv * jniEnv, jclass /*thisClass*/, jlong handle, jint timeout)
 {
