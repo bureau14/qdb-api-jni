@@ -21,24 +21,24 @@ import net.quasardb.qdb.ts.Timespec;
 
 public class TimestampTest {
 
-    private Session s;
+    private static Session s;
 
     @BeforeAll
-    public void setup() {
-        this.s = TestUtils.createSession();
+    public static void setup() {
+        s = TestUtils.createSession();
     }
 
     @AfterAll
-    public void teardown() {
-        this.s.close();
-        this.s = null;
+    public static void teardown() {
+        s.close();
+        s = null;
     }
 
     @Test
     public void canCheckExists() throws Exception {
         String k = TestUtils.createUniqueAlias();
         Timespec v = TestUtils.randomTimestamp();
-        TimestampEntry d = TimestampEntry.ofAlias(this.s, k);
+        TimestampEntry d = TimestampEntry.ofAlias(s, k);
 
         assertEquals(false, d.exists());
     }
@@ -47,7 +47,7 @@ public class TimestampTest {
     public void canPut() throws Exception {
         String k = TestUtils.createUniqueAlias();
         Timespec v = TestUtils.randomTimestamp();
-        TimestampEntry d = TimestampEntry.ofAlias(this.s, k);
+        TimestampEntry d = TimestampEntry.ofAlias(s, k);
 
         d.put(v);
 
@@ -58,7 +58,7 @@ public class TimestampTest {
     public void canGet() throws Exception {
         String k = TestUtils.createUniqueAlias();
         Timespec v = TestUtils.randomTimestamp();
-        TimestampEntry d = TimestampEntry.ofAlias(this.s, k);
+        TimestampEntry d = TimestampEntry.ofAlias(s, k);
 
         d.put(v);
 
@@ -70,7 +70,7 @@ public class TimestampTest {
     public void canUpdate() throws Exception {
         String k = TestUtils.createUniqueAlias();
         Timespec v1 = TestUtils.randomTimestamp();
-        TimestampEntry d = TimestampEntry.ofAlias(this.s, k);
+        TimestampEntry d = TimestampEntry.ofAlias(s, k);
 
         boolean created1 = d.update(v1);
         assertEquals(true, created1);
@@ -87,7 +87,7 @@ public class TimestampTest {
     public void canRemove() throws Exception {
         String k = TestUtils.createUniqueAlias();
         Timespec v = TestUtils.randomTimestamp();
-        TimestampEntry d = TimestampEntry.ofAlias(this.s, k);
+        TimestampEntry d = TimestampEntry.ofAlias(s, k);
 
         assertEquals(false, d.exists());
 

@@ -20,24 +20,24 @@ import net.quasardb.qdb.kv.*;
 
 public class DoubleTest {
 
-    private Session s;
+    private static Session s;
 
     @BeforeAll
-    public void setup() {
-        this.s = TestUtils.createSession();
+    public static void setup() {
+        s = TestUtils.createSession();
     }
 
     @AfterAll
-    public void teardown() {
-        this.s.close();
-        this.s = null;
+    public static void teardown() {
+        s.close();
+        s = null;
     }
 
     @Test
     public void canCheckExists() throws Exception {
         String k = TestUtils.createUniqueAlias();
         double v = TestUtils.randomDouble();
-        DoubleEntry d = DoubleEntry.ofAlias(this.s, k);
+        DoubleEntry d = DoubleEntry.ofAlias(s, k);
 
         assertEquals(false, d.exists());
     }
@@ -46,7 +46,7 @@ public class DoubleTest {
     public void canPut() throws Exception {
         String k = TestUtils.createUniqueAlias();
         double v = TestUtils.randomDouble();
-        DoubleEntry d = DoubleEntry.ofAlias(this.s, k);
+        DoubleEntry d = DoubleEntry.ofAlias(s, k);
 
         d.put(v);
 
@@ -57,7 +57,7 @@ public class DoubleTest {
     public void canGet() throws Exception {
         String k = TestUtils.createUniqueAlias();
         double v = TestUtils.randomDouble();
-        DoubleEntry d = DoubleEntry.ofAlias(this.s, k);
+        DoubleEntry d = DoubleEntry.ofAlias(s, k);
 
         d.put(v);
 
@@ -69,7 +69,7 @@ public class DoubleTest {
     public void canUpdate() throws Exception {
         String k = TestUtils.createUniqueAlias();
         double v1 = TestUtils.randomDouble();
-        DoubleEntry d = DoubleEntry.ofAlias(this.s, k);
+        DoubleEntry d = DoubleEntry.ofAlias(s, k);
 
         boolean created1 = d.update(v1);
         assertEquals(true, created1);
@@ -86,7 +86,7 @@ public class DoubleTest {
     public void canRemove() throws Exception {
         String k = TestUtils.createUniqueAlias();
         double v = TestUtils.randomDouble();
-        DoubleEntry d = DoubleEntry.ofAlias(this.s, k);
+        DoubleEntry d = DoubleEntry.ofAlias(s, k);
 
         assertEquals(false, d.exists());
 
