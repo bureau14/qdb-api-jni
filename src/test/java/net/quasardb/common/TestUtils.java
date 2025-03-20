@@ -19,9 +19,7 @@ public class TestUtils {
     public static final String CLUSTER_URI = "qdb://127.0.0.1:2836";
 
     public static Session createSession() {
-        Session s = Session.connect(CLUSTER_URI);
-
-        return s;
+        return Session.connect(CLUSTER_URI);
     }
 
     public static Column generateTableColumn(Column.Type columnType) {
