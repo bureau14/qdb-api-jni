@@ -163,11 +163,6 @@ public class WriterTest {
     @ParameterizedTest
     @EnumSource(Writer.PushMode.class)
     public void canGetWriter(Writer.PushMode mode) throws Exception {
-        Column[] cols = TestUtils.generateTableColumns(1);
-        WritableRow[] rows = TestUtils.generateTableRows(cols, 1);
-        Table table = TestUtils.seedTable(s, cols, rows);
-        TimeRange[] ranges = TestUtils.rangesFromRows(rows);
-
         Writer w = writerByPushMode(mode);
         w.close();
    }
@@ -210,8 +205,7 @@ public class WriterTest {
 
         String alias = TestUtils.createUniqueAlias();
         Column[] definition = TestUtils.generateTableColumns(columnType, COLUMN_COUNT);
-        Table t = TestUtils.createTable(definition);
-
+        Table t = TestUtils.createTable(this.s, definition);
 
         Writer writer = writerByPushMode(mode);
         assertEquals(writer.size(), 0);
@@ -238,7 +232,7 @@ public class WriterTest {
         String alias = TestUtils.createUniqueAlias();
         Column[] definition = TestUtils.generateTableColumns(columnType, 1);
 
-        Table t = TestUtils.createTable(definition);
+        Table t = TestUtils.createTable(this.s, definition);
 
         Value[] values = {
             TestUtils.generateRandomValueByType(columnType)
@@ -279,7 +273,7 @@ public class WriterTest {
         String alias = TestUtils.createUniqueAlias();
         Column[] definition = TestUtils.generateTableColumns(columnType, 1);
 
-        Table t = TestUtils.createTable(definition);
+        Table t = TestUtils.createTable(this.s, definition);
         Writer writer = writerByPushMode(mode);
 
         try {
@@ -321,7 +315,7 @@ public class WriterTest {
         String alias = TestUtils.createUniqueAlias();
         Column[] definition = TestUtils.generateTableColumns(columnType, 1);
 
-        Table t = TestUtils.createTable(definition);
+        Table t = TestUtils.createTable(this.s, definition);
         Writer writer = writerByPushMode(mode);
 
         try {
@@ -358,7 +352,7 @@ public class WriterTest {
         String alias = TestUtils.createUniqueAlias();
         Column[] definition = TestUtils.generateTableColumns(columnTypes);
 
-        Table t = TestUtils.createTable(definition);
+        Table t = TestUtils.createTable(this.s, definition);
         Writer writer = writerByPushMode(mode);
 
         try {
@@ -398,8 +392,8 @@ public class WriterTest {
         Column[] definition1 = TestUtils.generateTableColumns(columnTypes);
         Column[] definition2 = TestUtils.generateTableColumns(columnTypes);
 
-        Table t1 = TestUtils.createTable(definition1);
-        Table t2 = TestUtils.createTable(definition2);
+        Table t1 = TestUtils.createTable(this.s, definition1);
+        Table t2 = TestUtils.createTable(this.s, definition2);
 
         assert(t1.getName() != t2.getName());
 
@@ -449,7 +443,7 @@ public class WriterTest {
     public void canFlushTwice(Writer.PushMode mode, Column.Type columnType) throws Exception {
         Column[] definition = TestUtils.generateTableColumns(columnType, 1);
 
-        Table t = TestUtils.createTable(definition);
+        Table t = TestUtils.createTable(this.s, definition);
         Writer writer = writerByPushMode(mode);
 
         try {
@@ -504,7 +498,7 @@ public class WriterTest {
     public void canTruncate(Writer.PushMode mode, Column.Type columnType) throws Exception {
         Column[] definition = TestUtils.generateTableColumns(columnType, 1);
 
-        Table t = TestUtils.createTable(definition);
+        Table t = TestUtils.createTable(this.s, definition);
         Writer writer = writerByPushMode(mode);
 
         try {
@@ -574,7 +568,7 @@ public class WriterTest {
         //
 
         Column[] definition = TestUtils.generateTableColumns(columnTypes);
-        Table t = TestUtils.createTable(definition);
+        Table t = TestUtils.createTable(this.s, definition);
         Writer.Builder builder = Writer.builder(this.s).fastPush();
         builder = setDeduplicationOptions(definition, builder, deduplicationStyle);
         Writer writer = builder.build();
