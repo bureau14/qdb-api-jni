@@ -22,7 +22,6 @@ public class SessionOptionsTest {
 
     private Session s;
 
-
     @BeforeEach
     public void setup() {
         this.s = TestUtils.createSession();
