@@ -35,6 +35,31 @@ public class SessionOptionsTest {
         assertEquals(s.getInputBufferSize(), old + 1024);
     }
 
+    @Test
+    public void canGetConnectionPerAddressSoftLimit() {
+        Session s = TestUtils.createSession();
+        assertTrue(s.getConnectionPerAddressSoftLimit() > 0);
+    }
+
+    @Test
+    public void canSetConnectionPerAddressSoftLimit() {
+        Session s = TestUtils.createSession();
+        s.setConnectionPerAddressSoftLimit(256);
+        assertEquals(s.getConnectionPerAddressSoftLimit(), 256);
+    }
+
+    @Test
+    public void canGetClientMaxBatchLoad() {
+        Session s = TestUtils.createSession();
+        assertTrue(s.getMaxBatchLoad() > 0);
+    }
+
+    @Test
+    public void canSetClientMaxBatchLoad() {
+        Session s = TestUtils.createSession();
+        s.setClientMaxBatchLoad(42);
+        assertEquals(s.getClientMaxBatchLoad(), 42);
+    }
 
     @Test
     public void canGetClientMaxParallelism() {
