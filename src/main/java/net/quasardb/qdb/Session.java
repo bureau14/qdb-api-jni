@@ -264,7 +264,7 @@ public class Session implements AutoCloseable {
      *
      * @throws ClusterClosedException If the connection to the cluster is currently closed.
      */
-    public void setClientMaxBatchLoad(long batchLoad) throws ClusterClosedException {
+    public void setMaxBatchLoad(long batchLoad) throws ClusterClosedException {
         throwIfClosed();
 
         qdb.option_set_client_max_batch_load(handle, batchLoad);
@@ -275,7 +275,7 @@ public class Session implements AutoCloseable {
      *
      * @throws ClusterClosedException If the connection to the cluster is currently closed.
      */
-    public long getClientMaxBatchLoad() throws ClusterClosedException {
+    public long getMaxBatchLoad() throws ClusterClosedException {
         throwIfClosed();
 
         return qdb.option_get_client_max_batch_load(handle);
