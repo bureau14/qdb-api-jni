@@ -57,7 +57,7 @@ public class SessionOptionsTest {
     @Test
     public void canSetMaxBatchLoad() {
         Session s = TestUtils.createSession();
-        s.settMaxBatchLoad(42);
+        s.setMaxBatchLoad(42);
         assertEquals(s.getMaxBatchLoad(), 42);
     }
 
