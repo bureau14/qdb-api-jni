@@ -58,18 +58,6 @@ public class SessionOptionsTest {
     }
 
     @Test
-    public void canSetConnectionPerAddressSoftLimit() {
-        long old = s.getConnectionPerAddressSoftLimit();
-
-        try {
-            s.setConnectionPerAddressSoftLimit(old + 256);
-            assertEquals(s.getConnectionPerAddressSoftLimit(), old + 256);
-        } finally {
-            s.setConnectionPerAddressSoftLimit(old);
-        }
-    }
-
-    @Test
     public void canGetMaxBatchLoad() {
         assertTrue(s.getMaxBatchLoad() > 0);
     }

@@ -381,19 +381,6 @@ public class Session implements AutoCloseable {
     }
 
     /**
-     * Set maximum number of connections per qdbd host.
-     *
-     * @param limit The limit of the number of connections
-     *
-     * @throws ClusterClosedException If the connection to the cluster is currently closed.
-     */
-    public void setConnectionPerAddressSoftLimit(long limit) throws ClusterClosedException {
-        throwIfClosed();
-
-
-    }
-
-    /**
      * Returns the current connection limit per qdbd host.
      *
      * @throws ClusterClosedException If the connection to the cluster is currently closed.
