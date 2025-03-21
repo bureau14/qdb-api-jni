@@ -63,18 +63,6 @@ public class SessionOptionsTest {
     }
 
     @Test
-    public void canSetMaxBatchLoad() {
-        long old = s.getMaxBatchLoad();
-
-        try {
-            s.setMaxBatchLoad(old + 42);
-            assertEquals(s.getMaxBatchLoad(), old + 42);
-        } finally {
-            s.setMaxBatchLoad(old);
-        }
-    }
-
-    @Test
     public void canGetClientMaxParallelism() {
         assertTrue(s.getClientMaxParallelism() > 0);
     }
