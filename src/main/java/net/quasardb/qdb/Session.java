@@ -110,6 +110,9 @@ public class Session implements AutoCloseable {
         protected Builder() {
             this.uri = null;
             this.securityOptions = Optional.empty();
+
+            this.inputBufferSize = Optional.empty();
+            this.softMemoryLimit = Optional.empty();
             this.connectionPerAddressSoftLimit = Optional.empty();
         };
 
