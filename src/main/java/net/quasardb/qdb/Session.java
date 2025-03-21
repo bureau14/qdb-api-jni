@@ -9,6 +9,7 @@ import java.nio.file.Path;
 import java.lang.AutoCloseable;
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
+import java.util.Optional;
 import java.time.Instant;
 import java.time.Duration;
 
@@ -22,7 +23,7 @@ import net.quasardb.qdb.exception.InputBufferTooSmallException;
 
 
 /**
- * Represents a connection with the QuasarDB cluster. This class is not
+ * Represents a session with the QuasarDB cluster. This class is not
  * thread-safe. As instantiations of this class are expensive (especially
  * when secure connections are used), you are encouraged to pool instances
  * of this class are you would do with any other connection pool.
@@ -95,50 +96,121 @@ public class Session implements AutoCloseable {
     }
 
     /**
-     * Initialize a new Session without security settings. Connections to the
-     * QuasarDB cluster will be insecure and unauthenticated.
+     * Builder implementation for sessions. Use this class to create new sessions
+     * and set (optional) options accordingly.
+     */
+    public static final class Builder {
+        private String uri;
+        private Optional<SecurityOptions> securityOptions;
+
+        private Optional<Long> inputBufferSize;
+        private Optional<Long> softMemoryLimit;
+        private Optional<Integer> connectionPerAddressSoftLimit;
+
+        protected Builder() {
+            this.uri = null;
+            this.securityOptions = Optional.empty();
+            this.connectionPerAddressSoftLimit = Optional.empty();
+        };
+
+        public Builder uri(String uri) {
+            this.uri = uri;
+
+            return this;
+        }
+
+        public Builder securityOptions(SecurityOptions options) {
+            this.securityOptions = Optional.of(options);
+
+            return this;
+        }
+
+        public Builder inputBufferSize(Long inputBufferSize) throws IllegalArgumentException {
+            if (inputBufferSize <= 0) {
+                throw new IllegalArgumentException("Input buffer size must be > 0");
+            }
+
+            this.inputBufferSize = Optional.of(inputBufferSize);
+
+            return this;
+        }
+
+        public Builder softMemoryLimit(Long softMemoryLimit) throws IllegalArgumentException {
+            if (softMemoryLimit <= 0) {
+                throw new IllegalArgumentException("Soft memory limit must be > 0");
+            }
+
+            this.softMemoryLimit = Optional.of(softMemoryLimit);
+
+            return this;
+        }
+
+        public Builder connectionPerAddressSoftLimit(Integer n) throws IllegalArgumentException {
+            if (n <= 0) {
+                throw new IllegalArgumentException("Connection per address soft limit must be > 0");
+            }
+
+            if (n > 4096) {
+                logger.warn("Setting very large value for connection per address, make sure this is intentional: {}", n);
+            }
+
+            this.connectionPerAddressSoftLimit = Optional.of(n);
+
+            return this;
+        }
+
+        public Session build() throws IllegalArgumentException {
+            if (this.uri == null) {
+                throw new IllegalArgumentException("Must always provide a cluster uri");
+            }
+
+            Session s = new Session();
+
+            if (this.inputBufferSize.isPresent()) {
+                logger.debug("Setting input buffer size to: {}", this.inputBufferSize.get());
+                qdb.option_set_client_max_in_buf_size(s.handle, this.inputBufferSize.get().longValue());
+            }
+
+            if (this.softMemoryLimit.isPresent()) {
+                logger.debug("Setting soft memory limit to: {}", this.softMemoryLimit.get());
+                qdb.option_set_client_soft_memory_limit(s.handle, this.softMemoryLimit.get().longValue());
+            }
+
+            if (this.connectionPerAddressSoftLimit.isPresent()) {
+                logger.debug("Setting connection per address soft limit to: {}", this.connectionPerAddressSoftLimit.get());
+                qdb.option_set_connection_per_address_soft_limit(s.handle, this.connectionPerAddressSoftLimit.get().longValue());
+            }
+
+            if (this.securityOptions.isPresent()) {
+                logger.info("Establishing a secure connection to conluster: {}", this.uri);
+                qdb.secure_connect(s.handle, this.uri, SecurityOptions.toNative(this.securityOptions.get()));
+            } else {
+                logger.info("Establishing an insecure connection to conluster: {}", this.uri);
+                qdb.connect(s.handle, this.uri);
+            }
+
+            return s;
+        };
+
+    };
+
+
+    /**
+     * Open a new session. This is the equivalent of opening a socket but not
+     * yet connecting to it.
      */
     public Session() {
-        handle = qdb.open_tcp();
+        qdb.open_tcp();
     }
 
     /**
-     * Initialize a new Session with security settings. Connections to the
-     * QuasarDB will use a secure connection and will be authenticated.
-     */
-    public Session(SecurityOptions securityOptions) {
-        this.securityOptions = SecurityOptions.toNative(securityOptions);
-        handle = qdb.open_tcp();
-    }
-
-    /**
-     * Establishes a connection
+     * Create a builder instance.
      *
-     * @param uri Fully qualified quasardb cluster uri, e.g. qdb://127.0.0.1:2836
-     * @return A QuasarDB session
+     * Use this function to create new session objects and connect to the cluster.
      */
-    static public Session connect(String uri) {
-        logger.info("Establishing an insecure connection to cluster: {}", uri);
-        Session s = new Session();
-        qdb.connect(s.handle, uri);
-
-        return s;
-    }
-
-    /**
-     * Establishes a secure connection
-     *
-     * @param options Security options for authenticating with cluster
-     * @param uri Fully qualified quasardb cluster uri, e.g. qdb://127.0.0.1:2836
-     * @return A secure QuasarDB session
-     */
-    static public Session connect(SecurityOptions options, String uri) {
-        logger.info("Establishing a secure connection to cluster: {}", uri);
-        Session s = new Session();
-        qdb.secure_connect(s.handle, uri, SecurityOptions.toNative(options));
-
-        return s;
-    }
+    public static Builder builder() {
+        return new Builder();
+    };
 
     public void close() {
         if (handle != 0) {
@@ -243,7 +315,7 @@ public class Session implements AutoCloseable {
     public void setConnectionPerAddressSoftLimit(long limit) throws ClusterClosedException {
         throwIfClosed();
 
-        qdb.option_set_connection_per_address_soft_limit(handle, limit);
+
     }
 
     /**
