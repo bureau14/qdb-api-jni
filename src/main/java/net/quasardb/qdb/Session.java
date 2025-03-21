@@ -74,7 +74,6 @@ public class Session implements AutoCloseable {
         }
     }
 
-
     /**
      * Optional configuration for establishing a secure connection.
      */
@@ -147,6 +146,7 @@ public class Session implements AutoCloseable {
         private Optional<Long> inputBufferSize;
         private Optional<Long> softMemoryLimit;
         private Optional<Integer> connectionPerAddressSoftLimit;
+        private Optional<Integer> maxBatchLoad;
         private Optional<CompressionMode> compressionMode;
 
         protected Builder() {
@@ -156,6 +156,7 @@ public class Session implements AutoCloseable {
             this.inputBufferSize = Optional.empty();
             this.softMemoryLimit = Optional.empty();
             this.connectionPerAddressSoftLimit = Optional.empty();
+            this.maxBatchLoad = Optional.empty();
             this.compressionMode = Optional.of(CompressionMode.BALANCED);
         };
 
@@ -196,11 +197,18 @@ public class Session implements AutoCloseable {
                 throw new IllegalArgumentException("Connection per address soft limit must be > 0");
             }
 
-            if (n > 4096) {
-                logger.warn("Setting very large value for connection per address, make sure this is intentional: {}", n);
+            this.connectionPerAddressSoftLimit = Optional.of(n);
+
+            return this;
+        }
+
+
+        public Builder maxBatchLoad(Integer n) throws IllegalArgumentException {
+            if (n <= 0) {
+                throw new IllegalArgumentException("Max batch load must be > 0");
             }
 
-            this.connectionPerAddressSoftLimit = Optional.of(n);
+            this.maxBatchLoad = Optional.of(n);
 
             return this;
         }
@@ -249,6 +257,11 @@ public class Session implements AutoCloseable {
             if (this.softMemoryLimit.isPresent()) {
                 logger.debug("Setting soft memory limit to: {}", this.softMemoryLimit.get());
                 qdb.option_set_client_soft_memory_limit(s.handle, this.softMemoryLimit.get().longValue());
+            }
+
+            if (this.maxBatchLoad.isPresent()) {
+                logger.debug("Setting max batch load to: {}", this.maxBatchLoad.get());
+                qdb.option_set_client_max_batch_load(s.handle, this.maxBatchLoad.get().longValue());
             }
 
             if (this.connectionPerAddressSoftLimit.isPresent()) {
@@ -389,19 +402,6 @@ public class Session implements AutoCloseable {
         throwIfClosed();
 
         return qdb.option_get_connection_per_address_soft_limit(handle);
-    }
-
-    /**
-     * Set the maximum "load" of a single execution batch per thread.
-     *
-     * @param batchLoad The maximum load of a batch
-     *
-     * @throws ClusterClosedException If the connection to the cluster is currently closed.
-     */
-    public void setMaxBatchLoad(long batchLoad) throws ClusterClosedException {
-        throwIfClosed();
-
-        qdb.option_set_client_max_batch_load(handle, batchLoad);
     }
 
     /**
