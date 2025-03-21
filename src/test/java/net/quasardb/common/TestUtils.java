@@ -21,6 +21,7 @@ public class TestUtils {
     public static Session createSession() {
         return Session.builder()
             .uri(CLUSTER_URI)
+            .inputBufferSize(268435456)
             .connectionPerAddressSoftLimit(256)
             .build();
     }
