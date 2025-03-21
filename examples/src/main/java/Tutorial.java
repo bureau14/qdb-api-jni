@@ -50,7 +50,7 @@ public class Tutorial {
         Session c;
 
         try {
-            c = Session.connect("qdb://127.0.0.1:2836");
+            c = Session.builder().uri("qdb://127.0.0.1:2836").build();
         } catch (ConnectionRefusedException ex) {
             System.err.println("Failed to connect to cluster, make sure server is running!");
             throw ex;
