@@ -35,6 +35,47 @@ public class Session implements AutoCloseable {
     private qdb_cluster_security_options securityOptions;
 
     /**
+     * Compression mode representation
+     */
+    public enum CompressionMode {
+        NONE(Constants.qdb_comp_none),
+        FAST(Constants.qdb_comp_fast),
+        BEST(Constants.qdb_comp_best),
+        BALANCED(Constants.qdb_comp_balanced)
+        ;
+
+        protected final int mode;
+
+        CompressionMode(int mode) {
+            this.mode = mode;
+        }
+
+        public int asInt() {
+            return this.mode;
+        }
+
+        public static CompressionMode fromInt(int mode) {
+            switch(mode) {
+
+            case Constants.qdb_comp_none:
+                return CompressionMode.NONE;
+
+            case Constants.qdb_comp_fast:
+                return CompressionMode.FAST;
+
+            case Constants.qdb_comp_best:
+                return CompressionMode.BEST;
+
+            case Constants.qdb_comp_balanced:
+                return CompressionMode.BALANCED;
+            }
+
+            return CompressionMode.NONE;
+        }
+    }
+
+
+    /**
      * Optional configuration for establishing a secure connection.
      */
     public static class SecurityOptions implements Serializable {
@@ -106,6 +147,7 @@ public class Session implements AutoCloseable {
         private Optional<Long> inputBufferSize;
         private Optional<Long> softMemoryLimit;
         private Optional<Integer> connectionPerAddressSoftLimit;
+        private Optional<CompressionMode> compressionMode;
 
         protected Builder() {
             this.uri = null;
@@ -114,6 +156,7 @@ public class Session implements AutoCloseable {
             this.inputBufferSize = Optional.empty();
             this.softMemoryLimit = Optional.empty();
             this.connectionPerAddressSoftLimit = Optional.empty();
+            this.compressionMode = Optional.of(CompressionMode.BALANCED);
         };
 
         public Builder uri(String uri) {
@@ -162,12 +205,41 @@ public class Session implements AutoCloseable {
             return this;
         }
 
+        public Builder noCompression() {
+            this.compressionMode = Optional.of(CompressionMode.NONE);
+
+            return this;
+        }
+
+        public Builder fastCompression() {
+            this.compressionMode = Optional.of(CompressionMode.FAST);
+
+            return this;
+        }
+
+        public Builder bestCompression() {
+            this.compressionMode = Optional.of(CompressionMode.BEST);
+
+            return this;
+        }
+
+        public Builder balancedCompression() {
+            this.compressionMode = Optional.of(CompressionMode.BALANCED);
+
+            return this;
+        }
+
         public Session build() throws IllegalArgumentException {
             if (this.uri == null) {
                 throw new IllegalArgumentException("Must always provide a cluster uri");
             }
 
             Session s = new Session();
+
+            if (this.compressionMode.isPresent()) {
+                logger.debug("Setting compression mode to: {}", this.compressionMode.get());
+                qdb.option_set_compression(s.handle, this.compressionMode.get().asInt());
+            }
 
             if (this.inputBufferSize.isPresent()) {
                 logger.debug("Setting input buffer size to: {}", this.inputBufferSize.get());

@@ -323,6 +323,24 @@ JNIEXPORT jlong JNICALL Java_net_quasardb_qdb_jni_qdb_option_1get_1client_1max_1
     }
 }
 
+JNIEXPORT jint JNICALL Java_net_quasardb_qdb_jni_qdb_option_1set_1compression(
+    JNIEnv * jniEnv, jclass /*thisClass*/, jlong handle, jint compression)
+{
+    qdb::jni::env env(jniEnv);
+    try
+    {
+        qdb_compression_t compression_ = static_cast<qdb_compression_t>(compression);
+      
+        return jni::exception::throw_if_error((qdb_handle_t)handle,
+                                              qdb_option_set_compression((qdb_handle_t)handle, compression_));
+    }
+    catch (jni::exception const & e)
+    {
+        e.throw_new(env);
+        return e.error();
+    }
+}
+
 JNIEXPORT jint JNICALL Java_net_quasardb_qdb_jni_qdb_option_1set_1connection_1per_1address_1soft_1limit(
     JNIEnv * jniEnv, jclass /*thisClass*/, jlong handle, jlong limit)
 {

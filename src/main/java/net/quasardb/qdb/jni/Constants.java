@@ -24,4 +24,8 @@ public class Constants {
     public static final int qdb_ts_column_string = 4;
     public static final int qdb_ts_column_symbol = 5;
 
+    public static final int qdb_comp_none = 0;
+    public static final int qdb_comp_fast = 1;
+    public static final int qdb_comp_best = 2;
+    public static final int qdb_comp_balanced = 3;
 };
