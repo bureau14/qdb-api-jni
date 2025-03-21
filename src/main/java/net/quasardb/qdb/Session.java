@@ -275,7 +275,7 @@ public class Session implements AutoCloseable {
      * yet connecting to it.
      */
     public Session() {
-        qdb.open_tcp();
+        this.handle = qdb.open_tcp();
     }
 
     /**
@@ -288,19 +288,19 @@ public class Session implements AutoCloseable {
     };
 
     public void close() {
-        if (handle != 0) {
+        if (this.handle != 0) {
             logger.info("Closing session");
             qdb.close(handle);
-            handle = 0;
+            this.handle = 0;
         }
     }
 
     public boolean isClosed() {
-        return handle == 0;
+        return this.handle == 0;
     }
 
-    public void throwIfClosed() {
-        if (handle == 0) {
+    public void throwIfClosed() throws ClusterClosedException {
+        if (this.handle == 0) {
             logger.warn("Session invoked while closed!");
             throw new ClusterClosedException("Session function invoked but is already closed.");
         }
@@ -313,7 +313,7 @@ public class Session implements AutoCloseable {
     }
 
     public long handle() {
-        return handle;
+        return this.handle;
     }
 
 
