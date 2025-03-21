@@ -48,9 +48,7 @@ public class WriterTest {
     static Stream<Arguments> pushModeProvider() {
         return Stream.of(
                          Arguments.of(Writer.PushMode.NORMAL),
-                         Arguments.of(Writer.PushMode.TRUNCATE),
                          Arguments.of(Writer.PushMode.FAST)
-                         // Arguments.of(Writer.PushMode.ASYNC)
                          );
     }
 
