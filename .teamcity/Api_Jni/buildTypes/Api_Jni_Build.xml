@@ -3,7 +3,7 @@
   <name>Build template</name>
   <settings>
     <options>
-      <option name="artifactRules" value="+:target/*.jar&#xA;-:target/*-sources.jar&#xA;+:target/*-javadoc.jar&#xA;insecure/logs=&gt;logs" />
+      <option name="artifactRules" value="+:target/*.jar&#xA;-:target/*-sources.jar&#xA;+:target/*-javadoc.jar&#xA;insecure/log =&gt; logs/insecure&#xA;secure/log =&gt; logs/secure" />
       <option name="cleanBuild" value="true" />
       <option name="executionTimeoutMin" value="60" />
       <option name="showDependenciesChanges" value="true" />
