@@ -14,8 +14,8 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 
 import net.quasardb.common.TestUtils;
 import net.quasardb.qdb.ts.*;
@@ -25,15 +25,15 @@ import net.quasardb.qdb.exception.InvalidArgumentException;
 
 public class PointsTest {
 
-    private static Session s;
+    private Session s;
 
-    @BeforeAll
-    public static void setup() {
+    @BeforeEach
+    public void setup() {
         s = TestUtils.createSession();
     }
 
-    @AfterAll
-    public static void teardown() {
+    @AfterEach
+    public void teardown() {
         s.close();
         s = null;
     }

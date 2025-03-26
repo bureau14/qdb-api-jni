@@ -221,10 +221,13 @@ JNIEXPORT jlong JNICALL Java_net_quasardb_qdb_jni_qdb_option_1get_1client_1max_1
     qdb::jni::env env(jniEnv);
     try
     {
+        // qdb::jni::log::swap_callback();
+        qdb_handle_t handle_ = reinterpret_cast<qdb_handle_t>(handle);
+        
         qdb_size_t size;
 
-        jni::exception::throw_if_error((qdb_handle_t)handle,
-            qdb_option_get_client_max_in_buf_size((qdb_handle_t)handle, &size));
+        jni::exception::throw_if_error(handle_,
+            qdb_option_get_client_max_in_buf_size(handle_, &size));
 
         return size;
     }
@@ -257,10 +260,11 @@ JNIEXPORT jlong JNICALL Java_net_quasardb_qdb_jni_qdb_option_1get_1client_1max_1
     qdb::jni::env env(jniEnv);
     try
     {
+        qdb_handle_t handle_ = reinterpret_cast<qdb_handle_t>(handle);
         qdb_size_t threadCount;
 
-        jni::exception::throw_if_error((qdb_handle_t)handle,
-            qdb_option_get_client_max_parallelism((qdb_handle_t)handle, &threadCount));
+        jni::exception::throw_if_error(handle_,
+            qdb_option_get_client_max_parallelism(handle_, &threadCount));
 
         return threadCount;
     }
@@ -287,14 +291,33 @@ JNIEXPORT jint JNICALL Java_net_quasardb_qdb_jni_qdb_option_1set_1client_1max_1p
     }
 }
 
+JNIEXPORT jint JNICALL Java_net_quasardb_qdb_jni_qdb_option_1set_1compression(
+    JNIEnv * jniEnv, jclass /*thisClass*/, jlong handle, jint compression)
+{
+    qdb::jni::env env(jniEnv);
+    try
+    {
+        qdb_compression_t compression_ = static_cast<qdb_compression_t>(compression);
+      
+        return jni::exception::throw_if_error((qdb_handle_t)handle,
+                                              qdb_option_set_compression((qdb_handle_t)handle, compression_));
+    }
+    catch (jni::exception const & e)
+    {
+        e.throw_new(env);
+        return e.error();
+    }
+}
+
+
 JNIEXPORT jint JNICALL Java_net_quasardb_qdb_jni_qdb_option_1set_1client_1max_1batch_1load(
-    JNIEnv * jniEnv, jclass /*thisClass*/, jlong handle, jlong batchLoad)
+    JNIEnv * jniEnv, jclass /*thisClass*/, jlong handle, jint batchLoad)
 {
     qdb::jni::env env(jniEnv);
     try
     {
         return jni::exception::throw_if_error((qdb_handle_t)handle,
-            qdb_option_set_client_max_batch_load((qdb_handle_t)handle, batchLoad));
+                                              qdb_option_set_client_max_batch_load((qdb_handle_t)handle, batchLoad));
     }
     catch (jni::exception const & e)
     {

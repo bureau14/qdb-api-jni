@@ -9,8 +9,8 @@ import org.slf4j.event.Level;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 
 import net.quasardb.common.TestUtils;
 import net.quasardb.qdb.exception.*;
@@ -19,17 +19,17 @@ import net.quasardb.qdb.ts.*;
 
 public class PerformanceTraceTest {
 
-    private static Session s;
+    private Session s;
 
-    @BeforeAll
-    public static void setup() {
+    @BeforeEach
+    public void setup() {
         s = TestUtils.createSession();
         PerformanceTrace.enable(s);
         PerformanceTrace.clear(s);
     }
 
-    @AfterAll
-    public static void teardown() {
+    @AfterEach
+    public void teardown() {
         s.close();
         s = null;
     }

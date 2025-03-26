@@ -8,8 +8,8 @@ import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
@@ -22,15 +22,15 @@ import net.quasardb.common.TestUtils;
 
 public class TableTest {
 
-    private static Session s;
+    private Session s;
 
-    @BeforeAll
-    public static void setup() {
+    @BeforeEach
+    public void setup() {
         s = TestUtils.createSession();
     }
 
-    @AfterAll
-    public static void teardown() {
+    @AfterEach
+    public void teardown() {
         s.close();
         s = null;
     }
