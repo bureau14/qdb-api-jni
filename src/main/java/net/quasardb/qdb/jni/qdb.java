@@ -84,6 +84,8 @@ public final class qdb
     public static native int option_set_connection_per_address_soft_limit(long handle, long limit);
     public static native long option_get_connection_per_address_soft_limit(long handle);
 
+    public static native int option_set_compression(long handle, int compressionMode);
+
     public static native int option_set_client_soft_memory_limit(long handle, long threadCount);
     public static native String option_get_client_memory_info(long handle);
     public static native int option_client_tidy_memory(long handle);

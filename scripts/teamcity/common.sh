@@ -144,7 +144,7 @@ echo "Detected cmake: "
 
 # Set these variables explicitly to empty values if they're not defined. This avoids
 # undefined variable issues because we use set -eux
-CMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE:-"Release"}
+CMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE:-"RelWithDebInfo"}
 CMAKE_C_COMPILER=${CMAKE_C_COMPILER:-}
 CMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER:-}
 QDB_CPU_ARCHITECTURE_CORE2=${QDB_CPU_ARCHITECTURE_CORE2:-}

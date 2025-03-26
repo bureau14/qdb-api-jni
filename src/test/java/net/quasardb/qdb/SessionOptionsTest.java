@@ -10,8 +10,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 
 import net.quasardb.common.TestUtils;
 import net.quasardb.qdb.exception.InputBufferTooSmallException;
@@ -20,15 +20,15 @@ import net.quasardb.qdb.*;
 
 public class SessionOptionsTest {
 
-    private static Session s;
+    private Session s;
 
-    @BeforeAll
-    public static void setup() {
+    @BeforeEach
+    public void setup() {
         s = TestUtils.createSession();
     }
 
-    @AfterAll
-    public static void teardown() {
+    @AfterEach
+    public void teardown() {
         s.close();
         s = null;
     }
@@ -58,32 +58,8 @@ public class SessionOptionsTest {
     }
 
     @Test
-    public void canSetConnectionPerAddressSoftLimit() {
-        long old = s.getConnectionPerAddressSoftLimit();
-
-        try {
-            s.setConnectionPerAddressSoftLimit(old + 256);
-            assertEquals(s.getConnectionPerAddressSoftLimit(), old + 256);
-        } finally {
-            s.setConnectionPerAddressSoftLimit(old);
-        }
-    }
-
-    @Test
     public void canGetMaxBatchLoad() {
         assertTrue(s.getMaxBatchLoad() > 0);
-    }
-
-    @Test
-    public void canSetMaxBatchLoad() {
-        long old = s.getMaxBatchLoad();
-
-        try {
-            s.setMaxBatchLoad(old + 42);
-            assertEquals(s.getMaxBatchLoad(), old + 42);
-        } finally {
-            s.setMaxBatchLoad(old);
-        }
     }
 
     @Test

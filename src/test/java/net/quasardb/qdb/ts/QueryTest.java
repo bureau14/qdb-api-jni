@@ -8,8 +8,8 @@ import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 
 import net.quasardb.qdb.Session;
 import net.quasardb.qdb.ts.*;
@@ -21,15 +21,15 @@ import net.quasardb.common.TestUtils;
 public class QueryTest {
 
 
-    private static Session s;
+    private Session s;
 
-    @BeforeAll
-    public static void setup() {
+    @BeforeEach
+    public void setup() {
         s = TestUtils.createSession();
     }
 
-    @AfterAll
-    public static void teardown() {
+    @AfterEach
+    public void teardown() {
         s.close();
         s = null;
     }

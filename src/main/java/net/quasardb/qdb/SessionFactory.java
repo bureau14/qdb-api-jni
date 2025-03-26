@@ -21,7 +21,6 @@ public class SessionFactory {
     private String qdbUri;
     private Optional<Session.SecurityOptions> securityOptions;
     private Optional<Long> inputBufferSize;
-    private Optional<Long> clientMaxParallelism;
     private Optional<Long> softMemoryLimit;
 
     public SessionFactory(String qdbUri) {
@@ -29,7 +28,6 @@ public class SessionFactory {
 
         this.securityOptions      = Optional.empty();
         this.inputBufferSize      = Optional.empty();
-        this.clientMaxParallelism = Optional.empty();
         this.softMemoryLimit      = Optional.empty();
     }
 
@@ -43,40 +41,28 @@ public class SessionFactory {
         return this;
     }
 
-    public SessionFactory clientMaxParallelism(Long clientMaxParallelism) {
-        this.clientMaxParallelism = Optional.of(clientMaxParallelism);
-        return this;
-    }
-
     public SessionFactory softMemoryLimit(Long softMemoryLimit) {
         this.softMemoryLimit = Optional.of(softMemoryLimit);
         return this;
     }
 
     public Session newSession() {
-        Session ret = null;
+
+        Session.Builder builder = Session.builder();
 
         if (this.securityOptions.isPresent()) {
-            ret = Session.connect(this.securityOptions.get(),
-                                  this.qdbUri);
-        } else {
-            ret = Session.connect(this.qdbUri);
+            builder = builder.securityOptions(this.securityOptions.get());
         }
-        assert(ret != null);
 
         if (this.inputBufferSize.isPresent()) {
-            ret.setInputBufferSize(this.inputBufferSize.get().longValue());
-        }
-
-        if (this.clientMaxParallelism.isPresent()) {
-            ret.setClientMaxParallelism(this.clientMaxParallelism.get().longValue());
+            builder = builder.inputBufferSize(this.inputBufferSize.get());
         }
 
         if (this.softMemoryLimit.isPresent()) {
-            ret.setSoftMemoryLimit(this.softMemoryLimit.get().longValue());
+            builder = builder.softMemoryLimit(this.softMemoryLimit.get());
         }
 
-        return ret;
+        return builder.build();
     }
 
 }
