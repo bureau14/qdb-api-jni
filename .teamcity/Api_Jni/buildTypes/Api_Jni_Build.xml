@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<template xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" uuid="" xsi:noNamespaceSchemaLocation="https://www.jetbrains.com/teamcity/schemas/2021.1/project-config.xsd">
+<template xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" uuid="" xsi:noNamespaceSchemaLocation="https://www.jetbrains.com/teamcity/schemas/2025.3/project-config.xsd">
   <name>Build template</name>
   <settings>
     <options>
@@ -15,7 +15,7 @@
       <param name="env.CMAKE_GENERATOR" value="%cmake_generator%" spec="text validationMode='not_empty' readOnly='true'" />
       <param name="env.JAVA_HOME" value="%java_home%" spec="text validationMode='not_empty' readOnly='true'" />
       <param name="env.JAVA_PATH" value="%java_path%" spec="text validationMode='not_empty' readOnly='true'" />
-      <param name="env.MVN_PATH" value="%teamcity.tool.maven.3.5.3%/bin/mvn" spec="text validationMode='not_empty' readOnly='true'" />
+      <param name="env.MVN_PATH" value="%teamcity.tool.maven.DEFAULT%/bin/mvn" spec="text display='normal' readOnly='true' validationMode='not_empty'" />
       <param name="env.WINDOWS_TARGET_ARCH" value="%windows_target_arch%" spec="text validationMode='not_empty' readOnly='true'" />
     </parameters>
     <build-runners>
@@ -73,7 +73,6 @@
       <equals id="TEMPLATE_RQ_2" name="teamcity.agent.jvm.os.arch" value="%os_arch%" />
       <starts-with id="TEMPLATE_RQ_3" name="teamcity.agent.name" value="default" />
     </requirements>
-    <build-triggers />
     <build-extensions>
       <extension id="perfmon" type="perfmon">
         <parameters>
@@ -88,7 +87,6 @@
         </parameters>
       </extension>
     </build-extensions>
-    <cleanup />
   </settings>
 </template>
 
