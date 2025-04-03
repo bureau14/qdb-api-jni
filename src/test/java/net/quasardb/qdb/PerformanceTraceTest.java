@@ -24,6 +24,7 @@ public class PerformanceTraceTest {
     @BeforeEach
     public void setup() {
         s = TestUtils.createSession();
+        s.purgeAll(30000);
         PerformanceTrace.enable(s);
         PerformanceTrace.clear(s);
     }

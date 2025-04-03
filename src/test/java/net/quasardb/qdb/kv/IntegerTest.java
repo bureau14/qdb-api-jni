@@ -25,6 +25,7 @@ public class IntegerTest {
     @BeforeEach
     public void setup() {
         s = TestUtils.createSession();
+        s.purgeAll(30000);
     }
 
     @AfterEach
