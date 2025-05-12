@@ -4,7 +4,7 @@
   <description />
   <settings ref="Api_Jni_Build">
     <parameters>
-      <param name="java_home" value="%env.JRE_HOME%" spec="text display='normal' readOnly='true' validationMode='not_empty'" />
+      <param name="java_home" value="%teamcity.agent.jvm.java.home%" spec="text display='normal' readOnly='true' validationMode='not_empty'" />
     </parameters>
     <build-runners>
       <runner id="TEMPLATE_RUNNER_1" name="Build" type="simpleRunner">
