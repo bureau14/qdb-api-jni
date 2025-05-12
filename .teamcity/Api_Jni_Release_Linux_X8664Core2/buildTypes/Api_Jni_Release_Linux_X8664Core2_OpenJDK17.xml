@@ -1,15 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<build-type xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" uuid="3c44749e-7fca-481b-96ad-2702b415d3c3" xsi:noNamespaceSchemaLocation="https://www.jetbrains.com/teamcity/schemas/2021.1/project-config.xsd">
+<build-type xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" uuid="3c44749e-7fca-481b-96ad-2702b415d3c3" xsi:noNamespaceSchemaLocation="https://www.jetbrains.com/teamcity/schemas/2025.3/project-config.xsd">
   <name>OpenJDK 17</name>
   <description />
   <settings ref="Api_Jni_Build">
     <parameters>
-      <param name="java_home" value="%env.JDK_17_0%" spec="text display='normal' readOnly='true' validationMode='not_empty'" />
+      <param name="java_home" value="%env.JRE_HOME%" spec="text display='normal' readOnly='true' validationMode='not_empty'" />
     </parameters>
-    <build-runners />
-    <vcs-settings />
-    <requirements />
-    <build-triggers />
     <artifact-dependencies>
       <dependency id="ARTIFACT_DEPENDENCY_1" sourceBuildTypeId="Quasardb_Artifacts_Release_Linux_X8664Core2_Composite" cleanDestination="false">
         <revisionRule name="sameChainOrLastFinished" revision="latest.sameChainOrLastFinished" />
@@ -24,7 +20,6 @@
         </options>
       </depend-on>
     </dependencies>
-    <cleanup />
   </settings>
 </build-type>
 
