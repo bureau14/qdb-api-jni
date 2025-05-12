@@ -11,6 +11,7 @@
         <parameters>
           <param name="command.executable" value="bash" />
           <param name="command.parameters" value="10.build.sh" />
+          <param name="plugin.docker.imageId" value="%docker_builder%" />
           <param name="plugin.docker.imagePlatform" value="linux" />
           <param name="teamcity.build.workingDir" value="scripts/teamcity/" />
           <param name="teamcity.step.mode" value="default" />
