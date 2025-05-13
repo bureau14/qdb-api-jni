@@ -9,12 +9,15 @@
     <build-runners>
       <runner id="TEMPLATE_RUNNER_1" name="Build" type="simpleRunner">
         <parameters>
-          <param name="command.executable" value="bash" />
-          <param name="command.parameters" value="10.build.sh" />
           <param name="plugin.docker.imageId" value="%docker_builder%" />
           <param name="plugin.docker.imagePlatform" value="linux" />
+          <param name="script.content"><![CDATA[yum install -y https://cdn.azul.com/zulu/bin/zulu-repo-1.0.0-1.noarch.rpm
+yum install -y zulu21-jdk-headless
+
+./10.build.sh]]></param>
           <param name="teamcity.build.workingDir" value="scripts/teamcity/" />
           <param name="teamcity.step.mode" value="default" />
+          <param name="use.custom.script" value="true" />
         </parameters>
       </runner>
     </build-runners>
