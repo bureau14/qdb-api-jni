@@ -13,7 +13,7 @@
           <param name="plugin.docker.imagePlatform" value="linux" />
           <param name="script.content"><![CDATA[yum install -y https://cdn.azul.com/zulu/bin/zulu-repo-1.0.0-1.noarch.rpm
 yum install -y zulu21-jdk-headless
-
+chmod +x ./10.build.sh
 ./10.build.sh]]></param>
           <param name="teamcity.build.workingDir" value="scripts/teamcity/" />
           <param name="teamcity.step.mode" value="default" />
