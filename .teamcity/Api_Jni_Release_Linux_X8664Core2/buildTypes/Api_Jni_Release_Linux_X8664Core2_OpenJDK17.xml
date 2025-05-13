@@ -50,6 +50,16 @@ chmod +x ./10.build.sh
           <param name="teamcity.step.mode" value="default" />
         </parameters>
       </runner>
+      <runner id="TEMPLATE_RUNNER_5" name="Stop services" type="simpleRunner">
+        <parameters>
+          <param name="command.executable" value="bash" />
+          <param name="command.parameters" value="scripts/tests/setup/stop-services.sh" />
+          <param name="plugin.docker.imageId" value="%docker_builder%" />
+          <param name="plugin.docker.imagePlatform" value="linux" />
+          <param name="script.content" value="./stop-services" />
+          <param name="teamcity.step.mode" value="execute_always" />
+        </parameters>
+      </runner>
     </build-runners>
     <artifact-dependencies>
       <dependency id="ARTIFACT_DEPENDENCY_1" sourceBuildTypeId="Quasardb_Artifacts_Release_Linux_X8664Core2_Composite" cleanDestination="false">
