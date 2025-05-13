@@ -30,6 +30,16 @@ chmod +x ./10.build.sh
           <param name="teamcity.step.mode" value="default" />
         </parameters>
       </runner>
+      <runner id="TEMPLATE_RUNNER_3" name="Test" type="simpleRunner">
+        <parameters>
+          <param name="command.executable" value="bash" />
+          <param name="command.parameters" value="20.test.sh" />
+          <param name="plugin.docker.imageId" value="%docker_builder%" />
+          <param name="plugin.docker.imagePlatform" value="linux" />
+          <param name="teamcity.build.workingDir" value="scripts/teamcity/" />
+          <param name="teamcity.step.mode" value="default" />
+        </parameters>
+      </runner>
     </build-runners>
     <artifact-dependencies>
       <dependency id="ARTIFACT_DEPENDENCY_1" sourceBuildTypeId="Quasardb_Artifacts_Release_Linux_X8664Core2_Composite" cleanDestination="false">
