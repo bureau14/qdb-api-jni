@@ -46,6 +46,7 @@ chmod +x ./10.build.sh
           <param name="command.parameters" value="30.example.sh" />
           <param name="plugin.docker.imageId" value="%docker_builder%" />
           <param name="plugin.docker.imagePlatform" value="linux" />
+          <param name="plugin.docker.run.parameters" value="--network=host" />
           <param name="teamcity.build.workingDir" value="scripts/teamcity/" />
           <param name="teamcity.step.mode" value="default" />
         </parameters>
