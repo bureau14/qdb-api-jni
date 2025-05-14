@@ -9,7 +9,8 @@
     <build-runners>
       <runner id="TEMPLATE_RUNNER_1" name="Build" type="simpleRunner">
         <parameters>
-          <param name="command.executable" value="10.build.sh" />
+          <param name="command.executable" value="bash" />
+          <param name="command.parameters" value="10.build.sh" />
           <param name="plugin.docker.imageId" value="%docker_builder%" />
           <param name="plugin.docker.imagePlatform" value="linux" />
           <param name="script.content"><![CDATA[yum install -y https://cdn.azul.com/zulu/bin/zulu-repo-1.0.0-1.noarch.rpm
