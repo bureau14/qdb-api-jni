@@ -55,7 +55,6 @@ chmod +x ./10.build.sh
         <parameters>
           <param name="command.executable" value="bash" />
           <param name="command.parameters" value="scripts/tests/setup/stop-services.sh" />
-          <param name="plugin.docker.imageId" value="%docker_builder%" />
           <param name="plugin.docker.imagePlatform" value="linux" />
           <param name="script.content" value="./stop-services" />
           <param name="teamcity.step.mode" value="execute_always" />
