@@ -146,7 +146,7 @@ public class PerformanceTraceTest {
 
         w.flush();
 
-        Collection<PerformanceTrace.Trace> res5 = PerformanceTrace.pop(s);\
+        Collection<PerformanceTrace.Trace> res5 = PerformanceTrace.pop(s);
         System.out.println("res5: " + res5);
         assertEquals(2, res5.size());
     }
