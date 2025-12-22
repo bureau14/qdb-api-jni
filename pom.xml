@@ -202,7 +202,6 @@
             <additionalClasspathElement>${project.basedir}/target/jni-3.14.2-osx-x86_64.jar</additionalClasspathElement>
             <additionalClasspathElement>${project.basedir}/target/jni-3.14.2-freebsd-x86_64.jar</additionalClasspathElement>
             <additionalClasspathElement>${project.basedir}/target/jni-3.14.2-windows-x86_64.jar</additionalClasspathElement>
-            <additionalClasspathElement>${project.basedir}/target/jni-3.14.2-windows-x86_32.jar</additionalClasspathElement>
           </additionalClasspathElements>
         </configuration>
       </plugin>
@@ -239,11 +238,6 @@
                   <file>${project.basedir}/target/jni-3.14.2-windows-x86_64.jar</file>
                   <type>jar</type>
                   <classifier>windows-x86_64</classifier>
-                </artifact>
-                <artifact>
-                  <file>${project.basedir}/target/jni-3.14.2-windows-x86_32.jar</file>
-                  <type>jar</type>
-                  <classifier>windows-x86_32</classifier>
                 </artifact>
               </artifacts>
             </configuration>
