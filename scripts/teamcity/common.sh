@@ -71,8 +71,18 @@ case $(uname) in
         ARCH_CLASSIFIER=${ARCH_CLASSIFIER:-"freebsd-x86_64"}
         ;;
     Darwin )
-        CMAKE_GENERATOR='Ninja'
-        ARCH_CLASSIFIER=${ARCH_CLASSIFIER:-"osx-x86_64"}
+        case $(uname -m) in
+            x86_64 )
+                ARCH_CLASSIFIER=${ARCH_CLASSIFIER:-"osx-x86_64"}
+                ;;
+            arm64 )
+                ARCH_CLASSIFIER=${ARCH_CLASSIFIER:-"osx-aarch64"}
+                ;;
+            * )
+                tc_build_problem "Unrecognized MacOS architecture: $(uname -m)"
+                exit -1
+                ;;
+        esac
         ;;
     MINGW* )
         CMAKE_GENERATOR='Visual Studio 17 2022'

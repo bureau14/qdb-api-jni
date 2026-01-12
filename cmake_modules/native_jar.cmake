@@ -1,4 +1,6 @@
-if(CMAKE_SIZEOF_VOID_P EQUAL 8)
+if(CMAKE_SYSTEM_PROCESSOR MATCHES "aarch64|arm64")
+    set(ARCH "aarch64")
+elseif(CMAKE_SIZEOF_VOID_P EQUAL 8)
     set(ARCH "x86_64")
 else()
     set(ARCH "x86_32")

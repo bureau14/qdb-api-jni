@@ -205,6 +205,7 @@
           <additionalClasspathElements>
             <additionalClasspathElement>${project.basedir}/target/jni-3.15.0-SNAPSHOT-linux-x86_64.jar</additionalClasspathElement>
             <additionalClasspathElement>${project.basedir}/target/jni-3.15.0-SNAPSHOT-osx-x86_64.jar</additionalClasspathElement>
+            <additionalClasspathElement>${project.basedir}/target/jni-3.15.0-SNAPSHOT-osx-aarch64.jar</additionalClasspathElement>
             <additionalClasspathElement>${project.basedir}/target/jni-3.15.0-SNAPSHOT-freebsd-x86_64.jar</additionalClasspathElement>
             <additionalClasspathElement>${project.basedir}/target/jni-3.15.0-SNAPSHOT-windows-x86_64.jar</additionalClasspathElement>
             <additionalClasspathElement>${project.basedir}/target/jni-3.15.0-SNAPSHOT-windows-x86_32.jar</additionalClasspathElement>
@@ -234,6 +235,11 @@
                   <file>${project.basedir}/target/jni-3.15.0-SNAPSHOT-osx-x86_64.jar</file>
                   <type>jar</type>
                   <classifier>osx-x86_64</classifier>
+                </artifact>
+                <artifact>
+                  <file>${project.basedir}/target/jni-3.15.0-SNAPSHOT-osx-aarch64.jar</file>
+                  <type>jar</type>
+                  <classifier>osx-aarch64</classifier>
                 </artifact>
                 <artifact>
                   <file>${project.basedir}/target/jni-3.15.0-SNAPSHOT-freebsd-x86_64.jar</file>
