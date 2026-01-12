@@ -10,13 +10,13 @@
       <param name="java_home" value="%env.JDK_HOME%" />
     </parameters>
     <artifact-dependencies>
-      <dependency id="ARTIFACT_DEPENDENCY_1" sourceBuildTypeId="Quasardb_Artifacts_Release_MacOS_X8664Core2_Composite" cleanDestination="false">
+      <dependency id="ARTIFACT_DEPENDENCY_1" sourceBuildTypeId="Quasardb_Artifacts_Release_MacOS_AArch64_Composite" cleanDestination="false">
         <revisionRule name="sameChainOrLastFinished" revision="latest.sameChainOrLastFinished" />
-        <artifact sourcePath="*-darwin-64bit-core2-c-api.tar.zst!**/*=&gt;qdb&#xD;&#xA;*-darwin-64bit-core2-utils.tar.zst!**/*=&gt;qdb&#xD;&#xA;*-darwin-64bit-core2-server.tar.zst!**/*=&gt;qdb" />
+        <artifact sourcePath="*-darwin-64bit-arm64-c-api.tar.zst!**/*=&gt;qdb&#xD;&#xA;*-darwin-arm64-core2-utils.tar.zst!**/*=&gt;qdb&#xD;&#xA;*-darwin-64bit-arm64-server.tar.zst!**/*=&gt;qdb" />
       </dependency>
     </artifact-dependencies>
     <dependencies>
-      <depend-on sourceBuildTypeId="Quasardb_Artifacts_Release_MacOS_X8664Core2_Composite">
+      <depend-on sourceBuildTypeId="Quasardb_Artifacts_Release_MacOS_AArch64_Composite">
         <options>
           <option name="take-started-build-with-same-revisions" value="true" />
           <option name="take-successful-builds-only" value="true" />
