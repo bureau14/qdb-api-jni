@@ -3,9 +3,9 @@
   <name>OpenJDK 21</name>
   <description />
   <settings ref="Api_Jni_Build">
-    <disabled-settings>
+    <!-- <disabled-settings>
       <setting-ref ref="TEMPLATE_RUNNER_3" />
-    </disabled-settings>
+    </disabled-settings> -->
     <parameters>
       <param name="java_home" value="%env.JDK_HOME%" />
     </parameters>
