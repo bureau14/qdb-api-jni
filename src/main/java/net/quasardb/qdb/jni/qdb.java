@@ -37,8 +37,16 @@ public final class qdb
         }
         else if (os.startsWith("Mac OS X"))
         {
-            NativeLibraryLoader.load("/net/quasardb/qdb/jni/osx/x86_64/libqdb_api.dylib");
-            NativeLibraryLoader.load("/net/quasardb/qdb/jni/osx/x86_64/libqdb_api_jni.dylib");
+            if (arch.equals("aarch64") || arch.equals("arm64"))
+            {
+                NativeLibraryLoader.load("/net/quasardb/qdb/jni/osx/aarch64/libqdb_api.dylib");
+                NativeLibraryLoader.load("/net/quasardb/qdb/jni/osx/aarch64/libqdb_api_jni.dylib");
+            }
+            else
+            {
+                NativeLibraryLoader.load("/net/quasardb/qdb/jni/osx/x86_64/libqdb_api.dylib");
+                NativeLibraryLoader.load("/net/quasardb/qdb/jni/osx/x86_64/libqdb_api_jni.dylib");
+            }
         }
         else if (os.startsWith("Linux"))
         {
