@@ -72,13 +72,11 @@ public class TableTest {
         Table t = Table.create(s, TestUtils.createUniqueAlias(), columns);
 
         Column[] actual = t.getColumns();
-        assertEquals(3, actual.length);
-        assertEquals("$timestamp", actual[0].getName());
-        assertEquals(Column.Type.TIMESTAMP, actual[0].getType());
-        assertEquals("value", actual[1].getName());
-        assertEquals(Column.Type.DOUBLE, actual[1].getType());
-        assertEquals("label", actual[2].getName());
-        assertEquals(Column.Type.STRING, actual[2].getType());
+        assertEquals(2, actual.length);
+        assertEquals("value", actual[0].getName());
+        assertEquals(Column.Type.DOUBLE, actual[0].getType());
+        assertEquals("label", actual[1].getName());
+        assertEquals(Column.Type.STRING, actual[1].getType());
     }
 
     @Test
@@ -91,11 +89,9 @@ public class TableTest {
         Table t = Table.create(s, TestUtils.createUniqueAlias(), columns);
 
         Column[] actual = t.getColumns();
-        assertEquals(2, actual.length);
-        assertEquals("$timestamp", actual[0].getName());
-        assertEquals(Column.Type.TIMESTAMP, actual[0].getType());
-        assertEquals("value", actual[1].getName());
-        assertEquals(Column.Type.DOUBLE, actual[1].getType());
+        assertEquals(1, actual.length);
+        assertEquals("value", actual[0].getName());
+        assertEquals(Column.Type.DOUBLE, actual[0].getType());
     }
 
     @Test
@@ -103,9 +99,7 @@ public class TableTest {
         Table t = Table.create(s, TestUtils.createUniqueAlias(), new Column[0]);
 
         Column[] actual = t.getColumns();
-        assertEquals(1, actual.length);
-        assertEquals("$timestamp", actual[0].getName());
-        assertEquals(Column.Type.TIMESTAMP, actual[0].getType());
+        assertEquals(0, actual.length);
     }
 
     @Test
