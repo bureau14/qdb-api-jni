@@ -25,8 +25,53 @@
 #include <cassert>
 #include <iostream>
 #include <stdlib.h>
+#include <string_view>
 
 namespace jni = qdb::jni;
+
+namespace
+{
+constexpr std::string_view timestamp_column_name = "$timestamp";
+
+void ensure_timestamp_column_first(std::vector<qdb_ts_column_info_ex_t> & columns)
+{
+    if (columns.empty())
+    {
+        columns.push_back({timestamp_column_name.data(), qdb_ts_column_timestamp, nullptr});
+        return;
+    }
+
+    for (std::size_t idx = 0; idx < columns.size(); ++idx)
+    {
+        auto & column = columns[idx];
+        if (column.name == nullptr || column.name != timestamp_column_name)
+        {
+            continue;
+        }
+
+        if (idx != 0)
+        {
+            throw jni::exception{
+                qdb_e_invalid_argument, "special column \"$timestamp\" must be the first column"};
+        }
+        if (column.type != qdb_ts_column_timestamp)
+        {
+            throw jni::exception{
+                qdb_e_invalid_argument, "special column \"$timestamp\" must have type TIMESTAMP"};
+        }
+        if (column.symtable != nullptr && column.symtable[0] != '\0')
+        {
+            throw jni::exception{
+                qdb_e_invalid_argument, "special column \"$timestamp\" must not define symtable"};
+        }
+
+        return;
+    }
+
+    columns.insert(
+        columns.begin(), {timestamp_column_name.data(), qdb_ts_column_timestamp, nullptr});
+}
+} // namespace
 
 JNIEXPORT jint JNICALL Java_net_quasardb_qdb_jni_qdb_ts_1create(JNIEnv * jniEnv,
     jclass /*thisClass*/,
@@ -44,6 +89,8 @@ JNIEXPORT jint JNICALL Java_net_quasardb_qdb_jni_qdb_ts_1create(JNIEnv * jniEnv,
         jni::object_array columns_{env, columns};
         std::vector<qdb_ts_column_info_ex_t> xs =
             jni::adapt::columns::to_qdb<qdb_ts_column_info_ex_t>(env, handle_, columns_);
+
+        ensure_timestamp_column_first(xs);
 
         qdb::jni::exception::throw_if_error(handle_,
             qdb_ts_create_ex(handle_, qdb::jni::string::get_chars_utf8(env, handle_, alias),
