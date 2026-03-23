@@ -95,11 +95,9 @@ public class TableTest {
     }
 
     @Test
-    public void createEmptySchemaCreatesTimestampOnlyTable() throws Exception {
-        Table t = Table.create(s, TestUtils.createUniqueAlias(), new Column[0]);
-
-        Column[] actual = t.getColumns();
-        assertEquals(0, actual.length);
+    public void createEmptySchemaRejectsTableCreation() {
+        assertThrows(InvalidArgumentException.class,
+            () -> Table.create(s, TestUtils.createUniqueAlias(), new Column[0]));
     }
 
     @Test
