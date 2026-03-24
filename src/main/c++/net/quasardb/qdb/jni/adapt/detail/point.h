@@ -202,7 +202,7 @@ struct xform_util<qdb_blob_t>
 template <typename From, ranges::input_range R>
 inline decltype(auto) xform_output(qdb::jni::env & env, qdb_handle_t handle, R const & input)
 {
-    return xform_util<From>::template output(env, handle, input);
+    return xform_util<From>::output(env, handle, input);
 }
 
 template <typename From>
