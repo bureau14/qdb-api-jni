@@ -16,6 +16,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 import net.quasardb.qdb.Session;
 import net.quasardb.qdb.ts.*;
 
+import net.quasardb.qdb.exception.InvalidArgumentException;
 import net.quasardb.qdb.exception.InputException;
 
 import net.quasardb.common.TestUtils;
@@ -59,5 +60,67 @@ public class TableTest {
 
         assertEquals(t.getShardSize(), shardSize / 1000);
         assertEquals(t.getShardSizeMillis(), shardSize);
+    }
+
+    @Test
+    public void createAddsTimestampColumnWhenMissing() throws Exception {
+        Column[] columns = new Column[] {
+            new Column.Double("value"),
+            new Column.String_("label")
+        };
+
+        Table t = Table.create(s, TestUtils.createUniqueAlias(), columns);
+
+        Column[] actual = t.getColumns();
+        assertEquals(2, actual.length);
+        assertEquals("value", actual[0].getName());
+        assertEquals(Column.Type.DOUBLE, actual[0].getType());
+        assertEquals("label", actual[1].getName());
+        assertEquals(Column.Type.STRING, actual[1].getType());
+    }
+
+    @Test
+    public void createKeepsExplicitTimestampColumnFirst() throws Exception {
+        Column[] columns = new Column[] {
+            new Column.Timestamp("$timestamp"),
+            new Column.Double("value")
+        };
+
+        Table t = Table.create(s, TestUtils.createUniqueAlias(), columns);
+
+        Column[] actual = t.getColumns();
+        assertEquals(1, actual.length);
+        assertEquals("value", actual[0].getName());
+        assertEquals(Column.Type.DOUBLE, actual[0].getType());
+    }
+
+    @Test
+    public void createEmptySchemaCreatesTimestampOnlyTable() throws Exception {
+        Table t = Table.create(s, TestUtils.createUniqueAlias(), new Column[0]);
+
+        Column[] actual = t.getColumns();
+        assertEquals(0, actual.length);
+    }
+
+    @Test
+    public void createRejectsTimestampColumnWhenNotFirst() {
+        Column[] columns = new Column[] {
+            new Column.Double("value"),
+            new Column.Timestamp("$timestamp")
+        };
+
+        assertThrows(InvalidArgumentException.class,
+            () -> Table.create(s, TestUtils.createUniqueAlias(), columns));
+    }
+
+    @Test
+    public void createRejectsTimestampColumnWithWrongType() {
+        Column[] columns = new Column[] {
+            new Column.String_("$timestamp"),
+            new Column.Double("value")
+        };
+
+        assertThrows(InvalidArgumentException.class,
+            () -> Table.create(s, TestUtils.createUniqueAlias(), columns));
     }
 }
