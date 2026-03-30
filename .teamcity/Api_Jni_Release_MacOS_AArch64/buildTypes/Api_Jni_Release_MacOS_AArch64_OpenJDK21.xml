@@ -4,7 +4,7 @@
   <description />
   <settings ref="Api_Jni_Build">
     <parameters>
-      <param name="java_home" value="%env.JDK_HOME%" />
+      <param name="java_home" value="%teamcity.agent.jvm.java.home%" />
     </parameters>
     <artifact-dependencies>
       <dependency id="ARTIFACT_DEPENDENCY_1" sourceBuildTypeId="Quasardb_Artifacts_Release_MacOS_AArch64_Composite" cleanDestination="false">
