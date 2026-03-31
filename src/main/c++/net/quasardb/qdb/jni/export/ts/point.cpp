@@ -373,7 +373,7 @@ JNIEXPORT jobject JNICALL Java_net_quasardb_qdb_jni_qdb_ts_1point_1get_1ranges(J
     jobjectArray ranges)
 {
     return get_points(
-               jniEnv, handle, table, column, static_cast<qdb_ts_column_type_t>(value_type), ranges)
+        jniEnv, handle, table, column, static_cast<qdb_ts_column_type_t>(value_type), ranges)
         .release();
 }
 
