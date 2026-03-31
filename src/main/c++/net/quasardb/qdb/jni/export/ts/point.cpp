@@ -37,8 +37,6 @@ inline qdb_exp_batch_push_column_t const * find_requested_column(
     qdb_bulk_reader_table_data_t const & table_data,
     qdb::jni::guard::string_utf8 const & column_name)
 {
-    qdb_exp_batch_push_column_t const * result = nullptr;
-
     for (qdb_size_t idx = 0; idx < table_data.column_count; ++idx)
     {
         auto const & candidate = table_data.columns[idx];
@@ -53,7 +51,7 @@ inline qdb_exp_batch_push_column_t const * find_requested_column(
         }
     }
 
-    return result;
+    return nullptr;
 }
 
 inline qdb::jni::guard::local_ref<jobject> empty_points(
@@ -375,7 +373,8 @@ JNIEXPORT jobject JNICALL Java_net_quasardb_qdb_jni_qdb_ts_1point_1get_1ranges(J
     jobjectArray ranges)
 {
     return get_points(
-        jniEnv, handle, table, column, static_cast<qdb_ts_column_type_t>(value_type), ranges);
+               jniEnv, handle, table, column, static_cast<qdb_ts_column_type_t>(value_type), ranges)
+        .release();
 }
 
 JNIEXPORT jint JNICALL Java_net_quasardb_qdb_jni_qdb_ts_1point_1insert(JNIEnv * jniEnv,
