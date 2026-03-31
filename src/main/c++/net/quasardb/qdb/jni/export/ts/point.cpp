@@ -7,12 +7,15 @@
 #include "net_quasardb_qdb_jni_qdb.h"
 #include <qdb/ts.h>
 #include <algorithm>
+#include <cstring>
 #include <vector>
 
 namespace jni = qdb::jni;
 
 namespace
 {
+constexpr char const * table_column_name = "$table";
+
 template <typename From>
 using point_type_t = typename jni::adapt::value_traits<From>::point_type;
 
@@ -28,6 +31,29 @@ inline bool column_types_match(qdb_ts_column_type_t expected, qdb_ts_column_type
 inline qdb_ts_column_type_t expected_column_type(qdb_ts_column_type_t value_type) noexcept
 {
     return value_type;
+}
+
+inline qdb_exp_batch_push_column_t const * find_requested_column(
+    qdb_bulk_reader_table_data_t const & table_data,
+    qdb::jni::guard::string_utf8 const & column_name)
+{
+    qdb_exp_batch_push_column_t const * result = nullptr;
+
+    for (qdb_size_t idx = 0; idx < table_data.column_count; ++idx)
+    {
+        auto const & candidate = table_data.columns[idx];
+        if (candidate.name == nullptr)
+        {
+            continue;
+        }
+
+        if (std::strcmp(candidate.name, column_name.get()) == 0)
+        {
+            return &candidate;
+        }
+    }
+
+    return result;
 }
 
 inline qdb::jni::guard::local_ref<jobject> empty_points(
@@ -283,14 +309,14 @@ inline qdb::jni::guard::local_ref<jobject> get_points(JNIEnv * jniEnv,
 
         auto const & table_data = data.get()[0];
 
-        if (table_data.column_count != 1)
+        auto const * column_data = find_requested_column(table_data, column_);
+        if (column_data == nullptr)
         {
             throw jni::exception(
-                qdb_e_uninitialized, "Bulk reader returned unexpected column count");
+                qdb_e_uninitialized, "Bulk reader did not return the requested column");
         }
 
-        auto const & column_data = table_data.columns[0];
-        if (!column_types_match(expected_column_type(value_type), column_data.data_type))
+        if (!column_types_match(expected_column_type(value_type), column_data->data_type))
         {
             throw jni::exception(
                 qdb_e_incompatible_type, "Unexpected column type returned by bulk reader");
@@ -299,33 +325,33 @@ inline qdb::jni::guard::local_ref<jobject> get_points(JNIEnv * jniEnv,
         auto timestamps = ranges::views::counted(
             table_data.timestamps, static_cast<std::size_t>(table_data.row_count));
 
-        switch (column_data.data_type)
+        switch (column_data->data_type)
         {
         case qdb_ts_column_double:
             return make_points_data<double>(env, handle_, timestamps,
                 ranges::views::counted(
-                    column_data.data.doubles, static_cast<std::size_t>(table_data.row_count)));
+                    column_data->data.doubles, static_cast<std::size_t>(table_data.row_count)));
 
         case qdb_ts_column_int64:
             return make_points_data<qdb_int_t>(env, handle_, timestamps,
                 ranges::views::counted(
-                    column_data.data.ints, static_cast<std::size_t>(table_data.row_count)));
+                    column_data->data.ints, static_cast<std::size_t>(table_data.row_count)));
 
         case qdb_ts_column_timestamp:
             return make_points_data<qdb_timespec_t>(env, handle_, timestamps,
                 ranges::views::counted(
-                    column_data.data.timestamps, static_cast<std::size_t>(table_data.row_count)));
+                    column_data->data.timestamps, static_cast<std::size_t>(table_data.row_count)));
 
         case qdb_ts_column_blob:
             return make_points_data<qdb_blob_t>(env, handle_, timestamps,
                 ranges::views::counted(
-                    column_data.data.blobs, static_cast<std::size_t>(table_data.row_count)));
+                    column_data->data.blobs, static_cast<std::size_t>(table_data.row_count)));
 
         case qdb_ts_column_symbol:
         case qdb_ts_column_string:
             return make_points_data<qdb_string_t>(env, handle_, timestamps,
                 ranges::views::counted(
-                    column_data.data.strings, static_cast<std::size_t>(table_data.row_count)));
+                    column_data->data.strings, static_cast<std::size_t>(table_data.row_count)));
 
         default:
             throw jni::exception(
