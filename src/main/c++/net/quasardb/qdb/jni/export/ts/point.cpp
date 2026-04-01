@@ -28,11 +28,6 @@ inline bool column_types_match(qdb_ts_column_type_t expected, qdb_ts_column_type
            || (expected == qdb_ts_column_string && actual == qdb_ts_column_symbol);
 }
 
-inline qdb_ts_column_type_t expected_column_type(qdb_ts_column_type_t value_type) noexcept
-{
-    return value_type;
-}
-
 inline qdb_exp_batch_push_column_t const * find_requested_column(
     qdb_bulk_reader_table_data_t const & table_data,
     qdb::jni::guard::string_utf8 const & column_name)
@@ -314,7 +309,7 @@ inline qdb::jni::guard::local_ref<jobject> get_points(JNIEnv * jniEnv,
                 qdb_e_uninitialized, "Bulk reader did not return the requested column");
         }
 
-        if (!column_types_match(expected_column_type(value_type), column_data->data_type))
+        if (!column_types_match(value_type, column_data->data_type))
         {
             throw jni::exception(
                 qdb_e_incompatible_type, "Unexpected column type returned by bulk reader");
@@ -364,6 +359,10 @@ inline qdb::jni::guard::local_ref<jobject> get_points(JNIEnv * jniEnv,
 }
 } // namespace
 
+/**
+ * JNI export function. Sole purpose is to dispatch to `get_points`, no
+ * conversions or actual logic should be done in this function.
+ */
 JNIEXPORT jobject JNICALL Java_net_quasardb_qdb_jni_qdb_ts_1point_1get_1ranges(JNIEnv * jniEnv,
     jclass /*thisClass*/,
     jlong handle,
@@ -377,6 +376,10 @@ JNIEXPORT jobject JNICALL Java_net_quasardb_qdb_jni_qdb_ts_1point_1get_1ranges(J
         .release();
 }
 
+/**
+ * JNI export function. Sole purpose is to dispatch to `insert_points`, no
+ * conversions or actual logic should be done in this function.
+ */
 JNIEXPORT jint JNICALL Java_net_quasardb_qdb_jni_qdb_ts_1point_1insert(JNIEnv * jniEnv,
     jclass /*thisClass*/,
     jlong handle,
