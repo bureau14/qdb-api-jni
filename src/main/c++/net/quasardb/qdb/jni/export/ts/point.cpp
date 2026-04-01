@@ -14,7 +14,7 @@ namespace jni = qdb::jni;
 
 namespace
 {
-constexpr char const * table_column_name = "$table";
+constexpr auto table_column_name = "$table";
 
 template <typename From>
 using point_type_t = typename jni::adapt::value_traits<From>::point_type;
@@ -99,6 +99,109 @@ inline qdb::jni::guard::local_ref<jobject> empty_points(
     }
     default:
         throw jni::exception(qdb_e_incompatible_type, "Unrecognized value type");
+    }
+}
+
+template <typename From, typename TimestampRange, typename ValueRange>
+inline qdb::jni::guard::local_ref<jobject> make_points_data(qdb::jni::env & env,
+    qdb_handle_t handle,
+    TimestampRange const & timestamps,
+    ValueRange const & values)
+{
+    auto timestamps_ = jni::adapt::timespecs::to_java(env, timestamps);
+    auto values_     = jni::adapt::point::detail::xform_output<From>(env, handle, values);
+
+    return jni::adapt::point::detail::create<From>(env, std::move(timestamps_), std::move(values_));
+}
+
+inline qdb::jni::guard::local_ref<jobject> get_points(JNIEnv * jniEnv,
+    jlong handle,
+    jstring table,
+    jstring column,
+    qdb_ts_column_type_t value_type,
+    jobjectArray ranges)
+{
+    qdb::jni::env env(jniEnv);
+    qdb_handle_t handle_ = reinterpret_cast<qdb_handle_t>(handle);
+
+    try
+    {
+        auto table_  = qdb::jni::string::get_chars_utf8(env, handle_, table);
+        auto column_ = qdb::jni::string::get_chars_utf8(env, handle_, column);
+
+        std::vector<qdb_ts_range_t> ranges_ =
+            jni::adapt::timerange::to_qdb(env, jni::object_array(env, ranges));
+
+        const char * columns[]           = {column_.get()};
+        qdb_bulk_reader_table_t tables[] = {{table_.get(), ranges_.data(), ranges_.size()}};
+
+        jni::guard::qdb_resource<qdb_reader_handle_t> reader{handle_};
+        jni::exception::throw_if_error(
+            handle_, qdb_bulk_reader_fetch(handle_, columns, 1, tables, 1, &reader));
+
+        jni::guard::qdb_resource<qdb_bulk_reader_table_data_t *> data{handle_};
+        jni::exception::throw_if_error(handle_, qdb_bulk_reader_get_data(reader, &data, 0));
+
+        if (data.get() == nullptr)
+        {
+            return empty_points(env, handle_, value_type);
+        }
+
+        auto const & table_data = data.get()[0];
+
+        auto const * column_data = find_requested_column(table_data, column_);
+        if (column_data == nullptr)
+        {
+            throw jni::exception(
+                qdb_e_uninitialized, "Bulk reader did not return the requested column");
+        }
+
+        if (!column_types_match(value_type, column_data->data_type))
+        {
+            throw jni::exception(
+                qdb_e_incompatible_type, "Unexpected column type returned by bulk reader");
+        }
+
+        auto timestamps = ranges::views::counted(
+            table_data.timestamps, static_cast<std::size_t>(table_data.row_count));
+
+        switch (column_data->data_type)
+        {
+        case qdb_ts_column_double:
+            return make_points_data<double>(env, handle_, timestamps,
+                ranges::views::counted(
+                    column_data->data.doubles, static_cast<std::size_t>(table_data.row_count)));
+
+        case qdb_ts_column_int64:
+            return make_points_data<qdb_int_t>(env, handle_, timestamps,
+                ranges::views::counted(
+                    column_data->data.ints, static_cast<std::size_t>(table_data.row_count)));
+
+        case qdb_ts_column_timestamp:
+            return make_points_data<qdb_timespec_t>(env, handle_, timestamps,
+                ranges::views::counted(
+                    column_data->data.timestamps, static_cast<std::size_t>(table_data.row_count)));
+
+        case qdb_ts_column_blob:
+            return make_points_data<qdb_blob_t>(env, handle_, timestamps,
+                ranges::views::counted(
+                    column_data->data.blobs, static_cast<std::size_t>(table_data.row_count)));
+
+        case qdb_ts_column_symbol:
+        case qdb_ts_column_string:
+            return make_points_data<qdb_string_t>(env, handle_, timestamps,
+                ranges::views::counted(
+                    column_data->data.strings, static_cast<std::size_t>(table_data.row_count)));
+
+        default:
+            throw jni::exception(
+                qdb_e_incompatible_type, "Unrecognized column type returned by bulk reader");
+        }
+    }
+    catch (jni::exception const & e)
+    {
+        e.throw_new(env);
+        return jni::guard::local_ref<jobject>{env};
     }
 }
 
@@ -256,108 +359,6 @@ inline jint insert_points(JNIEnv * jniEnv,
     }
 }
 
-template <typename From, typename TimestampRange, typename ValueRange>
-inline qdb::jni::guard::local_ref<jobject> make_points_data(qdb::jni::env & env,
-    qdb_handle_t handle,
-    TimestampRange const & timestamps,
-    ValueRange const & values)
-{
-    auto timestamps_ = jni::adapt::timespecs::to_java(env, timestamps);
-    auto values_     = jni::adapt::point::detail::xform_output<From>(env, handle, values);
-
-    return jni::adapt::point::detail::create<From>(env, std::move(timestamps_), std::move(values_));
-}
-
-inline qdb::jni::guard::local_ref<jobject> get_points(JNIEnv * jniEnv,
-    jlong handle,
-    jstring table,
-    jstring column,
-    qdb_ts_column_type_t value_type,
-    jobjectArray ranges)
-{
-    qdb::jni::env env(jniEnv);
-    qdb_handle_t handle_ = reinterpret_cast<qdb_handle_t>(handle);
-
-    try
-    {
-        auto table_  = qdb::jni::string::get_chars_utf8(env, handle_, table);
-        auto column_ = qdb::jni::string::get_chars_utf8(env, handle_, column);
-
-        std::vector<qdb_ts_range_t> ranges_ =
-            jni::adapt::timerange::to_qdb(env, jni::object_array(env, ranges));
-
-        const char * columns[]           = {column_.get()};
-        qdb_bulk_reader_table_t tables[] = {{table_.get(), ranges_.data(), ranges_.size()}};
-
-        jni::guard::qdb_resource<qdb_reader_handle_t> reader{handle_};
-        jni::exception::throw_if_error(
-            handle_, qdb_bulk_reader_fetch(handle_, columns, 1, tables, 1, &reader));
-
-        jni::guard::qdb_resource<qdb_bulk_reader_table_data_t *> data{handle_};
-        jni::exception::throw_if_error(handle_, qdb_bulk_reader_get_data(reader, &data, 0));
-
-        if (data.get() == nullptr)
-        {
-            return empty_points(env, handle_, value_type);
-        }
-
-        auto const & table_data = data.get()[0];
-
-        auto const * column_data = find_requested_column(table_data, column_);
-        if (column_data == nullptr)
-        {
-            throw jni::exception(
-                qdb_e_uninitialized, "Bulk reader did not return the requested column");
-        }
-
-        if (!column_types_match(value_type, column_data->data_type))
-        {
-            throw jni::exception(
-                qdb_e_incompatible_type, "Unexpected column type returned by bulk reader");
-        }
-
-        auto timestamps = ranges::views::counted(
-            table_data.timestamps, static_cast<std::size_t>(table_data.row_count));
-
-        switch (column_data->data_type)
-        {
-        case qdb_ts_column_double:
-            return make_points_data<double>(env, handle_, timestamps,
-                ranges::views::counted(
-                    column_data->data.doubles, static_cast<std::size_t>(table_data.row_count)));
-
-        case qdb_ts_column_int64:
-            return make_points_data<qdb_int_t>(env, handle_, timestamps,
-                ranges::views::counted(
-                    column_data->data.ints, static_cast<std::size_t>(table_data.row_count)));
-
-        case qdb_ts_column_timestamp:
-            return make_points_data<qdb_timespec_t>(env, handle_, timestamps,
-                ranges::views::counted(
-                    column_data->data.timestamps, static_cast<std::size_t>(table_data.row_count)));
-
-        case qdb_ts_column_blob:
-            return make_points_data<qdb_blob_t>(env, handle_, timestamps,
-                ranges::views::counted(
-                    column_data->data.blobs, static_cast<std::size_t>(table_data.row_count)));
-
-        case qdb_ts_column_symbol:
-        case qdb_ts_column_string:
-            return make_points_data<qdb_string_t>(env, handle_, timestamps,
-                ranges::views::counted(
-                    column_data->data.strings, static_cast<std::size_t>(table_data.row_count)));
-
-        default:
-            throw jni::exception(
-                qdb_e_incompatible_type, "Unrecognized column type returned by bulk reader");
-        }
-    }
-    catch (jni::exception const & e)
-    {
-        e.throw_new(env);
-        return jni::guard::local_ref<jobject>{env};
-    }
-}
 } // namespace
 
 /**
