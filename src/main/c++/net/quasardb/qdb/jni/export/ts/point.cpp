@@ -209,6 +209,7 @@ inline jint insert_points(JNIEnv * jniEnv,
         std::vector<qdb_timespec_t> timestamps_ = jni::adapt::timespecs::to_qdb(env, timestamps);
         std::vector<point_type_t<From>> points =
             jni::adapt::point::to_qdb<From>(env, handle_, timestamps_, values);
+
         struct points_guard_t
         {
             qdb_handle_t handle;
