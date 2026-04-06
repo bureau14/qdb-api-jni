@@ -56,7 +56,6 @@ set(QDB_JNI_SOURCES
   src/main/c++/net/quasardb/qdb/jni/export/qdb_string.cpp
   src/main/c++/net/quasardb/qdb/jni/export/qdb_timestamp.cpp
   src/main/c++/net/quasardb/qdb/jni/export/qdb_ts.cpp
-  src/main/c++/net/quasardb/qdb/jni/export/ts/point.cpp
   src/main/c++/net/quasardb/qdb/jni/util/helpers.cpp
   src/main/c++/net/quasardb/qdb/jni/util/ts_helpers.cpp
 )
