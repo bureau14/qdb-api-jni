@@ -91,7 +91,7 @@ OS_ENV: dict[str, dict[str, str]] = {
         "JAVA_HOME": "/opt/local/Library/Java/JavaVirtualMachines/jdk-21-amazon-corretto.jdk/Contents/Home",
     },
     "windows": {
-        "WINDOWS_TARGET_ARCH": "amd64",
+        "WINDOWS_TARGET_ARCH": "win64",
     },
 }
 
