@@ -33,25 +33,25 @@ STEPS_DIR = Path(__file__).parent / "steps"
 
 # Quasardb-specific toolchain overlays on top of shared infrastructure platforms.
 _LINUX = dict(
-    c_compiler="/usr/local/gcc13/bin/gcc",
-    cxx_compiler="/usr/local/gcc13/bin/g++",
-    asm_compiler="/usr/local/bin/yasm",
-    ccache="/usr/local/bin/ccache",
+    c_compiler="$$QDB_CICD_AGENT_CC",
+    cxx_compiler="$$QDB_CICD_AGENT_CXX",
+    asm_compiler="$$QDB_CICD_AGENT_YASM",
+    ccache="$$QDB_CICD_AGENT_CCACHE",
     docker_image="bureau14/builder:rhel7",
     docker_volumes=("/var/lib/ccache:/var/lib/ccache",),
 )
 _WIN = dict(
-    asm_compiler="C:\\yasm\\yasm-1.3.0-win64.exe",
-    ccache="C:\\ccache\\ccache.exe",
+    asm_compiler="$$QDB_CICD_AGENT_YASM",
+    ccache="$$QDB_CICD_AGENT_CCACHE",
 )
 _FREEBSD = dict(
-    c_compiler="/usr/local/clang21/bin/clang",
-    cxx_compiler="/usr/local/clang21/bin/clang++",
+    c_compiler="$$QDB_CICD_AGENT_CC",
+    cxx_compiler="$$QDB_CICD_AGENT_CXX",
     ccache="/usr/local/bin/ccache",
 )
 _MACOS = dict(
-    c_compiler="/usr/local/clang17/bin/clang",
-    cxx_compiler="/usr/local/clang17/bin/clang++",
+    c_compiler="$$QDB_CICD_AGENT_CC",
+    cxx_compiler="$$QDB_CICD_AGENT_CXX",
     ccache="/opt/local/bin/ccache",
 )
 
@@ -72,23 +72,20 @@ BUILD_TYPES = ["Release"]
 # Environment variable layering: global → step → os → os+step → platform compilers.
 GLOBAL_ENV: dict[str, str] = {
     "CMAKE_GENERATOR": "Ninja",
-    # "MVN_PATH": ",,,,",
-    # "JAVA_HOME": "$$QDB_CICD_AGENT_JAVA_HOME",
-    # "JAVA_PATH": "$$QDB_CICD_AGENT_JAVA_HOME/bin/java",
-
+    "JAVA_PATH": "$$QDB_CICD_AGENT_JAVA_PATH",
 }
 
 STEP_ENV: dict[str, dict[str, str]] = {}
 
 OS_ENV: dict[str, dict[str, str]] = {
     "linux": {
-        "JAVA_HOME": "/usr/lib/jvm/java-21-openjdk-amd64"
+        # "JAVA_HOME": "/usr/lib/jvm/java-21-openjdk-amd64"
     },
     "freebsd": {
-        "JAVA_HOME": "/usr/local/openjdk21",
+        # "JAVA_HOME": "/usr/local/openjdk21",
     },
     "macos": {
-        "JAVA_HOME": "/opt/local/Library/Java/JavaVirtualMachines/jdk-21-amazon-corretto.jdk/Contents/Home",
+        # "JAVA_HOME": "/opt/local/Library/Java/JavaVirtualMachines/jdk-21-amazon-corretto.jdk/Contents/Home",
     },
     "windows": {
         "WINDOWS_TARGET_ARCH": "win64",
