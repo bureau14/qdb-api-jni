@@ -73,8 +73,8 @@ BUILD_TYPES = ["Release"]
 GLOBAL_ENV: dict[str, str] = {
     "CMAKE_GENERATOR": "Ninja",
     # "MVN_PATH": ",,,,",
-    "JAVA_HOME": "$$QDB_CICD_AGENT_JAVA_HOME",
-    "JAVA_PATH": "$$QDB_CICD_AGENT_JAVA_HOME/bin/java",
+    # "JAVA_HOME": "$$QDB_CICD_AGENT_JAVA_HOME",
+    # "JAVA_PATH": "$$QDB_CICD_AGENT_JAVA_HOME/bin/java",
 
 }
 
@@ -82,10 +82,14 @@ STEP_ENV: dict[str, dict[str, str]] = {}
 
 OS_ENV: dict[str, dict[str, str]] = {
     "linux": {
+        "JAVA_HOME": "/usr/lib/jvm/java-21-openjdk-amd64"
     },
     "freebsd": {
+        "JAVA_HOME": "/usr/local/openjdk21",
     },
-    "macos": {},
+    "macos": {
+        "JAVA_HOME": "/opt/local/Library/Java/JavaVirtualMachines/jdk-21-amazon-corretto.jdk/Contents/Home",
+    },
     "windows": {
         "WINDOWS_TARGET_ARCH": "amd64",
     },
