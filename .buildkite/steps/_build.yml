@@ -1,0 +1,38 @@
+agents:
+  queue: "default-{queue}"
+
+label: "{name} ({slug})"
+key: "build-{slug}"
+
+commands:
+  - bash scripts/teamcity/10.build.sh
+  - echo \"+++ Start Services\"
+  - bash scripts/tests/setup/start-services.sh
+  - echo \"+++ Run Tests\"
+  - bash scripts/teamcity/20.test.sh
+  - echo \"+++ Run Examples\"
+  - bash scripts/teamcity/30.examples.sh
+
+plugins:
+  - bureau14/qdb-artifacts#master:
+      download:
+        clean: true
+        projects:
+          - project_id: "quasardb-build"
+            output-dir: "qdb"
+            extract: true
+            files:
+              - "*-c-api.tar.zst!*"
+              - "*-server.tar.zst!*"
+              - "*-utils.tar.zst!*"
+      upload:
+        files:
+          - "target/*.jar"
+          - "target/*-javadoc.jar"
+        base_dir: "target"
+      promote: {}
+  - bureau14/qdb-test-report#master:
+      title: "Test report {slug}"
+      job:
+        variant: {slug}
+        junit_input_path: "target/surefire-reports/TEST-*.xml"
