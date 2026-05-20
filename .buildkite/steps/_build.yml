@@ -11,7 +11,7 @@ commands:
   - echo \"+++ Run Tests\"
   - bash scripts/teamcity/20.test.sh
   - echo \"+++ Run Examples\"
-  - bash scripts/teamcity/30.examples.sh
+  - bash scripts/teamcity/30.example.sh
 
 plugins:
   - bureau14/qdb-artifacts#master:
