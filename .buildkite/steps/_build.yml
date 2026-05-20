@@ -28,7 +28,6 @@ plugins:
       upload:
         files:
           - "target/*.jar"
-          - "target/*-javadoc.jar"
         base_dir: "target"
       promote: {}
   - bureau14/qdb-test-report#master:
