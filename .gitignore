@@ -9,3 +9,6 @@
 /.idea
 /.vscode
 /.gradle
+
+# OS_X
+.DS_Store
