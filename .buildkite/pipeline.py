@@ -47,12 +47,12 @@ _WIN = dict(
 _FREEBSD = dict(
     c_compiler="$$QDB_CICD_AGENT_CC",
     cxx_compiler="$$QDB_CICD_AGENT_CXX",
-    ccache="/usr/local/bin/ccache",
+    ccache="$$QDB_CICD_AGENT_CCACHE",
 )
 _MACOS = dict(
     c_compiler="$$QDB_CICD_AGENT_CC",
     cxx_compiler="$$QDB_CICD_AGENT_CXX",
-    ccache="/opt/local/bin/ccache",
+    ccache="$$QDB_CICD_AGENT_CCACHE",
 )
 
 _OS_OVERLAY = {"linux": _LINUX, "windows": _WIN, "freebsd": _FREEBSD, "macos": _MACOS}
@@ -61,7 +61,6 @@ PLATFORMS: list[Platform] = [
     for p in select_platforms(
         "freebsd-amd64-core2",
         "linux-amd64-core2",
-        # "linux-aarch64",
         "windows-amd64-core2",
         "macos-aarch64",
     )
