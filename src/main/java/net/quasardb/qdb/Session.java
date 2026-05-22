@@ -270,10 +270,10 @@ public class Session implements AutoCloseable {
             }
 
             if (this.securityOptions.isPresent()) {
-                logger.info("Establishing a secure connection to conluster: {}", this.uri);
+                logger.info("Establishing a secure connection to cluster: {}", this.uri);
                 qdb.secure_connect(s.handle, this.uri, SecurityOptions.toNative(this.securityOptions.get()));
             } else {
-                logger.info("Establishing an insecure connection to conluster: {}", this.uri);
+                logger.info("Establishing an insecure connection to cluster: {}", this.uri);
                 qdb.connect(s.handle, this.uri);
             }
 
