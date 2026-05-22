@@ -1,7 +1,5 @@
 package net.quasardb.qdb;
 
-import java.io.IOException;
-
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -20,7 +18,7 @@ public class SessionFactoryTest {
     @Test
     public void canCreateNewSession () {
         SessionFactory sf = new SessionFactory(TestUtils.CLUSTER_URI);
-	Session s = sf.newSession();
+        Session s = sf.newSession();
 
         assertFalse(s.isClosed());
     }
@@ -31,41 +29,41 @@ public class SessionFactoryTest {
             new Session.SecurityOptions("test-user", "xxx", "xxx");
 
         SessionFactory sf = new SessionFactory(TestUtils.CLUSTER_URI)
-	    .securityOptions(so);
+            .securityOptions(so);
 
-	// bad credentials raise an InputException error.
-	assertThrows(InputException.class, () -> {
-		sf.newSession();
-	    });
+        // bad credentials raise an InputException error.
+        assertThrows(InputException.class, () -> {
+                sf.newSession();
+            });
     }
 
     @Test
     public void canSetInputBufferSize () {
         long ibs = 8589934592L;
-	SessionFactory sf = new SessionFactory(TestUtils.CLUSTER_URI)
-	    .inputBufferSize(ibs);
+        SessionFactory sf = new SessionFactory(TestUtils.CLUSTER_URI)
+            .inputBufferSize(ibs);
 
-	Session s = sf.newSession();
+        Session s = sf.newSession();
 
-	assertEquals(s.getInputBufferSize(), ibs);
+        assertEquals(s.getInputBufferSize(), ibs);
     }
 
     @Test
     public void canSetSoftMemoryLimit () {
         long sml = 8589934592L;
-	SessionFactory sf = new SessionFactory(TestUtils.CLUSTER_URI)
-	    .softMemoryLimit(sml);
+        SessionFactory sf = new SessionFactory(TestUtils.CLUSTER_URI)
+            .softMemoryLimit(sml);
 
-	Session s = sf.newSession();
-	String mem_stats = s.getMemoryInfo();
+        Session s = sf.newSession();
+        String mem_stats = s.getMemoryInfo();
 
-	Pattern pattern = Pattern.compile("TBB soft limit bytes = (\\d+)");
-	Matcher matcher = pattern.matcher(mem_stats);
+        Pattern pattern = Pattern.compile("TBB soft limit bytes = (\\d+)");
+        Matcher matcher = pattern.matcher(mem_stats);
 
-	assertTrue(matcher.find(), "TBB soft limit bytes not found");
+        assertTrue(matcher.find());
 
-	long actual = Long.parseLong(matcher.group(1));
+        long actual = Long.parseLong(matcher.group(1));
 
-	assertEquals(actual, sml);
+        assertEquals(actual, sml);
     }
 }
