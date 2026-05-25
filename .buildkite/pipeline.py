@@ -140,7 +140,7 @@ def generate_pipeline() -> Pipeline:
             }
 
             step = load_template(STEPS_DIR / "_build.yml", **tvars)
-            env = _env(p, "test", bt)
+            env = _env(p, "build", bt)
             env.update(step.get("env") or {})
             step["env"] = env
             apply_docker(step, p.docker_image, p.docker_volumes)
