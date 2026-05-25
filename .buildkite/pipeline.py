@@ -9,6 +9,7 @@ Usage:
     python3 pipeline.py           # emit pipeline YAML to stdout
     python3 pipeline.py check     # validate without emitting
 """
+
 from __future__ import annotations
 
 import dataclasses
@@ -78,12 +79,9 @@ GLOBAL_ENV: dict[str, str] = {
 STEP_ENV: dict[str, dict[str, str]] = {}
 
 OS_ENV: dict[str, dict[str, str]] = {
-    "linux": {
-    },
-    "freebsd": {
-    },
-    "macos": {
-    },
+    "linux": {},
+    "freebsd": {},
+    "macos": {},
     "windows": {
         "WINDOWS_TARGET_ARCH": "win64",
     },
@@ -123,7 +121,7 @@ def generate_pipeline() -> Pipeline:
             slug = p.slug(bt.lower())
             variants.append(slug)
 
-            # We want to use Release QuasarDB binaries when building Python API (debug and release)
+            # We want to use Release QuasarDB binaries when building dependent APIs
             dependency_slug = p.slug("release")
 
             tvars = {
@@ -158,12 +156,11 @@ def generate_pipeline() -> Pipeline:
     for group, steps in group_steps.items():
         group_step = GroupStep(group=group, steps=steps)
         pipeline.add_step(group_step)
-    
+
     # Aggregate all test reports
     step = load_template(STEPS_DIR / "_test_report.yml", **tvars)
     step["depends_on"] = [f"build-{variant}" for variant in variants]
     pipeline.add_step(CommandStep.from_dict(step))
-
 
     return pipeline
 
