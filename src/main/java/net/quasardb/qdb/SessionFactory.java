@@ -50,6 +50,8 @@ public class SessionFactory {
 
         Session.Builder builder = Session.builder();
 
+        builder = builder.uri(this.qdbUri);
+
         if (this.securityOptions.isPresent()) {
             builder = builder.securityOptions(this.securityOptions.get());
         }
