@@ -126,7 +126,7 @@ def generate_pipeline() -> Pipeline:
 
             tvars = {
                 "slug": slug,
-                "queue": f"{p.queue_os}-{p.arch}",
+                "queue": f"default-{p.queue_os}-{p.arch}",
                 "name": slug.replace("-", " ").title(),
             }
 
