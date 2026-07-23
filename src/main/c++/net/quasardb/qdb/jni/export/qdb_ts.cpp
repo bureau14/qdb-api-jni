@@ -4,7 +4,6 @@
 #include "../adapt/timerange.h"
 #include "../adapt/timespec.h"
 #include "../adapt/value_traits.h"
-#include "../byte_array.h"
 #include "../byte_buffer.h"
 #include "../debug.h"
 #include "../detail/callback.h"
