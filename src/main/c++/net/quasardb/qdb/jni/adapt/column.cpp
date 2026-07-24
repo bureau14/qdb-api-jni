@@ -49,23 +49,6 @@ template <>
 }
 
 template <>
-/* static */ qdb_ts_batch_column_info_t qdb::jni::adapt::column::to_qdb(
-    qdb::jni::env & env, qdb_handle_t handle, jobject input)
-{
-    jclass object_class   = jni::object::get_class(env, input);
-    jfieldID table_field  = jni::string::lookup_field(env, object_class, "table");
-    jfieldID column_field = jni::string::lookup_field(env, object_class, "column");
-
-    jni::guard::string_utf8 table  = jni::string::from_field(env, handle, input, table_field);
-    jni::guard::string_utf8 column = jni::string::from_field(env, handle, input, column_field);
-
-    return qdb_ts_batch_column_info_t{table.copy(handle), column.copy(handle),
-
-        // elements_count_hint
-        1U};
-}
-
-template <>
 /* static */ qdb_ts_column_info_t qdb::jni::adapt::column::to_qdb(
     qdb::jni::env & env, qdb_handle_t handle, jobject input)
 {
