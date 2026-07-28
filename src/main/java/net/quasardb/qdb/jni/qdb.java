@@ -167,38 +167,6 @@ public final class qdb
                                                   Column[] columns);
 
 
-    // Returns qdb_ts_batch_table_t
-    public static native void ts_batch_table_release(long handle, long batchTable);
-
-    public static native int ts_batch_push(long handle, long batchTable);
-    public static native int ts_batch_push_async(long handle, long batchTable);
-    public static native int ts_batch_push_fast(long handle, long batchTable);
-
-    public static native int ts_batch_release_columns_memory(long handle, long batchTable);
-
-    public static native int ts_batch_push_truncate(long handle, long batchTable, TimeRange[] ranges);
-
-    public static native int ts_batch_start_row(long timestamp,
-                                                long sec,
-                                                long nsec);
-
-    public static native int ts_batch_row_set_double(long batchTable,
-                                                     long index,
-                                                     double value);
-    public static native int ts_batch_row_set_int64(long batchTable,
-                                                    long index,
-                                                    long value);
-    public static native int ts_batch_row_set_timestamp(long batchTable,
-                                                        long index,
-                                                        long sec,
-                                                        long nsec);
-    public static native int ts_batch_row_set_blob(long batchTable,
-                                                   long index,
-                                                   ByteBuffer value);
-    public static native int ts_batch_row_set_string(long batchTable,
-                                                     long index,
-                                                     byte[] value);
-
     /**
      * Allocates all data structures in one big allocation. For each table, a rowCount
      * and a columnCount is expected.

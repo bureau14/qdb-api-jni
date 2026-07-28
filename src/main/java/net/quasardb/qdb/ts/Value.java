@@ -111,43 +111,6 @@ public class Value implements Serializable, Comparable<Value> {
     }
 
 
-    public void setNative(long batchTable, Type columnType, int offset) {
-
-        Type t = (this.type == Type.UNINITIALIZED
-                  ? columnType
-                  : this.type);
-
-
-
-        switch (t) {
-        case DOUBLE:
-            qdb.ts_batch_row_set_double(batchTable, offset, this.doubleValue);
-            break;
-        case INT64:
-            qdb.ts_batch_row_set_int64(batchTable, offset, this.int64Value);
-            break;
-        case TIMESTAMP:
-            qdb.ts_batch_row_set_timestamp(batchTable, offset,
-                                           this.timestampValue.sec,
-                                           this.timestampValue.nsec);
-            break;
-        case BLOB:
-            qdb.ts_batch_row_set_blob(batchTable, offset, this.blobValue);
-            break;
-        case STRING:
-            // Convert string to ByteBuffer before passing over to JNI so that
-            // we can keep the JNI code really simple (=> fast).
-            qdb.ts_batch_row_set_string(batchTable, offset,
-                                        (this.stringValue == Constants.nullString
-                                         ? null
-                                         : this.stringValue.getBytes(StandardCharsets.UTF_8)));
-            break;
-
-        case UNINITIALIZED:
-            throw new RuntimeException("Setting null");
-        }
-    }
-
     /**
      * Updates value to represent an unintialised value.
      */
