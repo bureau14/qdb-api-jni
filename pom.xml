@@ -6,7 +6,7 @@
   <groupId>net.quasardb</groupId>
   <artifactId>jni</artifactId>
   <packaging>jar</packaging>
-  <version>3.14.3</version>
+  <version>${project.version}</version>
   <name>quasardb</name>
 
   <description>
@@ -198,11 +198,10 @@
           <argLine>-XX:+UnlockDiagnosticVMOptions -XX:+LogCompilation -XX:+HeapDumpOnOutOfMemoryError</argLine>
 
           <additionalClasspathElements>
-            <additionalClasspathElement>${project.basedir}/target/jni-3.14.3-linux-x86_64.jar</additionalClasspathElement>
-            <additionalClasspathElement>${project.basedir}/target/jni-3.14.3-osx-x86_64.jar</additionalClasspathElement>
-            <additionalClasspathElement>${project.basedir}/target/jni-3.14.3-osx-aarch64.jar</additionalClasspathElement>
-            <additionalClasspathElement>${project.basedir}/target/jni-3.14.3-freebsd-x86_64.jar</additionalClasspathElement>
-            <additionalClasspathElement>${project.basedir}/target/jni-3.14.3-windows-x86_64.jar</additionalClasspathElement>
+            <additionalClasspathElement>${project.basedir}/target/jni-${project.version}-linux-x86_64.jar</additionalClasspathElement>
+            <additionalClasspathElement>${project.basedir}/target/jni-${project.version}-osx-aarch64.jar</additionalClasspathElement>
+            <additionalClasspathElement>${project.basedir}/target/jni-${project.version}-freebsd-x86_64.jar</additionalClasspathElement>
+            <additionalClasspathElement>${project.basedir}/target/jni-${project.version}-windows-x86_64.jar</additionalClasspathElement>
           </additionalClasspathElements>
         </configuration>
       </plugin>
@@ -221,17 +220,12 @@
             <configuration>
               <artifacts>
                 <artifact>
-                  <file>${project.basedir}/target/jni-3.14.3-linux-x86_64.jar</file>
+                  <file>${project.basedir}/target/jni-${project.version}-linux-x86_64.jar</file>
                   <type>jar</type>
                   <classifier>linux-x86_64</classifier>
                 </artifact>
                 <artifact>
-                  <file>${project.basedir}/target/jni-3.14.3-osx-x86_64.jar</file>
-                  <type>jar</type>
-                  <classifier>osx-x86_64</classifier>
-                </artifact>
-                <artifact>
-                  <file>${project.basedir}/target/jni-3.14.3-osx-aarch64.jar</file>
+                  <file>${project.basedir}/target/jni-${project.version}-osx-aarch64.jar</file>
                   <type>jar</type>
                   <classifier>osx-aarch64</classifier>
                 </artifact>
@@ -241,7 +235,7 @@
                   <classifier>freebsd-x86_64</classifier>
                 </artifact>
                 <artifact>
-                  <file>${project.basedir}/target/jni-3.14.3-windows-x86_64.jar</file>
+                  <file>${project.basedir}/target/jni-${project.version}-windows-x86_64.jar</file>
                   <type>jar</type>
                   <classifier>windows-x86_64</classifier>
                 </artifact>
