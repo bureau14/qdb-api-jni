@@ -225,9 +225,9 @@
                   <classifier>linux-x86_64</classifier>
                 </artifact>
                 <artifact>
-                  <file>${project.basedir}/target/jni-${project.version}-osx-universal.jar</file>
+                  <file>${project.basedir}/target/jni-${project.version}-osx-aarch64.jar</file>
                   <type>jar</type>
-                  <classifier>osx-universal</classifier>
+                  <classifier>osx-aarch64</classifier>
                 </artifact>
                 <artifact>
                   <file>${project.basedir}/target/jni-${project.version}-freebsd-x86_64.jar</file>
