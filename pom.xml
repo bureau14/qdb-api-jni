@@ -6,7 +6,7 @@
   <groupId>net.quasardb</groupId>
   <artifactId>jni</artifactId>
   <packaging>jar</packaging>
-  <version>${project.version}</version>
+  <version>3.14.3</version>
   <name>quasardb</name>
 
   <description>
@@ -225,12 +225,12 @@
                   <classifier>linux-x86_64</classifier>
                 </artifact>
                 <artifact>
-                  <file>${project.basedir}/target/jni-${project.version}-osx-aarch64.jar</file>
+                  <file>${project.basedir}/target/jni-${project.version}-osx-universal.jar</file>
                   <type>jar</type>
-                  <classifier>osx-aarch64</classifier>
+                  <classifier>osx-universal</classifier>
                 </artifact>
                 <artifact>
-                  <file>${project.basedir}/target/jni-3.15.0-SNAPSHOT-freebsd-x86_64.jar</file>
+                  <file>${project.basedir}/target/jni-${project.version}-freebsd-x86_64.jar</file>
                   <type>jar</type>
                   <classifier>freebsd-x86_64</classifier>
                 </artifact>
