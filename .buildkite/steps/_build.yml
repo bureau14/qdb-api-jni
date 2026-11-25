@@ -14,7 +14,7 @@ commands:
   - bash scripts/teamcity/30.example.sh
 
 plugins:
-  - bureau14/qdb-artifacts#sc-20192/snapshot-dependencies:
+  - bureau14/qdb-artifacts#master:
       download:
         clean: true
         projects:
