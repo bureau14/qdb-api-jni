@@ -2,7 +2,7 @@ agents:
   queue: "{queue}"
 
 label: "{name} ({slug})"
-key: "build-{slug}"
+step_id: build
 
 commands:
   - bash scripts/teamcity/10.build.sh
@@ -19,6 +19,7 @@ plugins:
         clean: true
         projects:
           - project_id: "quasardb-build"
+            step: build
             output-dir: "qdb"
             extract: true
             files:
